@@ -1,24 +1,35 @@
 
-// ▄▀█ █▀▀ █▀▀ █▀█ █░█ █▄░█ ▀█▀ █▀
-// █▀█ █▄▄ █▄▄ █▄█ █▄█ █░▀█ ░█░ ▄█
+/* ▄▀█ █▀▀ █▀▀ █▀█ █░█ █▄░█ ▀█▀ █▀ */
+/* █▀█ █▄▄ █▄▄ █▄█ █▄█ █░▀█ ░█░ ▄█ */
 
-// Shows balances for the accounts defined in user config.
-// Also shows net worth and monthly income/expenses.
+/* Shows balances for the accounts defined in user config. */
+/* Also shows net worth and monthly income/expenses. */
 
 import Widget from 'resource:///com/github/Aylur/ags/widget.js'
 import LedgerService from '../../../services/ledger/ledger.js/'
 
-const createAccountWidget = (data) => {
+/**
+ * Constructor for a single account widget.
+ */
+const Account = (data) => {
   const name = Widget.Label({
     className: 'account-name',
     hpack: 'start',
     label: data.displayName,
   })
+
+  /* data.total can be either a number or a bind */
+  let label = '0'
+  if (typeof(data.total) == 'object') {
+    label = data.total
+  } else {
+    label = String(data.total.toFixed(2))
+  }
   
   const amount = Widget.Label({
     className: 'balance',
     hpack: 'start',
-    label: String(data.balance.toFixed(2)),
+    label: label,
   })
   
   return Widget.Box({
@@ -34,21 +45,29 @@ const createAccountWidget = (data) => {
   })
 }
 
-const netWorth = () => Widget.Box({
-  setup: self => self.hook(LedgerService, (self, netWorth) => {
-    if (netWorth == undefined) return;
-    self.children.forEach(x => self.remove(x))
-
-    const data = {
+/**
+ * Total net worth.
+ */
+const NetWorth = () => Widget.Box({
+  children: [
+    Account({
       displayName: 'Net Worth',
-      balance: netWorth,
-    }
-
-    self.add(createAccountWidget(data))
-  }, 'net-worth-changed'),
+      total: LedgerService.bind('net-worth').as(x => `${x}`) || 0
+    })
+  ]
 })
 
-const income = () => Widget.Box({
+/**
+ * Total income for the current month. 
+ */
+const Income = () => Widget.Box({
+  children: [
+    Account({
+      displayName: 'Income',
+      total: 0,
+    })
+  ],
+
   setup: self => self.hook(LedgerService, (self, income) => {
     if (income == undefined) return;
     self.children.forEach(x => self.remove(x))
@@ -58,11 +77,21 @@ const income = () => Widget.Box({
       balance: income,
     }
 
-    self.add(createAccountWidget(data))
+    self.add(Account(data))
   }, 'monthly-income-changed'),
 })
 
-const expenses = () => Widget.Box({
+/**
+ * Total expenses for the current month.
+ */
+const Expenses = () => Widget.Box({
+  children: [
+    Account({
+      displayName: 'Expenses',
+      total: 0,
+    })
+  ],
+
   setup: self => self.hook(LedgerService, (self, expenses) => {
     if (expenses == undefined) return;
     self.children.forEach(x => self.remove(x))
@@ -72,18 +101,17 @@ const expenses = () => Widget.Box({
       balance: expenses,
     }
 
-    self.add(createAccountWidget(data))
+    self.add(Account(data))
   }, 'monthly-expenses-changed'),
 })
 
-const userDefinedAccounts = () => Widget.Box({
+/**
+ * Container for all accounts defined in UserConfig.
+ */
+const UserDefinedAccounts = () => Widget.Box({
   vertical: true,
   spacing: 20,
-  setup: self => self.hook(LedgerService, (self, accountData) => {
-    if (accountData == undefined) return;
-    self.children.forEach(x => self.remove(x))
-    accountData.map(x => self.add(createAccountWidget(x)) )
-  }, 'accounts-changed'),
+  children: LedgerService.bind('display-accounts').as(x => x.map(Account)),
 })
 
 export default () => {
@@ -92,10 +120,10 @@ export default () => {
     spacing: 20,
     vertical: true,
     children: [
-      netWorth(),
-      income(),
-      expenses(),
-      userDefinedAccounts(),
+      NetWorth(),
+      Income(),
+      Expenses(),
+      UserDefinedAccounts(),
     ]
   })
 }

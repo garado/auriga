@@ -10,8 +10,9 @@ import Gio from 'gi://Gio'
 import UserConfig from '../../../userconfig.js'
 import * as LedgerUtils from './utils.js'
 
-const SYMBOL_CACHE_PATH = '/tmp/ags/stocks/'
+const SYMBOL_CACHE_DIR = '/tmp/ags/stocks'
 const INCLUDES = UserConfig.ledger.includes.map(f => `-f ${f}`).join(' ')
+const USE_CSV_OUTPUT = ' --output-format csv '
 const ALPHAVANTAGE_API = UserConfig.ledger.alphavantage
 const BALANCE_TREND_CACHEFILE = '/tmp/ags/ledgerbal'
 
@@ -104,6 +105,12 @@ class LedgerService extends Service {
 
         /* array of objects {category: <category>, total: total}*/
         'monthly-breakdown': ['r'],
+
+        /* array of objects { displayName: <name>, total: <total> } */
+        'display-accounts': ['r'],
+
+        /* float */
+        'net-worth': ['r'],
       },
     )
   }
@@ -115,6 +122,8 @@ class LedgerService extends Service {
   #accountTotals = {}
   #commodities = []
   #monthlyBreakdown = []
+  #displayAccounts = []
+  #netWorth = 0
   
   constructor() {
     super()
@@ -137,6 +146,14 @@ class LedgerService extends Service {
     return this.#monthlyBreakdown
   }
   
+  get displayAccounts() {
+    return this.#displayAccounts
+  }
+  
+  get netWorth() {
+    return this.#netWorth
+  }
+  
   /**************************************
    * PRIVATE FUNCTIONS
    **************************************/
@@ -146,56 +163,121 @@ class LedgerService extends Service {
    * @brief Initialize all data for service.
    */
   #initAll() {
-    this.#initIncomeExpensesLiabilities()
+    this.#initNetWorth()
     this.#initCommodities()
     this.#initMonthlyBreakdown()
+    this.#initAccountData()
+
+    // this.#initIncomeExpensesLiabilities()
+  }
+
+
+  /**
+   * @function initNetWorth
+   */
+  #initNetWorth() {
+    log('ledgerService', '#initNetWorth')
+
+    const cmd = `hledger ${INCLUDES} bs --depth 1 -X '$' --infer-market-prices ${USE_CSV_OUTPUT}`
+
+    Utils.execAsync(`bash -c '${cmd}'`)
+      .then(out => {
+        const lines = out.replaceAll('"', '').split('\n')
+        const netWorthStr = lines[lines.length - 1].split(',')[1]
+        const netWorth = Number(netWorthStr.replace('$', ''))
+
+        this.#netWorth = netWorth
+        this.notify('net-worth')
+      })
+  }
+
+  /**
+   * @function initAccountData
+   * @brief Initialize account data for the accounts defined in UserConfig.
+   */
+  #initAccountData() {
+    log('ledgerService', '#initAccountData')
+
+    const commands = UserConfig.ledger.accountList.map(accountData => {
+      /* use `--infer-market-prices -X '$'` to convert shares to $ */
+      return `hledger ${INCLUDES} balance ${accountData.accountName} ${USE_CSV_OUTPUT} -X '$' --infer-market-prices`
+    })
+
+    const promises = commands.map(async cmd => {
+      return Utils.execAsync(`bash -c '${cmd}'`)
+    })
+
+    Promise.all(promises)
+      .then(result => {
+        /**
+         * RAW OUTPUT:
+         * "account","balance"
+         * "Assets:Checking:NFCU","$11064.66"
+         * "total","$11064.66"
+         *
+         * TURN THIS INTO:
+         * { displayName: <userconfig display name>, total: <total> }
+         */
+
+        this.#displayAccounts = []
+
+        for (let i = 0; i < UserConfig.ledger.accountList.length; i++) {
+          const lines = result[i].replaceAll('"', '').split('\n')
+          const totalStr = lines[lines.length - 1].split(',').pop()
+
+          const output = {
+            displayName: UserConfig.ledger.accountList[i].displayName,
+            total: Number(totalStr.replace('$', ''))
+          }
+
+          this.#displayAccounts.push(output)
+        }
+
+        this.notify('display-accounts')
+      })
+      .catch(err => print(`initAccountData: ${err}`))
   }
   
   /** 
    * @function initIncomeExpensesLiabilities
-   * @brief Create an object containing the totals for every Income/Expense account.
-   *
-   * Sample output:
-   *
-   * this.#accountTotals =  {
-   *    income: {
-   *        salary: 200,
-   *        bonus: 300,
-   *    },
-   *    expenses: {
-   *        food: {
-   *            dining: 200,
-   *            groceries: 400,
-   *        },
-   *        bills: {
-   *            rent: 200
-   *        }
-   *    }
-   * }
+   * @brief Parse total income, expenses, and liabilities to figure out
    */
   #initIncomeExpensesLiabilities() {
     log('ledgerService', '#initIncomeExpensesLiabilities')
 
-    this.#accountTotals = {}
+    const commands = [
+      `hledger ${INCLUDES} income --depth 1 ${USE_CSV_OUTPUT}`,
+      `hledger ${INCLUDES} balance Liabilities --depth 1 ${USE_CSV_OUTPUT}`,
+    ]
 
-    const cmd = `hledger ${INCLUDES} incomestatement --output-format csv`
+    const promises = commands.map(async cmd => {
+      return Utils.execAsync(`bash -c '${cmd}'`)
+    })
 
-    Utils.execAsync(`bash -c '${cmd}'`)
-      .then(out => {
-        out.split('\n').forEach(accountData => {
-          const [account, amount] = accountData.split(',')
-          if (!account.includes('Income:') && !account.includes('Expenses:')) return
+    Promise.all(promises)
+      .then(result => {
+        /* Income/Expenses */
 
-          /* 'Expenses:Bills:Rent' => ['Expenses', 'Bills', 'Rent'] (a hierarchy) */
-          let nestedAccounts = account.split(':')
-
-          /* ['Expenses', 'Bills', 'Rent'] => nested object */
-          const merged = nestedAccounts.reduceRight((acc, cur) => ({ [cur]: acc }), amount)
-
-          this.#accountTotals = deepMerge(this.#accountTotals, merged)
-        })
+        /* Liabilities */
       })
-      .catch(err => print(`LedgerService: initIncomeExpensesLiabilities: ${err}`))
+      .catch(err => print(`initIncomeExpensesLiabilities: ${err}`))
+
+    // Utils.execAsync(`bash -c '${cmd}'`)
+    //   .then(out => {
+    //     out.split('\n').forEach(accountData => {
+    //       const [account, amount] = accountData.split(',')
+    //       if (!account.includes('Income:') && !account.includes('Expenses:')) return
+    //
+    //       /* 'Expenses:Bills:Rent' => ['Expenses', 'Bills', 'Rent'] (a hierarchy) */
+    //       let nestedAccounts = account.split(':')
+    //
+    //       /* ['Expenses', 'Bills', 'Rent'] => nested object */
+    //       const merged = nestedAccounts.reduceRight((acc, cur) => ({ [cur]: acc }), amount)
+    //
+    //       this.#accountTotals = deepMerge(this.#accountTotals, merged)
+    //     })
+    //   })
+    //   .catch(err => print(`LedgerService: initIncomeExpensesLiabilities: ${err}`))
   }
 
   /**
@@ -221,7 +303,7 @@ class LedgerService extends Service {
     const commodities = Utils.exec(`bash -c '${cmd}'`).split('\n').slice(1)
 
     const promises = commodities.map(async commodity => {
-      const path = `${SYMBOL_CACHE_PATH}/${commodity}/${new Date().toISOString().slice(0, 10)}`
+      const path = `${SYMBOL_CACHE_DIR}/${commodity}/${new Date().toISOString().slice(0, 10)}`
       const cfile = Gio.File.new_for_path(path)
 
       if (!cfile.query_exists(null)) {
@@ -291,7 +373,7 @@ class LedgerService extends Service {
    */
   #initMonthlyBreakdown() {
     const monthStart = `${new Date().getMonth() + 1}/01`
-    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${monthStart} --no-total --depth 2 --output-format csv`
+    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${monthStart} --no-total --depth 2 ${USE_CSV_OUTPUT}`
 
     this.#monthlyBreakdown = []
 
