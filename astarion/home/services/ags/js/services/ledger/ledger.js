@@ -12,7 +12,7 @@ import * as LedgerUtils from './utils.js'
 
 const SYMBOL_CACHE_DIR = '/tmp/ags/stocks'
 const INCLUDES = UserConfig.ledger.includes.map(f => `-f ${f}`).join(' ')
-const USE_CSV_OUTPUT = ' --output-format csv '
+const CSV = ' --output-format csv '
 const ALPHAVANTAGE_API = UserConfig.ledger.alphavantage
 const BALANCE_TREND_CACHEFILE = '/tmp/ags/ledgerbal'
 
@@ -109,8 +109,12 @@ class LedgerService extends Service {
         /* array of objects { displayName: <name>, total: <total> } */
         'display-accounts': ['r'],
 
+        'debts-liabilities': ['r'],
+
         /* float */
         'net-worth': ['r'],
+        'income-this-month': ['r'],
+        'expenses-this-month': ['r'],
       },
     )
   }
@@ -124,6 +128,9 @@ class LedgerService extends Service {
   #monthlyBreakdown = []
   #displayAccounts = []
   #netWorth = 0
+  #incomeThisMonth = 0
+  #expensesThisMonth = 0
+  #debtsLiabilities = {}
   
   constructor() {
     super()
@@ -141,6 +148,14 @@ class LedgerService extends Service {
   get commodities() {
     return this.#commodities
   }
+  
+  get incomeThisMonth() {
+    return this.#incomeThisMonth
+  }
+  
+  get expensesThisMonth() {
+    return this.#expensesThisMonth
+  }
 
   get monthlyBreakdown() {
     return this.#monthlyBreakdown
@@ -154,6 +169,10 @@ class LedgerService extends Service {
     return this.#netWorth
   }
   
+  get debtsLiabilities() {
+    return this.#debtsLiabilities
+  }
+  
   /**************************************
    * PRIVATE FUNCTIONS
    **************************************/
@@ -164,21 +183,76 @@ class LedgerService extends Service {
    */
   #initAll() {
     this.#initNetWorth()
+    this.#initMonthlyIncomeExpenses()
     this.#initCommodities()
     this.#initMonthlyBreakdown()
     this.#initAccountData()
-
-    // this.#initIncomeExpensesLiabilities()
+    this.#initDebtsLiabilities()
   }
 
+  /** 
+   * @function initDebtsLiabilities
+   * @brief Parse **uncleared** debts and liabilities. 
+   *
+   * This is specific to the way I personally use hledger. 
+   * Liabilities for things like credit cards are never marked as pending/cleared.
+   * Debts/liabilities to other people (e.g. if I owe someone $20) are marked as pending, 
+   * then are cleared when they are paid back. 
+   * This function is specifically for those interpersonal debts/liabilities.
+   */
+  #initDebtsLiabilities() {
+    log('ledgerService', '#initDebtsLiabilities')
+
+    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV}`
+
+    const HLedgerRegCSVEnum = {
+      TXNIDX:   0,
+      DATE:     1,
+      CODE:     2,
+      DESC:     3,
+      ACCOUNT:  4,
+      AMOUNT:   5,
+      TOTAL:    6,
+    }
+
+    Utils.execAsync(`bash -c '${cmd}'`)
+      .then(out => {
+        const lines = out.replaceAll('"', '').split('\n').slice(1)
+
+        lines.forEach(element => {
+          print(`${element}\n`)
+        });
+
+        this.#debtsLiabilities = {}
+
+        lines.map(line => {
+          const fields = line.split(',')
+
+          const account = fields[HLedgerRegCSVEnum.ACCOUNT]
+
+          if (this.#debtsLiabilities[account] == undefined) {
+            this.#debtsLiabilities[account] = []
+          }
+
+          this.#debtsLiabilities[account].push({
+            desc:  fields[HLedgerRegCSVEnum.DESC],
+            total: Number(fields[HLedgerRegCSVEnum.AMOUNT].replace('$', '')),
+          })
+        })
+
+        this.notify('debts-liabilities')
+      })
+      .catch(err => print(`#initDebtsLiabilities: ${err}`))
+  }
 
   /**
    * @function initNetWorth
+   * @brief Get total net worth (assets - liabilities)
    */
   #initNetWorth() {
     log('ledgerService', '#initNetWorth')
 
-    const cmd = `hledger ${INCLUDES} bs --depth 1 -X '$' --infer-market-prices ${USE_CSV_OUTPUT}`
+    const cmd = `hledger ${INCLUDES} bs --depth 1 -X '$' --infer-market-prices ${CSV}`
 
     Utils.execAsync(`bash -c '${cmd}'`)
       .then(out => {
@@ -188,6 +262,37 @@ class LedgerService extends Service {
 
         this.#netWorth = netWorth
         this.notify('net-worth')
+      })
+      .catch(err => print(`#initNetWorth: ${err}`))
+  }
+
+  /**
+   * @function initMonthlyIncomeExpenses
+   * @brief Get total income and expenses for this month
+   */
+  #initMonthlyIncomeExpenses() {
+    log('ledgerService', '#initMonthlyIncomeExpenses')
+
+    const monthStart = `${new Date().getMonth() + 1}/01`
+    const cmd = `hledger ${INCLUDES} bal --depth 1 -X '$' --infer-market-price ${CSV} -b ${monthStart}`
+
+    Utils.execAsync(`bash -c '${cmd}'`)
+      .then(out => {
+        const lines = out.replaceAll('"', '').split('\n')
+        const relevantLines = lines.filter(str => str.includes('Income') || str.includes('Expenses'))
+
+        relevantLines.forEach(element => {
+          const fields = element.split(',')
+          const total = Math.abs(Number(fields[1].replace('$', '')))
+
+          if (fields[0].includes('Income')) {
+            this.#incomeThisMonth = total.toFixed(2)
+            this.notify('income-this-month')
+          } else if (fields[0].includes('Expenses')) {
+            this.#expensesThisMonth = total.toFixed(2)
+            this.notify('expenses-this-month')
+          }
+        })
       })
   }
 
@@ -200,7 +305,7 @@ class LedgerService extends Service {
 
     const commands = UserConfig.ledger.accountList.map(accountData => {
       /* use `--infer-market-prices -X '$'` to convert shares to $ */
-      return `hledger ${INCLUDES} balance ${accountData.accountName} ${USE_CSV_OUTPUT} -X '$' --infer-market-prices`
+      return `hledger ${INCLUDES} balance ${accountData.accountName} ${CSV} -X '$' --infer-market-prices`
     })
 
     const promises = commands.map(async cmd => {
@@ -238,48 +343,6 @@ class LedgerService extends Service {
       .catch(err => print(`initAccountData: ${err}`))
   }
   
-  /** 
-   * @function initIncomeExpensesLiabilities
-   * @brief Parse total income, expenses, and liabilities to figure out
-   */
-  #initIncomeExpensesLiabilities() {
-    log('ledgerService', '#initIncomeExpensesLiabilities')
-
-    const commands = [
-      `hledger ${INCLUDES} income --depth 1 ${USE_CSV_OUTPUT}`,
-      `hledger ${INCLUDES} balance Liabilities --depth 1 ${USE_CSV_OUTPUT}`,
-    ]
-
-    const promises = commands.map(async cmd => {
-      return Utils.execAsync(`bash -c '${cmd}'`)
-    })
-
-    Promise.all(promises)
-      .then(result => {
-        /* Income/Expenses */
-
-        /* Liabilities */
-      })
-      .catch(err => print(`initIncomeExpensesLiabilities: ${err}`))
-
-    // Utils.execAsync(`bash -c '${cmd}'`)
-    //   .then(out => {
-    //     out.split('\n').forEach(accountData => {
-    //       const [account, amount] = accountData.split(',')
-    //       if (!account.includes('Income:') && !account.includes('Expenses:')) return
-    //
-    //       /* 'Expenses:Bills:Rent' => ['Expenses', 'Bills', 'Rent'] (a hierarchy) */
-    //       let nestedAccounts = account.split(':')
-    //
-    //       /* ['Expenses', 'Bills', 'Rent'] => nested object */
-    //       const merged = nestedAccounts.reduceRight((acc, cur) => ({ [cur]: acc }), amount)
-    //
-    //       this.#accountTotals = deepMerge(this.#accountTotals, merged)
-    //     })
-    //   })
-    //   .catch(err => print(`LedgerService: initIncomeExpensesLiabilities: ${err}`))
-  }
-
   /**
    * @function initCommodities
    * @brief Initialize commodities (stocks) and their current prices using
@@ -373,7 +436,7 @@ class LedgerService extends Service {
    */
   #initMonthlyBreakdown() {
     const monthStart = `${new Date().getMonth() + 1}/01`
-    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${monthStart} --no-total --depth 2 ${USE_CSV_OUTPUT}`
+    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${monthStart} --no-total --depth 2 ${CSV}`
 
     this.#monthlyBreakdown = []
 

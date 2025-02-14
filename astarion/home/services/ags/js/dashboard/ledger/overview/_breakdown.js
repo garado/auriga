@@ -54,7 +54,7 @@ const Legend = (breakdown) => {
           Widget.Label(data.category),
           Widget.Label({
             className: 'amount-text',
-            label: `   ${data.total}`
+            label: `   ${data.total.toFixed(2)}`
           }),
         ]
       })

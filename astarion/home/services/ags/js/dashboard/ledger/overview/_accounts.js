@@ -61,48 +61,26 @@ const NetWorth = () => Widget.Box({
  * Total income for the current month. 
  */
 const Income = () => Widget.Box({
+  className: 'income',
   children: [
     Account({
-      displayName: 'Income',
-      total: 0,
+      displayName: 'Income this month',
+      total: LedgerService.bind('income-this-month').as(x => `${x}`) || 0.00,
     })
   ],
-
-  setup: self => self.hook(LedgerService, (self, income) => {
-    if (income == undefined) return;
-    self.children.forEach(x => self.remove(x))
-
-    const data = {
-      displayName: 'Income This Month',
-      balance: income,
-    }
-
-    self.add(Account(data))
-  }, 'monthly-income-changed'),
 })
 
 /**
  * Total expenses for the current month.
  */
 const Expenses = () => Widget.Box({
+  className: 'expenses',
   children: [
     Account({
-      displayName: 'Expenses',
-      total: 0,
+      displayName: 'Expenses this month',
+      total: LedgerService.bind('expenses-this-month').as(x => `${x}`) || 0.00,
     })
   ],
-
-  setup: self => self.hook(LedgerService, (self, expenses) => {
-    if (expenses == undefined) return;
-    self.children.forEach(x => self.remove(x))
-
-    const data = {
-      displayName: 'Expenses This Month',
-      balance: expenses,
-    }
-
-    self.add(Account(data))
-  }, 'monthly-expenses-changed'),
 })
 
 /**
