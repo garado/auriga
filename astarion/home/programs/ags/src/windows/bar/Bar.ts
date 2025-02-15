@@ -1,0 +1,163 @@
+
+import { App, Astal, Gtk, Gdk, Widget } from 'astal/gtk4'
+import { Variable, GLib, bind } from 'astal'
+import Battery from 'gi://AstalBattery'
+import Hyprland from 'gi://AstalHyprland'
+
+/****************************************************
+ * MODULE-LEVEL VARIABLES
+ ****************************************************/
+
+const hypr = Hyprland.get_default()
+const bat = Battery.get_default()
+const time = Variable('').poll(1000, "date '+%H\n%M'")
+
+/****************************************************
+ * WIDGET DEFINITIONS
+ ****************************************************/
+
+/**
+ * @function Workspaces 
+ * @brief Container for all workspace indicators.
+ */
+const Workspaces = () => {
+  /* @TODO Find out how to get the number of workspaces programatically */
+  const wsIndices = [...Array(9).keys()]
+
+  return Widget.Box({
+    cssClasses: ['workspaces'],
+    orientation: 1,
+    children: wsIndices.map(WorkspaceIndicator),
+  })
+}
+
+/** 
+ * @function WorkspaceIndicator 
+ * @brief Indicator for a single workspace. 
+ * 
+ * Clicking focuses the respective workspace.
+ */
+const WorkspaceIndicator = (wsIdx: number) => {
+  /* Param wsIdx is 0-indexed, but workspaces are 1-indexed. */
+  wsIdx += 1
+
+  const isFocused = bind(hypr, 'focusedWorkspace').as(focused => {
+    return focused.id == wsIdx
+  })
+
+  /* 'workspaces' property will only include a workspace if there are 
+   * clients on it. So if the workspace isn't found, then it's empty. */
+  const isEmpty = bind(hypr, 'workspaces').as(workspaces => {
+    return workspaces.find(ws => ws.id == wsIdx) == undefined
+  })
+
+  const cssClasses = Variable.derive(
+    [isFocused, isEmpty],
+    (isFocused: bool, isEmpty: bool) => {
+      return [
+        isEmpty ? 'empty' : '',
+        isFocused ? 'focused' : '',
+      ]
+    }
+  )
+
+  return Widget.Button({
+    cssClasses: ['workspace'],
+    child: Widget.Label({
+      cssClasses: bind(cssClasses),
+      label: `${wsIdx}`
+    }),
+    onClicked: () => {
+      hypr.dispatch('workspace', `${wsIdx}`)
+    },
+  })
+}
+
+/**
+ * @function BatteryIndicator
+ * @brief Shows battery percentage.
+ *
+ * @TODO I don't think levelClass is working; returns 'none' at 37%
+ */
+const BatteryIndicator = () => {
+  const isCharging = bind(bat, 'state').as(s => s == Battery.State.CHARGING)
+
+  const levelClassNames = [ 'unknown', 'none', 'low', 'critical', 'normal', 'high', 'full' ]
+  const levelClass = bind(bat, 'batteryLevel').as(lvl => levelClassNames[lvl])
+
+  const cssClasses = Variable.derive(
+    [isCharging, levelClass],
+    (isCharging: bool, levelClass: string) => {
+      return [
+        isCharging ? 'charging' : '',
+        levelClass,
+      ]
+    }
+  )
+
+  return Widget.Box({
+    cssClasses: ['battery'],
+    children: [
+      Widget.Label({
+        cssClasses: bind(cssClasses),
+        halign: Gtk.Align.CENTER,
+        label: bind(bat, 'percentage').as(lvl => `${lvl * 100}`)
+      })
+    ]
+  })
+
+}
+
+/**
+ * @function Time
+ * @brief Shows the time HH:MM.
+ */
+const Time = () => Widget.Label({
+  halign: Gtk.Align.CENTER,
+  cssClasses: ['time'],
+  label: bind(time)
+})
+/****************************************************
+ * UI ASSEMBLY
+ ****************************************************/
+
+const Top = () => Widget.Box({
+  cssClasses: ['top'],
+  children: [
+
+  ]
+})
+
+const Center = () => Widget.Box({
+  cssClasses: ['center'],
+  children: [
+    Workspaces()
+  ]
+})
+
+const Bottom = () => Widget.Box({
+  cssClasses: ['bottom'],
+  orientation: 1,
+  children: [
+    BatteryIndicator(),
+    Time(),
+  ]
+})
+
+export default (gdkmonitor: Gdk.Monitor) => {
+  const { TOP, LEFT, RIGHT, BOTTOM } = Astal.WindowAnchor
+
+  return Widget.Window({
+    visible: true,
+    anchor: LEFT | TOP | BOTTOM,
+    exclusivity: Astal.Exclusivity.EXCLUSIVE,
+
+    child: Widget.CenterBox({
+      orientation: 1,
+      cssClasses: ['bar'],
+      startWidget:  Top(),
+      centerWidget: Center(),
+      endWidget:    Bottom(),
+    })
+  })
+}

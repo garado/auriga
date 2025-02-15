@@ -28,7 +28,7 @@
     hardware.url = "github:nixos/nixos-hardware";
 
     # Widgets
-    ags.url = "github:Aylur/ags/v1";
+    ags.url = "github:Aylur/ags";
 
     # Real-time audio
     musnix.url = "github:musnix/musnix";
@@ -60,6 +60,7 @@
           {
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {inherit inputs;};
+            home-manager.backupFileExtension = "hm-backup";
             home-manager.users.alexis = import ./astarion/home/home.nix;
           }
         ];

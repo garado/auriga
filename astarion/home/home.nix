@@ -9,7 +9,7 @@
   imports = [
     # These come from inputs defined in `flake.nix`
     inputs.ags.homeManagerModules.default
-  
+
     # Import other pieces of config
     ./programs
   ];
@@ -21,6 +21,7 @@
 
   home = {
     username = "alexis";
+
     homeDirectory = "/home/alexis";
 
     packages = with pkgs; [
@@ -30,14 +31,8 @@
       # Productivity
       obsidian qutebrowser
 
-      # Development
-      # TODO Needed for ags - move to shell.nix?
-      dart-sass gnome.gvfs
-
       (python3.withPackages (ps: with ps; [
         # Packages from nixpkgs
-        # requests
-        # beautifulsoup4
         pynvim
 
         # Build a package from PyPI
@@ -70,7 +65,7 @@
       x11.enable = true;
       name = "WhiteSur-cursors";
       package = pkgs.whitesur-cursors;
-      size = 24;
+      size = 32;
     };
   }; /* end home */
 
@@ -82,31 +77,21 @@
 
   programs.ags = {
     enable = true;
-    configDir = ./services/ags;
+
+    # # symlinked to ~/.config/ags
+    configDir = ./programs/ags;
 
     extraPackages = with pkgs; [
-      gtksourceview
-
-      (python3.withPackages (ps: with ps; [
-        (buildPythonPackage rec {
-          pname = "quote";
-          version = "3.0";
-          src = fetchPypi {
-            inherit pname version;
-            sha256 = "06873dfed9200cb2e88f98c562080938b42c88d4a37dcf89542cff3a210b6287";
-          };
-          buildInputs = [];
-        })
-
-        (buildPythonPackage rec {
-          pname = "gazpacho";
-          version = "1.1";
-          src = fetchPypi {
-            inherit pname version;
-            sha256 = "1579c1be2de05b5ded0a97107b179d12491392fb095aeab185b283ea48cd7010";
-          };
-        })
-      ]))
+      inputs.ags.packages.${pkgs.system}.battery
+      inputs.ags.packages.${pkgs.system}.auth
+      inputs.ags.packages.${pkgs.system}.bluetooth
+      inputs.ags.packages.${pkgs.system}.cava
+      inputs.ags.packages.${pkgs.system}.greet
+      inputs.ags.packages.${pkgs.system}.hyprland
+      inputs.ags.packages.${pkgs.system}.mpris
+      inputs.ags.packages.${pkgs.system}.network
+      inputs.ags.packages.${pkgs.system}.notifd
+      inputs.ags.packages.${pkgs.system}.powerprofiles
     ];
   };
 
