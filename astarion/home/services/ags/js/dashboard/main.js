@@ -71,9 +71,12 @@ tabData.forEach(tab => tab.content = tab.content())
 
 DashService.numTabs = tabData.length
 
-// Set up binds for each tab
+/* Set up binds for each tab */
+/* @TODO Eventually phase out `obj.attribute.keys` in favor of `obj.keys` */
 for (let i = 0; i < tabData.length; i++) {
-  if (tabData[i].content.attribute && tabData[i].content.attribute.keys) {
+  if (tabData[i].keys) {
+    DashService.addTabBinds(i, tabData[i].content.keys)
+  } else if (tabData[i].content.attribute && tabData[i].content.attribute.keys) {
     DashService.addTabBinds(i, tabData[i].content.attribute.keys)
   }
 }

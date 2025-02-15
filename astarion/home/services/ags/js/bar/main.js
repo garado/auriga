@@ -145,7 +145,7 @@ const VolumeIndicator = () => {
         vexpand: true,
         hexpand: true,
         heightRequest: 100,
-        barMode: 'continuous',
+        barMode: 'continuous'
         maxValue: 65535, /* no idea why it's not 0->1 like the docs say */
         vertical: true,
         setup: self => self.hook(audio.speaker, self => {

@@ -6,7 +6,7 @@
   background-color: theme.$neutral-800
   border-radius: theme.$border-radius
   min-width: 28rem
-  padding: 1rem
+  padding: 1.6rem
 
 /**********************************************
  * GEMINI
@@ -46,19 +46,24 @@
   padding: 0.4rem
   margin-top: 1rem
 
+  .entry selection
+    background-color: theme.$yellow-500
+
 .utility .gemini .prompt-input,.prompt-output .content
+  font-size: 1.2rem
+
   text selection
     background-color: theme.$yellow-500
 
 .utility .gemini .prompt-input
   .header
-    font-size: 1.2rem
+    font-size: 1.4rem
     font-weight: 500
     color: theme.$primary-400
 
 .utility .gemini .prompt-output
   .header
-    font-size: 1.2rem
+    font-size: 1.4rem
     font-weight: 500
     color: theme.$accent-2
 
@@ -83,7 +88,7 @@
 
     .code-block-content
       font-family: monospace
-      font-size: 1rem
+      font-size: 1.2rem
       padding: 0.8rem
       border-bottom-left-radius: theme.$border-radius
       border-bottom-right-radius: theme.$border-radius

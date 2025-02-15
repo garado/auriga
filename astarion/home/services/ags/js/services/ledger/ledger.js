@@ -16,6 +16,16 @@ const CSV = ' --output-format csv '
 const ALPHAVANTAGE_API = UserConfig.ledger.alphavantage
 const BALANCE_TREND_CACHEFILE = '/tmp/ags/ledgerbal'
 
+const HLedgerRegCSVEnum = {
+  TXNIDX:   0,
+  DATE:     1,
+  CODE:     2,
+  DESC:     3,
+  ACCOUNT:  4,
+  AMOUNT:   5,
+  TOTAL:    6,
+}
+
 /********************************************
  * HELPER FUNCTIONS
  ********************************************/
@@ -188,6 +198,23 @@ class LedgerService extends Service {
     this.#initMonthlyBreakdown()
     this.#initAccountData()
     this.#initDebtsLiabilities()
+    this.#initRecentTransactions()
+  }
+
+  /**
+   * @function initRecentTransactions
+   * @brief
+   */
+  #initRecentTransactions() {
+    log('ledgerService', '#initRecentTransactions')
+
+    const cmd = `hledger ${INCLUDES} reg Income Expenses ${CSV}`
+
+    Utils.execAsync(`bash -c '${cmd}'`)
+      .then(out => {
+        out = out.replaceAll('"', '').split('\n').slice(1)
+      })
+      .catch(err => print(`initRecentTransactions: ${err}`))
   }
 
   /** 
@@ -203,25 +230,11 @@ class LedgerService extends Service {
   #initDebtsLiabilities() {
     log('ledgerService', '#initDebtsLiabilities')
 
-    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV}`
-
-    const HLedgerRegCSVEnum = {
-      TXNIDX:   0,
-      DATE:     1,
-      CODE:     2,
-      DESC:     3,
-      ACCOUNT:  4,
-      AMOUNT:   5,
-      TOTAL:    6,
-    }
+    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV} | tail -n 40`
 
     Utils.execAsync(`bash -c '${cmd}'`)
       .then(out => {
         const lines = out.replaceAll('"', '').split('\n').slice(1)
-
-        lines.forEach(element => {
-          print(`${element}\n`)
-        });
 
         this.#debtsLiabilities = {}
 

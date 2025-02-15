@@ -49,27 +49,27 @@
       .labels
         margin-left:  0.5rem
         margin-right: 0.5rem
-  
+
         .spent
           color: theme.$neutral-800
-  
+
       // LevelBar styling
       trough
         border-color: theme.$neutral-700
         background-color: theme.$neutral-700
-  
+
         block.filled
           border-color: transparent
           background-color: theme.$neutral-100
         
         block.empty
           border-color: transparent
-          background-color: theme.$neutral-500
+          background-color: theme.$neutral-600
 
 // credit card balance
 .ledger .overview .card-balance
   padding: 1rem
-  background: url('/home/alexis/Github/dotfiles/home/services/ags/assets/ledger/capital-one.jpg')
+  background-color: theme.$primary-800
   background-size: cover
 
   .amount
@@ -85,10 +85,11 @@
 
     .transaction
       .iconbox
-        font-size: 0.8rem
-        min-width: 2rem
-        min-height: 2rem
-        background-color: theme.$neutral-600
+        font-size: 1.2rem
+        min-width:  2.4rem
+        min-height: 2.4rem
+        background-color: theme.$neutral-700
+        border-radius: theme.$border-radius
 
       .description, .amount, .amount-green
         font-size: 1rem

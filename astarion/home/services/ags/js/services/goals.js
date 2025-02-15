@@ -276,7 +276,7 @@ class GoalService extends Service {
 
     this.fetchGoals()
 
-    print(JSON.stringify(this.#data))
+    // print(JSON.stringify(this.#data))
 
     // A taskwarrior hook sets this externally when a task is added or modified
     // The hook contains:

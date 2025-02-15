@@ -9,7 +9,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk';
 
 import LedgerService from '../../../services/ledger/ledger.js/'
-import FancyGraph from '../../../widgets/fancy-graph-2.js'
+import FancyGraph from '../../../common/fancyGraph.js'
 
 /* Animated line graph ---------------------------------- */
 
@@ -42,9 +42,13 @@ const LineGraph = () => Widget.Box({
     self.children = [
       FancyGraph({
         wRequest: 1000,
-        hRequest: 500,
-        grid: false,
+        hRequest: 1000,
         yIntersectLabel: true,
+        grid: {
+          enable: true,
+          xStepPercent: 15,
+          yStepPercent: 10,
+        },
         graphs: [
           {
             name: 'Balance over time',
@@ -54,18 +58,30 @@ const LineGraph = () => Widget.Box({
             xIntersect: {
               enable: true,
               label: true,
-              labelTransform: (x) => { return `${Math.round(x / 1000)}k` },
+              labelTransform: (x) => { 
+                if (x > 1000000) {
+                  return `${(x / 1000000).toFixed(2)}m`
+                } else {
+                  return `${Math.round(x / 1000)}k` 
+                }
+              },
             },
           },
           {
             name: 'FIRE target',
-            values: Array.from({ length: 365 * 21 }, (_, i) => i * 103.82),
+            values: Array.from({ length: 365 * 2 }, (_, i) => i * 160),
             className: 'target',
             dashed: true,
             xIntersect: {
               enable: true,
               label: true,
-              labelTransform: (x) => { return `${Math.round(x / 1000)}k` },
+              labelTransform: (x) => { 
+                if (x > 1000000) {
+                  return `${(x / 1000000).toFixed(2)}m` 
+                } else {
+                  return `${Math.round(x / 1000)}k ` 
+                }
+              },
             },
           },
         ],
@@ -86,7 +102,7 @@ const GraphAnimationStack = () => Widget.Overlay({
       className: 'animator',
       vexpand: false,
       hexpand: false,
-      css: 'min-height: 500px; min-width: 1300px',
+      css: 'min-height: 500px; min-width: 800px',
     }),
     // setup: self => self.poll(5000, () => {
     //   self.revealChild = !self.revealChild

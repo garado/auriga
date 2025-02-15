@@ -20,7 +20,7 @@ const logFlags = {
   calTab:   false,
 
   /* Other stuff */
-  ctrlGemini:       true,
+  ctrlGemini:       false,
 
   /* Service logging */
   dashService:      false,
@@ -29,7 +29,7 @@ const logFlags = {
   goalService:      false,
   habitifyService:  false,
   lifeService:      false,
-  ledgerService:    false,
+  ledgerService:    true,
 };
 
 export function log(section, str) {

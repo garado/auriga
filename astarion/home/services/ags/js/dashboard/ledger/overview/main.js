@@ -21,7 +21,7 @@ const LeftBox = Widget.Box({
   spacing: 12,
   children: [
     Accounts(),
-    CardBalance(),
+    // CardBalance(),
   ]
 })
 
@@ -47,7 +47,7 @@ const RightBox = Widget.Box({
 })
 
 export default () => Widget.Box({
-  name: 'overview',
+  name: 'Overview',
   attribute: { name: 'overview' },
   className: 'overview',
   vertical: false,

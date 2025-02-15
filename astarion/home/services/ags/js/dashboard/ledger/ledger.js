@@ -6,7 +6,8 @@ import Widget from 'resource:///com/github/Aylur/ags/widget.js'
 import DashTabLayout from '../../common/dashTabLayout.js'
 
 import Overview from './overview/main.js'
-import Statistics from './statistics/main.js'
+import Statistics from './statistics/statistics.js'
+import Fire from './fire/fire.js'
 
 export default () => {
   const layout = DashTabLayout({
@@ -14,6 +15,7 @@ export default () => {
     pages: [
       Overview(),
       Statistics(),
+      Fire(),
     ],
   })
 

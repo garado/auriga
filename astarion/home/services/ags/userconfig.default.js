@@ -99,7 +99,7 @@ export default {
         'Engineering': 'tool',
       },
 
-      default: 'dollar-sign',
+      default: 'currency-dollar',
     },
   },
 

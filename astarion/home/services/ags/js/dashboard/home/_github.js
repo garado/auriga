@@ -18,10 +18,8 @@ const NUM_ROWS = 7
 const SQUARE_WIDTH = 10
 const SQUARE_SPACING = 6
 
-// @TODO Fetch github contribs once every day - not at every app startup
-// BUG: using utils.fetch causes ags to hang - not sure why
-// const url = `https://github-contributions.vercel.app/api/v1/garado`
-const url = '/tmp/ags/github/2024-12-21'
+
+const url = '/tmp/ags/github/2025-02-08'
 Utils.execAsync(['cat', url])
   .then(x => {
     const out = JSON.parse(x)

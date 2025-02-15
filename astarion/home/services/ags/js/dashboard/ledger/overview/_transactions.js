@@ -1,24 +1,25 @@
 
-// ▀█▀ █▀█ ▄▀█ █▄░█ █▀ ▄▀█ █▀▀ ▀█▀ █ █▀█ █▄░█ █▀
-// ░█░ █▀▄ █▀█ █░▀█ ▄█ █▀█ █▄▄ ░█░ █ █▄█ █░▀█ ▄█
+/* ▀█▀ █▀█ ▄▀█ █▄░█ █▀ ▄▀█ █▀▀ ▀█▀ █ █▀█ █▄░█ █▀ */
+/* ░█░ █▀▄ █▀█ █░▀█ ▄█ █▀█ █▄▄ ░█░ █ █▄█ █░▀█ ▄█ */
 
-// Displays the last n transactions.
+/* Displays the last n transactions. */
 
 import Widget from 'resource:///com/github/Aylur/ags/widget.js'
-import LedgerService from '../../../services/ledger/ledger.js/'
+import LedgerService from '../../../services/ledger/ledger.js'
 
 /** 
- * @function createTransactionWidget
- * @param tdata */
-const createTransactionWidget = (tdata) => {
-  if (tdata == null) return;
+ * @function TransactionWidget
+ * @param tdata
+ */
+const TransactionWidget = (tdata) => {
+  if (tdata == null) return
 
   const iconAccount = tdata.isIncome ?
     tdata.sources[0].account : tdata.targets[0].account
 
   const icon = Widget.CenterBox({
     className: 'iconbox',
-    center_widget: Widget.Icon({
+    centerWidget: Widget.Icon({
       icon: LedgerService.tdataToIcon(tdata.description, iconAccount)
     })
   })
@@ -63,12 +64,12 @@ const createTransactionWidget = (tdata) => {
   return Widget.CenterBox({
     className: 'transaction',
     hexpand: true,
-    start_widget: start,
-    end_widget: end,
+    startWidget: start,
+    endWidget: end,
   })
 }
 
-const transactionWidget = () => Widget.Box({
+const TransactionContainer = () => Widget.Box({
   className: 'transactions',
   vexpand: true,
   hexpand: false,
@@ -81,13 +82,10 @@ const transactionWidget = () => Widget.Box({
       label: "No recent transactions found.",
     })
   ],
-
   setup: self => self.hook(LedgerService, (self, transactionData) => {
-    if (transactionData === undefined) return;
+    if (transactionData === undefined) return
     self.children.forEach(x => self.remove(x))
-    self.children = transactionData.map(x => createTransactionWidget(x))
-    // why doesnt this work???
-    // transactionData.map(x => self.add(createTransactionWidget(x)))
+    self.children = transactionData.map(x => TransactionWidget(x))
   }, 'transactions-changed'),
 })
 
@@ -104,7 +102,7 @@ export default () => {
       Widget.Scrollable({
         hscroll: 'never',
         vscroll: 'always',
-        child: transactionWidget(),
+        child: TransactionContainer(),
       })
     ]
   })

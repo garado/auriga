@@ -1,6 +1,46 @@
 @use "../../theme"
 
-// Line graph showing account balance trends
+/********************************************
+ * GENERAL
+ ********************************************/
+
+/********************************************
+ * STOCKBOX
+ ********************************************/
+
+.ledger .statistics .stockbox-container
+  min-width: 12rem
+  background-color: theme.$primary-800
+  padding: 1.8rem
+
+.ledger .statistics .stockbox
+  margin: 1rem
+
+  .ticker-symbol
+    font-size: 1.4rem
+  
+  .fund-name
+    font-size: 0.8rem
+    color: theme.$neutral-200
+  
+  .value-held
+    font-size: 1.4rem
+
+  .percent-change
+    font-size: 0.8rem
+    font-weight: 500
+    color: theme.$green-200
+
+    .up
+      color: theme.$green-200
+
+    .down
+      color: theme.$red-200
+
+/********************************************
+ * GRAPH
+ ********************************************/
+
 .ledger .statistics .graph
   .header
     color: theme.$neutral-100
@@ -9,7 +49,7 @@
   .animator
     background-color: theme.$neutral-900
     
-  .fire-graph
+  // .fire-graph
     /* haven't figured out nested classes */
 
 .ledger .statistics .sidebar
@@ -20,6 +60,9 @@
 .fire-graph
   &.vertical-intersect
     color: theme.$neutral-200
+
+  &.grid
+    color: theme.$neutral-800
 
 .balance
   &.plot

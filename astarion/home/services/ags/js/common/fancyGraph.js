@@ -14,19 +14,18 @@ import LedgerService from '../services/ledger/ledger.js'
  * To get CSS information for the FancyGraph widget, you need to do some
  * weird CSS shit
  */
-const setCairoColorFromClass = (cr, ...rest) => {
+const getCairoColorFromClass = (...rest) => {
   const dummyWidget = new Gtk.Box()
   const dummyContext = dummyWidget.get_style_context()
-
-  for (const c of dummyContext.list_classes()) {
-    dummyContext.remove_class(c)
-  }
-
+  
   for (const c of rest) {
     dummyContext.add_class(c)
   }
 
-  const color = dummyContext.get_color(Gtk.StateFlags.NORMAL)
+  return dummyContext.get_color(Gtk.StateFlags.NORMAL)
+}
+
+const setCairoColor = (cr, color) => {
   cr.setSourceRGBA(color.red, color.green, color.blue, color.alpha)
 }
 
@@ -68,8 +67,10 @@ const fit = (points) => {
  * }
  */
 export default ({
-  grid = true,            /* Draw background grid? */
-  graphs = [],            /* Array of graph data objects */
+  grid = {
+    enable: false,
+  },
+  graphs = [],
   className = 'graph',
   yIntersect = true,
   yIntersectLabel = true,
@@ -80,34 +81,78 @@ export default ({
   ...rest
 }) => {
 
+  /**
+   * Cache graph colors so we don't have to do this every draw
+   */
+  const cacheGraphColors = (graph) => {
+    graph.colors = {}
+    graph.colors.horizontal_intersect = getCairoColorFromClass(graph.className, 'horizontal-intersect')
+    graph.colors.fit  = getCairoColorFromClass(graph.className, 'fit')
+    graph.colors.plot = getCairoColorFromClass(graph.className, 'plot')
+  }
+
   /* Globals */
-  const valueMax = Math.max(...graphs.map(g => Math.max(...g.values)))
-  const valueMin = Math.min(...graphs.map(g => Math.min(...g.values)))
-  const longestArrayLength = Math.max(...graphs.map(g => g.values.length))
+  let valueMax = Math.max(...graphs.map(g => Math.max(...g.values)))
+  let valueMin = Math.min(...graphs.map(g => Math.min(...g.values)))
+  let longestArrayLength = Math.max(...graphs.map(g => g.values.length))
 
   /* Initialization */
   graphs.forEach(graph => {
+    cacheGraphColors(graph)
+
     if (graph.calculateFit) {
       graph.fit = fit(graph.values)
+
+      const lastFitVal = (graph.fit.slope * longestArrayLength) + graph.fit.intercept
+
+      if (lastFitVal > valueMax) valueMax = lastFitVal
+      if (lastFitVal < valueMin) valueMin = lastFitVal
     }
   })
 
-  /* Plot all graphs */
   const Graph = Widget.DrawingArea({
-    widthRequest:  wRequest,
+    widthRequest:  2000,
     heightRequest: hRequest,
     className: className,
+    hexpand: true,
+    vexpand: true,
     hpack: 'center',
     vpack: 'center',
     ...rest,
+
+    setup: self => {
+      self.colors = {
+        grid: getCairoColorFromClass(className, 'grid'),
+        vertical_intersect: getCairoColorFromClass(className, 'vertical-intersect')
+      }
+    },
 
     drawFn: (self, cr, w, h) => {
       const xScale = (1 / longestArrayLength) * w
       const yScale = (1  / (valueMax - valueMin)) * h
 
+      /* Plot grid ------------------------------------------------------- */
+      if (grid.enable) {
+        setCairoColor(cr, self.colors.grid)
+        cr.setDash([], 0)
+
+        /* ylines */
+        for (let y = grid.yStepPercent; y < 100; y += grid.yStepPercent) {
+          cr.moveTo(0, (y / 100) * h)
+          cr.lineTo(w, (y / 100) * h)
+        }
+        cr.stroke()
+        
+        for (let x = grid.xStepPercent; x < 100; x += grid.xStepPercent) {
+          cr.moveTo((x / 100) * w, 0)
+          cr.lineTo((x / 100) * w, h)
+        }
+        cr.stroke()
+      }
+
       /* Plot vertical intersection line --------------------------------- */
       if (yIntersect && self.drawIntersect) {
-        setCairoColorFromClass(cr, className, 'vertical-intersect')
+        setCairoColor(cr, self.colors.vertical_intersect)
         cr.moveTo(self.lastX, 0)
         cr.lineTo(self.lastX, h)
         cr.stroke()
@@ -116,16 +161,16 @@ export default ({
       graphs.forEach(graph => {        
         /* Plot line of best fit, if applicable ---------------------------- */
         if (graph.calculateFit) {
-          setCairoColorFromClass(cr, graph.className, 'fit')
+          setCairoColor(cr, graph.colors.fit)
           cr.setDash([10, 5], 0) // 10-unit dash, 5-unit gap, 0 offset
-          cr.moveTo(0, h)
+          cr.moveTo(0, h - (graph.fit.intercept * yScale))
           cr.lineTo(w, h - ((graph.fit.slope * longestArrayLength) + graph.fit.intercept) * yScale)
           cr.stroke()
           cr.setDash([], 0)
         }
         
         /* Plot values ----------------------------------------------------- */
-        setCairoColorFromClass(cr, graph.className, 'plot')
+        setCairoColor(cr, graph.colors.plot)
 
         if (graph.dashed) cr.setDash([10, 5], 0)
           
@@ -135,7 +180,7 @@ export default ({
         }
         cr.stroke()
 
-        if (graph.dashed) cr.setDash([], 0) /* clear */
+        if (graph.dashed) cr.setDash([], 0)
 
         /* Plot horizontal intersection line ------------------------------- */
         if (self.drawIntersect && graph.xIntersect.enable) {
@@ -149,7 +194,7 @@ export default ({
             graphY = h - (graph.values[graphIndex] * yScale);
           }
 
-          setCairoColorFromClass(cr, graph.className, 'horizontal-intersect')
+          setCairoColor(cr, graph.colors.horizontal_intersect)
           cr.moveTo(0, graphY)
           cr.lineTo(w, graphY)
           cr.stroke()
@@ -213,6 +258,18 @@ export default ({
     self.lastY = coords[2]
     self.queue_draw()
   })
-
-  return Graph
+  
+  return Widget.Scrollable({
+    hscroll: 'always',
+    vscroll: 'always',
+    hexpand: true,
+    css: 'min-width: 1px',
+    child: Widget.Box({
+      // widthRequest:  1000,
+      // heightRequest: 1000,
+      hexpand: true,
+      vexpand: true,
+      children: [Graph],
+    }),
+  })
 }

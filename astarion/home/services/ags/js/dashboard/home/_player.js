@@ -7,7 +7,7 @@ const Mpris = await Service.import('mpris')
 import Variable from 'resource:///com/github/Aylur/ags/variable.js'
 import Widget from 'resource:///com/github/Aylur/ags/widget.js'
 import Utils from 'resource:///com/github/Aylur/ags/utils.js'
-import KotontrionCava from '../../widgets/cava.js'
+// import KotontrionCava from '../../widgets/cava.js'
 
 const DEFAULT_IMG = '/home/alexis/Github/dotfiles/astarion/home/services/ags/assets/no-music.jpg'
 
@@ -85,11 +85,11 @@ export default () => {
       Widget.Overlay({
         child: albumArtCover,
         overlays: [
-          KotontrionCava({
-            bars: 30,
-            barHeight: 150,
-            smooth: true,
-          }),
+          // KotontrionCava({
+          //   bars: 30,
+          //   barHeight: 150,
+          //   smooth: true,
+          // }),
           Widget.Box({
             className: 'album-art-gradient',
             vexpand: true,
