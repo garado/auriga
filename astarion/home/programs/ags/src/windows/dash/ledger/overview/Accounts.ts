@@ -9,7 +9,6 @@ import { App, Astal, Gtk, Gdk, Widget } from 'astal/gtk4'
 import { Variable, GLib, bind } from 'astal'
 
 import Ledger, { DisplayAccountProps } from '../../../../services/Ledger.ts'
-
 const ledger = Ledger.get_default()
 
 /**

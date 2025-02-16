@@ -1,8 +1,9 @@
 
 @use '../../theme/theme' as *
-@use 'ledger'
+@use './ledger'
 
 .dash
+  /* Dash tabs */
   .tab-layout
     padding: 2rem
 
@@ -10,19 +11,22 @@
       font-size: 2rem
       margin-bottom: 0.5rem
 
+  /* Dash widget containers */
   .widget-container
     background-color: $neutral-800
-    padding: 0.2rem
-
-
-.dash .tab-bar
-  min-height: $dashboard-height
-  background-color: $neutral-800
-
-  .tab-entry
     padding: 1rem
 
-.dash .tab-stack
-  min-height: $dashboard-height
-  min-width: $dashboard-width
-  background-color: $neutral-900
+    .widget-header
+      font-size: 1.4rem
+
+  .tab-bar
+    min-height: $dashboard-height
+    background-color: $neutral-800
+
+    .tab-entry
+      padding: 1rem
+
+  .tab-stack
+    min-height: $dashboard-height
+    min-width: $dashboard-width
+    background-color: $neutral-900
