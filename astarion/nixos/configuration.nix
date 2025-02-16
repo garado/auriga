@@ -81,9 +81,12 @@ in {
     inputs.swww.packages.${pkgs.system}.swww
 
     unstable.legacyPackages."${pkgs.system}".gcalcli
+    unstable.legacyPackages."${pkgs.system}".hyprpicker # v0.4.2
 
     gnomeExtensions.bluetooth-battery
     gnomeExtensions.bluetooth-battery-meter
+
+    hledger
 
     cava
     vim
@@ -102,8 +105,6 @@ in {
     nodejs_22 hugo go
 
     reckon          # CLI CSV to ledger with ML
-
-    hyprpicker      # Color picker
 
     exiftool
 
