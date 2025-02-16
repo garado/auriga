@@ -105,7 +105,7 @@ const DebtWidget = (account: DebtsLiabilitiesProps) => {
   })
 }
 
-export const DebtsLiabilities = () => {
+export const Debts = () => {
   return Widget.Box({
     vertical: true,
     vexpand: true,

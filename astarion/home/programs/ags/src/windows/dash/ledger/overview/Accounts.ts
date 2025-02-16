@@ -47,17 +47,12 @@ const Account = (data: DisplayAccountProps) => {
   })
 }
 
-const UserDefinedAccounts = () => Widget.Box({
-  orientation: 1,
-  halign: Gtk.Align.START,
-  children: bind(ledger, 'displayAccounts').as(x => x.map(Account)),
-})
-
 export const Accounts = () => {
   return Widget.Box({
     cssClasses: ['accounts'],
     orientation: 1,
     halign: Gtk.Align.START,
+    homogeneous: true,
     children: [
       Account({
         displayName: 'Net Worth',
@@ -71,7 +66,7 @@ export const Accounts = () => {
         displayName: 'Expenses',
         total: bind(ledger, 'expensesThisMonth'),
       }),
-      UserDefinedAccounts(),
+      bind(ledger, 'displayAccounts').as(x => x.map(Account)),
     ]
   })
 }

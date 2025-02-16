@@ -20,7 +20,16 @@ export type DisplayAccountProps = {
 }
 
 export type DebtsLiabilitiesProps = {
+}
 
+export type TransactionData = {
+  TxnIdx: string,
+  Date: string,
+  Code: string,
+  Desc: string,
+  Account: string,
+  Amount: string,
+  Total: string,
 }
 
 /**********************************************
@@ -73,6 +82,9 @@ export default class Ledger extends GObject.Object {
   declare displayAccounts: Array<DisplayAccountProps>
   
   @property(Object)
+  declare transactions: Array<TransactionData>
+  
+  @property(Object)
   declare debtsLiabilities: Object
   
   @property(Object)
@@ -106,6 +118,7 @@ export default class Ledger extends GObject.Object {
     this.#initMonthlyIncomeExpenses()
     this.#initDebtsLiabilities()
     this.#initMonthlyBreakdown()
+    this.#initRecentTransactions()
 
     // monitorFile(kbdPath, async f => {
     //   const v = await readFileAsync(f)
@@ -276,7 +289,29 @@ export default class Ledger extends GObject.Object {
       .catch(err => print(`initMonthlyBreakdown: ${err}`))
   }
 
-  /**************************************************
-   * PUBLIC FUNCTIONS
-   **************************************************/
+  /**
+   * Initialize recent transactions.
+   */
+  #initRecentTransactions() {
+    log('ledgerService', '#initRecentTransactions')
+
+    const cmd = `hledger ${INCLUDES} reg Income Expenses ${CSV}`
+
+    execAsync(`bash -c '${cmd} | tail -n 20'`)
+      .then(out => {
+        out = out.replaceAll('"', '').split('\n').slice(1)
+
+        /* This takes the raw CSV output and turns it into an array of 
+         * TransactionData objects, where the object keys are the fields of the 
+         * HLedgerRegCSV enum. */
+        this.transactions = out.map(line => {
+          line = line.split(',')
+
+          return Object.fromEntries(Object.keys(HLedgerRegCSV)
+            .filter(k => isNaN(Number(k))) /* exclude numeric keys */
+            .map((key, index) => [key.toLowerCase(), line[index]]))
+        })
+      })
+      .catch(err => print(`initRecentTransactions: ${err}`))
+  }
 }

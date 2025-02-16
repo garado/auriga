@@ -40,6 +40,7 @@ export const Breakdown = () => {
         cssClasses: ['breakdown'],
         orientation: 1,
         halign: Gtk.Align.CENTER,
+        spacing: 20,
         children: [
           Widget.Label({
             label: 'Monthly Breakdown',
