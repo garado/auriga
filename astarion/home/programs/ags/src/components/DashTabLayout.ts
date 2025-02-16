@@ -7,6 +7,7 @@
 
 import { App, Astal, Gtk, Gdk, Widget } from 'astal/gtk4'
 import { Variable, GLib, bind } from 'astal'
+import { SegmentedButtonGroup } from './SegmentedButtonGroup.ts'
 
 export type DashLayoutAction = {
   name:   string;
@@ -30,23 +31,27 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
 
   }
 
-  const PageButton = () => {
-
-  }
-
   const ActionButtonContainer = () => {
 
   }
   
-  const PageButtonContainer = () => {
-
-  }
+  const PageButtonContainer = SegmentedButtonGroup({
+    exclusive: true,
+    autosetFirstChecked: true,
+    buttons: dashLayout.pages.map(page => {
+      return {
+        name: page.name,
+        action: () => { activePage.set(page.name) }
+      }
+    })
+  })
 
   const HeaderBar = () => Widget.CenterBox({
     cssClasses: ['tab-header'],
     startWidget: Widget.Label({
       label: dashLayout.name
-    })
+    }),
+    endWidget: PageButtonContainer,
   })
 
   const PageStack = () => Widget.Stack({
