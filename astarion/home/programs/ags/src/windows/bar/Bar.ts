@@ -1,4 +1,7 @@
 
+/* █▄▄ ▄▀█ █▀█ */
+/* █▄█ █▀█ █▀▄ */
+
 import { App, Astal, Gtk, Gdk, Widget } from 'astal/gtk4'
 import { Variable, GLib, bind } from 'astal'
 import Battery from 'gi://AstalBattery'
@@ -15,6 +18,12 @@ const time = Variable('').poll(1000, "date '+%H\n%M'")
 /****************************************************
  * WIDGET DEFINITIONS
  ****************************************************/
+
+/* @TODO Not displaying anything working */
+const DistroIcon = () => Widget.Image({
+  visible: true,
+  icon: '../../assets/nix-symbolic.svg'
+})
 
 /**
  * @function Workspaces 
@@ -65,6 +74,7 @@ const WorkspaceIndicator = (wsIdx: number) => {
     cssClasses: ['workspace'],
     child: Widget.Label({
       cssClasses: bind(cssClasses),
+      justify: Gtk.Justification.CENTER,
       label: `${wsIdx}`
     }),
     onClicked: () => {
@@ -97,11 +107,12 @@ const BatteryIndicator = () => {
 
   return Widget.Box({
     cssClasses: ['battery'],
+    halign: Gtk.Align.CENTER,
     children: [
       Widget.Label({
         cssClasses: bind(cssClasses),
-        halign: Gtk.Align.CENTER,
-        label: bind(bat, 'percentage').as(lvl => `${lvl * 100}`)
+        justify: Gtk.Justification.CENTER,
+        label: bind(bat, 'percentage').as(lvl => `${Math.round(lvl * 100)}`)
       })
     ]
   })
@@ -113,7 +124,7 @@ const BatteryIndicator = () => {
  * @brief Shows the time HH:MM.
  */
 const Time = () => Widget.Label({
-  halign: Gtk.Align.CENTER,
+  justify: Gtk.Justification.CENTER,
   cssClasses: ['time'],
   label: bind(time)
 })
@@ -124,7 +135,7 @@ const Time = () => Widget.Label({
 const Top = () => Widget.Box({
   cssClasses: ['top'],
   children: [
-
+    DistroIcon()
   ]
 })
 
@@ -151,6 +162,8 @@ export default (gdkmonitor: Gdk.Monitor) => {
     visible: true,
     anchor: LEFT | TOP | BOTTOM,
     exclusivity: Astal.Exclusivity.EXCLUSIVE,
+    application: App,
+    name: 'bar',
 
     child: Widget.CenterBox({
       orientation: 1,

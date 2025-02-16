@@ -31,6 +31,8 @@
       # Productivity
       obsidian qutebrowser
 
+      inputs.ags.packages.${pkgs.system}.io
+
       (python3.withPackages (ps: with ps; [
         # Packages from nixpkgs
         pynvim

@@ -1,15 +1,46 @@
-import Gtk from "gi://Gtk"
 
-declare global {
-  const START: number
-  const CENTER: number
-  const END: number
-  const FILL: number
+/* █▀▀ █░░ █▀█ █▄▄ ▄▀█ █░░ */
+/* █▄█ █▄▄ █▄█ █▄█ █▀█ █▄▄ */
+
+/* Global project definitions */
+
+import { Variable } from 'astal'
+import UserConfig from '../userconfig.js'
+
+const logFlags = {
+  /* Main execution (windows opening, SASS reload, etc) */
+  program:  false,
+  bar:      false,
+  notrofi:  false,
+  kitty:    false,
+  notif:    false,
+
+  /* Dashboard stuff */
+  dash:     false,
+  goalTab:  false,
+  calTab:   false,
+
+  /* Other stuff */
+  ctrlGemini:       false,
+
+  /* Service logging */
+  dashService:      false,
+  taskService:      false,
+  calService:       false,
+  goalService:      false,
+  habitifyService:  false,
+  lifeService:      false,
+  ledgerService:    true,
+};
+
+export function log(section, str) {
+  if (logFlags[section]) {
+    console.log(`${section.toUpperCase()}: ${str}`)
+  }
 }
 
-Object.assign(globalThis, {
-  START: Gtk.Align.START,
-  CENTER: Gtk.Align.CENTER,
-  END: Gtk.Align.END,
-  FILL: Gtk.Align.FILL,
-})
+/* Overwrite `log` (defaults to console.log) with my own thing */
+globalThis.log = log
+
+/* Theme */
+globalThis.systemTheme = Variable(`${UserConfig.currentTheme}`)

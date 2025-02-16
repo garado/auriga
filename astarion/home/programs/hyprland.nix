@@ -12,7 +12,6 @@
     settings = {
       # Execute these programs at launch
       exec-once = [
-        "ags --config /home/alexis/Github/dotfiles/astarion/home/services/ags/config.js"
         "swww-daemon"
         "swww img /home/alexis/Github/dotfiles/astarion/assets/walls/samori.jpg"
       ];
@@ -108,10 +107,10 @@
 
         # Launchers etc
         "$mainMod, RETURN, exec, kitty"
-        "$mainMod, J, exec, ags -t dashboard"
-        "$mainMod, H, exec, ags -t utility"
-        "$mainMod, L, exec, ags -t control"
-        "$mainMod, R, exec, ags -t notrofi"
+        "$mainMod, J, exec, astal -t dash"
+        "$mainMod, H, exec, astal -t utility"
+        "$mainMod, L, exec, astal -t control"
+        "$mainMod, R, exec, astal -t launcher"
 
         # Move focus
         "ALT_L, TAB, cyclenext"
@@ -163,6 +162,7 @@
         "$mainMod, m, fullscreen, 1" # Maximize
 
         "$mainMod, v, togglefloating" # Floating
+        "$mainMod, s, pin" # Sticky
       ];
       
       bindm = [

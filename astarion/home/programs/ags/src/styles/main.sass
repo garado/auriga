@@ -1,32 +1,7 @@
 
+@use 'theme/theme'
+@use 'windows'
+
 *
-  font-family: 'Karla Regular', sans-serif
-  all: unset
-
-.bar
-  padding: 0.5rem 0rem 0.5rem 1.1rem
-
-  .center
-    .workspaces
-      .workspace
-        padding: 0.25rem 0rem
-
-      .empty
-        color: blue
-
-      .focused
-        color: red
-
-  .bottom
-    .battery
-      .charging
-        color: green
-
-      .critical
-        color: red
-
-      .low
-        color: yellow
-
-    *:not(:last-child)
-      padding-bottom: 0.5rem
+  all: unset // remove default gtk styling
+  font-family: 'Karla'
