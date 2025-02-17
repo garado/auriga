@@ -6,7 +6,6 @@ import { Variable, bind } from "astal";
  ******************************************/
 
 const Notebook = astalify(Gtk.Notebook);
-const revealerState = Variable(false);
 
 /******************************************
  * WIDGETS
@@ -43,18 +42,16 @@ export default () => {
     cssName: "utility",
     keymode: Astal.Keymode.ON_DEMAND,
     anchor: LEFT | TOP | BOTTOM,
-
-    child: Widget.Box({
-      child: Widget.Revealer({
-        css: "padding: 1px",
-        revealChild: bind(revealerState),
-        transitionDuration: 250,
-        transitionType: Gtk.RevealerTransitionType.SLIDE_LEFT,
-        child: UtilityPanel(),
-      }),
+    child: Widget.Revealer({
+      revealChild: false,
+      transitionDuration: 250,
+      transitionType: Gtk.RevealerTransitionType.SLIDE_LEFT,
+      child: UtilityPanel(),
     }),
-    onNotifyVisible: () => {
-      revealerState.set(!revealerState.get());
+    setup: (self) => {
+      /* Workaround for revealer bug.
+       * https://github.com/wmww/gtk4-layer-shell/issues/60 */
+      self.set_default_size(1, 1);
     },
   });
 };

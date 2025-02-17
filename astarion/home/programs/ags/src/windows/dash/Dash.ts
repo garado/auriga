@@ -1,7 +1,7 @@
 /* █▀▄ ▄▀█ █▀ █░█ */
 /* █▄▀ █▀█ ▄█ █▀█ */
 
-import { App, Astal, Widget } from "astal/gtk4";
+import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 
 import Home from "@/windows/dash/home/Home.ts";
@@ -90,10 +90,19 @@ export default () => {
     cssName: "dash",
     visible: false,
     keymode: Astal.Keymode.ON_DEMAND,
-    child: Widget.Box({
-      orientation: 0,
-      cssClasses: ["dash"],
-      children: [DashTabBar(), DashTabStack()],
+    child: Widget.Revealer({
+      revealChild: false,
+      transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
+      child: Widget.Box({
+        orientation: 0,
+        cssClasses: ["dash"],
+        children: [DashTabBar(), DashTabStack()],
+      }),
     }),
+    setup: (self) => {
+      /* Workaround for revealer bug.
+       * https://github.com/wmww/gtk4-layer-shell/issues/60 */
+      self.set_default_size(1, 1);
+    },
   });
 };

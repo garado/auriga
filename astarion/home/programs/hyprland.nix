@@ -107,10 +107,10 @@
 
         # Launchers etc
         "$mainMod, RETURN, exec, kitty"
-        "$mainMod, J, exec, astal -t dash"
-        "$mainMod, H, exec, astal -t utility"
-        "$mainMod, L, exec, astal -t control"
-        "$mainMod, R, exec, astal -t launcher"
+        "$mainMod, J, exec, astal toggle-window dash"
+        "$mainMod, H, exec, astal toggle-window utility"
+        "$mainMod, L, exec, astal toggle-window control"
+        "$mainMod, R, exec, astal toggle-window launcher"
 
         # Move focus
         "ALT_L, TAB, cyclenext"
