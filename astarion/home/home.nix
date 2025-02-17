@@ -73,17 +73,18 @@
 
   gtk = {
     enable = true;
-    font.name = "CircularStd";
+    font.name = "Karla";
     font.size = 14;
   };
 
   programs.ags = {
     enable = true;
 
-    # # symlinked to ~/.config/ags
+    # symlinked to ~/.config/ags
     configDir = ./programs/ags;
 
     extraPackages = with pkgs; [
+      # gtksourceview5 /* gtksourceview5 is for gtk4... gtksourceview4 is for gtk3... make it make sense */
       inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.auth
       inputs.ags.packages.${pkgs.system}.bluetooth

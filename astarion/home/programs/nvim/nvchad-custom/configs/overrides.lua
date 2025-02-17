@@ -8,6 +8,7 @@ M.treesitter = {
     "css",
     "javascript",
     "tsx",
+    "typescript",
     "c",
     "markdown",
     "markdown_inline",
@@ -18,6 +19,9 @@ M.treesitter = {
     --   "python"
     -- },
   },
+  highlight = {
+    enable = true,
+  }
 }
 
 M.mason = {
@@ -30,7 +34,7 @@ M.mason = {
     "css-lsp",
     "html-lsp",
     "deno",
-    "prettier",
+    "prettierd",
 
     -- c/cpp stuff
     "clangd",

@@ -41,7 +41,19 @@ local plugins = {
   {
     "stevearc/conform.nvim",
     --  for users those who want auto-save conform + lazyloading!
-    -- event = "BufWritePre"
+    event = "BufWritePre",
+    cmd = { "ConformInfo" },
+    -- keys = {
+    --   {
+    --     -- Customize or remove this keymap to your liking
+    --     "<leader>f",
+    --     function()
+    --       require("conform").format({ async = true })
+    --     end,
+    --     mode = "",
+    --     desc = "Format buffer",
+    --   },
+    -- },
     config = function()
       require "custom.configs.conform"
     end,
@@ -70,6 +82,13 @@ local plugins = {
         },
       }
     end,
+  },
+
+  -- Extra TS Features
+  -- Improves TypeScript support with organizing imports, fixing imports, and more.
+  { 
+    'jose-elias-alvarez/nvim-lsp-ts-utils',
+    ft = "typescript",
   },
 
   {
