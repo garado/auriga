@@ -2,7 +2,7 @@
 /* █▀▄ ▄▀█ █▀ █░█ */
 /* █▄▀ █▀█ ▄█ █▀█ */
 
-import { App, Astal, Gtk, Gdk, Widget } from 'astal/gtk4'
+import { App, Astal, Gtk, Gdk, Widget, astalify } from 'astal/gtk4'
 import { Variable, GLib, bind } from 'astal'
 
 import Home from './home/Home.ts'
@@ -22,12 +22,12 @@ type DashTabData = {
 const dashTabData: DashTabData[] = [
   {
     name: 'Ledger',
-    icon: 'dollar-symbolic',
+    icon: 'currency-dollar-symbolic',
     ui:   Ledger,
   },
   {
     name: 'Home',
-    icon: 'home-symbolic',
+    icon: 'house-symbolic',
     ui:   Home,
   },
 ]
@@ -56,8 +56,9 @@ const DashTabBar = () => Widget.Box({
  */
 const DashTabEntry = (tabData: DashTabData) => Widget.Button({
   cssClasses: ['tab-entry'],
-  child: Widget.Label({
-    label: tabData.name
+  child: Widget.Image({
+    cssClasses: ['icon'],
+    iconName: tabData.icon,
   }),
   onClicked: self => {
     activeTabIndex.set(dashTabData.indexOf(tabData))

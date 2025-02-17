@@ -22,9 +22,9 @@ const Transaction = (tdata: TransactionData) => {
 
   const icon = Widget.CenterBox({
     cssClasses: ['iconbox'],
-    // centerWidget: Widget.Icon({
-    //   // icon: LedgerService.tdataToIcon(tdata.desc, iconAccount)
-    // })
+    centerWidget: Widget.Image({
+      // iconName: LedgerService.tdataToIcon(tdata.desc, iconAccount)
+    })
   })
 
   const date = Widget.Label({

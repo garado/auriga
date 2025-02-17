@@ -1,8 +1,13 @@
 
-@use 'theme/theme'
+@use 'theme/theme' as * 
 @use 'windows'
 @use 'components'
 
 *
   all: unset // remove default gtk styling
   font-family: 'Karla'
+
+image
+  -gtk-icon-style: symbolic
+  -gtk-icon-size: 1.3rem
+  color: $neutral-100
