@@ -24,11 +24,10 @@
         src = ./.;
         name = "my-shell";
         entry = "app.ts";
+        gtk4 = true;
 
         # additional libraries and executables to add to gjs' runtime
         extraPackages = [
-          dart-sass
-
           ags.packages.${system}.battery
           ags.packages.${system}.apps
           ags.packages.${system}.auth
@@ -43,6 +42,7 @@
           ags.packages.${system}.powerProfiles
           ags.packages.${system}.wirePlumber
           pkgs.fzf
+          pkgs.gtksourceview5
         ];
       };
     };

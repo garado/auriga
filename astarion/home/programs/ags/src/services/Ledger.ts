@@ -1,14 +1,13 @@
-
 /* █░█ █░░ █▀▀ █▀▄ █▀▀ █▀▀ █▀█ */
 /* █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄ */
 
-import { GObject, register, signal, property } from "astal/gobject"
-import { monitorFile, readFileAsync } from "astal/file"
-import { execAsync } from "astal/process"
-import UserConfig from '../../userconfig.js'
+import { GObject, register, property } from "astal/gobject";
+import { monitorFile, readFileAsync } from "astal/file";
+import { execAsync } from "astal/process";
+import UserConfig from "../../userconfig.js";
 
-const INCLUDES = ' -f /home/alexis/Enchiridion/self/ledger/2024/2024.ledger '
-const CSV = ' --output-format csv '
+const INCLUDES = " -f /home/alexis/Enchiridion/self/ledger/2024/2024.ledger ";
+const CSV = " --output-format csv ";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -17,20 +16,22 @@ const CSV = ' --output-format csv '
 export type DisplayAccountProps = {
   displayName: string;
   total: Number | Binding<Number>;
-}
+};
 
 export type DebtsLiabilitiesProps = {
-}
+  desc: string;
+  total: string;
+};
 
 export type TransactionData = {
-  TxnIdx: string,
-  Date: string,
-  Code: string,
-  Desc: string,
-  Account: string,
-  Amount: string,
-  Total: string,
-}
+  txnidx: string;
+  date: string;
+  code: string;
+  desc: string;
+  account: string;
+  amount: string;
+  total: string;
+};
 
 /**********************************************
  * PRIVATE TYPEDEFS
@@ -59,19 +60,18 @@ enum HLedgerRegCSV {
 
 @register({ GTypeName: "Ledger" })
 export default class Ledger extends GObject.Object {
-
   /**************************************************
    * SET UP SINGLETON
    **************************************************/
 
-  static instance: Ledger
+  static instance: Ledger;
 
   static get_default() {
     if (!this.instance) {
-      this.instance = new Ledger()
+      this.instance = new Ledger();
     }
 
-    return this.instance
+    return this.instance;
   }
 
   /**************************************************
@@ -79,46 +79,46 @@ export default class Ledger extends GObject.Object {
    **************************************************/
 
   @property(Object)
-  declare displayAccounts: Array<DisplayAccountProps>
-  
+  declare displayAccounts: Array<DisplayAccountProps>;
+
   @property(Object)
-  declare transactions: Array<TransactionData>
-  
+  declare transactions: Array<TransactionData>;
+
   @property(Object)
-  declare debtsLiabilities: Object
-  
+  declare debtsLiabilities: Object;
+
   @property(Object)
-  declare monthlyBreakdown: Object
-  
-  @property(Number)
-  declare incomeThisMonth: Number
+  declare monthlyBreakdown: Object;
 
   @property(Number)
-  declare expensesThisMonth: Number
+  declare incomeThisMonth: Number;
 
   @property(Number)
-  declare netWorth: Number
+  declare expensesThisMonth: Number;
+
+  @property(Number)
+  declare netWorth: Number;
 
   /**************************************************
    * PRIVATE FUNCTIONS
    **************************************************/
 
   constructor() {
-    super()
+    super();
 
-    this.displayAccounts = []
-    this.netWorth = 0
-    this.incomeThisMonth = 0
-    this.expensesThisMonth = 0
-    this.debtsLiabilities = {}
-    this.monthlyBreakdown = {}
+    this.displayAccounts = [];
+    this.netWorth = 0;
+    this.incomeThisMonth = 0;
+    this.expensesThisMonth = 0;
+    this.debtsLiabilities = {};
+    this.monthlyBreakdown = {};
 
-    this.#initAccountData()
-    this.#initNetWorth()
-    this.#initMonthlyIncomeExpenses()
-    this.#initDebtsLiabilities()
-    this.#initMonthlyBreakdown()
-    this.#initRecentTransactions()
+    this.#initAccountData();
+    this.#initNetWorth();
+    this.#initMonthlyIncomeExpenses();
+    this.#initDebtsLiabilities();
+    this.#initMonthlyBreakdown();
+    this.#initRecentTransactions();
 
     // monitorFile(kbdPath, async f => {
     //   const v = await readFileAsync(f)
@@ -139,53 +139,53 @@ export default class Ledger extends GObject.Object {
    *      a DisplayAccountProps instance
    */
   #initAccountData() {
-    const commands = UserConfig.ledger.accountList.map(accountData => {
+    const commands = UserConfig.ledger.accountList.map((accountData) => {
       /* use `--infer-market-prices -X '$'` to convert shares to $ */
-      return `hledger ${INCLUDES} balance ${accountData.accountName} ${CSV} -X '$' --infer-market-prices`
-    })
+      return `hledger ${INCLUDES} balance ${accountData.accountName} ${CSV} -X '$' --infer-market-prices`;
+    });
 
-    const promises = commands.map(async cmd => {
-      return execAsync(`bash -c '${cmd}'`)
-    })
+    const promises = commands.map(async (cmd) => {
+      return execAsync(`bash -c '${cmd}'`);
+    });
 
     Promise.all(promises)
-      .then(result => {
-        const tmpDisplayAccounts: DisplayAccountProps = []
+      .then((result) => {
+        const tmpDisplayAccounts: DisplayAccountProps[] = [];
 
         for (let i = 0; i < UserConfig.ledger.accountList.length; i++) {
-          const lines = result[i].replaceAll('"', '').split('\n')
-          const totalStr = lines[lines.length - 1].split(',').pop()
+          const lines = result[i].replaceAll('"', "").split("\n");
+          const totalStr = lines[lines.length - 1].split(",").pop();
 
           const output: DisplayAccountProps = {
             displayName: UserConfig.ledger.accountList[i].displayName,
-            total: Number(totalStr.replace('$', '')) || 0,
-          }
+            total: Number(totalStr.replace("$", "")) || 0,
+          };
 
-          tmpDisplayAccounts.push(output)
+          tmpDisplayAccounts.push(output);
         }
 
-        this.displayAccounts = tmpDisplayAccounts
+        this.displayAccounts = tmpDisplayAccounts;
       })
-      .catch(err => print(`initAccountData: ${err}`))
+      .catch((err) => print(`initAccountData: ${err}`));
   }
 
   /**
    * Get total net worth (assets - liabilities)
    */
   #initNetWorth() {
-    log('ledgerService', '#initNetWorth')
+    log("ledgerService", "#initNetWorth");
 
-    const cmd = `hledger ${INCLUDES} bs --depth 1 -X '$' --infer-market-prices ${CSV}`
+    const cmd = `hledger ${INCLUDES} bs --depth 1 -X '$' --infer-market-prices ${CSV}`;
 
     execAsync(`bash -c '${cmd}'`)
-      .then(out => {
-        const lines = out.replaceAll('"', '').split('\n')
-        const netWorthStr = lines[lines.length - 1].split(',')[1]
-        const netWorth = Number(netWorthStr.replace('$', ''))
+      .then((out) => {
+        const lines = out.replaceAll('"', "").split("\n");
+        const netWorthStr = lines[lines.length - 1].split(",")[1];
+        const netWorth = Number(netWorthStr.replace("$", ""));
 
-        this.netWorth = netWorth
+        this.netWorth = netWorth;
       })
-      .catch(err => print(`#initNetWorth: ${err}`))
+      .catch((err) => print(`#initNetWorth: ${err}`));
   }
 
   /**
@@ -193,67 +193,68 @@ export default class Ledger extends GObject.Object {
    * @brief Get total income and expenses for this month
    */
   #initMonthlyIncomeExpenses() {
-    log('ledgerService', '#initMonthlyIncomeExpenses')
+    log("ledgerService", "#initMonthlyIncomeExpenses");
 
-    const monthStart = `${new Date().getMonth() + 1}/01`
-    const cmd = `hledger ${INCLUDES} bal --depth 1 -X '$' --infer-market-price ${CSV} -b ${monthStart}`
+    const monthStart = `${new Date().getMonth() + 1}/01`;
+    const cmd = `hledger ${INCLUDES} bal --depth 1 -X '$' --infer-market-price ${CSV} -b ${monthStart}`;
 
-    execAsync(`bash -c '${cmd}'`)
-      .then(out => {
-        const lines = out.replaceAll('"', '').split('\n')
-        const relevantLines = lines.filter(str => str.includes('Income') || str.includes('Expenses'))
+    execAsync(`bash -c '${cmd}'`).then((out) => {
+      const lines = out.replaceAll('"', "").split("\n");
+      const relevantLines = lines.filter(
+        (str) => str.includes("Income") || str.includes("Expenses"),
+      );
 
-        relevantLines.forEach(element => {
-          const fields = element.split(',')
-          const total = Math.abs(Number(fields[1].replace('$', '')))
+      relevantLines.forEach((element) => {
+        const fields = element.split(",");
+        const total = Math.abs(Number(fields[1].replace("$", "")));
 
-          if (fields[0].includes('Income')) {
-            this.incomeThisMonth = total.toFixed(2)
-          } else if (fields[0].includes('Expenses')) {
-            this.expensesThisMonth = total.toFixed(2)
-          }
-        })
-      })
+        if (fields[0].includes("Income")) {
+          this.incomeThisMonth = total.toFixed(2);
+        } else if (fields[0].includes("Expenses")) {
+          this.expensesThisMonth = total.toFixed(2);
+        }
+      });
+    });
   }
 
-  /** 
-   * Parse **uncleared** debts and liabilities. 
+  /**
+   * Parse **uncleared** debts and liabilities.
    *
-   * This is specific to the way I personally use hledger. 
+   * This is specific to the way I personally use hledger.
    * Liabilities for things like credit cards are never marked as pending/cleared.
-   * Debts/liabilities to other people (e.g. if I owe someone $20) are marked as pending, 
-   * then are cleared when they are paid back. 
+   * Debts/liabilities to other people (e.g. if I owe someone $20) are marked as pending,
+   * then are cleared when they are paid back.
    * This function is specifically for those interpersonal debts/liabilities.
    */
   #initDebtsLiabilities() {
-    log('ledgerService', '#initDebtsLiabilities')
+    log("ledgerService", "#initDebtsLiabilities");
 
-    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV} | tail -n 40`
+    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV} | tail -n 40`;
 
     execAsync(`bash -c '${cmd}'`)
-      .then(out => {
-        const lines = out.replaceAll('"', '').split('\n').slice(1)
+      .then((out) => {
+        const lines = out.replaceAll('"', "").split("\n").slice(1);
 
-        this.debtsLiabilities = {}
+        this.debtsLiabilities = {};
 
-        lines.map(line => {
-          const fields = line.split(',')
+        lines.map((line) => {
+          const fields = line.split(",");
 
-          const account = fields[HLedgerRegCSV.Account]
+          const account = fields[HLedgerRegCSV.Account];
 
           if (this.debtsLiabilities[account] == undefined) {
-            this.debtsLiabilities[account] = []
+            this.debtsLiabilities[account] = [];
           }
 
           this.debtsLiabilities[account].push({
-            desc:  fields[HLedgerRegCSV.Desc],
-            total: Number(fields[HLedgerRegCSV.Amount].replace('$', '')),
-          })
-        })
+            desc: fields[HLedgerRegCSV.Desc],
+            total: Number(fields[HLedgerRegCSV.Amount].replace("$", "")),
+          });
+        });
 
-        this.notify('debts-liabilities')
+        this.notify("debts-liabilities");
       })
-      .catch(err => print(`#initDebtsLiabilities: ${err}`))
+      .catch((err) => print(`#initDebtsLiabilities: ${err}`));
   }
 
   /**
@@ -261,57 +262,59 @@ export default class Ledger extends GObject.Object {
    * Used in a pie chart.
    */
   #initMonthlyBreakdown() {
-    log('ledgerService', `#initMonthlyBreakdown`)
+    log("ledgerService", `#initMonthlyBreakdown`);
 
-    const monthStart = `${new Date().getMonth() + 1}/01`
-    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${monthStart} --no-total --depth 2 ${CSV}`
+    const monthStart = `${new Date().getMonth() + 1}/01`;
+    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${monthStart} --no-total --depth 2 ${CSV}`;
 
-    this.monthlyBreakdown = []
+    this.monthlyBreakdown = [];
 
     execAsync(`bash -c '${cmd}'`)
-      .then(out => {
-        const row = out.replaceAll('"', '').split('\n').slice(1)
+      .then((out) => {
+        const row = out.replaceAll('"', "").split("\n").slice(1);
 
-        row.forEach(data => {
-          const fields = data.split(',')
+        row.forEach((data) => {
+          const fields = data.split(",");
 
-          const category  = fields[0].split(':')[1]
-          const price     = Number(fields[1].replace('$', ''))
+          const category = fields[0].split(":")[1];
+          const price = Number(fields[1].replace("$", ""));
 
           this.monthlyBreakdown.push({
             category: category,
             total: price,
-          })
-        })
+          });
+        });
 
-        this.notify('monthly-breakdown')
+        this.notify("monthly-breakdown");
       })
-      .catch(err => print(`initMonthlyBreakdown: ${err}`))
+      .catch((err) => print(`initMonthlyBreakdown: ${err}`));
   }
 
   /**
    * Initialize recent transactions.
    */
   #initRecentTransactions() {
-    log('ledgerService', '#initRecentTransactions')
+    log("ledgerService", "#initRecentTransactions");
 
-    const cmd = `hledger ${INCLUDES} reg Income Expenses ${CSV}`
+    const cmd = `hledger ${INCLUDES} reg Income Expenses ${CSV}`;
 
     execAsync(`bash -c '${cmd} | tail -n 20'`)
-      .then(out => {
-        out = out.replaceAll('"', '').split('\n').slice(1)
+      .then((out) => {
+        out = out.replaceAll('"', "").split("\n").slice(1);
 
-        /* This takes the raw CSV output and turns it into an array of 
-         * TransactionData objects, where the object keys are the fields of the 
+        /* This takes the raw CSV output and turns it into an array of
+         * TransactionData objects, where the object keys are the fields of the
          * HLedgerRegCSV enum. */
-        this.transactions = out.map(line => {
-          line = line.split(',')
+        this.transactions = out.map((line) => {
+          line = line.split(",");
 
-          return Object.fromEntries(Object.keys(HLedgerRegCSV)
-            .filter(k => isNaN(Number(k))) /* exclude numeric keys */
-            .map((key, index) => [key.toLowerCase(), line[index]]))
-        })
+          return Object.fromEntries(
+            Object.keys(HLedgerRegCSV)
+              .filter((k) => isNaN(Number(k))) /* exclude numeric keys */
+              .map((key, index) => [key.toLowerCase(), line[index]]),
+          );
+        });
       })
-      .catch(err => print(`initRecentTransactions: ${err}`))
+      .catch((err) => print(`initRecentTransactions: ${err}`));
   }
 }

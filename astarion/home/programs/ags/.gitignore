@@ -1,3 +1,4 @@
 node_modules/
 @girs/
 userconfig.js
+userconfig.ts
