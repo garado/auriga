@@ -21,14 +21,14 @@ type DashTabData = {
 
 const dashTabData: DashTabData[] = [
   {
-    name: 'Ledger',
-    icon: 'currency-dollar-symbolic',
-    ui:   Ledger,
-  },
-  {
     name: 'Home',
     icon: 'house-symbolic',
     ui:   Home,
+  },
+  {
+    name: 'Ledger',
+    icon: 'currency-dollar-symbolic',
+    ui:   Ledger,
   },
 ]
 
