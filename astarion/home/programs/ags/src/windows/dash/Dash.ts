@@ -4,8 +4,10 @@
 
 import { App, Astal, Gtk, Gdk, Widget } from 'astal/gtk4'
 import { Variable, GLib, bind } from 'astal'
+
 import Home from './home/Home.ts'
 import Ledger from './ledger/Ledger.ts'
+import { SmartStack } from '../../components/SmartStack.ts'
 
 /*********************************************************** 
  * SETUP
@@ -65,13 +67,11 @@ const DashTabEntry = (tabData: DashTabData) => Widget.Button({
 /**
  * Holds tab content.
  */
-const DashTabStack = () => Widget.Stack({
+const DashTabStack = () => SmartStack({
   cssClasses: ['tab-stack'],
-  transition_type: Gtk.StackTransitionType.SLIDE_UP,
-  setup: self => {
-    dashTabData.map(data => self.add_named(data.ui(), data.name))
-    activeTabIndex.subscribe(index => self.visibleChildName = dashTabData[index].name)
-  }
+  bindNumberedSwitchTo: activeTabIndex,
+  vertical: true,
+  children: dashTabData,
 })
 
 /*********************************************************** 

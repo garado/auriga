@@ -8,6 +8,7 @@
 import { App, Astal, Gtk, Gdk, Widget } from 'astal/gtk4'
 import { Variable, GLib, bind } from 'astal'
 import { SegmentedButtonGroup } from './SegmentedButtonGroup.ts'
+import { SmartStack } from './SmartStack.ts'
 
 export type DashLayoutAction = {
   name:   string;
@@ -35,7 +36,7 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
 
   }
   
-  const PageButtonContainer = SegmentedButtonGroup({
+  const PageButtonContainer = () => SegmentedButtonGroup({
     exclusive: true,
     autosetFirstChecked: true,
     buttons: dashLayout.pages.map(page => {
@@ -51,15 +52,13 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
     startWidget: Widget.Label({
       label: dashLayout.name
     }),
-    endWidget: PageButtonContainer,
+    endWidget: PageButtonContainer(),
   })
 
-  const PageStack = () => Widget.Stack({
+  const PageStack = () => SmartStack({
     cssClasses: [...['page-stack'], ...dashLayout.cssClasses],
-    setup: self => {
-      dashLayout.pages.map(page => self.add_named(page.page(), page.name))
-      activePage.subscribe(name => self.visibleChildName = name)
-    }
+    children: dashLayout.pages,
+    bindNamedSwitchTo: activePage,
   })
 
   /**

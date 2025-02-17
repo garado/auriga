@@ -12,8 +12,8 @@ export default () => {
     name: 'Ledger',
     cssClasses: ['ledger'],
     pages: [
-      { name: 'Overview', page: Overview },
-      { name: 'FIRE', page: Fire },
+      { name: 'Overview', ui: Overview },
+      { name: 'FIRE', ui: Fire },
     ],
   })
 }
