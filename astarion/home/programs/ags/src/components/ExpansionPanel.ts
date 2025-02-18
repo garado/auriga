@@ -10,6 +10,7 @@ export const ExpansionPanel = (props: {
   label: string;
   children: Array<Gtk.Widget>;
   maxDropdownHeight: number;
+  vertical: boolean;
   globalRevealerState: Variable<boolean>;
 }) => {
   const contentRevealerState = Variable(false);
@@ -30,6 +31,15 @@ export const ExpansionPanel = (props: {
       children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
       onButtonPressed: (self, state) => {
         contentRevealerState.set(!contentRevealerState.get());
+      },
+      setup: (self) => {
+        contentRevealerState.subscribe((state) => {
+          if (state) {
+            self.add_css_class("revealed");
+          } else {
+            self.remove_css_class("revealed");
+          }
+        });
       },
     });
 
@@ -71,6 +81,17 @@ export const ExpansionPanel = (props: {
     Widget.Revealer({
       cssClasses: ["content-revealer"],
       revealChild: bind(contentRevealerState),
+      transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
+      child: ContentScrollableContainer(),
+    });
+
+  /**
+   * Container for content.
+   */
+  const ContentScrollableContainer = () =>
+    Scrollable({
+      vexpand: false,
+      heightRequest: props.maxDropdownHeight,
       child: ContentContainer(),
     });
 
@@ -80,6 +101,8 @@ export const ExpansionPanel = (props: {
   const ContentContainer = () =>
     Widget.Box({
       cssClasses: ["content"],
+      spacing: 15,
+      vertical: props.vertical,
       children: props.children,
     });
 

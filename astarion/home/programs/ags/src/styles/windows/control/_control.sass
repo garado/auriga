@@ -1,17 +1,10 @@
 
-// █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █▀█ █░░
-// █▄▄ █▄█ █░▀█ ░█░ █▀▄ █▄█ █▄▄
-
 @use '../../theme/theme' as *
 
 /**********************************************
  * GENERAL
  **********************************************/
 
-.control-wrapper
-  // background-color: $neutral-900
-  border-radius: $border-radius
-  
 .control
   background-color: $neutral-800
   border-color: $neutral-600
@@ -21,140 +14,23 @@
   min-width: 20rem
   padding: 2rem
 
-  .ctrl-header
-    font-size: 1.4rem
-
-  .accent
-    color: $primary-400
-
-  .pfp
-    min-height: 6rem
-    min-width:  6rem
-    margin-bottom: 0.5rem
-    border-radius: 50%
-    background-size: cover
-    background-position: center
-
-.control .separator
-  min-height: 0.1rem
-  min-width:  0.1rem
-  margin-left:  5rem
-  margin-right: 5rem
-  margin-top:     1rem
-  margin-bottom:  1rem
-  background-color: $neutral-700
-
-
-/**********************************************
- * SYSTEM INFO
- **********************************************/
-
-.control .sysinfo .pfp
-    border-radius: 50%
-    min-height: 6rem
-    min-width:  6rem
-    background-size: cover
-    background-position: center
-    border: 0.3rem solid $primary-600
-
-.control .sysinfo .fetch
-  font-family: $font-stack-mono
-
-  .text-highlight
-    color: $primary-400
-    font-weight: 500
-
-/**********************************************
- * QUICK ACTIONS
- **********************************************/
-
-.control .quick-actions .quick-actions-item-container
-  transition: 0.1s all
-  background-color: $neutral-700
-  border-radius: $border-radius
-
-  &:hover
-    background-color: $neutral-500
-
-  &.active
-    background-color: $primary-500
-
-.control .quick-actions .quick-actions-item
-  padding: 1rem
-
-
-
 /**********************************************
  * QUICK SETTINGS
  **********************************************/
 
-/* Overview styling */
-.control .quick-settings
-  /* The event box to handle click-to-reveal */
-  .overview-wrapper
-    background-color: $neutral-600
-    transition: 0.1s all
+.theme-switch-button
+  border-top-left-radius:  $border-radius
+  border-top-right-radius: $border-radius
+  border-style: solid
+  border-width: 4px
 
-    &:not(.revealed)
-      border-radius: $border-radius
+  &:hover
+    border-color: $primary-500
 
-    &.revealed
-      border-top-right-radius: $border-radius
-      border-top-left-radius: $border-radius
+  &:not(:hover)
+    border-color: transparent
 
-  /* Contents of the overview widget */
-  .overview-content
-    padding: 0.7rem
+  .info-bar
+    padding: 1rem 0.6rem
+    background-color: $neutral-700
     font-weight: 500
-
-/* Dropdown content styling */
-.control .quick-settings
-  .dropdown-revealer
-    border-bottom-right-radius: $border-radius
-    border-bottom-left-radius: $border-radius
-
-  .dropdown-scrollable-wrapper
-    background-color: $neutral-700
-    border-bottom-right-radius: $border-radius
-    border-bottom-left-radius: $border-radius
-    padding: 0.3rem
-
-  /* Actual contents of the dropdown widget
-  .dropdown-content
-    background-color: $neutral-700
-    padding: 0.5rem 1rem
-
-    .network
-      padding: 0.3rem
-
-    .preview-container
-      background-color: $neutral-900
-      margin-top:     0.6rem
-      margin-bottom:  0.6rem
-
-    .preview-image-wrapper
-      background-color: $neutral-700
-      background-clip: padding-box
-
-    .preview-wrapper
-      border-radius: $border-radius
-      background-clip: padding-box
-
-    .preview-image
-      background-clip: padding-box
-      border-radius: $border-radius
-      background-repeat: no-repeat
-      background-position: right
-      background-color: $neutral-700
-
-    .preview-info
-      padding: 0.8rem
-      border-top: 3px solid $neutral-500
-      border-bottom-right-radius: $border-radius
-      border-bottom-left-radius: $border-radius
-
-      .image
-        color: $neutral-600
-
-        &.check-active
-          color: $primary-400
