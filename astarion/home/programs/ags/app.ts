@@ -1,7 +1,8 @@
 import { Gtk, App } from "astal/gtk4";
-import { GObject } from "astal/gobject";
 import { exec } from "astal/process";
+import { monitorFile } from "astal/file";
 import { timeout } from "astal/time";
+import Gio from "gi://Gio";
 
 import "@/globals.ts";
 import Bar from "@/windows/bar/Bar.ts";
@@ -21,12 +22,7 @@ const TOGGLEABLE_WINDOWS = ["dash", "utility", "control"];
 const toggleWindow = (windowName: string) => {
   const win = App.get_window(windowName);
 
-  /* Check if visible */
-  let whatthefuck = new GObject.Value();
-  win.get_property("visible", whatthefuck);
-  const isVisible = whatthefuck.get_boolean();
-
-  if (isVisible) {
+  if (win!.visible) {
     closeWindow(windowName);
   } else {
     openWindow(windowName);
@@ -56,11 +52,15 @@ const openWindow = (windowName: string) => {
   (win!.child as Gtk.Revealer).revealChild = true;
 };
 
+const compileSASS = () => {
+  exec("sass ./src/styles/main.sass /tmp/ags/style.css");
+};
+
 /*******************************************
  * RUN
  *******************************************/
 
-exec("sass ./src/styles/main.sass /tmp/ags/style.css");
+compileSASS();
 
 App.start({
   css: "/tmp/ags/style.css",

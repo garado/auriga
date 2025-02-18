@@ -1,6 +1,7 @@
 /* █▀ █▀▀ ▀█▀ ▀█▀ █ █▄░█ █▀▀ █▀ */
 /* ▄█ ██▄ ░█░ ░█░ █ █░▀█ █▄█ ▄█ */
 
+import { App } from "astal/gtk4";
 import { GObject, register, property } from "astal/gobject";
 import { exec, execAsync } from "astal/process";
 import UserConfig from "../../userconfig.js";
@@ -90,28 +91,32 @@ export default class Settings extends GObject.Object {
         .catch(print);
     }
 
-    // /* Change Astal CSS theme */
-    // if (themeDetails.astal) {
-    //   /* SASS: @import themes/oldtheme ==> @import themes/newtheme */
-    //   const sassCmd = `sed -i \"s#import.*theme.*#import themes/${themeDetails.ags}#g\" $AGSCFG/sass/_colorscheme.sass`;
-    //   execAsync(`bash -c '${sassCmd}'`)
-    //     .then((_) => {
-    //       /* Tell other widgets the theme changed so they can update their styles */
-    //       // globalThis.systemTheme.setValue(themeName);
-    //     })
-    //     .catch(print);
-
-    //   /* UserConfig: currentTheme: 'kanagawa' => currentTheme: 'newTheme' */
-    //   const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" $AGSCFG/userconfig.js`;
-    //   execAsync(`bash -c '${configCmd}'`).catch(print);
-    // }
-
     /* Change wallpaper */
     if (themeDetails.wallpaper) {
       execAsync(
         `swww img ${themeDetails.wallpaper} --transition-type fade --transition-step 20 \
 --transition-fps 255 --transition-duration 1.5 --transition-bezier .69,.89,.73,.46`,
       ).catch(print);
+    }
+
+    /* Change Astal CSS theme */
+    if (themeDetails.astal) {
+      /* SASS: @forward 'oldtheme' ==> @forward 'newtheme' */
+      const sassCmd = `sed -i \"s#forward.*#forward \\"${themeDetails.astal}\\"#g\" /home/alexis/Github/dotfiles/astarion/home/programs/ags/src/styles/theme/colors/colors.sass`;
+      execAsync(`bash -c '${sassCmd}'`)
+        .then((_) => {
+          /* Tell other widgets the theme changed so they can update their styles */
+          execAsync("sass ./src/styles/main.sass /tmp/ags/style.css").then(
+            () => {
+              App.apply_css("/tmp/ags/style.css");
+            },
+          );
+        })
+        .catch(print);
+
+      /* UserConfig: currentTheme: 'kanagawa' => currentTheme: 'newTheme' */
+      const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" $AGSCFG/userconfig.js`;
+      execAsync(`bash -c '${configCmd}'`).catch(print);
     }
 
     /* Change terminal theme */

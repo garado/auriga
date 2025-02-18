@@ -1,6 +1,10 @@
 
 @use '../../theme/theme' as *
 
+/****************************************
+ * GENERAL
+ ****************************************/
+
 .utility
   font-family: $font-stack
   background-color: $neutral-800
@@ -8,90 +12,11 @@
   min-width: 28rem
   padding: 1.6rem
 
-/**********************************************
- * GEMINI
- **********************************************/
+.utility .tab-label
+  border-bottom: 3px solid $primary-500
+  padding-top: 0.6rem
+  padding-bottom: 0.6rem
 
-.utility .gemini .section-header
-  border-bottom: 0.1rem solid $neutral-600
-  font-size: 1.2rem
-  margin-bottom: 1rem
-  padding: 0.2rem
-
-.utility .gemini .clear
-  padding: 0.4rem 0.8rem
-  margin: 0.2rem
-
-  &:hover, &:focus
-    background-color: $neutral-500
-    border-radius: $border-radius
-
-.utility .gemini .option
-  &:not(:checked)
-    background-color: $neutral-600
-
-    &:hover, &:focus
-      background-color: $neutral-500
-
-  &:checked
-    background-color: $primary-500
-    
-    &:hover, &:focus
-      background-color: $primary-300
-
-.utility .gemini .entry-container
-  background-color: $neutral-800
-  border-radius: $border-radius
-  border: 0.2rem solid $primary-400
-  padding: 0.4rem
-  margin-top: 1rem
-
-  .entry selection
-    background-color: $yellow-500
-
-.utility .gemini .prompt-input,.prompt-output .content
-  font-size: 1.2rem
-
-  text selection
-    background-color: $yellow-500
-
-.utility .gemini .prompt-input
-  .header
-    font-size: 1.4rem
-    font-weight: 500
-    color: $primary-400
-
-.utility .gemini .prompt-output
-  .header
-    font-size: 1.4rem
-    font-weight: 500
-    color: $accent-2
-
-  .code-block
-    margin: 0.4rem
-    background-color: $neutral-700
-    border-radius: $border-radius
-
-    .code-block-header
-      padding: 0.8rem
-      font-weight: 700
-      border-top-left-radius: $border-radius
-      border-top-right-radius: $border-radius
-      background-color: $primary-500
-
-      .copy-btn
-        padding: 0rem
-        transition: 0.1s all
-
-        &:hover
-          color: $neutral-200
-
-    .code-block-content
-      font-family: monospace
-      font-size: 1.2rem
-      padding: 0.8rem
-      border-bottom-left-radius: $border-radius
-      border-bottom-right-radius: $border-radius
-
-      text selection
-        background-color: $yellow-500
+/****************************************
+ * GENERAL
+ ****************************************/
