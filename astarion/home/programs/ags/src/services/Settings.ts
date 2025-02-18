@@ -2,11 +2,20 @@
 /* ▄█ ██▄ ░█░ ░█░ █ █░▀█ █▄█ ▄█ */
 
 import { GObject, register, property } from "astal/gobject";
+import { exec, execAsync } from "astal/process";
 import UserConfig from "../../userconfig.js";
 
 /**********************************************
  * PUBLIC TYPEDEFS
  **********************************************/
+
+export interface Theme {
+  nvim: string;
+  kitty: string;
+  wallpaper: string;
+  astal: string;
+  preview: string;
+}
 
 /**********************************************
  * PRIVATE TYPEDEFS
@@ -39,9 +48,21 @@ export default class Settings extends GObject.Object {
   /**************************************************
    * PROPERTIES
    **************************************************/
+  declare private _currentTheme: string;
 
-  @property(Number)
-  declare netWorth: Number;
+  @property(String)
+  get currentTheme() {
+    return this._currentTheme;
+  }
+
+  set currentTheme(themeName: string) {
+    this._currentTheme = themeName;
+    this.applyTheme(themeName);
+    this.notify("current-theme");
+  }
+
+  @property(Object)
+  declare availableThemes: Object;
 
   /**************************************************
    * PRIVATE FUNCTIONS
@@ -49,5 +70,55 @@ export default class Settings extends GObject.Object {
 
   constructor() {
     super();
+    this.availableThemes = UserConfig.themes;
+    this.currentTheme = UserConfig.currentTheme;
+  }
+
+  /**************************************************
+   * PUBLIC FUNCTIONS
+   **************************************************/
+  applyTheme(themeName: string) {
+    const themeDetails = this.availableThemes[themeName];
+
+    /* Nvim (NvChad) theme */
+    if (themeDetails.nvim) {
+      const nvimPath = "$NVCFG/chadrc.lua";
+      const nvimCmd = `sed -i 's/theme = \\".*\\"/theme = \\"${themeDetails.nvim}\\"/g'`;
+      exec(`bash -c "${nvimCmd} ${nvimPath}"`);
+      execAsync("bash -c 'python3 $AGSCFG/scripts/nvim-reload.py'")
+        .then(print)
+        .catch(print);
+    }
+
+    // /* Change Astal CSS theme */
+    // if (themeDetails.astal) {
+    //   /* SASS: @import themes/oldtheme ==> @import themes/newtheme */
+    //   const sassCmd = `sed -i \"s#import.*theme.*#import themes/${themeDetails.ags}#g\" $AGSCFG/sass/_colorscheme.sass`;
+    //   execAsync(`bash -c '${sassCmd}'`)
+    //     .then((_) => {
+    //       /* Tell other widgets the theme changed so they can update their styles */
+    //       // globalThis.systemTheme.setValue(themeName);
+    //     })
+    //     .catch(print);
+
+    //   /* UserConfig: currentTheme: 'kanagawa' => currentTheme: 'newTheme' */
+    //   const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" $AGSCFG/userconfig.js`;
+    //   execAsync(`bash -c '${configCmd}'`).catch(print);
+    // }
+
+    /* Change wallpaper */
+    if (themeDetails.wallpaper) {
+      execAsync(
+        `swww img ${themeDetails.wallpaper} --transition-type fade --transition-step 20 \
+--transition-fps 255 --transition-duration 1.5 --transition-bezier .69,.89,.73,.46`,
+      ).catch(print);
+    }
+
+    /* Change terminal theme */
+    if (themeDetails.kitty) {
+      execAsync(`kitty +kitten themes "${themeDetails.kitty}"`).catch(() => {
+        execAsync(`bash -c "pgrep kitty | xargs kill -USR1"`);
+      });
+    }
   }
 }

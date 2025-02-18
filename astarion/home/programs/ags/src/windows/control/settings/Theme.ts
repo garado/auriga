@@ -1,20 +1,19 @@
 /* ▀█▀ █░█ █▀▀ █▀▄▀█ █▀▀ */
 /* ░█░ █▀█ ██▄ █░▀░█ ██▄ */
 
-import { App, Astal, Gtk, Widget, astalify } from "astal/gtk4";
+import { Gtk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
 import Gio from "gi://Gio";
 
-import UserConfig from "../../../../userconfig.ts";
+import Settings from "@/services/Settings.ts";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
-import userconfig from "../../../../userconfig.ts";
 
 const Picture = astalify(Gtk.Picture);
+const settings = Settings.get_default();
 
 export const Theme = (globalRevealerState: Variable<boolean>) => {
   /**
-   * Button to switch theme.
-   * Includes theme preview.
+   * Button to switch theme. Includes theme preview.
    */
   const ThemeButton = (themeName: string) =>
     Widget.Box({
@@ -23,9 +22,12 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       halign: Gtk.Align.CENTER,
       valign: Gtk.Align.CENTER,
       children: [
-        PreviewImage(UserConfig.themes[themeName].preview),
+        PreviewImage(settings.availableThemes[themeName].preview),
         ThemeInfoBar(themeName),
       ],
+      onButtonPressed: () => {
+        settings.currentTheme = themeName;
+      },
     });
 
   const PreviewImage = (file: string) =>
@@ -47,14 +49,16 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       }),
       endWidget: Widget.Image({
         iconName: "check-symbolic",
-        visible: themeName === UserConfig.currentTheme,
+        visible: bind(settings, "current-theme").as(
+          (currentTheme: string) => currentTheme === themeName,
+        ),
       }),
     });
 
   return ExpansionPanel({
     icon: "palette-symbolic",
     label: "Theme",
-    children: Object.keys(UserConfig.themes).map(ThemeButton),
+    children: Object.keys(settings.availableThemes).map(ThemeButton),
     vertical: true,
     globalRevealerState: globalRevealerState,
     maxDropdownHeight: 800,
