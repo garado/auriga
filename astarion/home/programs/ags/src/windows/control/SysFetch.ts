@@ -5,11 +5,15 @@
  * user, host, uptime, battery life remaining */
 
 import { bind } from "astal";
-import { Gtk, Widget } from "astal/gtk4";
+import { Gtk, Widget, astalify } from "astal/gtk4";
 import { exec } from "astal/process";
-import UserConfig from "../../../userconfig.js";
 import Battery from "gi://AstalBattery";
+import Gio from "gi://Gio";
 
+import UserConfig from "../../../userconfig.js";
+
+const Picture = astalify(Gtk.Picture);
+const Frame = astalify(Gtk.Frame);
 const bat = Battery.get_default();
 
 /******************************
@@ -78,11 +82,15 @@ const Fetch = () =>
   });
 
 const Profile = () =>
-  Widget.Image({
+  Frame({
     cssClasses: ["pfp"],
-    valign: Gtk.Align.CENTER,
-    halign: Gtk.Align.CENTER,
-    file: UserConfig.profile.pfp,
+    child: [
+      Picture({
+        valign: Gtk.Align.CENTER,
+        halign: Gtk.Align.CENTER,
+        file: Gio.File.new_for_path(UserConfig.profile.pfp),
+      }),
+    ],
   });
 
 export const SysFetch = () =>

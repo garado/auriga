@@ -1,7 +1,7 @@
 /* ▀█▀ █░█ █▀▀ █▀▄▀█ █▀▀ */
 /* ░█░ █▀█ ██▄ █░▀░█ ██▄ */
 
-import { Gtk, Widget, astalify } from "astal/gtk4";
+import { Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
 import Gio from "gi://Gio";
 
@@ -20,6 +20,7 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       cssClasses: ["theme-switch-button"],
       vertical: true,
       halign: Gtk.Align.CENTER,
+      cursor: Gdk.Cursor.new_from_name("pointer", null),
       valign: Gtk.Align.CENTER,
       children: [
         PreviewImage(settings.availableThemes[themeName].preview),
@@ -57,7 +58,7 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
 
   return ExpansionPanel({
     icon: "palette-symbolic",
-    label: "Theme",
+    label: bind(settings, "current-theme"),
     children: Object.keys(settings.availableThemes).map(ThemeButton),
     vertical: true,
     globalRevealerState: globalRevealerState,
