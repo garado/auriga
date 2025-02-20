@@ -11,6 +11,7 @@ export const ExpansionPanel = (props: {
   children: Array<Gtk.Widget>;
   maxDropdownHeight: number;
   vertical: boolean;
+  cssClasses?: Array<String>;
   globalRevealerState: Variable<boolean>;
 }) => {
   const contentRevealerState = Variable(false);
@@ -30,6 +31,10 @@ export const ExpansionPanel = (props: {
       vertical: false,
       children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
       onButtonPressed: (self, state) => {
+        if (!self.has_css_class("revealed")) {
+          props.globalRevealerState.set(!props.globalRevealerState.get());
+        }
+
         contentRevealerState.set(!contentRevealerState.get());
       },
       setup: (self) => {
@@ -111,15 +116,13 @@ export const ExpansionPanel = (props: {
    ********************************************************/
 
   const Final = Widget.Box({
-    cssClasses: ["expander"],
+    cssClasses: ["expander", ...(props.cssClasses || [])],
     vertical: true,
     children: [ExpanderTab(), ContentRevealer()],
     setup: () => {
       /* Closing the global revealer closes this revealer too */
-      props.globalRevealerState.subscribe((state) => {
-        if (state === false) {
-          contentRevealerState.set(false);
-        }
+      props.globalRevealerState.subscribe(() => {
+        contentRevealerState.set(false);
       });
     },
   });
