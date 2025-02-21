@@ -28,6 +28,9 @@
       # Entertainment
       ncspot
 
+
+      gtksourceview5
+
       # Productivity
       obsidian qutebrowser
 
@@ -84,7 +87,8 @@
     configDir = ./programs/ags;
 
     extraPackages = with pkgs; [
-      # gtksourceview5 /* gtksourceview5 is for gtk4... gtksourceview4 is for gtk3... make it make sense */
+      # gtksourceview5 // sadge
+      inputs.ags.packages.${pkgs.system}.apps
       inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.auth
       inputs.ags.packages.${pkgs.system}.bluetooth

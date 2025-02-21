@@ -9,8 +9,9 @@ import Bar from "@/windows/bar/Bar.ts";
 import Dash from "@/windows/dash/Dash.ts";
 import Utility from "@/windows/utility/Utility.ts";
 import Control from "@/windows/control/Control.ts";
+import Launcher from "@/windows/launcher/Launcher";
 
-const TOGGLEABLE_WINDOWS = ["dash", "utility", "control"];
+const TOGGLEABLE_WINDOWS = ["dash", "utility", "control", "launcher"];
 
 /*******************************************
  * FUNCTIONS
@@ -79,5 +80,10 @@ App.start({
     App.get_monitors().map(Dash);
     App.get_monitors().map(Utility);
     App.get_monitors().map(Control);
+    App.get_monitors().map(Launcher);
   },
+});
+
+Object.assign(App, {
+  toggleWindow: toggleWindow,
 });
