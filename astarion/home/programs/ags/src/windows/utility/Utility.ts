@@ -1,5 +1,7 @@
 import { App, Astal, Gtk, Widget, astalify } from "astal/gtk4";
-import { Variable, bind } from "astal";
+import { Variable, GLib, bind } from "astal";
+
+import { Gemini } from "@/windows/utility/Gemini.ts";
 
 /******************************************
  * MODULE-LEVEL VARIABLES
@@ -22,13 +24,10 @@ const UtilityPanel = () =>
     halign: Gtk.Align.CENTER,
     cssClasses: ["utility"],
     setup: (self) => {
+      self.append_page(Gemini(), NotebookTabLabel("Gemini"));
       self.append_page(
-        Widget.Label({ label: "Page2" }),
-        NotebookTabLabel("Page 2"),
-      );
-      self.append_page(
-        Widget.Label({ label: "Page3" }),
-        NotebookTabLabel("Tab"),
+        Widget.Label({ label: "Tools" }),
+        NotebookTabLabel("Tools"),
       );
     },
   });

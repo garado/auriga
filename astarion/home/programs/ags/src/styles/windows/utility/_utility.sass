@@ -6,6 +6,7 @@
  ****************************************/
 
 .utility
+  margin-left: 0.8rem
   font-family: $font-stack
   background-color: $neutral-800
   border-radius: $border-radius
@@ -13,10 +14,39 @@
   padding: 1.6rem
 
 .utility .tab-label
-  border-bottom: 3px solid $primary-500
-  padding-top: 0.6rem
-  padding-bottom: 0.6rem
+  padding: 0.6rem 1rem
+
+  &.active
+    border-bottom: 3px solid $primary-500
 
 /****************************************
- * GENERAL
+ * GEMINI
  ****************************************/
+
+.utility .gemini
+  .header
+    font-size: 2rem
+    border-bottom: 2px solid $neutral-600
+
+  .prompt-entry
+    border-style: solid
+    border-width: 4px
+    border-radius: $border-radius
+    padding: 0.4rem
+    transition: 0.1s all
+
+    &.focus
+      border-color: $primary-500
+
+    &:not(.focus)
+      border-color: $neutral-500
+
+  .speaker
+    font-weight: 500
+    font-size: 1.4rem
+
+    &.user
+      color: $primary-400
+
+    &.gemini
+      color: $accent-1

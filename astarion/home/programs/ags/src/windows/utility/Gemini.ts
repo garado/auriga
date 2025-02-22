@@ -4,54 +4,25 @@
 /**
  * Idea and UI inspiration taken from kotontrion's chatgpt widget,
  * as posted in unixporn discord
- * (this code sucks btw)
  */
 
 import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, GLib, bind } from "astal";
-
-// imports.gi.versions.GtkSource = '5.0';
-// const GtkSource = imports.gi.GtkSource;
-const versions = imports.gi.versions;
-print("Available versions for GtkSource:", JSON.stringify(versions, null, 2));
-
-// print(imports.gi.versions)
-
-// import GtkSource from 'gi://GtkSource'
-// import GtkSource from "gi://GtkSource?version=4.0"
 import Gio from "gi://Gio";
-import UserConfig from "../../../userconfig.js";
+import { CustomSourceView } from "@/components/CustomSourceView";
+import GeminiService, {
+  ConversationType,
+  ConversationData,
+} from "@/services/Gemini";
+import { setConsoleLogDomain } from "console";
 
-/********************************************************
- * MODULE-LEVEL VARIABLES
- ********************************************************/
+const gs = GeminiService.get_default();
 
-const CUSTOM_SOURCEVIEW_SCHEME_PATH = `/home/alexis/Github/dotfiles/astarion/home/programs/ags/src/assets/sourceview/nord.xml`;
-
-const GEMINI_API_KEY = UserConfig.gemini.api;
-
-const TextView = astalify(Gtk.TextView);
 const Scrollable = astalify(Gtk.ScrolledWindow);
 
-let responsesRaw = [];
-const responses = Variable([]);
-
-let optConcise = Variable(true);
-let optContinue = Variable(false);
-
-/********************************************************
- * FUNCTIONS
- ********************************************************/
-
-/**
- * Escape quotes
- * (CANNOT get this to work so im just removing it all for now)
- */
-const escapeQuotes = (text) => {
-  text = text.replaceAll('"', "");
-  text = text.replaceAll("'", "");
-  return text;
-};
+/*************************************************************************
+ * HELPERS
+ *************************************************************************/
 
 /**
  * Gemini responses have markdown markup. GJS only renders Pango markup.
@@ -59,9 +30,8 @@ const escapeQuotes = (text) => {
  * Taken from end-4's excellent config
  * https://github.com/end-4/CirnOS/blob/24a79b1b371c77ff7f8e6584b8551dbe67612b6c/homes/end/.config/ags/lib/md2pango.js#L1
  */
-const markdownToPangoMarkup = (text) => {
-  const monospaceFonts =
-    "JetBrains Mono NF, JetBrains Mono Nerd Font, JetBrains Mono NL, SpaceMono NF, SpaceMono Nerd Font, monospace";
+const markdownToPangoMarkup = (text: string) => {
+  const monospaceFonts = "Mononoki";
 
   const replacements = {
     indents: [
@@ -126,7 +96,7 @@ const markdownToPangoMarkup = (text) => {
     ],
   };
 
-  const replaceCategory = (text, replaces) => {
+  const replaceCategory = (text: string, replaces) => {
     for (const type of replaces) {
       text = text.replace(type.re, type.sub);
     }
@@ -135,7 +105,8 @@ const markdownToPangoMarkup = (text) => {
 
   let lines = text.split("\n");
   let output = [];
-  // Replace
+
+  /* Replace */
   for (const line of lines) {
     let result = line;
     result = replaceCategory(result, replacements.indents);
@@ -144,15 +115,16 @@ const markdownToPangoMarkup = (text) => {
     result = replaceCategory(result, replacements.styles);
     output.push(result);
   }
-  // Remove trailing whitespaces
+
+  /* Remove trailing whitespaces */
   output = output.map((line) => line.replace(/ +$/, ""));
   return output.join("\n");
 };
 
 /**
- * Tokenize on code snippets
+ * Tokenize on code snippets in a Gemini response
  */
-const tokenizeCode = (markdown) => {
+const tokenizeReponse = (markdown: string) => {
   const tokens = [];
 
   let remainingStr = markdown;
@@ -164,6 +136,7 @@ const tokenizeCode = (markdown) => {
     if (match) {
       /* Grab language */
       let lang = undefined;
+
       if (isCode) {
         lang = remainingStr.split(/\s+/)[0];
         remainingStr = remainingStr.slice(lang.length);
@@ -173,7 +146,7 @@ const tokenizeCode = (markdown) => {
         type: isCode ? "code" : "text",
         content: remainingStr.substring(
           0,
-          isCode ? match.index - lang.length : match.index,
+          isCode ? match!.index! - lang!.length : match.index,
         ),
         language: lang,
       });
@@ -192,396 +165,175 @@ const tokenizeCode = (markdown) => {
   return tokens;
 };
 
-/**
- * Given a responses[] item, return either a prompt widget or response widget.
- */
-const promptResults = (promptData) => {
-  if ("prompt" == promptData.type) {
-    return promptInput(promptData.content);
-  } else if ("response" == promptData.type) {
-    return promptOutput(promptData.content);
-  }
-};
+/*************************************************************************
+ * WIDGETS
+ *************************************************************************/
 
 /**
- * Language reported by Gemini for code snippets doesn't exactly match the
- * GtkSourceView language; convert here
+ * Just a header thingy that says "Gemini".
  */
-const sourceviewSubstitueLang = (lang) => {
-  const substitutions = {
-    /* from -> to */
-    bash: "sh",
-    javascript: "js",
-    "c++": "cpp",
-    markdown: "md",
-  };
-
-  return substitutions[lang] ? substitutions[lang] : lang;
-};
-
-/**
- * Load custom colorscheme for GtkSourceView
- */
-const sourceviewLoadScheme = (path = CUSTOM_SOURCEVIEW_SCHEME_PATH) => {
-  const file = Gio.File.new_for_path(path);
-  const [success, contents] = file.load_contents(null);
-
-  if (!success) {
-    console.log("sourceviewLoadScheme: Failed to load theme XML file");
-    return;
-  }
-
-  /* Parse the XML content and set the Style Scheme */
-  const schemeManager = GtkSource.StyleSchemeManager.get_default();
-  schemeManager.append_search_path(file.get_parent().get_path());
-};
-
-sourceviewLoadScheme();
-
-/********************************************************
- * WIDGET DEFINITIONS
- ********************************************************/
-
-/**
- * Section header and button to clear all prompts and responses.
- */
-const Header = () =>
-  Widget.Box({
-    vertical: false,
-    cssClasses: ["section-header"],
-    children: [
-      Widget.Label({
-        hpack: "start",
-        xalign: 0,
-        label: "Gemini",
-      }),
-    ],
-  });
-
-/**
- * Return code highlighted with GtkSourceView
- */
-const HighlightedCode = (content, lang) => {
-  const buffer = new GtkSource.Buffer();
-  const sourceView = new GtkSource.View({
-    buffer: buffer,
-    wrap_mode: Gtk.WrapMode.NONE,
-    editable: false,
-    canFocus: false,
-  });
-
-  /* Set language */
-  const langManager = GtkSource.LanguageManager.get_default();
-  let displayLang = langManager.get_language(sourceviewSubstitueLang(lang)); // Set your preferred language
-  if (displayLang) {
-    buffer.set_language(displayLang);
-  }
-
-  /* Apply theme */
-  const schemeManager = GtkSource.StyleSchemeManager.get_default();
-  buffer.set_style_scheme(schemeManager.get_scheme(UserConfig.currentTheme));
-
-  /* Set content */
-  buffer.set_text(content.trim(), -1);
-
-  /* Hot reload theme */
-  systemTheme.connect("changed", (theme) => {
-    buffer.set_style_scheme(schemeManager.get_scheme(theme.value));
-  });
-
-  return sourceView;
-};
-
-/**
- * Options
- */
-const Options = () => {
-  /* Give concise responses */
-  const OptConcise = (opt) =>
-    Widget.ToggleButton({
-      cssClasses: ["option"],
-      active: optConcise.bind(),
-      child: Widget.Label("Concise"),
-      onToggled: (self) => {
-        if (self.active != optConcise.value) {
-          optConcise.value = !optConcise.value;
-        }
-      },
-    });
-
-  /* Continue prior conversation history */
-  const OptContinue = (opt) =>
-    Widget.ToggleButton({
-      cssClasses: ["option"],
-      active: optContinue.bind(),
-      child: Widget.Label("Continue conversation"),
-      onToggled: (self) => {
-        if (self.active != optContinue.value) {
-          optContinue.value = !optContinue.value;
-        }
-      },
-    });
-
-  const Clear = () =>
-    Widget.Button({
-      hpack: "end",
-      cssClasses: ["option"],
-      child: Widget.Box({
-        spacing: 8,
-        vertical: false,
-        children: [
-          Widget.Icon("trash-symbolic"),
-          Widget.Label({
-            label: "Clear",
-          }),
-        ],
-      }),
-      onClicked: () => {
-        responsesRaw = [];
-        responses.setValue(responsesRaw);
-      },
-    });
-
-  return Widget.Box({
-    vertical: false,
-    spacing: 12,
-    cssClasses: ["options"],
-    children: [Clear(), OptConcise(), OptContinue()],
-  });
-};
-
-/**
- * Text entry box for prompts.
- * Also includes the Gemini API call.
- */
-const EntryBox = () => {
-  const entryBox = Widget.Entry({
-    cssClasses: ["entry"],
-    hexpand: true,
-    placeholderText: "Talk to Gemini",
-    onAccept: (self) => {
-      const text = self.get_text();
-      if (text == "") return;
-
-      self.set_text("");
-
-      responsesRaw.push({ type: "prompt", content: text });
-      responsesRaw.push({ type: "response", content: "Thinking..." });
-      responses.setValue(responsesRaw);
-
-      /* Set options */
-      let continueConversation = optContinue.value
-        ? responsesRaw.map((x) => escapeQuotes(x.content)).join(" ")
-        : "";
-      let concise = optConcise.value ? "answer concisely" : "";
-
-      const cmd = `curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
-                  -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "${continueConversation} ${escapeQuotes(text)} ${concise}"}] }] }'`;
-
-      Utils.execAsync(cmd)
-        .then((out) => {
-          const result = JSON.parse(out);
-          const output = result.candidates[0].content.parts[0].text;
-
-          responsesRaw[responsesRaw.length - 1].content = output;
-          responses.setValue(responsesRaw);
-        })
-        .catch((err) => console.log(`Gemini: ${err}`));
-    },
-  });
-
-  return Widget.Box({
-    cssClasses: ["entry-container"],
-    hexpand: true,
-    children: [
-      entryBox,
-      Widget.Icon({
-        widthRequest: 24,
-        icon: "paper-plane-tilt-symbolic",
-      }),
-    ],
-  });
-};
-
-/**
- * Text displaying prompt.
- */
-const promptInput = (input) => {
-  return Widget.Box({
-    cssClasses: ["prompt-input"],
-    vertical: true,
-    vexpand: false,
-    hexpand: false,
-    children: [
-      Widget.Label({
-        xalign: 0,
-        cssClasses: ["header"],
-        label: UserConfig.profile.name,
-      }),
-      TextView({
-        vexpand: true,
-        hexpand: false,
-        canFocus: false,
-        cssClasses: ["content"],
-        setup: (self) => {
-          self.set_wrap_mode(true);
-          self.set_editable(false);
-          self.set_accepts_tab(false);
-          self.buffer.text = input;
-        },
-      }),
-    ],
-  });
-};
-
-/**
- * Text displaying response to prompt.
- */
-const promptOutput = (output) => {
-  /**
-   * Helper function to create text widget
-   */
-  const _promptOutputText = (token) => {
-    return TextView({
-      vexpand: true,
-      hexpand: false,
-      cssClasses: ["content"],
-      canFocus: false,
-      setup: (self) => {
-        self.set_wrap_mode(true);
-        self.set_editable(false);
-        self.set_accepts_tab(false);
-        self.buffer.insert_markup(
-          self.buffer.get_end_iter(),
-          markdownToPangoMarkup(token.content.trim()),
-          -1,
-        );
-      },
-    });
-  };
-
-  /**
-   * Helper function to create code block widget
-   */
-  const promptOutputCodeSnippet = (token) => {
-    const codeSnippetHeader = Widget.CenterBox({
-      hexpand: false,
-      cssClasses: ["code-block-header"],
-      startWidget: Widget.Label({
-        hpack: "start",
-        label:
-          token.language.trim().charAt(0).toUpperCase() +
-          token.language.trim().slice(1),
-      }),
-      endWidget: Widget.Button({
-        attribute: { content: escapeQuotes(token.content.trim()) },
-        hpack: "end",
-        hexpand: false,
-        cssClasses: ["copy-btn"],
-        canFocus: false,
-        child: Widget.Box({
-          hexpand: false,
-          spacing: 5,
-          vertical: false,
-          children: [Widget.Icon("copy-symbolic"), Widget.Label("Copy")],
-        }),
-        onClicked: (self) => {
-          const cmd = `bash -c "echo '${self.attribute.content.trim()}' | wl-copy 2>/dev/null"`;
-          Utils.execAsync(cmd).catch((err) => print);
-        },
-      }),
-    });
-
-    let codeSnippetContent;
-
-    codeSnippetContent = Widget.Box({
-      cssClasses: ["code-block-content"],
-      hexpand: false,
-      vexpand: true,
-      children: [
-        Widget.Scrollable({
-          overlayScrolling: true,
-          canFocus: false,
-          hscroll: "automatic",
-          vscroll: "never",
-          vexpand: true,
-          hexpand: true,
-          child: HighlightedCode(token.content.trim(), token.language),
-        }),
-      ],
-    });
-
-    return Widget.Box({
-      cssClasses: ["code-block"],
-      vertical: true,
-      hexpand: false,
-      children: [codeSnippetHeader, codeSnippetContent],
-    });
-  };
-
-  /**
-   * Helper function to create code block widget
-   */
-  const _createPromptOutputWidgets = (token) => {
-    if ("text" == token.type) {
-      return _promptOutputText(token);
-    } else if ("code" == token.type) {
-      return promptOutputCodeSnippet(token);
-    }
-  };
-
-  /* Tokenize on code snippets */
-  let tokens = [];
-  if (output.includes("```")) {
-    tokens = tokenizeCode(output);
-  } else {
-    tokens = [{ type: "text", content: output }];
-  }
-
-  return Widget.Box({
-    cssClasses: ["prompt-output"],
-    vertical: true,
-    vexpand: false,
-    hexpand: false,
-    children: [
-      Widget.Label({
-        xalign: 0,
-        cssClasses: ["header"],
-        label: "Gemini",
-      }),
-      Widget.Box({
-        vertical: true,
-        spacing: 6,
-        children: tokens.map(_createPromptOutputWidgets),
-      }),
-    ],
-  });
-};
-
-const ContentContainer = () =>
-  Widget.Scrollable({
-    hscroll: "never",
-    vscroll: "always",
-    vexpand: true,
-    hexpand: false,
-    canFocus: false,
-    css: "padding: 1px",
-    child: Widget.Box({
-      cssClasses: ["response-container"],
-      spacing: 12,
-      vertical: true,
-      children: responses.bind().as((x) => x.map(promptResults)),
+const HeaderBar = () =>
+  Widget.CenterBox({
+    startWidget: Widget.Label({
+      hexpand: true,
+      cssClasses: ["header"],
+      label: "Gemini",
+      xalign: 0,
     }),
   });
 
 /**
- * Final widget composition
+ * Renders a prompt or a response.
  */
-export const Gemini = () =>
-  Widget.Box({
-    cssClasses: ["gemini"],
-    vexpand: true,
-    hexpand: true,
-    vertical: true,
-    children: [Header(), ContentContainer(), Options(), EntryBox()],
+const ConversationPiece = (props: {
+  id: Number;
+  text: string;
+  ctype: ConversationType;
+}) => {
+  const Header = Widget.Label({
+    cssClasses:
+      props.ctype === ConversationType.Prompt
+        ? ["speaker", "user"]
+        : ["speaker", "gemini"],
+    label: props.ctype === ConversationType.Prompt ? "Alexis" : "Gemini",
+    xalign: 0,
   });
+
+  const Content = Widget.Box({
+    vertical: true,
+    children: [
+      Widget.Label({
+        label: props.text,
+        xalign: 0,
+        wrap: true,
+      }),
+    ],
+  });
+
+  const Final = Widget.Box({
+    vertical: true,
+    children: [Header, Content],
+  });
+
+  /* Add custom function to update the widget content.
+   * Mainly used for responses:
+   * After you submit a prompt, it says "Thinking..."
+   * And then after the API call is done, the "Thinking..." gets updated to
+   * the actual response content. */
+  Object.assign(Final, {
+    /* This is triggered after callback */
+    setContent: (responseText: string) => {
+      /* Remove 'Thinking...' */
+      Content.remove(Content.children[0]);
+
+      /* Tokenize to check if there's code snippets */
+      const tokens = tokenizeReponse(responseText);
+
+      tokens.map((token) => {
+        let tokenWidget = undefined;
+
+        if (token.type == "code") {
+          tokenWidget = CustomSourceView({
+            code: token.content,
+            lang: token.language!,
+          });
+        }
+
+        if (token.type == "text") {
+          tokenWidget = Widget.Label({
+            label: markdownToPangoMarkup(token.content),
+            xalign: 0,
+            wrap: true,
+            useMarkup: true,
+          });
+        }
+
+        Content.append(tokenWidget!);
+      });
+    },
+  });
+
+  return Final;
+};
+
+/**
+ * Holds all prompts and responses
+ */
+const ConversationContainer = () =>
+  Widget.Box({
+    vertical: true,
+    spacing: 10,
+    children: [],
+    setup: (self) => {
+      gs.connect("prompt-received", (_, id: number, prompt: string) => {
+        self.append(
+          ConversationPiece({
+            id: id,
+            text: prompt,
+            ctype: ConversationType.Prompt,
+          }),
+        );
+
+        self.append(
+          ConversationPiece({
+            id: id + 1,
+            text: "Thinking...",
+            ctype: ConversationType.Response,
+          }),
+        );
+      });
+
+      gs.connect("response-received", (_, id: number, response: string) => {
+        self.get_children()[id].setContent(response);
+      });
+    },
+  });
+
+export const Gemini = () => {
+  const Container = ConversationContainer();
+
+  /**
+   * Where the user types in prompts to Gemini
+   * Commands (put these at beginning of prompt)
+   *    - /clr  to clear all responses
+   *    - /cont to toggle continuing the conversation (TODO)
+   *    - /cns  to toggle responding concisely (TODO)
+   */
+  const PromptEntryBox = Widget.Entry({
+    cssClasses: ["prompt-entry"],
+    canFocus: true,
+    focusOnClick: true,
+    focusable: true,
+    placeholderText: "Talk to Gemini",
+    onActivate: (self) => {
+      gs.prompt(Container.children.length, self.text);
+      self.text = "";
+    },
+    onFocusEnter: (self) => {
+      self.add_css_class("focus");
+    },
+    onFocusLeave: (self) => {
+      self.remove_css_class("focus");
+    },
+  });
+
+  const Final = Widget.CenterBox({
+    cssClasses: ["gemini"],
+    orientation: 1,
+    hexpand: false,
+    // startWidget: Widget.Box({
+    //   vertical: true,
+    //   vexpand: true,
+    //   children: [Container],
+    // }),
+    startWidget: Scrollable({
+      vexpand: true,
+      hexpand: false,
+      child: Container,
+      visible: true,
+    }),
+    endWidget: PromptEntryBox,
+  });
+
+  return Final;
+};
