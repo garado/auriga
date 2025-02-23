@@ -53,8 +53,8 @@
  * Media player
  *********************************************/
 
-.home .player
-  .album-art
+.home .player-container
+  .cover-art
     border-radius: $border-radius
     background-image: url('/home/alexis/Github/dotfiles/home/services/ags/assets/no-music.jpg')
     transition: all 0.25s ease-out
@@ -68,19 +68,18 @@
     background-position: center
     opacity: 0.3
     background: $primary-500
- 
+
   .info
-    margin: 1rem
+    margin: 1.5rem
     color: $neutral-100
     background-color: rgba(0, 0, 0, 0)
- 
-    .title
-      font-size: 1.8rem
-      font-weight: bold
- 
+
     .artist
       font-size: 1rem
-      font-weight: bold
+
+    .title
+      font-size: 1.8rem
+      font-weight: 500
 
   .kotontrion-cava
     color: $primary-500

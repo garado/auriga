@@ -88,6 +88,7 @@
 
     extraPackages = with pkgs; [
       # gtksourceview5 // sadge
+      gvfs /* Needed for fetching cover art */
       inputs.ags.packages.${pkgs.system}.apps
       inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.auth
