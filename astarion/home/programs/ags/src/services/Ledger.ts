@@ -2,12 +2,15 @@
 /* █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄ */
 
 import { GObject, register, property } from "astal/gobject";
-import { monitorFile, readFileAsync } from "astal/file";
+import { GLib } from "astal";
 import { execAsync } from "astal/process";
+import Gio from "gi://Gio";
 import UserConfig from "../../userconfig.js";
 
 const INCLUDES = " -f /home/alexis/Enchiridion/self/ledger/2024/2024.ledger ";
 const CSV = " --output-format csv ";
+const BALANCE_TREND_CACHEFILE = "/tmp/ags/ledgerbal";
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -79,6 +82,9 @@ export default class Ledger extends GObject.Object {
    **************************************************/
 
   @property(Object)
+  declare balancesOverTime: Array<Number>;
+
+  @property(Object)
   declare displayAccounts: Array<DisplayAccountProps>;
 
   @property(Object)
@@ -104,27 +110,92 @@ export default class Ledger extends GObject.Object {
    **************************************************/
 
   constructor() {
-    super();
+    super({
+      displayAccounts: [],
+      netWorth: 0,
+      incomeThisMonth: 0,
+      expensesThisMonth: 0,
+      debtsLiabilities: {},
+      monthlyBreakdown: {},
+      balancesOverTime: [],
+    } as any);
 
-    this.displayAccounts = [];
-    this.netWorth = 0;
-    this.incomeThisMonth = 0;
-    this.expensesThisMonth = 0;
-    this.debtsLiabilities = {};
-    this.monthlyBreakdown = {};
+    this.#initAll();
+  }
 
+  /**
+   * Initialize the service's data.
+   */
+  #initAll() {
     this.#initAccountData();
     this.#initNetWorth();
     this.#initMonthlyIncomeExpenses();
     this.#initDebtsLiabilities();
     this.#initMonthlyBreakdown();
     this.#initRecentTransactions();
+    this.#initBalanceTrends();
+  }
 
-    // monitorFile(kbdPath, async f => {
-    //   const v = await readFileAsync(f)
-    //   this.#kbd = Number(v) / this.#kbdMax
-    //   this.notify("kbd")
-    // })
+  /**
+   * Fetch balance trend data.
+   */
+  #initBalanceTrends() {
+    /* Run if cachefile doesn't exist */
+    const fetchAllFromLedger = () => {
+      /* @TODO Init timestamp to user-configurable date */
+      /* let ts = new Date(new Date().getFullYear(), 0, 1).valueOf() */
+      let ts = new Date(2024, 0, 1).valueOf();
+      const now = Date.now().valueOf();
+
+      /**
+       * To get total balance trends:
+       * Chain together multiple `ledger balance --end ${timestamp}` commands.
+       * The output of each command will be put on a new line.
+       * Get total balance (Assets - Liabilities) by piping to `tail -n 1`.
+       */
+
+      let cmd = "";
+      let baseCmd = `hledger ${INCLUDES} balance ^Assets ^Liabilities --depth 1 --exchange '$'`;
+
+      while (ts < now) {
+        const year = new Date(ts).getFullYear();
+        const month = new Date(ts).getMonth() + 1;
+        const date = new Date(ts).getDate();
+        cmd += `${baseCmd} -e ${year}/${month}/${date} | tail -n 1 ; \n`;
+        ts += MILLISECONDS_PER_DAY;
+      }
+
+      cmd = cmd.trimEnd();
+      cmd = cmd.slice(0, -1);
+
+      execAsync(`bash -c "\(${cmd}\) | tee ${BALANCE_TREND_CACHEFILE}"`)
+        .then((out) => {
+          this.balancesOverTime = out
+            .split("\n")
+            .map((x) => Number(x.replace(/[^0-9.]/g, "")));
+          this.balancesOverTime = [];
+        })
+        .catch((err) => print(`LedgerService: initBalanceGraph: ${err}`));
+    };
+
+    const fetchFromFile = () => {
+      const cmd = `cat ${BALANCE_TREND_CACHEFILE}`;
+
+      execAsync(cmd)
+        .then((out) => {
+          this.balancesOverTime = out
+            .split("\n")
+            .map((x) => Number(x.replace(/[^0-9.]/g, "")));
+        })
+        .catch(print);
+    };
+
+    const cfile = Gio.File.new_for_path(BALANCE_TREND_CACHEFILE);
+    if (!cfile.query_exists(null)) {
+      fetchAllFromLedger();
+    } else {
+      fetchFromFile();
+    }
   }
 
   /**
@@ -235,24 +306,24 @@ export default class Ledger extends GObject.Object {
       .then((out) => {
         const lines = out.replaceAll('"', "").split("\n").slice(1);
 
-        this.debtsLiabilities = {};
+        const tmp = {};
 
         lines.map((line) => {
           const fields = line.split(",");
 
           const account = fields[HLedgerRegCSV.Account];
 
-          if (this.debtsLiabilities[account] == undefined) {
-            this.debtsLiabilities[account] = [];
+          if (tmp[account] == undefined) {
+            tmp[account] = [];
           }
 
-          this.debtsLiabilities[account].push({
+          tmp[account].push({
             desc: fields[HLedgerRegCSV.Desc],
             total: Number(fields[HLedgerRegCSV.Amount].replace("$", "")),
           });
         });
 
-        this.notify("debts-liabilities");
+        this.debtsLiabilities = tmp;
       })
       .catch((err) => print(`#initDebtsLiabilities: ${err}`));
   }
