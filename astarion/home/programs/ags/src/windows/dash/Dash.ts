@@ -4,9 +4,10 @@
 import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 
-import Home from "@/windows/dash/home/Home.ts";
-import Ledger from "@/windows/dash/ledger/Ledger.ts";
-import { SmartStack } from "@/components/SmartStack.ts";
+import Home from "@/windows/dash/home/Home";
+import Ledger from "@/windows/dash/ledger/Ledger";
+import Calendar from "@/windows/dash/calendar/Calendar";
+import { SmartStack } from "@/components/SmartStack";
 
 /***********************************************************
  * SETUP
@@ -19,6 +20,11 @@ type DashTabData = {
 };
 
 const dashTabData: DashTabData[] = [
+  {
+    name: "Calendar",
+    icon: "currency-dollar-symbolic",
+    ui: Calendar,
+  },
   {
     name: "Home",
     icon: "house-symbolic",
