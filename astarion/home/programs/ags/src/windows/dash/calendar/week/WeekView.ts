@@ -28,11 +28,6 @@ export const WeekView = () => {
     ],
   });
 
-  const verticalSizeGroup = new Gtk.SizeGroup({ mode: Gtk.SizeGroupMode.BOTH });
-
-  verticalSizeGroup.add_widget(_Gridlines);
-  verticalSizeGroup.add_widget(_WeekView);
-
   return Scrollable({
     vexpand: true,
     hexpand: true,

@@ -1,5 +1,5 @@
 import { Gtk, Widget, astalify } from "astal/gtk4";
-import { GLib } from "astal";
+import { GLib, bind } from "astal";
 import Calendar, { DAY_NAMES } from "@/services/Calendar";
 import { Gridlines } from "@/windows/dash/calendar/week/Gridlines";
 
@@ -21,13 +21,17 @@ export const DateLabels = () => {
 
         const number = Widget.Label({
           cssClasses: ["number"],
+          label: bind(cal, "viewrange").as((viewrange) =>
+            viewrange[i].slice(-2),
+          ),
         });
 
         const dateLabel = Widget.Box({
-          cssClasses: [
-            "date-label",
-            // CalSvc.viewrange[i] == CalSvc.today ? "active" : "",
-          ],
+          cssClasses: bind(cal, "viewrange").as((viewrange) =>
+            viewrange[i] == cal.today
+              ? ["date-label", "active"]
+              : ["date-label"],
+          ),
           vertical: true,
           children: [name, number],
         });
