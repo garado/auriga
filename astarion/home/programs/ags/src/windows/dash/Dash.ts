@@ -1,7 +1,7 @@
 /* █▀▄ ▄▀█ █▀ █░█ */
 /* █▄▀ █▀█ ▄█ █▀█ */
 
-import { App, Astal, Gtk, Widget } from "astal/gtk4";
+import { App, Astal, Gtk, Gdk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 
 import Home from "@/windows/dash/home/Home";
@@ -21,11 +21,6 @@ type DashTabData = {
 
 const dashTabData: DashTabData[] = [
   {
-    name: "Calendar",
-    icon: "currency-dollar-symbolic",
-    ui: Calendar,
-  },
-  {
     name: "Home",
     icon: "house-symbolic",
     ui: Home,
@@ -34,6 +29,11 @@ const dashTabData: DashTabData[] = [
     name: "Ledger",
     icon: "currency-dollar-symbolic",
     ui: Ledger,
+  },
+  {
+    name: "Calendar",
+    icon: "calendar-symbolic",
+    ui: Calendar,
   },
 ];
 
@@ -90,6 +90,9 @@ const DashTabStack = () =>
  ***********************************************************/
 
 export default () => {
+  const TabBar = DashTabBar();
+  const TabStack = DashTabStack();
+
   return Widget.Window({
     application: App,
     name: "dash",
@@ -102,13 +105,40 @@ export default () => {
       child: Widget.Box({
         orientation: 0,
         cssClasses: ["dash"],
-        children: [DashTabBar(), DashTabStack()],
+        children: [TabBar, TabStack],
       }),
     }),
     setup: (self) => {
       /* Workaround for revealer bug.
        * https://github.com/wmww/gtk4-layer-shell/issues/60 */
       self.set_default_size(1, 1);
+
+      self.controller = new Gtk.EventControllerKey();
+      self.add_controller(self.controller);
+      self.controller.connect("key-pressed", (controller, keyval) => {
+        log("dashKeyController", "Dash");
+        switch (keyval) {
+          case Gdk.KEY_1:
+            activeTabIndex.set(0);
+            return true;
+            break;
+
+          case Gdk.KEY_2:
+            activeTabIndex.set(1);
+            return true;
+            break;
+
+          case Gdk.KEY_3:
+            activeTabIndex.set(2);
+            return true;
+            break;
+
+          default:
+            controller.forward(TabStack.get_visible_child());
+            return false;
+            break;
+        }
+      });
     },
   });
 };

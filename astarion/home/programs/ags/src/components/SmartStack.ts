@@ -10,7 +10,7 @@
  * "horizontally", they will will switch between SLIDE_LEFT and
  * SLIDE_RIGHT. */
 
-import { Gtk, Widget } from "astal/gtk4";
+import { Gtk, Gdk, Widget } from "astal/gtk4";
 
 export const SmartStack = (props: {
   children: Array<Object> /* { ui: function, name: string } */;
@@ -31,6 +31,27 @@ export const SmartStack = (props: {
     setup: (self) => {
       props.children.map((c) => {
         self.add_named(c.ui(), c.name);
+      });
+
+      self.controller = new Gtk.EventControllerKey();
+      self.add_controller(self.controller);
+      self.controller.connect("key-pressed", (controller, keyval) => {
+        switch (keyval) {
+          case Gdk.KEY_H:
+            self.iterTab(-1);
+            return true;
+            break;
+
+          case Gdk.KEY_L:
+            self.iterTab(1);
+            return true;
+            break;
+
+          default:
+            controller.forward(self.get_visible_child());
+            return false;
+            break;
+        }
       });
     },
   });
@@ -85,6 +106,23 @@ export const SmartStack = (props: {
       Stack.visibleChildName = childIndices[newIndex];
     });
   }
+
+  /**
+   * Iterate through pages (no wrapping)
+   */
+  Stack.iterTab = (dir: number) => {
+    const lastPageIndex = childIndices.indexOf(Stack.get_visible_child_name());
+    let newIndex = lastPageIndex + 1 * dir;
+    if (newIndex < 0) newIndex = 0;
+    if (newIndex > props.children.length - 1)
+      newIndex = props.children.length - 1;
+
+    if (props.bindNumberedSwitchTo) {
+      props.bindNumberedSwitchTo.set(newIndex);
+    } else if (props.bindNamedSwitchTo) {
+      props.bindNamedSwitchTo.set(props.children[newIndex].name);
+    }
+  };
 
   return Stack;
 };
