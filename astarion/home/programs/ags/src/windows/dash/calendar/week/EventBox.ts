@@ -46,5 +46,7 @@ export const EventBox = (event: Event, dayHeight: number, dayWidth: number) => {
     ],
   });
 
+  ebox.event = event;
+
   return ebox;
 };
