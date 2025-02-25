@@ -36,6 +36,7 @@ export const SmartStack = (props: {
       self.controller = new Gtk.EventControllerKey();
       self.add_controller(self.controller);
       self.controller.connect("key-pressed", (controller, keyval) => {
+        log("dashKeyController", "SmartStack");
         switch (keyval) {
           case Gdk.KEY_H:
             self.iterTab(-1);

@@ -4,7 +4,7 @@
 /* Provides consistent implementation for dashboard tabs.
  * Includes tab header, action buttons, and page switch buttons. */
 
-import { Widget } from "astal/gtk4";
+import { Gtk, Gdk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
 import { SmartStack } from "@/components/SmartStack";
@@ -45,21 +45,19 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
       }),
     });
 
-  const HeaderBar = () =>
-    Widget.CenterBox({
-      cssClasses: ["tab-header"],
-      startWidget: Widget.Label({
-        label: dashLayout.name,
-      }),
-      endWidget: PageButtonContainer(),
-    });
+  const HeaderBar = Widget.CenterBox({
+    cssClasses: ["tab-header"],
+    startWidget: Widget.Label({
+      label: dashLayout.name,
+    }),
+    endWidget: PageButtonContainer(),
+  });
 
-  const PageStack = () =>
-    SmartStack({
-      cssClasses: [...["page-stack"], ...dashLayout.cssClasses],
-      children: dashLayout.pages,
-      bindNamedSwitchTo: activePage,
-    });
+  const PageStack = SmartStack({
+    cssClasses: [...["page-stack"], ...dashLayout.cssClasses],
+    children: dashLayout.pages,
+    bindNamedSwitchTo: activePage,
+  });
 
   /**
    * The final widget to return
@@ -67,7 +65,20 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
   const FinalWidget = Widget.Box({
     cssClasses: ["tab-layout"],
     orientation: 1,
-    children: [HeaderBar(), PageStack()],
+    canFocus: true,
+    children: [HeaderBar, PageStack],
+    setup: (self) => {
+      self.controller = new Gtk.EventControllerKey();
+      self.add_controller(self.controller);
+      self.controller.connect("key-pressed", (controller, keyval) => {
+        log("dashKeyController", "DashTabLayout");
+        switch (keyval) {
+          default:
+            controller.forward(PageStack);
+            return false;
+        }
+      });
+    },
   });
 
   return FinalWidget;
