@@ -9,12 +9,15 @@
   padding: 0.5rem
   background-color: $primary-500
   box-shadow: 2px 2px 2px 2px rgba(0 0 0 / 20%)
-  border: 2px solid rgba(0, 0, 0, 0)
+  border-width: 2px 
+  border-style: solid 
+  border-color: transparent
   border-radius: $border-radius
   margin-right: 0.75rem
+  transition: 0.1s all
   
   &:focus, &:hover
-    border: 2px solid $neutral-100
+    border-color: $neutral-100
 
   .title
     font-weight: 500
@@ -28,6 +31,10 @@
 
   &.Events
     background-color: $red-500
+
+  &.dragging
+    opacity: 0.5
+    border-style: dashed
 
 /****************************************************
  * SCROLLBAR

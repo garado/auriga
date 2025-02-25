@@ -34,14 +34,6 @@ const isWithin = (a: Event, b: Event): boolean => {
   return a.startFH > b.startFH && a.endFH < b.endFH;
 };
 
-const coordToFloatHour = (yCoord: number, height: number): number => {
-  return Math.round(((yCoord / height) * 24) / 0.25) * 0.25;
-};
-
-const coordToWeekday = (xCoord: number, width: number): number => {
-  return Math.floor((xCoord / width) * 6 + 0.5);
-};
-
 /*****************************************************
  * WIDGET DEFINITION
  *****************************************************/
@@ -152,69 +144,6 @@ export const WeekView = () => {
       eBox.widthRequest = w - xPos;
 
       WeekViewContent.put(eBox, xPos + w * index, yPos);
-
-      /* Make widget draggable with GtkGestureDrag */
-      const drag = new Gtk.GestureDrag();
-
-      /* Store drag state */
-      let offsetX = 0;
-      let offsetY = 0;
-      let startX = 0;
-      let startY = 0;
-      let lastMovedValue = null;
-      let dragging = false;
-      let needsUpdate = false;
-
-      /* Use FrameClock to throttle updates */
-      const frameClock = App.get_window("dash")
-        .get_surface()
-        ?.get_frame_clock();
-      frameClock?.connect("update", () => {
-        if (needsUpdate) {
-          const wouldBeNewValue =
-            coordToWeekday(offsetX, WeekViewContent.get_allocated_width()) * w;
-
-          if (
-            lastMovedValue == null ||
-            Math.abs(wouldBeNewValue - lastMovedValue) > 200
-          ) {
-            WeekViewContent.move(eBox, wouldBeNewValue, offsetY);
-            lastMovedValue = wouldBeNewValue;
-          } else {
-            WeekViewContent.move(eBox, lastMovedValue, offsetY);
-          }
-
-          needsUpdate = false;
-        }
-      });
-
-      drag.connect("drag-begin", (_, x, y) => {
-        dragging = true;
-        startX = x;
-        startY = y;
-
-        /* Get the current position of the widget */
-        const [widgetX, widgetY] = WeekViewContent.get_child_position(eBox);
-        offsetX = widgetX;
-        offsetY = widgetY;
-      });
-
-      /* Handle drag update */
-      drag.connect("drag-update", (_, deltaX, deltaY) => {
-        if (!dragging) return;
-
-        offsetX += deltaX;
-        offsetY += deltaY;
-        needsUpdate = true;
-        frameClock?.request_phase(Gdk.FrameClockPhase.UPDATE);
-      });
-
-      /* Handle drag end */
-      drag.connect("drag-end", () => {
-        dragging = false;
-      });
-
-      eBox.add_controller(drag);
     }
   };
 
