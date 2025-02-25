@@ -49,6 +49,7 @@ export type Event = {
   endTs: number;
   startFH: number;
   endFH: number;
+  durationFH: number;
 };
 
 export const uiVars = {
@@ -196,8 +197,8 @@ export default class Calendar extends GObject.Object {
     }
 
     /* Get unix epoch timetamps */
-    event.startTS = new Date(`${event.startDate} ${event.startTime}`).getTime();
-    event.endTS = new Date(`${event.endDate} ${event.endTime}`).getTime();
+    event.startTs = new Date(`${event.startDate} ${event.startTime}`).getTime();
+    event.endTs = new Date(`${event.endDate} ${event.endTime}`).getTime();
 
     /* Get fractional hours. 5:30PM -> 17.5; 9:15AM -> 9.25 */
     const startRe = /(\d\d):(\d\d)/.exec(event.startTime);
@@ -205,6 +206,8 @@ export default class Calendar extends GObject.Object {
 
     const endRe = /(\d\d):(\d\d)/.exec(event.endTime);
     event.endFH = Number(endRe[1]) + Number(endRe[2]) / 60;
+
+    event.durationFH = (event.endTs - event.startTs) / (60 * 60 * 1000);
 
     return event;
   }

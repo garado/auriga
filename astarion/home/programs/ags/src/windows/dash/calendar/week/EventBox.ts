@@ -16,16 +16,19 @@ class DragData {
   dy: number = 0;
   dragging: boolean = false;
   parentTotalWidth: number = 0;
+  parentTotalHeight: number = 0;
 }
 
 const coordToFloatHour = (dragData: DragData): number => {
   return (
-    Math.round(((dragData.y / dragData.parentTotalHeight) * 24) / 0.25) * 0.25
+    Math.round(
+      (((dragData.y + dragData.dy) / dragData.parentTotalHeight) * 24) / 0.25,
+    ) * 0.25
   );
 };
 
 const coordToWeekday = (dragData: DragData): number => {
-  return Math.floor(
+  return Math.round(
     ((dragData.x + dragData.dx) / dragData.parentTotalWidth) * 7,
   );
 };
@@ -69,11 +72,13 @@ export const EventBox = (event: Event, dayHeight: number, dayWidth: number) => {
     cssClasses: ["eventbox", event.calendar],
     canFocus: true,
     heightRequest: (event.endFH - event.startFH) * (dayHeight / 24),
-    children: [
-      title,
-      event.endFH - event.startFH > 0.75 ? times : null,
-      event.endFH - event.startFH > 0.75 ? location : null,
-    ],
+    children: [title],
+    setup: (self) => {
+      if (event.endFH - event.startFH > 0.75) {
+        self.append(times);
+        self.append(location);
+      }
+    },
   });
 
   ebox.event = event;
@@ -102,12 +107,31 @@ export const EventBox = (event: Event, dayHeight: number, dayWidth: number) => {
     dragData.dy = dy;
 
     dragData.x = coordToWeekday(dragData) * (dragData.parentTotalWidth / 7);
-    dragData.y += dy;
+    dragData.y = coordToFloatHour(dragData) * (dragData.parentTotalHeight / 24);
 
     /* Stay within bounds */
     dragData.x < 0 ? (dragData.x = 0) : dragData.x;
 
     ebox.get_parent().move(ebox, dragData.x, dragData.y);
+
+    /* Update label */
+    const startH = Math.floor(coordToFloatHour(dragData))
+      .toString()
+      .padStart(2, "0");
+
+    const startM = ((coordToFloatHour(dragData) % 1) * 60)
+      .toString()
+      .padStart(2, "0");
+
+    const endH = Math.floor(coordToFloatHour(dragData) + event.durationFH)
+      .toString()
+      .padStart(2, "0");
+
+    const endM = (((coordToFloatHour(dragData) + event.durationFH) % 1) * 60)
+      .toString()
+      .padStart(2, "0");
+
+    times.label = `${startH}:${startM} - ${endH}:${endM}`;
   });
 
   /* Handle drag end */

@@ -40,11 +40,12 @@ export const Gridlines = () => {
         }
 
         /* Draw vertical lines to separate days */
-        let x = cal.HOURLABEL_OVERHANG_PX;
+        let x = 0;
         cr.moveTo(x, 0);
-        for (let i = 0; i < 7; i++) {
+
+        for (let i = 0; i < 8; i++) {
           cr.lineTo(x, h);
-          x += w;
+          x += w / 7;
           cr.moveTo(x, 0);
         }
 
