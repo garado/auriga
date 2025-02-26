@@ -1,13 +1,17 @@
 /* █▀▀ █░█ █▀▀ █▄░█ ▀█▀ █▄▄ █▀█ ▀▄▀ */
 /* ██▄ ▀▄▀ ██▄ █░▀█ ░█░ █▄█ █▄█ █░█ */
 
-import { App, Gtk, Gdk, Widget, astalify, hook } from "astal/gtk4";
-import { GLib } from "astal";
-import Calendar, { Event } from "@/services/Calendar";
+/* Custom widget implementation for calendar event box. */
 
-/*****************************************************
- * HELPER FUNCTIONS
- *****************************************************/
+import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { register, property, signal } from "astal/gobject";
+import Calendar, { Event, fhToTimeStr } from "@/services/Calendar";
+
+const cal = Calendar.get_default();
+
+/*********************************************************
+ * MISC
+ *********************************************************/
 
 class DragData {
   x: number = 0;
@@ -15,131 +19,156 @@ class DragData {
   dx: number = 0;
   dy: number = 0;
   dragging: boolean = false;
-  parentTotalWidth: number = 0;
-  parentTotalHeight: number = 0;
 }
 
-const coordToFloatHour = (dragData: DragData): number => {
-  return (
-    Math.round(
-      (((dragData.y + dragData.dy) / dragData.parentTotalHeight) * 24) / 0.25,
-    ) * 0.25
-  );
-};
-
-const coordToWeekday = (dragData: DragData): number => {
-  return Math.round(
-    ((dragData.x + dragData.dx) / dragData.parentTotalWidth) * 7,
-  );
-};
-
-/*****************************************************
+/*********************************************************
  * WIDGET DEFINITION
- *****************************************************/
+ *********************************************************/
 
-/**
- * Create a single event box.
- */
-export const EventBox = (event: Event, dayHeight: number, dayWidth: number) => {
-  const title = Widget.Label({
-    cssClasses: ["title"],
-    wrap: true,
-    xalign: 0,
-    label: event.description,
-  });
+interface EventBoxProps extends Gtk.Widget.ConstructorProps {
+  event: Event;
+  dayHeight: number;
+  dayWidth: number;
+}
 
-  const times = Widget.Label({
-    cssClasses: ["times"],
-    wrap: true,
-    xalign: 0,
-    label: `${event.startTime} - ${event.endTime}`,
-  });
+@register({ GTypeName: "EventBox" })
+export class _EventBox extends Gtk.Box {
+  /* Properties */
+  @property(Object) declare event: Event;
+  @property(Number) declare dayHeight: number;
+  @property(Number) declare dayWidth: number;
 
-  const location = Widget.Label({
-    cssClasses: ["location"],
-    label: event.location,
-    wrap: true,
-    xalign: 0,
-  });
+  @signal()
+  declare dragged: () => void;
 
-  /* Attempting to make a responsive widget */
-  const isVertical = event.endFH - event.startFH > 0.75;
+  /* Private */
+  private title;
+  private times;
+  private location;
+  private dragController;
+  private dragData;
 
-  const ebox = Widget.Box({
-    cursor: Gdk.Cursor.new_from_name("pointer", null),
-    vertical: isVertical,
-    vexpand: false,
-    cssClasses: ["eventbox", event.calendar],
-    canFocus: true,
-    heightRequest: (event.endFH - event.startFH) * (dayHeight / 24),
-    children: [title],
-    setup: (self) => {
-      if (event.endFH - event.startFH > 0.75) {
-        self.append(times);
-        self.append(location);
-      }
-    },
-  });
+  constructor(props: Partial<EventBoxProps>) {
+    super(props as any);
 
-  ebox.event = event;
+    /**********************************************
+     * UI SETUP
+     **********************************************/
 
-  /* Set up drag-and-drop */
-  const drag = new Gtk.GestureDrag();
-  const dragData = new DragData();
+    this.orientation = Gtk.Orientation.VERTICAL;
+    this.cssClasses = ["eventbox", this.event.calendar];
+    this.cursor = Gdk.Cursor.new_from_name("pointer", null);
+    this.vexpand = true;
+    this.heightRequest =
+      (this.event.endFH - this.event.startFH) * (this.dayHeight / 24);
 
-  /* Handle drag start */
-  drag.connect("drag-begin", (_, x, y) => {
-    ebox.add_css_class("dragging");
+    this.title = Widget.Label({
+      cssClasses: ["title"],
+      wrap: true,
+      xalign: 0,
+      label: this.event.description,
+    });
 
-    dragData.dragging = true;
+    this.times = Widget.Label({
+      cssClasses: ["times"],
+      wrap: true,
+      xalign: 0,
+      label: `${this.event.startTime} - ${this.event.endTime}`,
+    });
 
-    dragData.parentTotalWidth = ebox.get_parent()!.get_allocated_width();
-    dragData.parentTotalHeight = ebox.get_parent()!.get_allocated_height();
+    this.location = Widget.Label({
+      cssClasses: ["location"],
+      label: this.event.location,
+      wrap: true,
+      xalign: 0,
+    });
 
-    [dragData.x, dragData.y] = ebox.get_parent()!.get_child_position(ebox);
-  });
+    this.append(this.title);
+    this.append(this.times);
+    this.append(this.location);
 
-  /* Handle drag update */
-  drag.connect("drag-update", (_, dx, dy) => {
-    if (!dragData.dragging) return;
+    /**********************************************
+     * DRAGGING
+     **********************************************/
 
-    dragData.dx = dx;
-    dragData.dy = dy;
+    this.dragController = new Gtk.GestureDrag();
+    this.add_controller(this.dragController);
+    this.dragData = new DragData();
 
-    dragData.x = coordToWeekday(dragData) * (dragData.parentTotalWidth / 7);
-    dragData.y = coordToFloatHour(dragData) * (dragData.parentTotalHeight / 24);
+    /* Handle drag start */
+    this.dragController.connect("drag-begin", () => {
+      this.add_css_class("dragging");
 
-    /* Stay within bounds */
-    dragData.x < 0 ? (dragData.x = 0) : dragData.x;
+      this.dragData.dragging = true;
 
-    ebox.get_parent().move(ebox, dragData.x, dragData.y);
+      [this.dragData.x, this.dragData.y] = (
+        this.get_parent()! as Gtk.Fixed
+      ).get_child_position(this);
+    });
 
-    /* Update label */
-    const startH = Math.floor(coordToFloatHour(dragData))
-      .toString()
-      .padStart(2, "0");
+    /* Handle drag update */
+    this.dragController.connect("drag-update", (_, dx, dy) => {
+      if (!this.dragData.dragging) return;
 
-    const startM = ((coordToFloatHour(dragData) % 1) * 60)
-      .toString()
-      .padStart(2, "0");
+      this.dragData.dx = dx;
+      this.dragData.dy = dy;
 
-    const endH = Math.floor(coordToFloatHour(dragData) + event.durationFH)
-      .toString()
-      .padStart(2, "0");
+      /* Along x-axis, snap to weekdays
+       * Along y-axis, snap to 15-min increments */
+      this.dragData.x = this.dragDataToWeekday() * this.dayWidth;
+      this.dragData.y = this.dragDataToFloatHour() * (this.dayHeight / 24);
 
-    const endM = (((coordToFloatHour(dragData) + event.durationFH) % 1) * 60)
-      .toString()
-      .padStart(2, "0");
+      /* Draw within bounds */
+      this.dragData.x < 0 ? (this.dragData.x = 0) : this.dragData.x;
 
-    times.label = `${startH}:${startM} - ${endH}:${endM}`;
-  });
+      /* Reposition */
+      (this.get_parent()! as Gtk.Fixed).move(
+        this,
+        this.dragData.x,
+        this.dragData.y,
+      );
 
-  /* Handle drag end */
-  drag.connect("drag-end", () => {
-    ebox.remove_css_class("dragging");
-    dragData.dragging = false;
-  });
+      /* Update data and UI based on new position */
+      this.event.startTime = `${fhToTimeStr(this.dragDataToFloatHour())}`;
+      this.event.endTime = `${fhToTimeStr(this.dragDataToFloatHour() + this.event.durationFH)}`;
+      this.event.startDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
+      this.event.endDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
 
-  ebox.add_controller(drag);
-  return ebox;
+      this.times.label = `${this.event.startTime} - ${this.event.endTime}`;
+    });
+
+    /* Handle drag end */
+    this.dragController.connect("drag-end", () => {
+      this.remove_css_class("dragging");
+      this.dragData.dragging = false;
+      this.emit("dragged");
+    });
+  }
+
+  /**
+   * Update widget UI after its event data changes.
+   */
+  updateUI = () => {
+    this.title.label = this.event.description;
+    this.times.label = `${this.event.startTime} - ${this.event.endTime}`;
+    this.location.label = this.event.location;
+  };
+
+  dragDataToFloatHour = () => {
+    return (
+      Math.round(
+        (((this.dragData.y + this.dragData.dy) / this.dayHeight) * 24) / 0.25,
+      ) * 0.25
+    );
+  };
+
+  dragDataToWeekday = () => {
+    return Math.round(
+      ((this.dragData.x + this.dragData.dx) / (this.dayWidth * 7)) * 7,
+    );
+  };
+}
+
+export const EventBox = (props: Partial<EventBoxProps>) => {
+  return new _EventBox(props);
 };
