@@ -36,6 +36,7 @@ export class _WeekView extends Gtk.Fixed {
   private children;
   private height;
   private width;
+  private id;
 
   /**********************************************
    * PRIVATE FUNCTIONS
@@ -57,6 +58,7 @@ export class _WeekView extends Gtk.Fixed {
 
         /* Create a place to store widget references */
         this.children = [];
+        this.id = 0;
       },
     );
 
@@ -79,7 +81,7 @@ export class _WeekView extends Gtk.Fixed {
     for (let i = 0; i < 7; i++) {
       /* Clear existing widgets (TODO) */
 
-      this.createDayEvents(this.viewrange[i]);
+      this.layoutDate(this.viewrange[i]);
     }
   };
 
@@ -87,7 +89,7 @@ export class _WeekView extends Gtk.Fixed {
    * Render the events for a given date.
    * @param {string} date - The date whose events to render.
    */
-  createDayEvents = (date: string) => {
+  layoutDate = (date: string) => {
     let events: Array<Event> = this.viewdata[date];
 
     const index = this.viewrange.indexOf(date);
@@ -159,6 +161,7 @@ export class _WeekView extends Gtk.Fixed {
         event: group[i],
         dayHeight: h * uiVars.heightScale,
         dayWidth: w,
+        id: this.id++,
       });
 
       eBox.widthRequest = w - xPos;
@@ -209,6 +212,18 @@ export class _WeekView extends Gtk.Fixed {
       if (a.event.startTS > b.event.startTS) return 1;
     });
 
+    /* You cannot control z-offset of Gtk.Fixed children.
+     * Widgets that are added first are drawn first. */
+    const idList = group.map((e) => e.id);
+    const isSorted = idList.every((val, i) => i === 0 || val >= idList[i - 1]);
+
+    if (!isSorted) {
+      group.map((e) => {
+        this.remove(e);
+        e.id = this.id++;
+      });
+    }
+
     for (let i = 0; i < group.length; i++) {
       const h = this.height;
       const w = this.width / 7;
@@ -218,11 +233,19 @@ export class _WeekView extends Gtk.Fixed {
 
       group[i].widthRequest = w - xPos;
 
-      this.move(
-        group[i],
-        xPos + w * this.viewrange.indexOf(group[i].event.startDate),
-        yPos,
-      );
+      if (!isSorted) {
+        this.put(
+          group[i],
+          xPos + w * this.viewrange.indexOf(group[i].event.startDate),
+          yPos,
+        );
+      } else {
+        this.move(
+          group[i],
+          xPos + w * this.viewrange.indexOf(group[i].event.startDate),
+          yPos,
+        );
+      }
     }
   };
 }

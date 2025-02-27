@@ -29,6 +29,7 @@ interface EventBoxProps extends Gtk.Widget.ConstructorProps {
   event: Event;
   dayHeight: number;
   dayWidth: number;
+  id: number;
 }
 
 @register({ GTypeName: "EventBox" })
@@ -38,6 +39,7 @@ export class _EventBox extends Gtk.Box {
   @property(Object) declare updatedEvent: Event;
   @property(Number) declare dayHeight: number;
   @property(Number) declare dayWidth: number;
+  @property(Number) declare id: number;
 
   @signal()
   declare dragged: () => void;
