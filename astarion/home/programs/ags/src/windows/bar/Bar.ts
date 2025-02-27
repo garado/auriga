@@ -19,15 +19,15 @@ const time = Variable("").poll(1000, "date '+%H\n%M'");
  ****************************************************/
 
 /* @TODO Not displaying anything working */
+/* @TODO Make this user-configurable */
 const DistroIcon = () =>
   Widget.Image({
     visible: true,
-    iconName: "../../assets/nix-symbolic",
+    iconName: "nix-symbolic",
   });
 
 /**
- * @function Workspaces
- * @brief Container for all workspace indicators.
+ * Container for all workspace indicators.
  */
 const Workspaces = () => {
   /* @TODO Find out how to get the number of workspaces programatically */
@@ -41,10 +41,10 @@ const Workspaces = () => {
 };
 
 /**
- * @function WorkspaceIndicator
- * @brief Indicator for a single workspace.
- *
+ * Indicator for a single workspace.
  * Clicking focuses the respective workspace.
+ *
+ * @param {number} wsIdx - The 0-indexed workspace number.
  */
 const WorkspaceIndicator = (wsIdx: number) => {
   /* Param wsIdx is 0-indexed, but workspaces are 1-indexed. */
@@ -81,8 +81,7 @@ const WorkspaceIndicator = (wsIdx: number) => {
 };
 
 /**
- * @function BatteryIndicator
- * @brief Shows battery percentage.
+ * Shows battery percentage.
  *
  * @TODO I don't think levelClass is working; returns 'none' at 37%
  */
@@ -123,8 +122,7 @@ const BatteryIndicator = () => {
 };
 
 /**
- * @function Time
- * @brief Shows the time HH:MM.
+ * Shows the time HH:MM.
  */
 const Time = () =>
   Widget.Label({
@@ -132,6 +130,7 @@ const Time = () =>
     cssClasses: ["time"],
     label: bind(time),
   });
+
 /****************************************************
  * UI ASSEMBLY
  ****************************************************/
@@ -139,17 +138,20 @@ const Time = () =>
 const Top = () =>
   Widget.Box({
     cssClasses: ["top"],
+    halign: Gtk.Align.CENTER,
     children: [DistroIcon()],
   });
 
 const Center = () =>
   Widget.Box({
+    halign: Gtk.Align.CENTER,
     cssClasses: ["center"],
     children: [Workspaces()],
   });
 
 const Bottom = () =>
   Widget.Box({
+    halign: Gtk.Align.CENTER,
     cssClasses: ["bottom"],
     orientation: 1,
     children: [BatteryIndicator(), Time()],
@@ -167,6 +169,7 @@ export default () => {
 
     child: Widget.CenterBox({
       orientation: 1,
+      halign: Gtk.Align.CENTER,
       cssClasses: ["bar"],
       startWidget: Top(),
       centerWidget: Center(),
