@@ -203,6 +203,9 @@ const ConversationPiece = (props: {
     vertical: true,
     children: [
       Widget.Label({
+        cssClasses: ["content"],
+        selectable: true,
+        useMarkup: true,
         label: props.text,
         xalign: 0,
         wrap: true,
@@ -242,6 +245,8 @@ const ConversationPiece = (props: {
         if (token.type == "text") {
           tokenWidget = Widget.Label({
             label: markdownToPangoMarkup(token.content),
+            cssClasses: ["content"],
+            selectable: true,
             xalign: 0,
             wrap: true,
             useMarkup: true,
@@ -306,7 +311,16 @@ export const Gemini = () => {
     focusable: true,
     placeholderText: "Talk to Gemini",
     onActivate: (self) => {
-      gs.prompt(Container.children.length, self.text);
+      /* Check for commands */
+      if ("/clr" == self.text) {
+        Container.children.forEach((child) => {
+          Container.remove(child);
+        });
+      } else if ("/cont" == self.text) {
+        self.text = "/cont ";
+      } else {
+        gs.prompt(Container.children.length, self.text);
+      }
       self.text = "";
     },
     onFocusEnter: (self) => {
