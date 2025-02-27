@@ -35,6 +35,7 @@ interface EventBoxProps extends Gtk.Widget.ConstructorProps {
 export class _EventBox extends Gtk.Box {
   /* Properties */
   @property(Object) declare event: Event;
+  @property(Object) declare updatedEvent: Event;
   @property(Number) declare dayHeight: number;
   @property(Number) declare dayWidth: number;
 
@@ -45,8 +46,8 @@ export class _EventBox extends Gtk.Box {
   private title;
   private times;
   private location;
-  private dragController;
-  private dragData;
+  private dragController: Gtk.GestureDrag;
+  private dragData: DragData;
 
   constructor(props: Partial<EventBoxProps>) {
     super(props as any);
@@ -61,6 +62,8 @@ export class _EventBox extends Gtk.Box {
     this.vexpand = true;
     this.heightRequest =
       (this.event.endFH - this.event.startFH) * (this.dayHeight / 24);
+
+    this.updatedEvent = this.event;
 
     this.title = Widget.Label({
       cssClasses: ["title"],
@@ -129,18 +132,32 @@ export class _EventBox extends Gtk.Box {
       );
 
       /* Update data and UI based on new position */
-      this.event.startTime = `${fhToTimeStr(this.dragDataToFloatHour())}`;
-      this.event.endTime = `${fhToTimeStr(this.dragDataToFloatHour() + this.event.durationFH)}`;
-      this.event.startDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
-      this.event.endDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
+      this.updatedEvent.startTime = `${fhToTimeStr(this.dragDataToFloatHour())}`;
+      this.updatedEvent.endTime = `${fhToTimeStr(this.dragDataToFloatHour() + this.event.durationFH)}`;
+      this.updatedEvent.startDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
+      this.updatedEvent.endDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
 
-      this.times.label = `${this.event.startTime} - ${this.event.endTime}`;
+      this.times.label = `${this.updatedEvent.startTime} - ${this.updatedEvent.endTime}`;
     });
 
     /* Handle drag end */
     this.dragController.connect("drag-end", () => {
       this.remove_css_class("dragging");
       this.dragData.dragging = false;
+
+      /* Calculate new timestamps */
+      this.updatedEvent.startTS = new Date(
+        `${this.updatedEvent.startDate} ${this.updatedEvent.startTime}`,
+      ).getTime();
+
+      this.updatedEvent.endTS = new Date(
+        `${this.updatedEvent.endDate} ${this.updatedEvent.endTime}`,
+      ).getTime();
+
+      this.updatedEvent.startFH = this.dragDataToFloatHour();
+      this.updatedEvent.endFH =
+        this.dragDataToFloatHour() + this.event.durationFH;
+
       this.emit("dragged");
     });
   }

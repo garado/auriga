@@ -1,97 +1,104 @@
-/**
- * Displays all events for the currently selected week.
- */
+/* Custom widget implementation for calendar week view, which
+ * displays all events for a given week. */
 
-import { App, Gtk, Gdk, Widget, astalify, hook } from "astal/gtk4";
-import { timeout } from "astal/time";
-import { Gridlines } from "@/windows/dash/calendar/week/Gridlines";
+import { Gdk, Gtk, Widget, hook } from "astal/gtk4";
+import { register, property, signal } from "astal/gobject";
+import { timeout } from "astal";
+import Calendar, { Event, fhToTimeStr, uiVars } from "@/services/Calendar";
 import { EventBox } from "@/windows/dash/calendar/week/EventBox";
-import Calendar, { Event, uiVars } from "@/services/Calendar";
 
-/*****************************************************
- * HELPER FUNCTIONS
- *****************************************************/
+const cal = Calendar.get_default();
+
+/*********************************************************
+ * MISC
+ *********************************************************/
 
 /**
- * WeekViewContents true if events A and B collide.
- * Note: FH stands for 'float hour'
- * It is a way to represent the time of day as a float, where every
- * whole number represents one full hour.
- *
- * Time         Equivalent FH
- * -----        -------------
- * 12AM     ->  0.0
- * 9:15AM   ->  9.25
- * 5:30PM   ->  17.5
- * 11:59PM  ->  23.983333333
- *
+ * Returns true if events A and B collide.
  **/
 const collidesWith = (a: Event, b: Event): boolean => {
-  return a.endFH > b.startFH && a.startFH < b.endFH;
+  return !(a.endTS <= b.startTS || b.endTS <= a.startTS);
 };
 
-const isWithin = (a: Event, b: Event): boolean => {
-  return a.startFH > b.startFH && a.endFH < b.endFH;
-};
-
-/*****************************************************
+/*********************************************************
  * WIDGET DEFINITION
- *****************************************************/
+ *********************************************************/
 
-export const WeekView = () => {
-  const Scrollable = astalify(Gtk.ScrolledWindow);
-  const Fixed = astalify(Gtk.Fixed);
-  const cal = Calendar.get_default();
+interface WeekViewProps extends Gtk.Fixed.ConstructorProps {}
 
-  const WeekViewContent = Fixed({
-    cssClasses: ["week-view"],
-    vexpand: true,
-    hexpand: false,
-    setup: (self) => {
-      /* Cache data when viewrange changes */
-      hook(
-        self,
-        cal,
-        "viewrange-changed",
-        (self, viewrange: Array<String>, viewdata: Object) => {
-          self.viewdata = viewdata;
-          self.viewrange = viewrange;
-        },
-      );
+@register({ GTypeName: "WeekView" })
+export class _WeekView extends Gtk.Fixed {
+  /* Properties */
 
-      /* Before rendering, we need to wait until this widget's size
-       * has been allocated. This happens shortly after the "realize"
-       * signal is emitted. */
-      self.connect("realize", () => {
-        timeout(20, () => {
-          for (let i = 0; i < 7; i++) {
-            renderWeekViewContent(i);
-          }
-        });
+  /* Private */
+  private viewdata;
+  private viewrange;
+  private children;
+  private height;
+  private width;
+
+  /**********************************************
+   * PRIVATE FUNCTIONS
+   **********************************************/
+
+  constructor(props?: Partial<WeekViewProps>) {
+    super(props as any);
+
+    this.vexpand = true;
+    this.hexpand = false;
+
+    hook(
+      this,
+      cal,
+      "viewrange-changed",
+      (_, viewrange: Array<String>, viewdata: Object) => {
+        this.viewdata = viewdata;
+        this.viewrange = viewrange;
+
+        /* Create a place to store widget references */
+        this.children = [];
+      },
+    );
+
+    /* Before rendering, we need to wait until this widget's size
+     * has been allocated. This happens shortly after the "realize"
+     * signal is emitted. */
+    this.connect("realize", () => {
+      timeout(10, () => {
+        this.height = this.get_allocated_height();
+        this.width = this.get_allocated_width();
+        this.createAll();
       });
-    },
-  });
+    });
+  }
 
   /**
-   * Render weekview content for a specific day.
+   * Render all events for every day in the given week.
    */
-  const renderWeekViewContent = (index: number) => {
-    print("Rendering weekview content");
-    /* Clear old events */
-    // for (const child of self.children) {
-    //   self.remove(child);
-    // }
+  createAll = () => {
+    for (let i = 0; i < 7; i++) {
+      /* Clear existing widgets (TODO) */
 
-    /* Draw new events */
-    const events: Array<Event> =
-      WeekViewContent.viewdata[WeekViewContent.viewrange[index]];
+      this.createDayEvents(this.viewrange[i]);
+    }
+  };
+
+  /**
+   * Render the events for a given date.
+   * @param {string} date - The date whose events to render.
+   */
+  createDayEvents = (date: string) => {
+    let events: Array<Event> = this.viewdata[date];
+
+    const index = this.viewrange.indexOf(date);
+
     let group: Array<Event> = [];
     let lastGroupEventEnd: number | null = 0;
     let placed = false;
 
     events.forEach((currEvent) => {
       if (currEvent.startFH >= lastGroupEventEnd) {
-        packEvents(group, index);
+        this.createCollidingEvents(group, index);
         group = [];
         lastGroupEventEnd = null;
       }
@@ -107,7 +114,7 @@ export const WeekView = () => {
       }
 
       if (!placed) {
-        packEvents(group, index);
+        this.createCollidingEvents(group, index);
         group = [];
         group.push(currEvent);
       }
@@ -118,47 +125,108 @@ export const WeekView = () => {
     });
 
     if (group.length > 0) {
-      packEvents(group, index);
+      this.createCollidingEvents(group, index);
     }
   };
 
   /**
-   * Pack a group of events.
+   * Render a group of overlapping eventboxes.
+   * If group.length == 1, then render the eventbox normally.
    *
    * @param {Array<Event>} group - group of events to render
    * @param {number} index - the index of the day of the week that is
    * being rendered
    */
-  const packEvents = (group: Array<Event>, index: number) => {
+  createCollidingEvents = (group: Array<Event>, index: number) => {
+    group = group.sort((a, b) => {
+      if (a.durationFH > b.durationFH) return -1;
+      if (a.durationFH < b.durationFH) return 1;
+      if (a.startTS > b.startTS) return -1;
+      if (a.startTS > b.startTS) return 1;
+    });
+
     for (let i = 0; i < group.length; i++) {
       /* Multi-day events are handled in `MultiDayEvents.ts` */
       if (group[i].multiDay || group[i].allDay) continue;
 
-      const h = WeekViewContent.get_allocated_height();
-      const w = WeekViewContent.get_allocated_width() / 7;
+      const h = this.height;
+      const w = this.width / 7;
 
       const xPos = (i / group.length) * (w / group.length);
       const yPos = group[i].startFH * (h / 24) * uiVars.heightScale;
 
-      const eBox = EventBox(group[i], h * uiVars.heightScale, w);
+      const eBox = EventBox({
+        event: group[i],
+        dayHeight: h * uiVars.heightScale,
+        dayWidth: w,
+      });
+
       eBox.widthRequest = w - xPos;
 
-      WeekViewContent.put(eBox, xPos + w * index, yPos);
+      /* Make sure to update UI when dragged */
+      eBox.connect("dragged", this.renderEventsAfterChange);
+
+      this.put(eBox, xPos + w * index, yPos);
+
+      /* Store child reference since Gtk.Fixed doesn't store it automatically */
+      this.children.push(eBox);
     }
   };
 
-  /* Wrap final contents in scrollable. */
-  return Scrollable({
-    vexpand: true,
-    hexpand: true,
-    visible: true,
-    hscrollbar_policy: Gtk.PolicyType.NEVER,
-    vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
-    child: Widget.Overlay({
-      child: Gridlines(),
-      setup: (self) => {
-        self.add_overlay(WeekViewContent);
-      },
-    }),
-  });
+  /**
+   * Handle redrawing after an eventbox is moved.
+   * To avoid UI update issues, this function finds the eventboxes
+   * that were affected by the move, and only redraws/repositions
+   * those.
+   *
+   * @param {EventBox} moved - The eventbox that was moved.
+   */
+  renderEventsAfterChange = (moved) => {
+    /* Find events that collided with the moved event's previous position. */
+    let collisionsOnOldDate = this.children.filter((e) => {
+      return collidesWith(e.event, moved.event);
+    });
+
+    this.replaceCollidingEvents(collisionsOnOldDate);
+
+    /* Render new date */
+    moved.event = moved.updatedEvent;
+
+    const collisionsOnNewDate = this.children.filter((e) => {
+      return collidesWith(e.event, moved.event);
+    });
+
+    this.replaceCollidingEvents(collisionsOnNewDate);
+
+    moved.updateUI();
+  };
+
+  replaceCollidingEvents = (group) => {
+    group = group.sort((a, b) => {
+      if (a.event.durationFH > b.event.durationFH) return -1;
+      if (a.event.durationFH < b.event.durationFH) return 1;
+      if (a.event.startTS > b.event.startTS) return -1;
+      if (a.event.startTS > b.event.startTS) return 1;
+    });
+
+    for (let i = 0; i < group.length; i++) {
+      const h = this.height;
+      const w = this.width / 7;
+
+      const xPos = (i / group.length) * (w / group.length);
+      const yPos = group[i].event.startFH * (h / 24);
+
+      group[i].widthRequest = w - xPos;
+
+      this.move(
+        group[i],
+        xPos + w * this.viewrange.indexOf(group[i].event.startDate),
+        yPos,
+      );
+    }
+  };
+}
+
+export const WeekView = (props: Partial<WeekViewProps>) => {
+  return new _WeekView(props);
 };
