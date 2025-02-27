@@ -65,6 +65,10 @@ export class _EventBox extends Gtk.Box {
     this.heightRequest =
       (this.event.endFH - this.event.startFH) * (this.dayHeight / 24);
 
+    if (this.event.endTS < Date.now()) {
+      this.add_css_class("elapsed");
+    }
+
     this.updatedEvent = this.event;
 
     this.title = Widget.Label({
@@ -103,6 +107,7 @@ export class _EventBox extends Gtk.Box {
     /* Handle drag start */
     this.dragController.connect("drag-begin", () => {
       this.add_css_class("dragging");
+      this.remove_css_class("elapsed");
 
       this.dragData.dragging = true;
 
@@ -159,6 +164,10 @@ export class _EventBox extends Gtk.Box {
       this.updatedEvent.startFH = this.dragDataToFloatHour();
       this.updatedEvent.endFH =
         this.dragDataToFloatHour() + this.event.durationFH;
+
+      if (this.updatedEvent.endTS < Date.now()) {
+        this.add_css_class("elapsed");
+      }
 
       this.emit("dragged");
     });

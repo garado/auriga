@@ -1,5 +1,6 @@
 
 @use '../../../theme/theme' as *
+@use 'sass:color'
 
 /****************************************************
  * EVENT BOX
@@ -25,12 +26,21 @@
   .times, .location
     font-size: 0.8rem
 
+  &.elapsed
+    color: $neutral-300
+
   /* Calendar colors */
   &.Schedule
     background-color: $primary-500
 
+    &.elapsed
+      background-color: desaturate(darken($primary-500, 20%), 10%)
+
   &.Events
     background-color: $red-500
+
+    &.elapsed
+      background-color: desaturate(darken($red-500, 20%), 10%)
 
   &.dragging
     opacity: 0.5
