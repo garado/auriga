@@ -20,7 +20,6 @@ export const Week = () => {
     hscrollbar_policy: Gtk.PolicyType.NEVER,
     vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
     child: Widget.Overlay({
-      homogeneous: true,
       child: _Gridlines,
       setup: (self) => {
         self.add_overlay(_WeekViewContent);

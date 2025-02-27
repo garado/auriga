@@ -45,7 +45,7 @@ export class _WeekView extends Gtk.Fixed {
   constructor(props?: Partial<WeekViewProps>) {
     super(props as any);
 
-    this.vexpand = true;
+    this.vexpand = false;
     this.hexpand = false;
 
     hook(
@@ -151,15 +151,15 @@ export class _WeekView extends Gtk.Fixed {
       /* Multi-day events are handled in `MultiDayEvents.ts` */
       if (group[i].multiDay || group[i].allDay) continue;
 
-      const h = this.height;
+      const h = this.height * uiVars.heightScale;
       const w = this.width / 7;
 
       const xPos = (i / group.length) * (w / group.length);
-      const yPos = group[i].startFH * (h / 24) * uiVars.heightScale;
+      const yPos = group[i].startFH * (h / 24);
 
       const eBox = EventBox({
         event: group[i],
-        dayHeight: h * uiVars.heightScale,
+        dayHeight: h,
         dayWidth: w,
         id: this.id++,
       });
@@ -225,7 +225,7 @@ export class _WeekView extends Gtk.Fixed {
     }
 
     for (let i = 0; i < group.length; i++) {
-      const h = this.height;
+      const h = this.height * uiVars.heightScale;
       const w = this.width / 7;
 
       const xPos = (i / group.length) * (w / group.length);

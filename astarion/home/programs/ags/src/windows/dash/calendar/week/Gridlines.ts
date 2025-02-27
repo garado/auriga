@@ -22,7 +22,6 @@ export const Gridlines = () => {
         if (self.resized == undefined) {
           self.heightRequest = h * uiVars.heightScale;
           self.resized = true;
-          return;
         }
 
         /* Get the color used for the weekview-gridlines class */
