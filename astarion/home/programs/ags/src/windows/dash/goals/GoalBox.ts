@@ -1,19 +1,18 @@
-import { Gtk, Gdk, Widget, astalify, hook } from "astal/gtk4";
+import { Gtk, Gdk, Widget, hook } from "astal/gtk4";
 import { register, property } from "astal/gobject";
 import Goals, { Goal } from "@/services/Goals";
-import Gio from "gi://Gio";
-import { bind, Binding } from "astal";
-import Pango from "gi://Pango?version=1.0";
+import UserConfig from "../../../../userconfig.js";
+import { relativeTimeFromISO } from "@/utils/Helpers.js";
 
 const gs = Goals.get_default();
 
-interface GoalBoxProps extends Gtk.Overlay.ConstructorProps {
+interface GoalBoxProps extends Gtk.Box.ConstructorProps {
   goal: Goal;
   isBigPicture?: boolean;
 }
 
 @register({ GTypeName: "GoalBox" })
-export class _GoalBox extends Gtk.Overlay {
+export class _GoalBox extends Gtk.CenterBox {
   /* Properties */
   @property(Object)
   declare goal: Goal;
@@ -23,139 +22,91 @@ export class _GoalBox extends Gtk.Overlay {
 
   constructor(props: Partial<GoalBoxProps>) {
     super(props as any);
+
+    /***********************************************************************
+     * PROPERTY SETUP
+     ***********************************************************************/
+
     this.isBigPicture = this.isBigPicture || false;
-    this.cssClasses = ["goalbox", this.isBigPicture ? "big-picture" : ""];
+    this.orientation = Gtk.Orientation.VERTICAL;
     this.cursor = Gdk.Cursor.new_from_name("pointer", null);
     this.vexpand = false;
     this.hexpand = false;
 
-    gs.connect("settings-changed", () => {
-      if (!this.isBigPicture) {
-        this.visible = gs.isMatching(this.goal);
+    this.cssClasses = [
+      "goalbox",
+      this.isBigPicture ? "big-picture" : "",
+      this.goal.project,
+    ];
 
-        hook(this, gs, "settings-changed", () => {
-          this.visible = gs.isMatching(this.goal);
-        });
-      }
+    /***********************************************************************
+     * UI SETUP
+     ***********************************************************************/
+
+    const desc = Widget.Label({
+      cssClasses: ["description"],
+      label: this.goal.description,
+      wrap: true,
+      maxWidthChars: 16,
+      justify: Gtk.Justification.CENTER,
     });
 
-    const title = Widget.Label({
-      cssClasses: this.isBigPicture ? ["big-picture-title"] : ["title"],
-      valign: Gtk.Align.START,
-      xalign: 0,
-      ellipsize: Pango.EllipsizeMode.END,
-      wrap: false,
-      label:
-        this.goal.status == "completed" || this.goal.status == "failed"
-          ? `<s>${this.goal.description}</s>`
-          : this.goal.description,
-      useMarkup: true,
+    const goalIcon = Widget.Image({
+      cssClasses: ["goal-icon"],
+      iconName: this.goal.icon,
     });
 
-    const status = Widget.Label({
-      cssClasses: [this.goal.status],
-      label:
-        this.goal.status.charAt(0).toUpperCase() + this.goal.status.slice(1),
-      halign: Gtk.Align.START,
+    const categoryIcon = Widget.Image({
+      cssClasses: ["category-icon"],
+      iconName: UserConfig.goals.categoryIcons[this.goal.project],
     });
 
-    const targetDate = Widget.Box({
-      cssClasses: ["due"],
+    const _total = this.goal.children.length;
+
+    const _done = this.goal.children.filter(
+      (x) => x.status == "completed",
+    ).length;
+
+    const progress = Widget.Label({
+      label: `${_done}/${_total}`,
+      visible: _total > 0,
+    });
+
+    const targetDate = Widget.Label({
+      label: this.goal.due ? relativeTimeFromISO(this.goal.due) : "none",
+    });
+
+    const top = Widget.CenterBox({
+      endWidget: categoryIcon,
+    });
+
+    const mid = Widget.Box({
+      vertical: true,
       spacing: 4,
-      setup: (self) => {
-        if (!this.goal.due) return;
-        self.children = [
-          Widget.Image({
-            halign: Gtk.Align.END,
-            iconName: "clock-symbolic",
-          }),
-          Widget.Label({
-            valign: Gtk.Align.END,
-            // label: gs.tasktimeToYYYYMMDD(this.goal.due),
-          }),
-        ];
-      },
+      children: [goalIcon, desc],
     });
 
-    const progress = Widget.Box({
-      cssClasses: ["progress"],
-      halign: Gtk.Align.END,
-      spacing: 4,
-      setup: (self) => {
-        const total = this.goal.children.length;
-        if (total == 0) return;
-
-        /* Count completed subgoals */
-        const completed = this.goal.children.filter(
-          (x) => x.status == "completed",
-        ).length;
-
-        self.children = [
-          Widget.Image({
-            valign: Gtk.Align.END,
-            iconName: "check-circle-symbolic",
-          }),
-          Widget.Label({
-            valign: Gtk.Align.END,
-            label: `${completed}/${total}`,
-          }),
-        ];
-      },
+    const bottom = Widget.CenterBox({
+      startWidget: progress,
+      endWidget: targetDate,
     });
 
-    let pinned = null;
-    const firstPinnedSubnode = this.goal.children.find((x) => x.start);
+    this.startWidget = top;
+    this.centerWidget = mid;
+    this.endWidget = bottom;
 
-    if (firstPinnedSubnode) {
-      pinned = Widget.Box({
-        cssClasses: ["pinned"],
-        spacing: 2,
-        children: [
-          Widget.Image({
-            iconName: "caret-right-symbolic",
-          }),
-          Widget.Label({
-            wrap: true,
-            xalign: 0,
-            label: firstPinnedSubnode.description,
-          }),
-        ],
-      });
-    }
+    /***********************************************************************
+     * INTERACTIONS
+     ***********************************************************************/
 
-    const information = Widget.CenterBox({
-      cssClasses: ["interior"],
-      orientation: 1,
-      startWidget: Widget.Box({
-        cssClasses: ["top"],
-        vertical: true,
-        valign: Gtk.Align.START,
-        spacing: 6,
-        children: [title],
-        setup: (self) => {
-          if (this.goal.status != "pending") {
-            self.append(status);
-          }
+    const click = new Gtk.GestureClick();
 
-          if (pinned != null) {
-            self.append(pinned);
-          }
-        },
-      }),
-      endWidget: Widget.CenterBox({
-        cssClasses: ["bottom"],
-        startWidget: targetDate,
-        endWidget: progress,
-      }),
+    click.connect("pressed", () => {
+      gs.sidebarVisible = true;
+      gs.sidebarGoal = this.goal;
     });
 
-    this.child = astalify(Gtk.Picture)({
-      cssClasses: ["imagebox"],
-      contentFit: Gtk.ContentFit.FILL,
-      file: Gio.File.new_for_path(this.goal.imgpath),
-    });
-
-    this.add_overlay(information);
+    this.add_controller(click);
   }
 }
 

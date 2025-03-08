@@ -22,6 +22,7 @@ export class Goal {
     public children: Goal[] = [],
     public why: string,
     public depends?: string[],
+    public icon?: string,
     public annotations?: string[],
     public imgpath?: string,
     public parent?: Goal | undefined,
@@ -41,6 +42,7 @@ export class Goal {
       obj.children ?? [],
       obj.why ?? "",
       obj.depends ?? [],
+      obj.icon ?? "target-symbolic",
       obj.annotations ?? [],
       obj.imgpath ?? "",
       obj.parent ?? undefined,
@@ -52,6 +54,13 @@ export class Goal {
  * PRIVATE TYPEDEFS
  **********************************************/
 
+interface Filters {
+  pending: boolean;
+  completed: boolean;
+  failed: boolean;
+  developed: boolean;
+  undeveloped: boolean;
+}
 /**********************************************
  * UTILITY
  **********************************************/
@@ -88,7 +97,16 @@ export default class Goals extends GObject.Object {
   };
 
   @property(Object)
-  declare filters: Object;
+  declare filters: Filters;
+
+  @property(Object)
+  declare sidebarGoal: Goal;
+
+  @property(Object)
+  declare sidebarBreadcrumbs: Array<Goal>;
+
+  @property(Boolean)
+  declare sidebarVisible: boolean;
 
   @signal(Object)
   declare renderGoals: (data: any) => void;
@@ -101,11 +119,12 @@ export default class Goals extends GObject.Object {
     super({
       filters: {
         failed: false,
-        completed: true,
-        pending: false,
-        developed: false,
+        completed: false,
+        pending: true,
+        developed: true,
         undeveloped: false,
       },
+      sidebarBreadcrumbs: [],
     });
 
     this.dataDirectory = UserConfig.goals.directory;
@@ -221,19 +240,8 @@ export default class Goals extends GObject.Object {
   #sortGoals = () => {
     log("goalService", "Sorting");
 
-    const goalSort = (a: Goal, b: Goal): number => {
-      if (a.due !== b.due) {
-        return a.due > b.due ? -1 : 1;
-      } else if (false) {
-        /* TODO: By completion percentage */
-      } else if (a.description != b.description) {
-        return a.description > b.description ? -1 : 1;
-      }
-      return 0;
-    };
-
     const traverseAndSort = (node: Goal) => {
-      node.children.sort(goalSort);
+      node.children.sort(this.compareGoals);
 
       for (let i = 0; i < node.children.length; i++) {
         traverseAndSort(node.children[i]);
@@ -335,5 +343,20 @@ export default class Goals extends GObject.Object {
       (this.filters.developed && this.filters.undeveloped);
 
     return statusMatch && stateMatch;
+  };
+
+  filtersUpdated = () => {
+    this.notify("filters");
+  };
+
+  compareGoals = (a: Goal, b: Goal): number => {
+    if (a.due !== b.due) {
+      return a.due > b.due ? -1 : 1;
+    } else if (false) {
+      /* TODO: By completion percentage */
+    } else if (a.description != b.description) {
+      return a.description > b.description ? -1 : 1;
+    }
+    return 0;
   };
 }

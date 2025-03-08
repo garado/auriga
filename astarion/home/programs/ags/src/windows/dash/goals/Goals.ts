@@ -1,143 +1,115 @@
-import Goals from "@/services/Goals";
+import Goals, { Goal } from "@/services/Goals";
 import { Gtk, Widget, astalify, hook } from "astal/gtk4";
-import { Category } from "./Category";
-import { log } from "@/globals";
-import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
-import { Sidebar } from "@/windows/dash/goals/Sidebar";
+import { GoalBox } from "@/windows/dash/goals/GoalBox";
+import TopBar from "./TopBar";
+import { Sidebar } from "./Sidebar";
+import { bind } from "astal";
+import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 const gs = Goals.get_default();
 
 export default () => {
   const Scrollable = astalify(Gtk.ScrolledWindow);
+  const FlowBox = astalify(Gtk.FlowBox);
 
-  const ProgressFilters = SegmentedButtonGroup({
-    buttons: [
-      {
-        name: "Completed",
-        active: gs.filters.completed,
-        action: () => {
-          print("weee");
-          gs.filters.completed = !gs.filters.completed;
-        },
-      },
-      {
-        name: "In progress",
-        active: gs.filters.pending,
-        action: () => {
-          gs.filters.pending = !gs.filters.pending;
-        },
-      },
-      {
-        name: "Failed",
-        action: () => {
-          gs.filters.failed = !gs.filters.failed;
-        },
-      },
-    ],
-  });
-
-  const StatusFilters = SegmentedButtonGroup({
-    buttons: [
-      {
-        name: "Developed",
-        active: gs.filters.developed,
-        action: () => {
-          gs.filters.developed = !gs.filters.developed;
-        },
-      },
-      {
-        name: "In development",
-        active: gs.filters.inDevelopment,
-        action: () => {
-          gs.filters.undeveloped = !gs.filters.undeveloped;
-        },
-      },
-    ],
-  });
+  const FilterFunction = (widget: Gtk.FlowBoxChild) => {
+    return gs.isMatching(widget.child.goal);
+  };
 
   /**
-   * Filter buttons to control the widgets shown
+   * Container for main content
    */
-  const Filters = Widget.Box({
-    spacing: 10,
-    children: [StatusFilters, ProgressFilters],
-    vexpand: false,
-  });
-
-  /**
-   * Bar above main content
-   */
-  const TopBar = Widget.CenterBox({
-    vexpand: false,
-    startWidget: Widget.Label({
-      cssClasses: ["tab-header"],
-      halign: Gtk.Align.START,
-      label: "Goals",
-    }),
-    endWidget: Filters,
-  });
-
-  /**
-   * Container for all goal category widgets
-   */
-  const Categories = Widget.Box({
-    vertical: true,
-    spacing: 30,
-    vexpand: true,
-    hexpand: true,
+  const MainContent = FlowBox({
+    cssClasses: ["content"],
+    homogeneous: true,
+    minChildrenPerLine: 4,
+    maxChildrenPerLine: 8,
+    rowSpacing: 12,
+    columnSpacing: 12,
     setup: (self) => {
+      /* For each category, insert top-level goals */
       hook(self, gs, "render-goals", (self, data) => {
         if (data == undefined) return;
 
-        log("goalTab", "Rendering goals");
-
-        self.children.forEach((x) => self.remove(x));
+        self.remove_all();
 
         const categories = Object.keys(data).sort();
-
         categories.forEach((c: string) => {
-          const cWidget = Category({
-            category: c,
-            isBigPicture: c == "_bigpicture",
+          const root = data[c];
+
+          root.children.forEach((child: Goal) => {
+            self.append(
+              GoalBox({
+                goal: child,
+              }),
+            );
           });
-          self.append(cWidget);
         });
       });
+
+      hook(self, gs, "notify::filters", () => {
+        self.invalidate_filter();
+      });
+
+      /* Filter functions */
+      self.set_filter_func(FilterFunction);
     },
   });
 
+  /**
+   * Panel displaying more information about a specific goal
+   */
+  const SidebarContainer = Widget.Revealer({
+    halign: Gtk.Align.END,
+    canTarget: true,
+    child: Sidebar(),
+    transitionType: Gtk.RevealerTransitionType.SLIDE_LEFT,
+    revealChild: bind(gs, "sidebarVisible"),
+  });
+
+  /**
+   * Overlay sidebar on top of main content
+   */
+  const Overlay = Widget.Overlay({
+    canTarget: true,
+    child: Scrollable({
+      canTarget: true,
+      cssClasses: ["overview"],
+      hscrollbar_policy: "never",
+      vscrollbar_policy: "always",
+      overlayScrolling: false,
+      hexpand: true,
+      child: Widget.Box({
+        vertical: true,
+        vexpand: true,
+        hexpand: true,
+        children: [MainContent],
+      }),
+    }),
+    setup: (self) => {
+      self.add_overlay(SidebarContainer);
+    },
+  });
+
+  /**
+   * Final assembly
+   */
   return Widget.Box({
-    cssClasses: ["goals", "tab-layout"],
+    cssClasses: ["goals"],
     vertical: true,
     spacing: 12,
-    children: [
-      TopBar,
-      Widget.Overlay({
-        canTarget: true,
-        child: [
-          Scrollable({
-            canTarget: true,
-            cssClasses: ["overview"],
-            hscrollbar_policy: "never",
-            vscrollbar_policy: "always",
-            overlayScrolling: false,
-            hexpand: true,
-            child: Widget.Box({
-              vertical: true,
-              vexpand: true,
-              hexpand: true,
-              children: [Categories],
-            }),
-          }),
-        ],
-        setup: (self) => {
-          // self.add_overlay(
-          //   Widget.Box({
-          //     // children: [Sidebar({})],
-          //   }),
-          // );
+    children: [TopBar(), Overlay],
+    setup: (self) => {
+      EventControllerKeySetup({
+        name: "Goals",
+        widget: self,
+        forwardTo: null,
+        binds: {
+          Escape: () => {
+            gs.sidebarVisible = false;
+          },
         },
-      }),
-    ],
+      });
+    },
   });
 };
