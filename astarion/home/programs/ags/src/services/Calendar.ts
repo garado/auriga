@@ -24,10 +24,8 @@
  *          ending on the given dates
  */
 
-import { App } from "astal/gtk4";
 import { GObject, register, property, signal } from "astal/gobject";
 import { exec, execAsync } from "astal/process";
-import UserConfig from "../../userconfig.js";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -45,11 +43,12 @@ export type Event = {
   multiDay: boolean;
   startedBeforeThisWeek: boolean;
   endsAfterThisWeek: boolean;
-  startTs: number;
-  endTs: number;
+  startTS: number;
+  endTS: number;
   startFH: number;
   endFH: number;
   durationFH: number;
+  widget: any;
 };
 
 export const uiVars = {
@@ -58,6 +57,12 @@ export const uiVars = {
    * heightScale = 2 ==> weekview is 2x as tall as dash (and is wrapped in a scrollable)
    */
   heightScale: 2,
+};
+
+export const fhToTimeStr = (fh: number): string => {
+  const hh = Math.floor(fh).toString().padStart(2, "0");
+  const mm = ((fh % 1) * 60).toString().padStart(2, "0");
+  return `${hh}:${mm}`;
 };
 
 /**********************************************
@@ -197,8 +202,8 @@ export default class Calendar extends GObject.Object {
     }
 
     /* Get unix epoch timetamps */
-    event.startTs = new Date(`${event.startDate} ${event.startTime}`).getTime();
-    event.endTs = new Date(`${event.endDate} ${event.endTime}`).getTime();
+    event.startTS = new Date(`${event.startDate} ${event.startTime}`).getTime();
+    event.endTS = new Date(`${event.endDate} ${event.endTime}`).getTime();
 
     /* Get fractional hours. 5:30PM -> 17.5; 9:15AM -> 9.25 */
     const startRe = /(\d\d):(\d\d)/.exec(event.startTime);
@@ -207,7 +212,7 @@ export default class Calendar extends GObject.Object {
     const endRe = /(\d\d):(\d\d)/.exec(event.endTime);
     event.endFH = Number(endRe[1]) + Number(endRe[2]) / 60;
 
-    event.durationFH = (event.endTs - event.startTs) / (60 * 60 * 1000);
+    event.durationFH = (event.endTS - event.startTS) / (60 * 60 * 1000);
 
     return event;
   }

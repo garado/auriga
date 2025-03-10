@@ -44,6 +44,10 @@ export const Quote = () =>
   Widget.Box({
     cssClasses: ["quote", "widget-container"],
     spacing: 6,
+    hexpand: true,
+    vexpand: true,
+    hpack: Gtk.Align.CENTER,
+    vpack: Gtk.Align.CENTER,
     vertical: true,
     children: [QuoteText(), Author()],
   });

@@ -6,7 +6,7 @@
 import { Variable } from "astal";
 import UserConfig from "../userconfig.js";
 
-const logFlags = {
+const logFlags: { [key: string]: boolean } = {
   /* Main execution (windows opening, SASS reload, etc) */
   program: false,
   bar: false,
@@ -16,7 +16,7 @@ const logFlags = {
 
   /* Dashboard stuff */
   dash: false,
-  goalTab: false,
+  goalTab: true,
   calTab: false,
 
   /* Other stuff */
@@ -26,10 +26,12 @@ const logFlags = {
   dashService: false,
   taskService: false,
   calService: false,
-  goalService: false,
+  goalService: true,
   habitifyService: false,
   lifeService: false,
-  ledgerService: true,
+  ledgerService: false,
+
+  eventControllerKey: false,
 };
 
 export function log(section: string, str: string) {
@@ -38,8 +40,9 @@ export function log(section: string, str: string) {
   }
 }
 
-/* Overwrite `log` (defaults to console.log) with my own thing */
-globalThis.log = log;
+Object.assign(globalThis, {
+  log: log,
 
-/* Theme */
-globalThis.systemTheme = Variable(`${UserConfig.currentTheme}`);
+  /* Might be able to remove this now that we have the Settings service */
+  systemTheme: Variable(`${UserConfig.currentTheme}`),
+});

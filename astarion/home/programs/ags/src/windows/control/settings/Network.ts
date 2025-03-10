@@ -23,8 +23,6 @@ export const Network = (globalRevealerState: Variable<boolean>) => {
   return ExpansionPanel({
     icon: "wifi-high-symbolic",
     label: bind(nw.wifi, "ssid").as((ssid) => ssid || "Disconnected"),
-    // label: bind(pp, "active-profile"),
-    // children: bind(pp, "profiles").as((pp) => pp.map(NetworkItem)),
     children: bind(nw.wifi, "access-points").as((ap) => ap.map(NetworkItem)),
     cssClasses: ["wifi"],
     vertical: true,

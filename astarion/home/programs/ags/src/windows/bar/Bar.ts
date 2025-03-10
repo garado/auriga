@@ -51,7 +51,7 @@ const WorkspaceIndicator = (wsIdx: number) => {
   wsIdx += 1;
 
   const isFocused = bind(hypr, "focusedWorkspace").as((focused) => {
-    return focused.id == wsIdx;
+    return focused?.id == wsIdx;
   });
 
   /* 'workspaces' property will only include a workspace if there are

@@ -49,6 +49,7 @@ export default class Settings extends GObject.Object {
   /**************************************************
    * PROPERTIES
    **************************************************/
+
   declare private _currentTheme: string;
 
   @property(String)

@@ -93,7 +93,7 @@ export default class Gemini extends GObject.Object {
     this.emit("prompt-received", id, promptText);
 
     const cmd = `curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
-                  -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "${escapeQuotes(promptText)}"}] }] }'`;
+                  -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "answer concisely ${escapeQuotes(promptText)}"}] }] }'`;
 
     execAsync(cmd)
       .then((result) => {

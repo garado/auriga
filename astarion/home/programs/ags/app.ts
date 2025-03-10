@@ -2,7 +2,6 @@ import { Gtk, App } from "astal/gtk4";
 import { exec } from "astal/process";
 import { monitorFile } from "astal/file";
 import { timeout } from "astal/time";
-import Gio from "gi://Gio";
 
 import "@/globals.ts";
 import Bar from "@/windows/bar/Bar.ts";
@@ -86,4 +85,6 @@ App.start({
 
 Object.assign(App, {
   toggleWindow: toggleWindow,
+  closeWindow: closeWindow,
+  openWindow: openWindow,
 });

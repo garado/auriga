@@ -120,13 +120,13 @@ export default class Ledger extends GObject.Object {
       balancesOverTime: [],
     } as any);
 
-    this.#initAll();
+    this.initAll();
   }
 
   /**
    * Initialize the service's data.
    */
-  #initAll() {
+  initAll() {
     this.#initAccountData();
     this.#initNetWorth();
     this.#initMonthlyIncomeExpenses();

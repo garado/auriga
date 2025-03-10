@@ -77,18 +77,30 @@ const SearchResultContainer = () => {
 /**
  * Type stuff here
  */
-const PromptBox = () =>
-  Widget.Entry({
+const PromptBox = () => {
+  const SearchIcon = Widget.Image({
+    cssClasses: ["search-icon"],
+    iconName: "magnifying-glass-symbolic",
+  });
+
+  const PromptEntryBox = Widget.Entry({
     hexpand: true,
     canFocus: true,
-    cssClasses: ["prompt"],
+    cssClasses: ["text-entry"],
     onActivate: (self) => {
       searchResults.get()[0].launch();
+      App.toggleWindow("launcher");
       self.text = "";
     },
     onKeyReleased: (self) => {
       searchResults.set(appSearch.fuzzy_query(self.text));
     },
+  });
+
+  return Widget.Box({
+    canFocus: true,
+    cssClasses: ["promptbox"],
+    children: [SearchIcon, PromptEntryBox],
     onFocusEnter: (self) => {
       self.add_css_class("focus");
     },
@@ -96,6 +108,7 @@ const PromptBox = () =>
       self.remove_css_class("focus");
     },
   });
+};
 
 export default () => {
   const Prompt = PromptBox();
@@ -131,15 +144,10 @@ export default () => {
       self.set_default_size(1, 1);
     },
     onNotifyVisible: (self) => {
-      Prompt.grab_focus();
+      Prompt.children[1].grab_focus();
 
       if (!self.visible) {
         globalRevealerState.set(!globalRevealerState.get());
-      }
-    },
-    onKeyPressed: (self, event: Gdk.Event) => {
-      if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-        self.hide();
       }
     },
   });

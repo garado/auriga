@@ -32,7 +32,7 @@ execAsync(`bash -c 'cat ${url}'`)
 
     /* Count total contribs */
     let _contribCount = 0;
-    out.years.forEach((y) => (_contribCount += y.total));
+    out.years.forEach((y: number) => (_contribCount += y.total));
     contribCount.set(_contribCount);
   })
   .catch((err) => print(err));
