@@ -13,7 +13,6 @@ import Gio from "gi://Gio";
 import UserConfig from "../../../userconfig.js";
 
 const Picture = astalify(Gtk.Picture);
-const Frame = astalify(Gtk.Frame);
 const bat = Battery.get_default();
 
 /******************************
@@ -82,15 +81,10 @@ const Fetch = () =>
   });
 
 const Profile = () =>
-  Frame({
+  Picture({
     cssClasses: ["pfp"],
-    child: [
-      Picture({
-        valign: Gtk.Align.CENTER,
-        halign: Gtk.Align.CENTER,
-        file: Gio.File.new_for_path(UserConfig.profile.pfp),
-      }),
-    ],
+    contentFit: Gtk.ContentFit.COVER,
+    file: Gio.File.new_for_path(UserConfig.profile.pfp),
   });
 
 export const SysFetch = () =>
@@ -99,9 +93,7 @@ export const SysFetch = () =>
     cssClasses: ["sysinfo"],
     vertical: false,
     vexpand: false,
-    hexpand: true,
-    valign: Gtk.Align.CENTER,
-    halign: Gtk.Align.CENTER,
     spacing: 20,
+    halign: Gtk.Align.BASELINE_CENTER,
     children: [Profile(), Fetch()],
   });
