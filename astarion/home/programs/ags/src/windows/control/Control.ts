@@ -1,36 +1,26 @@
 import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
-import { GObject } from "astal/gobject";
-
 import { SysFetch } from "@/windows/control/SysFetch.ts";
+import { Notifications } from "@/windows/control/Notifications";
+import { Actions } from "@/windows/control/actions/Actions";
 import { Theme } from "@/windows/control/settings/Theme.ts";
 import { PowerProfiles } from "@/windows/control/settings/PowerProfiles.ts";
 import { Network } from "@/windows/control/settings/Network.ts";
 import { Bluetooth } from "@/windows/control/settings/Bluetooth.ts";
-import { Notifications } from "@/windows/control/Notifications";
 import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 /******************************************
- * MODULE-LEVEL VARIABLES
+ * QUICK SETTINGS
  ******************************************/
 
 const globalRevealerState = Variable(false);
 
-/******************************************
- * WIDGETS
- ******************************************/
-
-const QuickSettings = () =>
+export const QuickSettings = () =>
   Widget.Box({
     vertical: true,
     spacing: 15,
     cssClasses: ["settings"],
     children: [
-      Widget.Label({
-        cssClasses: ["section-header"],
-        xalign: 0,
-        label: "Settings",
-      }),
       Theme(globalRevealerState),
       PowerProfiles(globalRevealerState),
       Network(globalRevealerState),
@@ -38,12 +28,16 @@ const QuickSettings = () =>
     ],
   });
 
+/******************************************
+ * WIDGETS
+ ******************************************/
+
 const ControlPanel = () => {
   return Widget.Box({
     vertical: true,
-    spacing: 40,
     cssClasses: ["control"],
-    children: [SysFetch(), QuickSettings(), Notifications()],
+    spacing: 15,
+    children: [SysFetch(), Actions(), QuickSettings(), Notifications()],
   });
 };
 
