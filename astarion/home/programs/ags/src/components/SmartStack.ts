@@ -10,7 +10,7 @@
  * "horizontally", they will will switch between SLIDE_LEFT and
  * SLIDE_RIGHT. */
 
-import { Gtk, Gdk, Widget } from "astal/gtk4";
+import { Gtk, Widget } from "astal/gtk4";
 import { Binding } from "astal";
 import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 

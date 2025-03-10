@@ -2,7 +2,7 @@
 /* █▄▀ █▀█ ▄█ █▀█ */
 
 import { App, Astal, Gtk, Widget } from "astal/gtk4";
-import { Variable } from "astal";
+import { bind, Variable } from "astal";
 
 import Home from "@/windows/dash/home/Home";
 import Ledger from "@/windows/dash/ledger/Ledger";
@@ -77,7 +77,11 @@ const DashTabBar = () =>
  */
 const DashTabEntry = (tabData: DashTabData) =>
   Widget.Button({
-    cssClasses: ["tab-entry"],
+    cssClasses: bind(activeTabIndex).as((index) =>
+      index == dashTabData.indexOf(tabData)
+        ? ["active", "tab-entry"]
+        : ["tab-entry"],
+    ),
     child: Widget.Image({
       cssClasses: ["icon"],
       iconName: tabData.icon,
