@@ -9,6 +9,7 @@ import Dash from "@/windows/dash/Dash.ts";
 import Utility from "@/windows/utility/Utility.ts";
 import Control from "@/windows/control/Control.ts";
 import Launcher from "@/windows/launcher/Launcher";
+import Notifications from "@/windows/notifications/Notifications";
 
 const TOGGLEABLE_WINDOWS = ["dash", "utility", "control", "launcher"];
 
@@ -80,6 +81,7 @@ App.start({
     App.get_monitors().map(Utility);
     App.get_monitors().map(Control);
     App.get_monitors().map(Launcher);
+    App.get_monitors().map(Notifications);
   },
 });
 

@@ -1,0 +1,25 @@
+
+@use '../../theme/theme' as *
+
+.notification
+  .top-bar
+    padding: 0.5rem
+    background-color: $neutral-600
+    border-top-left-radius: $border-radius
+    border-top-right-radius: $border-radius
+
+    .close-btn
+      -gtk-icon-transform: scale(0.8)
+
+  .content
+    padding: 0.5rem
+    background-color: $neutral-700
+    border-bottom-left-radius: $border-radius
+    border-bottom-right-radius: $border-radius
+
+    .summary
+      font-weight: 600
+
+.notification-window
+  margin: 1rem
+  min-width: 20rem
