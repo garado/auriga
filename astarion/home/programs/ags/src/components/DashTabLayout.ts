@@ -5,7 +5,7 @@
  * Includes tab header, action buttons, and page switch buttons. */
 
 import { Gtk, Gdk, Widget } from "astal/gtk4";
-import { Variable } from "astal";
+import { bind, Variable } from "astal";
 import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
 import { SmartStack } from "@/components/SmartStack";
 
@@ -38,6 +38,7 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
       buttons: dashLayout.pages.map((page) => {
         return {
           name: page.name,
+          active: bind(activePage).as((activeName) => activeName == page.name),
           action: () => {
             activePage.set(page.name);
           },
