@@ -6,6 +6,9 @@ import { SysFetch } from "@/windows/control/SysFetch.ts";
 import { Theme } from "@/windows/control/settings/Theme.ts";
 import { PowerProfiles } from "@/windows/control/settings/PowerProfiles.ts";
 import { Network } from "@/windows/control/settings/Network.ts";
+import { Bluetooth } from "@/windows/control/settings/Bluetooth.ts";
+import { Notifications } from "@/windows/control/Notifications";
+import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 /******************************************
  * MODULE-LEVEL VARIABLES
@@ -23,18 +26,24 @@ const QuickSettings = () =>
     spacing: 15,
     cssClasses: ["settings"],
     children: [
+      Widget.Label({
+        cssClasses: ["section-header"],
+        xalign: 0,
+        label: "Settings",
+      }),
       Theme(globalRevealerState),
       PowerProfiles(globalRevealerState),
       Network(globalRevealerState),
+      Bluetooth(globalRevealerState),
     ],
   });
 
 const ControlPanel = () => {
   return Widget.Box({
     vertical: true,
-    spacing: 20,
+    spacing: 40,
     cssClasses: ["control"],
-    children: [SysFetch(), QuickSettings()],
+    children: [SysFetch(), QuickSettings(), Notifications()],
   });
 };
 

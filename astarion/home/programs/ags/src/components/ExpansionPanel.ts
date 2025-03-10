@@ -1,6 +1,6 @@
 /* Provides consistent implementation for quick settings widgets. */
 
-import { Gtk, Widget, astalify } from "astal/gtk4";
+import { Gdk, Gtk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
@@ -25,6 +25,7 @@ export const ExpansionPanel = (props: {
    */
   const ExpanderTab = () =>
     Widget.Box({
+      cursor: Gdk.Cursor.new_from_name("pointer", null),
       hexpand: true,
       spacing: 10,
       cssClasses: ["tab"],

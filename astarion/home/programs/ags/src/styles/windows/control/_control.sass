@@ -13,6 +13,9 @@
   font-family: $font-stack
   min-width: 20rem
   padding: 2rem
+  
+  .section-header
+    font-size: 1.4rem
 
 /**********************************************
  * SYSFETCH
@@ -53,9 +56,18 @@
     font-weight: 500
     border-bottom-left-radius: $border-radius
     border-bottom-right-radius: $border-radius
+    -gtk-icon-transform: scale(0.7)
 
 .control .power-profiles
   .content
     background-color: red
     &:not(:last-child)
       border: 1px solid red
+
+/**********************************************
+ * NOTIFICATIONS
+ **********************************************/
+
+.control .notifications
+  .placeholder
+    color: $neutral-300
