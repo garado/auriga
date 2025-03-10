@@ -15,6 +15,10 @@
       # UDAs for goals
       "uda.why.type" = "string";
       "uda.why.label" = "why";
+      "uda.icon.type" = "string";
+      "uda.icon.label" = "icon";
+      "uda.aspirational.type" = "string";
+      "uda.aspirational.label" = "aspirational";
 
       # Set context to display goals
       "context.goals" = "tag:goals";
