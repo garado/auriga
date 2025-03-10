@@ -1,12 +1,45 @@
 import { Gtk, Gdk, Widget, hook, astalify } from "astal/gtk4";
-import Goals, { Goal } from "@/services/Goals";
+import Goals, { Annotation, Goal } from "@/services/Goals";
 import { bind } from "astal";
 import { formatISODateToCustomFormat } from "@/utils/Helpers";
 
 const gs = Goals.get_default();
 
 /**
- * Show children
+ * Show annotations.
+ */
+const GoalAnnotations = () => {
+  const AnnotationWidget = (a: Annotation) =>
+    Widget.Box({
+      children: [
+        Widget.Label({
+          cssClasses: ["date"],
+          label: formatISODateToCustomFormat(a.entry),
+        }),
+        Widget.Label({
+          cssClasses: ["content"],
+          label: a.description,
+        }),
+      ],
+    });
+
+  return Widget.Box({
+    cssClasses: ["annotations"],
+    visible: bind(gs, "sidebarGoal").as((g) => g?.annotations.length > 0),
+    vertical: true,
+    children: [
+      Widget.Label({
+        cssClasses: ["section-header"],
+        label: "Notes",
+        xalign: 0,
+      }),
+      bind(gs, "sidebarGoal").as((g) => g?.annotations.map(AnnotationWidget)),
+    ],
+  });
+};
+
+/**
+ * Show subgoals.
  */
 const GoalChildren = () => {
   const Child = (child: Goal) => {
@@ -18,18 +51,24 @@ const GoalChildren = () => {
 
     return Widget.Box({
       vertical: false,
-      cssClasses: [child.status],
       children: [
         Widget.Image({
           valign: Gtk.Align.START,
           iconName: iconName,
         }),
         Widget.Label({
+          cssClasses: ["link", child.status],
           valign: Gtk.Align.START,
           hexpand: false,
           xalign: 0,
           label: child.description,
           wrap: true,
+          cursor: Gdk.Cursor.new_from_name("pointer", null),
+          onButtonPressed: () => {
+            gs.sidebarBreadcrumbs.push(gs.sidebarGoal);
+            gs.sidebarBreadcrumbIndex++;
+            gs.sidebarGoal = child;
+          },
         }),
       ],
     });
@@ -52,7 +91,7 @@ const GoalChildren = () => {
 };
 
 /**
- * Show more details for the currently selected goal.
+ * Show and edit details for the currently selected goal.
  */
 const GoalDetails = () => {
   const ListBox = astalify(Gtk.ListBox);
@@ -65,39 +104,83 @@ const GoalDetails = () => {
       label: key,
     });
 
-  const CategoryWidget = Widget.Label({
+  const CategoryWidget = Widget.Entry({
+    cssClasses: ["value"],
     hexpand: true,
-    xalign: 0,
-    label: bind(gs, "sidebarGoal").as((g) => g?.project ?? "None"),
+    text: bind(gs, "sidebarGoal").as((g) => g?.project ?? "None"),
+    onActivate: (self) => {
+      gs.modify(gs.sidebarGoal, "project", self.text);
+    },
   });
 
   const StatusWidget = Widget.Label({
+    cssClasses: ["value"],
     hexpand: true,
     xalign: 0,
     label: bind(gs, "sidebarGoal").as((g) => g?.status ?? "None"),
   });
 
   const DueWidget = Widget.Entry({
+    cssClasses: ["value"],
+    hexpand: true,
+    text: bind(gs, "sidebarGoal").as((g) =>
+      g?.due ? formatISODateToCustomFormat(g.due) : "None",
+    ),
+    onActivate: (self) => {
+      gs.modify(gs.sidebarGoal, "due", self.text);
+    },
+  });
+
+  const IconWidget = Widget.Entry({
+    cssClasses: ["value"],
     hexpand: true,
     text: bind(gs, "sidebarGoal").as((g) => {
       if (g) {
-        return g.due ? formatISODateToCustomFormat(g.due) : "None";
+        return g.icon ?? "None";
       } else {
         return "None";
       }
     }),
+    onActivate: (self) => {
+      gs.modify(gs.sidebarGoal, "icon", self.text);
+    },
   });
 
   const ParentWidget = Widget.Label({
-    hexpand: true,
+    cssClasses: ["link"],
+    valign: Gtk.Align.START,
+    hexpand: false,
     xalign: 0,
     label: bind(gs, "sidebarGoal").as((g) => g?.parent?.description ?? "None"),
+    wrap: true,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    onButtonPressed: () => {
+      gs.sidebarGoal = gs.sidebarBreadcrumbs.pop()!;
+    },
+  });
+
+  const UUIDWidget = Widget.Label({
+    cssClasses: ["value"],
+    hexpand: true,
+    xalign: 0,
+    selectable: true,
+    label: bind(gs, "sidebarGoal").as((g) => g?.uuid.substring(0, 7) ?? "None"),
   });
 
   const WhyWidget = astalify(Gtk.TextView)({
     hexpand: true,
     vexpand: true,
-    cssClasses: ["textview"],
+    cssClasses: ["value"],
+    onKeyPressed: (self, keyval, _, state) => {
+      /* Allow Shift-Return for newlines. Otherwise - treat "Return" as
+       * "entry complete" signal. */
+      if (Gdk.KEY_Return == keyval && Gdk.ModifierType.SHIFT_MASK != state) {
+        self.editable = false; /* prob a better way to do this? */
+        gs.modify(gs.sidebarGoal, "why", self.buffer.text);
+      } else {
+        self.editable = true;
+      }
+    },
     setup: (self) => {
       self.set_wrap_mode(Gtk.WrapMode.WORD);
 
@@ -118,7 +201,9 @@ const GoalDetails = () => {
         ["Status", StatusWidget],
         ["Due", DueWidget],
         ["Parent", ParentWidget],
+        ["UUID", UUIDWidget],
         ["Why", WhyWidget],
+        ["Icon", IconWidget],
       ];
 
       /* Populate listbox with rows */
@@ -152,18 +237,18 @@ const _SidebarTop = () => {
     children: [
       Widget.Image({
         iconName: "caret-left-symbolic",
+        cursor: Gdk.Cursor.new_from_name("pointer", null),
         onButtonPressed: () => {
-          gs.sidebarVisible = false;
+          if (gs.sidebarBreadcrumbs.length > 0) {
+            gs.sidebarGoal = gs.sidebarBreadcrumbs.pop()!;
+          }
         },
       }),
-      // Widget.Box({
-      //   child: Widget.Icon("arrow-left-symbolic"),
-      //   visible: GoalService.bind("sidebar-breadcrumbs").as(
-      //     (x) => x.length > 0,
-      //   ),
-      //   onPrimaryClick: () => {
-      //     GoalService.followBreadcrumbs(-1);
-      //   },
+      // Widget.Image({
+      //   iconName: "caret-right-symbolic",
+      //   cursor: Gdk.Cursor.new_from_name("pointer", null),
+      //   visible: bind(gs, "sidebarBreadcrumbIndex").as((bci) => bci > 0),
+      //   onButtonPressed: () => {},
       // }),
     ],
   });
@@ -179,7 +264,7 @@ const _SidebarTop = () => {
 
   return Widget.Box({
     vertical: true,
-    spacing: 8,
+    spacing: 12,
     children: [
       Widget.CenterBox({
         orientation: Gtk.Orientation.HORIZONTAL,
@@ -189,6 +274,7 @@ const _SidebarTop = () => {
       Description,
       GoalDetails(),
       GoalChildren(),
+      GoalAnnotations(),
     ],
   });
 };

@@ -1,4 +1,4 @@
-import { Gtk, Gdk, Widget, hook } from "astal/gtk4";
+import { Gtk, Gdk, Widget } from "astal/gtk4";
 import { register, property } from "astal/gobject";
 import Goals, { Goal } from "@/services/Goals";
 import UserConfig from "../../../../userconfig.js";

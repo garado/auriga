@@ -34,7 +34,7 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
   const PageButtonContainer = () =>
     SegmentedButtonGroup({
       exclusive: true,
-      autosetFirstChecked: true,
+      active: true,
       buttons: dashLayout.pages.map((page) => {
         return {
           name: page.name,

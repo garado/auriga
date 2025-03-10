@@ -1,13 +1,15 @@
 /* █▀▄ ▄▀█ █▀ █░█ */
 /* █▄▀ █▀█ ▄█ █▀█ */
 
-import { App, Astal, Gtk, Gdk, Widget } from "astal/gtk4";
+import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 
 import Home from "@/windows/dash/home/Home";
 import Ledger from "@/windows/dash/ledger/Ledger";
 import Calendar from "@/windows/dash/calendar/Calendar";
+import Goals from "@/windows/dash/goals/Goals";
 import { SmartStack } from "@/components/SmartStack";
+import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 /***********************************************************
  * SETUP
@@ -34,6 +36,11 @@ const dashTabData: DashTabData[] = [
     name: "Calendar",
     icon: "calendar-symbolic",
     ui: Calendar,
+  },
+  {
+    name: "Goals",
+    icon: "target-symbolic",
+    ui: Goals,
   },
 ];
 
@@ -79,6 +86,7 @@ const DashTabEntry = (tabData: DashTabData) =>
  */
 const DashTabStack = () =>
   SmartStack({
+    name: "DashTabStack",
     cssClasses: ["tab-stack"],
     bindNumberedSwitchTo: activeTabIndex,
     vertical: true,
@@ -113,31 +121,19 @@ export default () => {
        * https://github.com/wmww/gtk4-layer-shell/issues/60 */
       self.set_default_size(1, 1);
 
-      self.controller = new Gtk.EventControllerKey();
-      self.add_controller(self.controller);
-      self.controller.connect("key-pressed", (controller, keyval) => {
-        log("dashKeyController", "Dash");
-        switch (keyval) {
-          case Gdk.KEY_1:
-            activeTabIndex.set(0);
-            return true;
-            break;
+      const binds = {};
 
-          case Gdk.KEY_2:
-            activeTabIndex.set(1);
-            return true;
-            break;
+      for (let i = 0; i < dashTabData.length; i++) {
+        binds[`${i + 1}`] = () => {
+          activeTabIndex.set(i);
+        };
+      }
 
-          case Gdk.KEY_3:
-            activeTabIndex.set(2);
-            return true;
-            break;
-
-          default:
-            controller.forward(TabStack.get_visible_child());
-            return false;
-            break;
-        }
+      EventControllerKeySetup({
+        name: "DashWindow",
+        widget: self,
+        forwardTo: () => TabStack.get_visible_child(),
+        binds: binds,
       });
     },
   });

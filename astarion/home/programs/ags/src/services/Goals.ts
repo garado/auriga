@@ -1,12 +1,17 @@
-import { App } from "astal/gtk4";
 import { GObject, register, property, signal } from "astal/gobject";
-import { exec, execAsync } from "astal/process";
-import UserConfig from "../../userconfig.js";
+import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
+import { Levenshtein } from "@/utils/FuzzyFind.js";
+import UserConfig from "../../userconfig.js";
 
 /**********************************************
  * PUBLIC TYPEDEFS
  **********************************************/
+
+export interface Annotation {
+  entry: string;
+  description: string;
+}
 
 export class Goal {
   constructor(
@@ -23,7 +28,7 @@ export class Goal {
     public why: string,
     public depends?: string[],
     public icon?: string,
-    public annotations?: string[],
+    public annotations?: Annotation[],
     public imgpath?: string,
     public parent?: Goal | undefined,
   ) {}
@@ -60,6 +65,10 @@ interface Filters {
   failed: boolean;
   developed: boolean;
   undeveloped: boolean;
+  shortterm: boolean;
+  medterm: boolean;
+  longterm: boolean;
+  aspirational: boolean;
 }
 /**********************************************
  * UTILITY
@@ -105,6 +114,12 @@ export default class Goals extends GObject.Object {
   @property(Object)
   declare sidebarBreadcrumbs: Array<Goal>;
 
+  @property(Number)
+  declare sidebarBreadcrumbIndex: number;
+
+  @property(String)
+  declare search: string;
+
   @property(Boolean)
   declare sidebarVisible: boolean;
 
@@ -125,31 +140,15 @@ export default class Goals extends GObject.Object {
         undeveloped: false,
       },
       sidebarBreadcrumbs: [],
+      sidebarBreadcrumbIndex: -1,
+      search: "",
     });
 
     this.dataDirectory = UserConfig.goals.directory;
     this.data = {};
 
-    this.#fetchGoals();
+    this.fetchGoals();
   }
-
-  /**
-   * Fetch and store all goals.
-   */
-  #fetchGoals = () => {
-    log("goalService", "Fetching goals");
-
-    const cmd = `task rc.data.location="${this.dataDirectory}" tag:goals and "(status:pending or status:completed)" export`;
-
-    execAsync(`bash -c '${cmd}'`)
-      .then((out) => {
-        const rawData = JSON.parse(out);
-        rawData.map((raw: Object) => this.#insertGoal(Goal.fromObject(raw)));
-        this.#sortGoals();
-        this.emit("render-goals", this.data);
-      })
-      .catch((err) => print(`GoalService: fetchGoals: ${err}`));
-  };
 
   /**
    * Insert goal.
@@ -175,7 +174,9 @@ export default class Goals extends GObject.Object {
       goal.status = "failed";
     }
 
+    if (!goal.annotations) goal.annotations = [];
     if (!goal.depends) goal.depends = [];
+
     goal.children = [];
 
     /* If this is a new category, then create the root node for it
@@ -323,6 +324,27 @@ export default class Goals extends GObject.Object {
   /**************************************************
    * PUBLIC FUNCTIONS
    **************************************************/
+
+  /**
+   * Fetch and store all goals.
+   */
+  fetchGoals = () => {
+    log("goalService", "Fetching goals");
+
+    this.data = {};
+
+    const cmd = `task rc.data.location="${this.dataDirectory}" tag:goals and "(status:pending or status:completed)" export`;
+
+    execAsync(`bash -c '${cmd}'`)
+      .then((out) => {
+        const rawData = JSON.parse(out);
+        rawData.map((raw: Object) => this.#insertGoal(Goal.fromObject(raw)));
+        this.#sortGoals();
+        this.emit("render-goals", this.data);
+      })
+      .catch((err) => print(`GoalService: fetchGoals: ${err}`));
+  };
+
   /**
    * Return the children of a given node which satisfy the
    * currently active uifilters.
@@ -342,21 +364,71 @@ export default class Goals extends GObject.Object {
       (!this.filters.developed && !this.filters.undeveloped) ||
       (this.filters.developed && this.filters.undeveloped);
 
-    return statusMatch && stateMatch;
+    let descriptionMatch = true;
+    let categoryMatch = true;
+
+    if (this.search) {
+      const descScore = Levenshtein(goal.description, this.search);
+      descriptionMatch = descScore < 20;
+
+      const catScore = Levenshtein(goal.project, this.search);
+      categoryMatch = catScore < 20;
+    }
+
+    return statusMatch && stateMatch && descriptionMatch;
   };
 
-  filtersUpdated = () => {
-    this.notify("filters");
+  /**
+   * Sort goals based on category
+   * @param {Goal} a - first goal to compare
+   * @param {Goal} b - other goal to compare
+   * @return {number} -1 if a comes first, 1 if b comes first
+   */
+  categorySort = (a: Goal, b: Goal): number => {
+    if (a.project !== b.project) {
+      return a.project > b.project ? -1 : 1;
+    } else if (false) {
+    } else if (a.description != b.description) {
+      return a.description > b.description ? -1 : 1;
+    }
+    return 0;
   };
 
+  /**
+   * Sort 2 goals.
+   * @param {Goal} a - first goal to compare
+   * @param {Goal} b - other goal to compare
+   * @return {number} -1 if a comes first, 1 if b comes first
+   */
   compareGoals = (a: Goal, b: Goal): number => {
     if (a.due !== b.due) {
-      return a.due > b.due ? -1 : 1;
+      return a.due > b.due ? 1 : -1;
     } else if (false) {
       /* TODO: By completion percentage */
     } else if (a.description != b.description) {
       return a.description > b.description ? -1 : 1;
     }
     return 0;
+  };
+
+  filtersUpdated = () => {
+    this.notify("filters");
+  };
+
+  /**************************************************
+   * PUBLIC MOD FUNCTIONS
+   **************************************************/
+
+  /**
+   * Modify a goal.
+   * @param {Goal} goal - goal to modify
+   * @param {string} modType - the property to modify
+   * @param {string} value - the new property value to set
+   *
+   * note: quote escaping not handled properly
+   */
+  modify = (goal: Goal, modType: string, value: string) => {
+    const cmd = `task rc.data.location="${this.dataDirectory}" ${goal.uuid} modify ${modType}:"${value}"`;
+    execAsync(`bash -c '${cmd}'`);
   };
 }

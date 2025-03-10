@@ -3,18 +3,20 @@
 
 /* Attempts to implement Material Design segmented button group */
 
-import { Gtk, Widget, astalify } from "astal/gtk4";
+import { Binding } from "astal";
+import { Gdk, Gtk, Widget, astalify } from "astal/gtk4";
 
 const ToggleButton = astalify(Gtk.ToggleButton);
 
 export type SegmentedButtonProps = {
   name: string;
   action: () => void;
+  active: boolean | Binding<boolean>;
 };
 
 export const SegmentedButtonGroup = (props: {
   buttons: Array<SegmentedButtonProps>;
-  autosetFirstChecked?: boolean;
+  active?: boolean | Binding<boolean>;
   exclusive?: boolean;
 }) => {
   const Container = Widget.Box({
@@ -23,9 +25,11 @@ export const SegmentedButtonGroup = (props: {
     cssClasses: ["segmented-toggle-button-container"],
     children: props.buttons.map((btn) =>
       ToggleButton({
+        cursor: Gdk.Cursor.new_from_name("pointer", null),
         cssClasses: ["segmented-toggle-button"],
         label: btn.name,
         onClicked: btn.action,
+        active: btn.active ?? false,
       }),
     ),
   });
@@ -39,10 +43,6 @@ export const SegmentedButtonGroup = (props: {
       .map((btn) => {
         btn.set_group(group);
       });
-  }
-
-  if (props.autosetFirstChecked) {
-    Container.get_children()[0].set_active(true);
   }
 
   return Container;

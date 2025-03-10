@@ -11,13 +11,16 @@
  * SLIDE_RIGHT. */
 
 import { Gtk, Gdk, Widget } from "astal/gtk4";
+import { Binding } from "astal";
+import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 export const SmartStack = (props: {
+  name?: string;
   children: Array<Object> /* { ui: function, name: string } */;
   vertical?: boolean;
   cssClasses?: Array<string>;
-  bindNamedSwitchTo?: Binding /* @TODO: could add more clarity */;
-  bindNumberedSwitchTo?: Binding /* @TODO: could add more clarity */;
+  bindNamedSwitchTo?: Binding<string> /* @TODO: could add more clarity */;
+  bindNumberedSwitchTo?: Binding<number> /* @TODO: could add more clarity */;
 }) => {
   const defaultTransition = props.vertical
     ? Gtk.StackTransitionType.SLIDE_DOWN
@@ -33,26 +36,18 @@ export const SmartStack = (props: {
         self.add_named(c.ui(), c.name);
       });
 
-      self.controller = new Gtk.EventControllerKey();
-      self.add_controller(self.controller);
-      self.controller.connect("key-pressed", (controller, keyval) => {
-        log("dashKeyController", "SmartStack");
-        switch (keyval) {
-          case Gdk.KEY_H:
+      EventControllerKeySetup({
+        widget: self,
+        name: props.name || "SmartStack",
+        forwardTo: () => self.get_visible_child(),
+        binds: {
+          H: () => {
             self.iterTab(-1);
-            return true;
-            break;
-
-          case Gdk.KEY_L:
+          },
+          L: () => {
             self.iterTab(1);
-            return true;
-            break;
-
-          default:
-            controller.forward(self.get_visible_child());
-            return false;
-            break;
-        }
+          },
+        },
       });
     },
   });

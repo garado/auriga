@@ -1,7 +1,7 @@
 import Goals from "@/services/Goals";
 import { Gtk, hook, Widget } from "astal/gtk4";
 import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
-import { bind } from "astal";
+import { bind, Time } from "astal";
 
 const gs = Goals.get_default();
 
@@ -17,7 +17,9 @@ export default () => {
     focusOnClick: true,
     focusable: true,
     placeholderText: "search...",
-    onActivate: () => {},
+    onKeyReleased: (self) => {
+      gs.search = self.text;
+    },
   });
 
   const SearchContainer = Widget.Box({
@@ -82,6 +84,43 @@ export default () => {
     ],
   });
 
+  const TimescaleFilters = SegmentedButtonGroup({
+    buttons: [
+      {
+        name: "Short term",
+        active: bind(gs, "filters").as((f) => f.shortterm),
+        action: () => {
+          // gs.filters.developed = !gs.filters.developed;
+          // gs.filtersUpdated();
+        },
+      },
+      {
+        name: "Mid term",
+        active: bind(gs, "filters").as((f) => f.medterm),
+        action: () => {
+          // gs.filters.developed = !gs.filters.developed;
+          // gs.filtersUpdated();
+        },
+      },
+      {
+        name: "Long term",
+        active: bind(gs, "filters").as((f) => f.longterm),
+        action: () => {
+          // gs.filters.developed = !gs.filters.developed;
+          // gs.filtersUpdated();
+        },
+      },
+      {
+        name: "Aspirational",
+        active: bind(gs, "filters").as((f) => f.aspirational),
+        action: () => {
+          // gs.filters.developed = !gs.filters.developed;
+          // gs.filtersUpdated();
+        },
+      },
+    ],
+  });
+
   const CategorySelect = Widget.Box({
     setup: (self) => {
       /* For each category, insert top-level goals */
@@ -112,7 +151,7 @@ export default () => {
     startWidget: Widget.Box({
       cssClasses: ["filters"],
       spacing: 12,
-      children: [ProgressFilters, StatusFilters],
+      children: [ProgressFilters, StatusFilters, TimescaleFilters],
     }),
   });
 

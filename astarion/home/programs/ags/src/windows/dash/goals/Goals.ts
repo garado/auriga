@@ -51,6 +51,10 @@ export default () => {
         self.invalidate_filter();
       });
 
+      hook(self, gs, "notify::search", () => {
+        self.invalidate_filter();
+      });
+
       /* Filter functions */
       self.set_filter_func(FilterFunction);
     },
@@ -107,6 +111,9 @@ export default () => {
         binds: {
           Escape: () => {
             gs.sidebarVisible = false;
+          },
+          r: () => {
+            gs.fetchGoals();
           },
         },
       });
