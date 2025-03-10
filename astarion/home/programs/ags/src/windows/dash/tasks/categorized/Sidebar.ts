@@ -12,26 +12,37 @@ const SectionHeader = (text: string) =>
     label: text,
   });
 
+const Indicator = (property: string, target: string) =>
+  Widget.Label({
+    cssClasses: ["indicator"],
+    xalign: 0,
+    label: bind(ts, property).as((value) => (value == target ? "∘" : "")),
+  });
+
 /**
  * Category selection
  */
 const Categories = () => {
   const Category = (category: string) =>
-    Widget.Label({
-      xalign: 0,
-      cssClasses: bind(ts, "selectedTag").as((st) =>
-        st == category ? ["active"] : [],
-      ),
-      cursor: Gdk.Cursor.new_from_name("pointer", null),
-      label: category,
-      onButtonPressed: (self) => {
-        ts.selectedTag = self.label;
-      },
+    Widget.Box({
+      children: [
+        Indicator("selectedTag", category),
+        Widget.Label({
+          xalign: 0,
+          cssClasses: bind(ts, "selectedTag").as((st) =>
+            st == category ? ["active", "item"] : ["item"],
+          ),
+          cursor: Gdk.Cursor.new_from_name("pointer", null),
+          label: category,
+          onButtonPressed: (self) => {
+            ts.selectedTag = self.label;
+          },
+        }),
+      ],
     });
 
   return Widget.Box({
     vertical: true,
-    spacing: 12,
     children: [
       SectionHeader("Categories"),
       bind(ts, "tags").as((c) => c?.map(Category)),
@@ -52,21 +63,25 @@ const Categories = () => {
  */
 const Subcategories = () => {
   const Subcategory = (subcat: string) =>
-    Widget.Label({
-      xalign: 0,
-      cssClasses: bind(ts, "selectedProject").as((sp) =>
-        sp == subcat ? ["active"] : [],
-      ),
-      cursor: Gdk.Cursor.new_from_name("pointer", null),
-      label: subcat,
-      onButtonPressed: (self) => {
-        ts.selectedProject = self.label;
-      },
+    Widget.Box({
+      children: [
+        Indicator("selectedProject", subcat),
+        Widget.Label({
+          xalign: 0,
+          cssClasses: bind(ts, "selectedProject").as((sp) =>
+            sp == subcat ? ["active", "item"] : ["item"],
+          ),
+          cursor: Gdk.Cursor.new_from_name("pointer", null),
+          label: subcat,
+          onButtonPressed: (self) => {
+            ts.selectedProject = self.label;
+          },
+        }),
+      ],
     });
 
   return Widget.Box({
     vertical: true,
-    spacing: 12,
     children: [
       SectionHeader("Subcategories"),
       bind(ts, "selectedTag").as((tag) =>

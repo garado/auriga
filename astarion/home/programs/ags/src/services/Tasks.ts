@@ -175,6 +175,7 @@ export default class Tasks extends GObject.Object {
         this.#fetchTasksForProject(this.selectedTag, this.selectedProject);
       } else {
         this.displayedTasks = displayedTasks;
+        this.selectedTask = displayedTasks[0];
       }
     });
   }
