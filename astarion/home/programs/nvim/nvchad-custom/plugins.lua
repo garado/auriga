@@ -6,6 +6,12 @@ local plugins = {
   -- Override plugin definition options
 
   {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    event = "BufEnter",
+  },
+
+  {
     "neovim/nvim-lspconfig",
     config = function()
       require "plugins.configs.lspconfig"
@@ -86,9 +92,17 @@ local plugins = {
 
   -- Extra TS Features
   -- Improves TypeScript support with organizing imports, fixing imports, and more.
-  { 
-    'jose-elias-alvarez/nvim-lsp-ts-utils',
+  -- { 
+  --   'jose-elias-alvarez/nvim-lsp-ts-utils',
+  --   ft = "typescript",
+  -- },
+
+  {
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    event = "BufEnter",
     ft = "typescript",
+    opts = {},
   },
 
   {

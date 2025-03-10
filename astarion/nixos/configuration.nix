@@ -193,6 +193,8 @@ in {
 
     power-profiles-daemon.enable = true;
 
+    gvfs.enable = true;
+
     upower.enable = true;
 
     xserver = {

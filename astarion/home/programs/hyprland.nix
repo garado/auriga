@@ -163,6 +163,8 @@
 
         "$mainMod, v, togglefloating" # Floating
         "$mainMod, s, pin" # Sticky
+
+        "$mainMod SHIFT, s, exec, grimblast copy area" # screenshot
       ];
       
       bindm = [
