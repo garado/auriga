@@ -1,0 +1,59 @@
+
+@use 'sass:list'
+
+$img-notrofi: url('/home/alexis/Github/dotfiles/astarion/home/services/ags/assets/notrofi/yoru.jpg')
+
+$red-100: #FB8567
+$red-200: #F06C54
+$red-300: #E45341
+$red-400: #D83B2F
+$red-500: #CC241D
+
+$yellow-100: #FBD080
+$yellow-200: #F2C26B
+$yellow-300: #E9B452
+$yellow-400: #E0A63A
+$yellow-500: #D79921
+
+$green-100: #D8CE6D
+$green-200: #C8C058
+$green-300: #B8B243
+$green-400: #A8A42E
+$green-500: #98971A
+
+$neutral-100: #fbf1c7
+$neutral-200: #ebdbb2
+$neutral-300: #d5c4a1
+$neutral-400: #928374
+$neutral-500: #7c6f64
+$neutral-600: #665c54
+$neutral-700: #504945
+$neutral-800: #3c3836
+$neutral-900: #282828 
+
+$primary-100: #F9BF5D
+$primary-200: #F7B14F
+$primary-300: #F5A644
+$primary-400: #EFA43A
+$primary-500: #E88E2E
+$primary-600: #E68A26
+$primary-700: #D8781C
+$primary-800: #D07416
+$primary-900: #D65D0E
+
+$accent-1:  desaturate(#cc241d, 15%)
+$accent-2:  desaturate(#98971a, 15%)
+$accent-3:  desaturate(#d79921, 15%)
+$accent-4:  desaturate(#458588, 15%)
+$accent-5:  desaturate(#b16286, 15%)
+$accent-6:  desaturate(#689d6a, 15%)
+$accent-7:  desaturate(#fe8019, 15%)
+$accent-8:  desaturate(#79740e, 15%)
+$accent-9:  desaturate(#8f3f71, 15%)
+$accent-10: desaturate(#427b58, 15%) 
+
+$accents: desaturate(#cc241d, 15%), desaturate(#98971a, 15%), desaturate(#d79921, 15%), desaturate(#458588, 15%), desaturate(#b16286, 15%), desaturate(#689d6a, 15%), desaturate(#fe8019, 15%), desaturate(#79740e, 15%), desaturate(#8f3f71, 15%), desaturate(#427b58, 15%)
+
+@for $index from 1 through list.length($accents)
+  .accent-#{$index}
+    background-color: list.nth($accents, $index)
