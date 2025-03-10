@@ -8,6 +8,7 @@ import Home from "@/windows/dash/home/Home";
 import Ledger from "@/windows/dash/ledger/Ledger";
 import Calendar from "@/windows/dash/calendar/Calendar";
 import Goals from "@/windows/dash/goals/Goals";
+import Tasks from "@/windows/dash/tasks/Tasks";
 import { SmartStack } from "@/components/SmartStack";
 import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
@@ -36,6 +37,11 @@ const dashTabData: DashTabData[] = [
     name: "Calendar",
     icon: "calendar-symbolic",
     ui: Calendar,
+  },
+  {
+    name: "Tasks",
+    icon: "check-circle-symbolic",
+    ui: Tasks,
   },
   {
     name: "Goals",

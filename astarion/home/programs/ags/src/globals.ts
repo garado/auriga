@@ -16,7 +16,7 @@ const logFlags: { [key: string]: boolean } = {
 
   /* Dashboard stuff */
   dash: false,
-  goalTab: true,
+  goalTab: false,
   calTab: false,
 
   /* Other stuff */
@@ -24,9 +24,9 @@ const logFlags: { [key: string]: boolean } = {
 
   /* Service logging */
   dashService: false,
-  taskService: false,
+  taskService: true,
   calService: false,
-  goalService: true,
+  goalService: false,
   habitifyService: false,
   lifeService: false,
   ledgerService: false,
