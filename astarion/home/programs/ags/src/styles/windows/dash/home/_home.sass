@@ -124,17 +124,15 @@
 .home .profile
   margin: 2.5rem 1rem
 
-  .pfp-circle-border
-    min-height: 8rem
+  .pfp-container
     min-width:  8rem
-    font-size: 0.3rem
-    background-color: $neutral-900
-    color: $primary-800
+    min-height: 8rem
 
-  .pfp
-    min-height: 7rem
-    min-width:  7rem
-    border-radius: 50% // ??? why is it still square
+    .pfp
+      border-radius: 50%
+      border: 4px solid $primary-400
+      background-size: 100%
+      background-position: center
 
   .username
     margin-top: 0.4rem

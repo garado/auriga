@@ -46,6 +46,7 @@ export default () => {
   return Widget.Box({
     vertical: false,
     cssClasses: ["home"],
+    spacing: WIDGET_SPACING,
     children: [Left, Middle, Right],
   });
 };

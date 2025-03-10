@@ -28,6 +28,8 @@ const QuoteText = () =>
   Widget.Label({
     cssClasses: ["quote-text"],
     wrap: true,
+    hexpand: true,
+    vexpand: true,
     justify: Gtk.Justification.CENTER,
     maxWidthChars: 24,
     label: bind(currentQuote).as((value) => value[QUOTE_INDEX]),
@@ -36,6 +38,8 @@ const QuoteText = () =>
 const Author = () =>
   Widget.Label({
     cssClasses: ["author"],
+    hexpand: true,
+    vexpand: true,
     justify: Gtk.Justification.CENTER,
     label: bind(currentQuote).as((value) => value[AUTHOR_INDEX]),
   });
@@ -44,10 +48,13 @@ export const Quote = () =>
   Widget.Box({
     cssClasses: ["quote", "widget-container"],
     spacing: 6,
-    hexpand: true,
-    vexpand: true,
-    hpack: Gtk.Align.CENTER,
-    vpack: Gtk.Align.CENTER,
     vertical: true,
-    children: [QuoteText(), Author()],
+    children: [
+      Widget.Box({
+        vertical: true,
+        halign: Gtk.Align.BASELINE_CENTER,
+        valign: Gtk.Align.BASELINE_CENTER,
+        children: [QuoteText(), Author()],
+      }),
+    ],
   });

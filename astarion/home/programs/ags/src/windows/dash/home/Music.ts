@@ -32,7 +32,7 @@ const MediaPlayer = (player: Mpris.Player) => {
     xalign: 0,
     label: player
       ? bind(player, "title").as((t) => t || "Unknown Track")
-      : "None",
+      : "Nothing playing.",
   });
 
   const Artist = Widget.Label({
@@ -40,7 +40,7 @@ const MediaPlayer = (player: Mpris.Player) => {
     xalign: 0,
     label: player
       ? bind(player, "artist").as((a) => a || "Unknown Artist")
-      : "None",
+      : "It's quiet in here...",
   });
 
   const Info = Widget.Box({
@@ -56,7 +56,9 @@ const MediaPlayer = (player: Mpris.Player) => {
     contentFit: Gtk.ContentFit.COVER,
     file: player
       ? bind(player, "coverArt").as((c) => Gio.File.new_for_path(`${c}`))
-      : undefined,
+      : Gio.File.new_for_path(
+          "/home/alexis/Github/dotfiles/astarion/home/programs/ags/src/assets/default-player-bg.jpg",
+        ),
   });
 
   return Widget.Overlay({

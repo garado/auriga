@@ -1,19 +1,25 @@
 /* █▀█ █▀█ █▀█ █▀▀ █ █░░ █▀▀ */
 /* █▀▀ █▀▄ █▄█ █▀░ █ █▄▄ ██▄ */
 
-import { Gtk, Widget } from "astal/gtk4";
+import { astalify, Gtk, Widget } from "astal/gtk4";
 
 import UserConfig from "../../../../userconfig.js";
+import { Gio } from "astal";
 
 const PFP_PATH = UserConfig.profile.pfp;
 const PROFILE_NAME = UserConfig.profile.name;
 const SPLASH_OPTS = UserConfig.profile.splashText;
 
 export const Profile = () => {
-  const Picture = () =>
-    Widget.Image({
+  const Picture = astalify(Gtk.Picture);
+
+  const Pfp = () =>
+    Picture({
+      hexpand: false,
+      vexpand: false,
       cssClasses: ["pfp"],
-      file: PFP_PATH,
+      contentFit: Gtk.ContentFit.COVER,
+      file: Gio.File.new_for_path(PFP_PATH),
     });
 
   const Username = () =>
@@ -30,9 +36,20 @@ export const Profile = () => {
 
   return Widget.Box({
     vertical: true,
-    halign: Gtk.Align.CENTER,
-    valign: Gtk.Align.CENTER,
+    hexpand: false,
+    vexpand: false,
+    halign: Gtk.Align.BASELINE_CENTER,
+    valign: Gtk.Align.BASELINE_CENTER,
     cssClasses: ["profile"],
-    children: [Picture(), Username(), Splash()],
+    children: [
+      Widget.Box({
+        halign: Gtk.Align.BASELINE_CENTER,
+        hexpand: true,
+        cssClasses: ["pfp-container"],
+        children: [Pfp()],
+      }),
+      Username(),
+      Splash(),
+    ],
   });
 };
