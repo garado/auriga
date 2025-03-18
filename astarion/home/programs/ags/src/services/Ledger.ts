@@ -2,7 +2,6 @@
 /* █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄ */
 
 import { GObject, register, property } from "astal/gobject";
-import { GLib } from "astal";
 import { execAsync } from "astal/process";
 import Gio from "gi://Gio";
 import UserConfig from "../../userconfig.js";
@@ -212,7 +211,7 @@ export default class Ledger extends GObject.Object {
   #initAccountData() {
     const commands = UserConfig.ledger.accountList.map((accountData) => {
       /* use `--infer-market-prices -X '$'` to convert shares to $ */
-      return `hledger ${INCLUDES} balance ${accountData.accountName} ${CSV} -X '$' --infer-market-prices`;
+      return `hledger ${INCLUDES} balance "${accountData.accountName}" ${CSV} -X "$" --infer-market-prices`;
     });
 
     const promises = commands.map(async (cmd) => {
