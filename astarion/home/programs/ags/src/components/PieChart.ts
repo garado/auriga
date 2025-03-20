@@ -79,7 +79,7 @@ const getCairoColorFromClass = (...rest: Array<string>) => {
 const cachePieColors = () => {
   const pieColors = [];
 
-  for (let i = 1; i < MAX_NUM_SLICE_COLORS; i++) {
+  for (let i = 0; i < MAX_NUM_SLICE_COLORS; i++) {
     pieColors.push(getCairoColorFromClass(`pie-slice-${i}`));
   }
 
@@ -131,7 +131,7 @@ const LegendEntry = (data: PieChartData, counter = 0) =>
     spacing: 4,
     vertical: false,
     children: [
-      Dot(`pie-slice-${counter}`),
+      Dot(`pie-slice-${counter % MAX_NUM_SLICE_COLORS}`),
       Widget.Box({
         vertical: false,
         children: [
