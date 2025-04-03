@@ -35,6 +35,15 @@ export type TransactionData = {
   total: string;
 };
 
+export interface CategorySpend {
+  subtotal: number;
+  subcategories: Record<string, CategorySpend>;
+}
+
+// { "2025-01": CategorySpend, "2025-02": CategorySpend, ... }
+type MonthlySpending = Record<string, CategorySpend>;
+type CategoryTotals = Record<string, number[]>; // { "Food": [JanTotal, FebTotal, ...], "Transport": [...] }
+
 /**********************************************
  * PRIVATE TYPEDEFS
  **********************************************/
@@ -55,6 +64,106 @@ enum HLedgerRegCSV {
 /**********************************************
  * UTILITY
  **********************************************/
+
+const getLastNMonthsDays = (n: number) => {
+  const now = new Date();
+  const result = [];
+
+  for (let i = 0; i < n; i++) {
+    let month = now.getMonth() - i;
+
+    const year = month < 1 ? now.getFullYear() - 1 : now.getFullYear();
+
+    month = month < 1 ? 12 + month : month;
+
+    const d = new Date(year, month, 1);
+
+    const firstDay =
+      `${d.getFullYear()}` +
+      "-" +
+      `${d.getMonth() + 1}`.padStart(2, "0") +
+      "-" +
+      `${d.getDate()}`.padStart(2, "0");
+
+    d.setMonth(d.getMonth() + 1);
+
+    d.setDate(0); // Last day of previous month
+
+    const lastDay =
+      `${d.getFullYear()}` +
+      "-" +
+      `${d.getMonth() + 1}`.padStart(2, "0") +
+      "-" +
+      `${d.getDate()}`.padStart(2, "0");
+
+    result.push({ first: firstDay, last: lastDay });
+  }
+
+  return result.reverse();
+};
+
+const deepMergeCategories = (
+  node1: CategorySpend,
+  node2: CategorySpend,
+): CategorySpend => {
+  const mergedSubcategories = { ...node1.subcategories };
+
+  for (const key in node2.subcategories) {
+    if (mergedSubcategories[key]) {
+      mergedSubcategories[key] = deepMergeCategories(
+        mergedSubcategories[key],
+        node2.subcategories[key],
+      );
+    } else {
+      mergedSubcategories[key] = node2.subcategories[key];
+    }
+  }
+
+  return {
+    subtotal: node1.subtotal + node2.subtotal,
+    subcategories: mergedSubcategories,
+  };
+};
+
+const stringToCategorySpend = (
+  input: string,
+  subtotal: number,
+): CategorySpend => {
+  const parts = input.split(":");
+
+  const obj: CategorySpend = {
+    subcategories: {},
+    subtotal: 0,
+  };
+
+  let current = obj;
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+
+    current.subcategories[part] =
+      current.subcategories[part] ||
+      ({ subcategories: {}, subtotal: 0 } as CategorySpend);
+
+    current = current.subcategories[part] as CategorySpend;
+  }
+
+  current.subtotal = subtotal;
+
+  return obj;
+};
+
+const recursiveSubtotalSum = (category: CategorySpend): number => {
+  const subtotal =
+    category.subtotal +
+    Object.values(category.subcategories).reduce(
+      (sum, child) => sum + recursiveSubtotalSum(child),
+      0,
+    );
+
+  category.subtotal = subtotal;
+
+  return subtotal ?? 0;
+};
 
 /**********************************************
  * CLASS DEFINITION
@@ -104,6 +213,9 @@ export default class Ledger extends GObject.Object {
   @property(Number)
   declare netWorth: Number;
 
+  @property(Object)
+  declare monthlySpendingByCategory: Object;
+
   /**************************************************
    * PRIVATE FUNCTIONS
    **************************************************/
@@ -117,6 +229,10 @@ export default class Ledger extends GObject.Object {
       debtsLiabilities: {},
       monthlyBreakdown: {},
       balancesOverTime: [],
+      monthlySpendingByCategory: {
+        subcategories: {},
+        subtotal: [0],
+      },
     } as any);
 
     this.initAll();
@@ -133,6 +249,7 @@ export default class Ledger extends GObject.Object {
     this.#initMonthlyBreakdown();
     this.#initRecentTransactions();
     this.#initBalanceTrends();
+    this.#whatever();
   }
 
   /**
@@ -387,4 +504,109 @@ export default class Ledger extends GObject.Object {
       })
       .catch((err) => print(`initRecentTransactions: ${err}`));
   }
+
+  #whatever = () => {
+    const monthStrings = getLastNMonthsDays(3);
+
+    const promises = monthStrings.map(async (monthStr) => {
+      return this.#calculateMonthlySpend(monthStr.first, monthStr.last);
+    });
+
+    Promise.all(promises)
+      .then((result) => {
+        const ugh = {} as MonthlySpending;
+
+        for (let i = 0; i < monthStrings.length; i++) {
+          ugh[monthStrings[i].first] = result[i]!;
+        }
+
+        this.monthlySpendingByCategory =
+          this.#aggregateMonthlySpendingByCategory(ugh);
+      })
+      .catch((err) => print(`whatever: ${err}`));
+  };
+
+  #aggregateMonthlySpendingByCategory = (
+    monthlyData: MonthlySpending,
+  ): CategorySpend => {
+    const months = Object.keys(monthlyData).sort(); // Ensure chronological order
+    const monthCount = months.length;
+
+    function mergeNodes(
+      category: string,
+      index: number,
+      node: SpendingNode,
+      result: CategorySpend,
+    ) {
+      if (node === undefined) return;
+
+      result.subtotal[index] = node.subtotal; // Set the correct month index
+
+      for (const subcategory in node.subcategories) {
+        if (!result.subcategories[subcategory]) {
+          result.subcategories[subcategory] = {
+            subtotal: new Array(monthCount).fill(0),
+            subcategories: {},
+          };
+        }
+
+        mergeNodes(
+          subcategory,
+          index,
+          node.subcategories[subcategory],
+          result.subcategories[subcategory],
+        );
+      }
+    }
+
+    const aggregated: CategorySpend = {
+      subtotal: new Array(monthCount).fill(0),
+      subcategories: {},
+    };
+
+    months.forEach((month, index) => {
+      const rootNode = monthlyData[month];
+      mergeNodes("root", index, rootNode, aggregated);
+    });
+
+    return aggregated;
+  };
+
+  /**
+   * Initialize monthly spending for a single month.
+   */
+  #calculateMonthlySpend = async (first: string, last: string) => {
+    const cmd = `hledger ${INCLUDES} -b ${first} -e ${last} bal ^Expenses ${CSV}`;
+
+    return execAsync(`bash -c '${cmd}'`)
+      .then((out) => {
+        const split = out.replaceAll('"', "").split("\n").slice(1);
+
+        let tmp = {} as CategorySpend;
+        let total = 0;
+
+        split.map((line: string) => {
+          const [rawCategory, rawAmount] = line.split(",");
+          const category = rawCategory.replaceAll("Expenses:", "");
+          const amount = Number(rawAmount.replace(/[^0-9,.]/g, ""));
+
+          const categorySpend = stringToCategorySpend(category, amount);
+
+          if (rawCategory == "total") {
+            total = amount;
+          } else {
+            tmp = deepMergeCategories(tmp, categorySpend);
+          }
+        });
+
+        recursiveSubtotalSum(tmp);
+
+        tmp.subtotal = total;
+
+        return tmp;
+      })
+      .catch((err) =>
+        print(`calculateMonthlySpend (${first} - ${last}): ${err}`),
+      );
+  };
 }
