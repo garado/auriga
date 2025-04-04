@@ -16,6 +16,7 @@
         "swww img /home/alexis/Github/dotfiles/astarion/assets/walls/samori.jpg"
       ];
 
+      # Miscellaneous options
       misc = {
         disable_hyprland_logo = true;
         disable_splash_rendering = true;
@@ -27,6 +28,7 @@
         "WLR_NO_HARDWARE_CURSORS,1"
       ];
 
+      # Input settings
       input = {
         kb_layout = "us";
         follow_mouse = 1;
@@ -36,6 +38,7 @@
         sensitivity = 0;
       };
       
+      # WM and aesthetic settings
       general = {
         gaps_in = 5;
         gaps_out = 15;
@@ -47,7 +50,6 @@
       
       decoration = {
         rounding = 10;
-
         shadow = {
           enabled = true;
           range = 10;
@@ -68,6 +70,7 @@
       
       windowrule = [
         # Window layout
+        # TODO: Not working
         "float, class:^(thunar)$"
         "float, class:^(pavucontrol)$"
         "float, class:^(mpv)$"
@@ -89,7 +92,7 @@
       
       "$mainMod" = "SUPER";
 
-      # Press and hold
+      # Keybinds: Press and hold
       binde = [
         ", XF86MonBrightnessUp, exec, brightnessctl set 10+"
         ", XF86MonBrightnessDown, exec, brightnessctl set 10-"
@@ -97,6 +100,7 @@
         ", XF86AudioRaiseVolume, exec, pamixer --increase 10"
       ];
 
+      # Keybinds: Press
       bind = [
         ", XF86AudioMute, exec, pamixer --toggle-mute"
         ", XF86AudioPrev, exec, playerctl previous"
@@ -105,14 +109,20 @@
 
         "CTRL SHIFT, w, killactive"
 
-        # Launchers etc
+        # Restart Astal
+        "ALT_L SHIFT, r, exec, pkill -SIGKILL gjs ; cd /home/alexis/Github/dotfiles/astarion/home/programs/ags ; ags run app.ts --gtk4"
+
+        # Screenshot
+        "$mainMod SHIFT, s, exec, grimblast copy area"
+
+        # Launchers, etc
         "$mainMod, RETURN, exec, kitty"
         "$mainMod, J, exec, astal toggle-window dash"
         "$mainMod, H, exec, astal toggle-window utility"
         "$mainMod, L, exec, astal toggle-window control"
         "$mainMod, R, exec, astal toggle-window launcher"
 
-        # Move focus
+        # Move focus between windows
         "ALT_L, TAB, cyclenext"
         "ALT_L SHIFT, TAB, cyclenext, prev"
         "ALT_L, h, movefocus, l"
@@ -146,27 +156,26 @@
         "ALT_L SHIFT, 8, movetoworkspace, 8"
         "ALT_L SHIFT, 9, movetoworkspace, 9"
        
-        # Move/resize with kb
+        # Vimlinke resize
         "ALT_L CTRL, h, resizeactive, -90 0"
         "ALT_L CTRL, l, resizeactive, 90 0"
         "ALT_L CTRL, j, resizeactive, 0 90"
         "ALT_L CTRL, k, resizeactive, 0 -90"
-        
+       
+        # Vimlike move
         "ALT_L SHIFT, h, movewindow, l"
         "ALT_L SHIFT, l, movewindow, r"
         "ALT_L SHIFT, j, movewindow, u"
         "ALT_L SHIFT, k, movewindow, d"
 
         # More resizing
-        "$mainMod, f, fullscreen"
-        "$mainMod, m, fullscreen, 1" # Maximize
-
+        "$mainMod, f, fullscreen"     # Fullscreen
+        "$mainMod, m, fullscreen, 1"  # Maximize
         "$mainMod, v, togglefloating" # Floating
-        "$mainMod, s, pin" # Sticky
-
-        "$mainMod SHIFT, s, exec, grimblast copy area" # screenshot
+        "$mainMod, s, pin"            # Sticky (for floating windows)
       ];
-      
+     
+      # Mouse binds
       bindm = [
         # Move/resize windows with mainMod + LMB/RMB and dragging
         "$mainMod, mouse:272, movewindow"
