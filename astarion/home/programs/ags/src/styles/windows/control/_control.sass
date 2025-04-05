@@ -6,6 +6,7 @@
  **********************************************/
 
 .control
+  margin: 0.8rem
   background-color: $neutral-800
   border-color: $neutral-600
   border-radius: $border-radius
@@ -23,6 +24,7 @@
 
 .control .sysinfo
   font-family: $font-stack-mono
+  margin-bottom: 1rem
 
   .pfp
     min-height: 6rem
@@ -56,31 +58,41 @@
  * QUICK SETTINGS
  **********************************************/
 
-.control .theme-switch-button
-  border-radius: $border-radius
-  border-style: solid
-  border-width: 4px
+.control .settings
+  margin-bottom: 1rem
 
-  &:hover
-    border-color: $primary-500
+  .theme-switch-button
+    border-radius: $border-radius
+    border-style: solid
+    border-width: 4px
+  
+    &:hover
+      border-color: $primary-500
+  
+    &:not(:hover)
+      border-color: transparent
+  
+    .info-bar
+      padding: 1rem 0.6rem
+      background-color: $neutral-700
+      font-weight: 500
+      border-bottom-left-radius: $border-radius
+      border-bottom-right-radius: $border-radius
+      -gtk-icon-transform: scale(0.7)
 
-  &:not(:hover)
-    border-color: transparent
+  .speaker
+    .toggle
+      margin-left: 0.5rem
+      padding: 0.3rem
+      border-radius: 5px
 
-  .info-bar
-    padding: 1rem 0.6rem
-    background-color: $neutral-700
-    font-weight: 500
-    border-bottom-left-radius: $border-radius
-    border-bottom-right-radius: $border-radius
-    -gtk-icon-transform: scale(0.7)
+      &:checked
+        background-color: $primary-500
+        color: $primary-100
 
-.control .power-profiles
-  .content
-    background-color: red
-    &:not(:last-child)
-      border: 1px solid red
-
+      &:not(:checked)
+        background-color: $neutral-400
+  
 /**********************************************
  * NOTIFICATIONS
  **********************************************/
