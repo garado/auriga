@@ -1,18 +1,18 @@
 /* Provides consistent implementation for quick settings widgets. */
 
 import { Gdk, Gtk, Widget, astalify } from "astal/gtk4";
-import { Binding, Variable, bind, timeout } from "astal";
+import { Binding, Variable, bind } from "astal";
 import Pango from "gi://Pango?version=1.0";
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
 
 export const ExpansionPanel = (props: {
   icon?: string;
-  label?: string | Binding<String>;
+  label?: string | Binding<string>;
   children: Array<Gtk.Widget>;
   maxDropdownHeight: number;
   vertical: boolean;
-  cssClasses?: Array<String>;
+  cssClasses?: Array<string>;
   globalRevealerState: Variable<boolean>;
 }) => {
   const contentRevealerState = Variable(false);
@@ -32,7 +32,7 @@ export const ExpansionPanel = (props: {
       cssClasses: ["tab"],
       vertical: false,
       children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
-      onButtonPressed: (self, state) => {
+      onButtonPressed: (self) => {
         if (!self.has_css_class("revealed")) {
           props.globalRevealerState.set(!props.globalRevealerState.get());
         }
@@ -65,7 +65,7 @@ export const ExpansionPanel = (props: {
   const ExpanderLabel = () =>
     Widget.Label({
       hexpand: true,
-      label: props.label ?? "",
+      label: props.label ?? "None",
       xalign: 0,
       ellipsize: Pango.EllipsizeMode.END,
     });
@@ -99,8 +99,8 @@ export const ExpansionPanel = (props: {
   const ContentScrollableContainer = () =>
     Scrollable({
       vexpand: false,
-      child: ContentContainer(),
       setup: (self) => {
+        self.set_child(ContentContainer());
         self.set_propagate_natural_height(true);
         self.set_max_content_height(props.maxDropdownHeight);
         self.set_min_content_height(0);

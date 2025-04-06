@@ -97,7 +97,9 @@ const SpeakerWidget = (sink: AstalWp.Endpoint) => {
 export const Speaker = (globalRevealerState: Variable<boolean>) => {
   return ExpansionPanel({
     icon: "speaker-low-symbolic",
-    label: bind(wp!.audio.default_speaker, "description"),
+    label: bind(wp!.audio.default_speaker, "description").as(
+      (desc) => desc ?? "None",
+    ),
     children: bind(wp!.audio, "speakers").as((speakers) =>
       speakers.map(SpeakerWidget),
     ),
