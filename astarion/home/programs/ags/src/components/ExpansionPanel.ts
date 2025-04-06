@@ -1,13 +1,14 @@
 /* Provides consistent implementation for quick settings widgets. */
 
 import { Gdk, Gtk, Widget, astalify } from "astal/gtk4";
-import { Variable, bind } from "astal";
+import { Binding, Variable, bind, timeout } from "astal";
+import Pango from "gi://Pango?version=1.0";
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
 
 export const ExpansionPanel = (props: {
-  icon: string;
-  label: string;
+  icon?: string;
+  label?: string | Binding<String>;
   children: Array<Gtk.Widget>;
   maxDropdownHeight: number;
   vertical: boolean;
@@ -55,7 +56,7 @@ export const ExpansionPanel = (props: {
   const ExpanderContentIcon = () =>
     Widget.Image({
       halign: Gtk.Align.START,
-      iconName: props.icon,
+      iconName: props.icon ?? "",
     });
 
   /**
@@ -64,8 +65,9 @@ export const ExpansionPanel = (props: {
   const ExpanderLabel = () =>
     Widget.Label({
       hexpand: true,
-      label: props.label,
+      label: props.label ?? "",
       xalign: 0,
+      ellipsize: Pango.EllipsizeMode.END,
     });
 
   const ExpanderStateIcon = () =>
@@ -97,8 +99,12 @@ export const ExpansionPanel = (props: {
   const ContentScrollableContainer = () =>
     Scrollable({
       vexpand: false,
-      heightRequest: props.maxDropdownHeight,
       child: ContentContainer(),
+      setup: (self) => {
+        self.set_propagate_natural_height(true);
+        self.set_max_content_height(props.maxDropdownHeight);
+        self.set_min_content_height(0);
+      },
     });
 
   /**
