@@ -2,14 +2,16 @@
 /* █▄█ █▀█ █▀▄ */
 
 import { App, Astal, Gtk, Widget } from "astal/gtk4";
-import { Variable, bind } from "astal";
+import { Variable, bind, timeout } from "astal";
 import Battery from "gi://AstalBattery";
 import Hyprland from "gi://AstalHyprland";
+import Wp from "gi://AstalWp";
 
 /****************************************************
  * MODULE-LEVEL VARIABLES
  ****************************************************/
 
+const wp = Wp.get_default();
 const hypr = Hyprland.get_default();
 const bat = Battery.get_default();
 const time = Variable("").poll(1000, "date '+%H\n%M'");
@@ -131,6 +133,51 @@ const Time = () =>
     label: bind(time),
   });
 
+/* @BUG Slider does not show when oriented vertically */
+const VolumeSlider = () => {
+  const revealSlider = Variable(false);
+  let timer: any = null;
+
+  wp!.audio.default_speaker.connect("notify::volume", () => {
+    if (timer) {
+      timer.cancel();
+    }
+
+    revealSlider.set(true);
+
+    timer = timeout(2000, () => {
+      timer.cancel();
+      timer = null;
+      revealSlider.set(false);
+    });
+  });
+
+  return Widget.Revealer({
+    revealChild: bind(revealSlider),
+    transitionType: Gtk.RevealerTransitionType.SLIDE_UP,
+    child: Widget.Box({
+      cssClasses: ["volume"],
+      vertical: true,
+      children: [
+        Widget.Slider({
+          min: 0,
+          max: 100,
+          orientation: Gtk.Orientation.VERTICAL,
+          value: bind(wp!.audio.default_speaker, "volume").as(
+            (volume) => volume * 100,
+          ),
+          onChangeValue: ({ value }) => {
+            wp!.audio.default_speaker.set_volume(value / 100.0);
+          },
+        }),
+        Widget.Image({
+          iconName: "speaker-low-symbolic",
+        }),
+      ],
+    }),
+  });
+};
+
 /****************************************************
  * UI ASSEMBLY
  ****************************************************/
@@ -154,7 +201,7 @@ const Bottom = () =>
     halign: Gtk.Align.CENTER,
     cssClasses: ["bottom"],
     orientation: 1,
-    children: [BatteryIndicator(), Time()],
+    children: [VolumeSlider(), BatteryIndicator(), Time()],
   });
 
 export default () => {
