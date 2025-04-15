@@ -20,6 +20,8 @@
       misc = {
         disable_hyprland_logo = true;
         disable_splash_rendering = true;
+        enable_swallow = true;
+        swallow_regex = "^(kitty)$";
       };
 
       # Some default env vars
