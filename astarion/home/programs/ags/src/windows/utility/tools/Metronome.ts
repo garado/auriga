@@ -1,3 +1,6 @@
+/* █▀▄▀█ █▀▀ ▀█▀ █▀█ █▀█ █▄░█ █▀█ █▀▄▀█ █▀▀ */
+/* █░▀░█ ██▄ ░█░ █▀▄ █▄█ █░▀█ █▄█ █░▀░█ ██▄ */
+
 import { subprocess } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 
@@ -14,6 +17,8 @@ export const Metronome = () => {
       (out) => console.log(out),
       (err) => console.error(err),
     );
+
+    PlayPause.set_from_icon_name("pause-symbolic");
   };
 
   const stopMetronome = () => {
@@ -22,6 +27,8 @@ export const Metronome = () => {
     }
 
     proc = null;
+
+    PlayPause.set_from_icon_name("play-symbolic");
   };
 
   const Bpm = Widget.Entry({
@@ -38,9 +45,6 @@ export const Metronome = () => {
       }
       stopMetronome();
     },
-    onActivate: (self) => {
-      startMetronome(Number(self.text));
-    },
   });
 
   const PlayPause = Widget.Image({
@@ -49,10 +53,8 @@ export const Metronome = () => {
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     onButtonPressed: (self) => {
       if (proc) {
-        self.set_from_icon_name("play-symbolic");
         stopMetronome();
       } else {
-        self.set_from_icon_name("pause-symbolic");
         startMetronome(Number(Bpm.text));
       }
     },
