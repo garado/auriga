@@ -101,7 +101,7 @@
 
       # Keybinds: Press
       bind = [
-        ", XF86AudioMute, exec, pamixer --toggle-mute"
+        ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_SINK@ toggle"
         ", XF86AudioPrev, exec, playerctl previous"
         ", XF86AudioNext, exec, playerctl next"
         ", XF86AudioPlay, exec, playerctl play-pause"
