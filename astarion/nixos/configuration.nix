@@ -29,8 +29,6 @@ in {
 
   # Hardware
   hardware = {
-    # pulseaudio.enable = true;
-
     bluetooth = {
       enable = true;
       powerOnBoot = true;
@@ -88,6 +86,9 @@ in {
 
     hledger
 
+    signal-desktop
+    signald
+
     cava
     vim
     brightnessctl
@@ -129,43 +130,30 @@ in {
     # python
     python3
 
-    guitarix        # Amp sim
-    qjackctl        # Alllll for the amp sim
-    libjack2
-    jack2
-    jack_capture
+    # guitarix        # Amp sim
+    # qjackctl        # Alllll for the amp sim
+    # libjack2
+    # jack2
+    # jack_capture
     prismlauncher   # Minecraft
     sox             # Play audio
     audacity        # Audio editing
-    pamixer         # Volume control
-    pavucontrol     # Audio control
     wineWowPackages.stable  # *gag*
+    wireplumber
+    # pamixer         # Volume control
+    # pavucontrol     # Audio control
   ];
 
-  # jack -----------
-  security.sudo.extraConfig = ''
-    moritz  ALL=(ALL) NOPASSWD: ${pkgs.systemd}/bin/systemctl
-    '';
-
-  musnix = {
+  security.rtkit.enable = true;
+  services.pipewire = {
     enable = true;
-    alsaSeq.enable = false;
-
-    # Find this value with `lspci | grep -i audio` (per the musnix readme).
-    # PITFALL: This is the id of the built-in soundcard.
-    #   When I start using the external one, change it.
-    soundcardPciId = "00:1f.3";
-
-    # magic to me
-    rtirq = {
-      # highList = "snd_hrtimer";
-      resetAll = 1;
-      prioLow = 0;
+    alsa = {
       enable = true;
-      nameList = "rtc0 snd";
+      support32Bit = true;
     };
+    pulse.enable = true;
+    wireplumber.enable = false;
   };
-  # end jack -----------
 
   environment.variables = {
     EDITOR = "nvim";
@@ -247,7 +235,6 @@ in {
           "wheel"
           "networkmanager" 
           "audio"
-          "sound"
           "docker"
         ];
       };

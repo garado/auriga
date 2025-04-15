@@ -100,6 +100,7 @@
       inputs.ags.packages.${pkgs.system}.network
       inputs.ags.packages.${pkgs.system}.notifd
       inputs.ags.packages.${pkgs.system}.powerprofiles
+      inputs.ags.packages.${pkgs.system}.wireplumber
     ];
   };
 

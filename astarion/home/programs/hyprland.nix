@@ -72,7 +72,6 @@
         # Window layout
         # TODO: Not working
         "float, class:^(thunar)$"
-        "float, class:^(pavucontrol)$"
         "float, class:^(mpv)$"
       ];
 
@@ -96,8 +95,8 @@
       binde = [
         ", XF86MonBrightnessUp, exec, brightnessctl set 10+"
         ", XF86MonBrightnessDown, exec, brightnessctl set 10-"
-        ", XF86AudioLowerVolume, exec, pamixer --decrease 10"
-        ", XF86AudioRaiseVolume, exec, pamixer --increase 10"
+        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%-"
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%+"
       ];
 
       # Keybinds: Press

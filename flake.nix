@@ -7,10 +7,10 @@
   # The `inputs` attribute lists other flakes you would like to use.
   inputs = {
 
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+  nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-   
+
     swww.url = "github:LGFae/swww";
 
     home-manager = {
