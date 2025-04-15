@@ -1,12 +1,16 @@
 import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
-import { Variable } from "astal";
+import { bind, execAsync, Variable } from "astal";
+
+import Bt from "gi://AstalBluetooth";
 
 const ToggleButton = astalify(Gtk.ToggleButton);
+const bt = Bt.get_default();
 
 const BluetoothControl = () => {
   return ToggleButton({
     cssClasses: ["action-btn"],
     cursor: Gdk.Cursor.new_from_name("pointer", null),
+    active: bind(bt, "is-powered"),
     hexpand: true,
     tooltipText: "Enable/disable Bluetooth",
     child: Widget.Image({
@@ -52,6 +56,13 @@ const DNDControl = () => {
 };
 
 const GammastepControl = () => {
+  const gammastepActive = Variable(false).watch(
+    "bash -c 'systemctl --user is-active gammastep.service'",
+    (out) => {
+      return out === "active";
+    },
+  );
+
   return ToggleButton({
     cssClasses: ["action-btn"],
     hexpand: true,
@@ -60,20 +71,21 @@ const GammastepControl = () => {
     child: Widget.Image({
       iconName: "moon-symbolic",
     }),
+    active: bind(gammastepActive),
+    onDestroy: gammastepActive.drop,
+    onButtonPressed: (self) => {
+      const cmd = self.active ? "stop" : "start";
+      execAsync(`systemctl --user ${cmd} gammastep.service`);
+    },
   });
 };
 
-export const Actions = () => {
-  return Widget.Box({
+export const Actions = () =>
+  Widget.Box({
     vertical: true,
     cssClasses: ["actions"],
     spacing: 15,
     children: [
-      Widget.Label({
-        cssClasses: ["section-header"],
-        label: "Actions and settings",
-        xalign: 0,
-      }),
       Widget.Box({
         vertical: false,
         homogeneous: true,
@@ -89,4 +101,3 @@ export const Actions = () => {
       }),
     ],
   });
-};
