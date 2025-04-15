@@ -1,14 +1,32 @@
 import { subprocess } from "astal";
-import { Gtk, Widget } from "astal/gtk4";
+import { Gdk, Gtk, Widget } from "astal/gtk4";
+
+const BPM_ADJUST_STEP = 5;
 
 export const Metronome = () => {
-  let bpm = 60;
+  let proc: any = null; /* @TODO what type is this? */
 
-  let proc = null;
+  const startMetronome = (bpm: number) => {
+    stopMetronome();
+
+    proc = subprocess(
+      `bash -c "play -n -c1 synth 0.05 sine 440 pad ${60 / bpm - 0.004} repeat -" > /dev/null 2>&1`,
+      (out) => console.log(out),
+      (err) => console.error(err),
+    );
+  };
+
+  const stopMetronome = () => {
+    if (proc) {
+      proc.kill();
+    }
+
+    proc = null;
+  };
 
   const Bpm = Widget.Entry({
     cssClasses: ["bpm"],
-    text: `${bpm}`,
+    text: "60",
     hexpand: true,
     xalign: 0.5,
     inputPurpose: Gtk.InputPurpose.NUMBER,
@@ -18,44 +36,64 @@ export const Metronome = () => {
       if (filtered !== self.text) {
         self.set_text(filtered);
       }
-
-      if (proc) {
-        proc.kill();
-      }
+      stopMetronome();
     },
     onActivate: (self) => {
-      if (proc) {
-        proc.kill();
-      }
-
-      proc = subprocess(
-        `bash -c "play -n -c1 synth 0.05 sine 440 pad ${60 / Number(self.text) - 0.004} repeat -" > /dev/null 2>&1`,
-        (out) => console.log(out),
-        (err) => console.error(err),
-      );
+      startMetronome(Number(self.text));
     },
   });
 
-  const PlayPause = Widget.Image({});
-
-  const Increase = Widget.Label({
+  const PlayPause = Widget.Image({
     cssClasses: ["bpm-control"],
-    label: "+",
+    iconName: "play-symbolic",
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    onButtonPressed: (self) => {
+      if (proc) {
+        self.set_from_icon_name("play-symbolic");
+        stopMetronome();
+      } else {
+        self.set_from_icon_name("pause-symbolic");
+        startMetronome(Number(Bpm.text));
+      }
+    },
   });
 
-  const Decrease = Widget.Label({
+  const Increase = Widget.Image({
     cssClasses: ["bpm-control"],
-    label: "-",
+    iconName: "plus-symbolic",
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    onButtonPressed: () => {
+      const newBpm = Number(Bpm.text) + BPM_ADJUST_STEP;
+      Bpm.set_text(String(newBpm));
+      startMetronome(newBpm);
+    },
+  });
+
+  const Decrease = Widget.Image({
+    cssClasses: ["bpm-control"],
+    iconName: "minus-symbolic",
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    onButtonPressed: () => {
+      const newBpm = Number(Bpm.text) - BPM_ADJUST_STEP;
+      Bpm.set_text(String(newBpm));
+      startMetronome(newBpm);
+    },
   });
 
   return Widget.Box({
     cssClasses: ["metronome", "widget-container"],
     vertical: true,
+    hexpand: true,
     children: [
+      Widget.Label({
+        label: "Metronome",
+      }),
       Bpm,
       Widget.Box({
         vertical: false,
-        children: [Decrease, Increase],
+        hexpand: true,
+        children: [Decrease, PlayPause, Increase],
+        halign: Gtk.Align.CENTER,
       }),
     ],
   });
