@@ -1,5 +1,4 @@
 /**
- *
  * ▀█▀ ▄▀█ █▀ █▄▀   █▀ █▀▀ █▀█ █░█ █ █▀▀ █▀▀
  * ░█░ █▀█ ▄█ █░█   ▄█ ██▄ █▀▄ ▀▄▀ █ █▄▄ ██▄
  *
@@ -17,6 +16,7 @@ import Tree, { TreeNode } from "@/utils/Tree.js";
  **********************************************/
 
 export interface Project {
+  hierarchy: Array<string>;
   name: string;
   tasks: Array<Tasks>;
 }
@@ -101,6 +101,12 @@ export default class Tasks extends GObject.Object {
   @property(Object)
   declare data: Tree<Project>;
 
+  @property(Object)
+  declare selectedProject: TreeNode<Project>;
+
+  @property(Object)
+  declare displayedTasks: Array<Task>;
+
   /**************************************************
    * PRIVATE FUNCTIONS
    **************************************************/
@@ -109,8 +115,8 @@ export default class Tasks extends GObject.Object {
     super();
 
     this.dataDirectory = UserConfig.task.directory;
-
     this.data = new Tree<Project>();
+    this.displayedTasks = [];
 
     this.#initProjectTree();
   }
@@ -126,21 +132,29 @@ export default class Tasks extends GObject.Object {
       .then((out) => {
         const paths = out.split("\n");
         const tree = new Tree<Project>();
-        tree.addRoot({ name: "root", tasks: [] });
+        tree.addRoot({ name: "root", tasks: [], hierarchy: [] });
 
         for (const path of paths) {
           const parts = path.split(".");
           let current = tree.root!;
 
+          const partsTilNow: Array<string> = [];
+
           for (const part of parts) {
             let next = current.children.find((c) => c.data.name === part);
 
             if (!next) {
-              next = new TreeNode<Project>({ name: part, tasks: [] });
+              next = new TreeNode<Project>({
+                hierarchy: [...partsTilNow],
+                name: part,
+                tasks: [],
+              });
+
               current.addChild(next);
             }
 
             current = next;
+            partsTilNow.push(part);
           }
         }
 
@@ -149,7 +163,50 @@ export default class Tasks extends GObject.Object {
       .catch(print);
   };
 
+  /**
+   * @function fetchTasksForProjects
+   * @brief Fetch list of tasks for a TaskWarrior project.
+   */
+  #fetchTasksForProjects = async (project: Project) => {
+    log("taskService", `fetchTasksForProjects: ${project.name}`);
+
+    const projectPath =
+      project.hierarchy.join(".") +
+      (project.hierarchy.length > 0 ? "." : "") +
+      project.name;
+    const cmd = `task rc.data.location='${this.dataDirectory}' project:${projectPath} export`;
+
+    execAsync(`bash -c "${cmd}"`)
+      .then((out) => {
+        const rawData = JSON.parse(out);
+        const tasks = rawData.map((raw: Object) => Task.fromObject(raw));
+
+        /* Sort by due date, then by title */
+        tasks.sort((a: Task, b: Task) => {
+          if (a.due == undefined && b.due == undefined) {
+            return a.description > b.description;
+          } else if (a.due != undefined && b.due == undefined) {
+            return -1;
+          } else if (a.due == undefined && b.due != undefined) {
+            return 1;
+          } else if (a.due != undefined && b.due != undefined) {
+            return a.due > b.due;
+          }
+        });
+
+        this.displayedTasks = tasks;
+      })
+      .catch((err) => {
+        log("taskService", err);
+      });
+  };
+
   /**************************************************
    * PUBLIC FUNCTIONS
    **************************************************/
+
+  newProjectSelected = (project: TreeNode<Project>) => {
+    this.#fetchTasksForProjects(project.data);
+    this.selectedProject = project;
+  };
 }

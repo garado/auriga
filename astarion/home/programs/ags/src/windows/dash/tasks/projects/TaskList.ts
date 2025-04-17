@@ -1,11 +1,20 @@
+/**
+ * ▀█▀ ▄▀█ █▀ █▄▀   █░░ █ █▀ ▀█▀
+ * ░█░ █▀█ ▄█ █░█   █▄▄ █ ▄█ ░█░
+ *
+ * Shows tasks for the currently selected project.
+ */
+
 import { Gdk, Gtk, Widget, astalify, hook } from "astal/gtk4";
-import { bind } from "astal";
 import Tasks, { Task } from "@/services/Tasks";
 import { relativeTimeFromISO } from "@/utils/Helpers";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
+import { bind } from "astal";
 
 const ts = Tasks.get_default();
 
+/**
+ * Show if no tasks are present.
+ */
 const Placeholder = () =>
   Widget.Label({
     label: "No tasks found.",
@@ -13,15 +22,64 @@ const Placeholder = () =>
   });
 
 /**
- * Yeah
+ * Constructor for top bar showing statistics for the currently selected
+ * project.
+ */
+const TopBar = () => {
+  const Header = Widget.CenterBox({
+    cssClasses: ["header"],
+    orientation: Gtk.Orientation.HORIZONTAL,
+    startWidget: Widget.Label({
+      label: bind(ts, "selectedProject").as(
+        (x) => x?.data.name ?? "No project selected",
+      ),
+    }),
+  });
+
+  const Breadcrumbs = Widget.Box({
+    cssClasses: ["breadcrumbs"],
+    children: bind(ts, "selectedProject").as((x) => {
+      if (x === null) return [Widget.Label()];
+
+      const children: Array<Gtk.Widget> = [];
+
+      x.data.hierarchy.forEach((value, index) => {
+        children.push(
+          Widget.Label({
+            label: value,
+          }),
+        );
+
+        if (index != x.data.hierarchy.length - 1) {
+          children.push(
+            Widget.Image({
+              iconName: "caret-right-symbolic",
+            }),
+          );
+        }
+      });
+
+      return children;
+    }),
+  });
+
+  return Widget.Box({
+    vertical: true,
+    hexpand: true,
+    children: [Header, Breadcrumbs],
+  });
+};
+
+/**
+ * Constructor for a widget displaying a single task.
  */
 const TaskWidget = (task: Task) => {
   const Indicator = Widget.Label({
     cssClasses: ["indicator"],
     xalign: 0,
-    label: bind(ts, "selectedTask").as((st) =>
-      st?.uuid == task.uuid ? "∘" : "",
-    ),
+    // label: bind(ts, "selectedTask").as((st) =>
+    //   st?.uuid == task.uuid ? "∘" : "",
+    // ),
   });
 
   const Desc = Widget.Label({
@@ -49,37 +107,14 @@ const TaskWidget = (task: Task) => {
       children: [Indicator, Desc],
     }),
     endWidget: Due,
-    onButtonPressed: () => {
-      ts.selectedTask = task;
-    },
+    // onButtonPressed: () => {
+    //   ts.selectedTask = task;
+    // },
   });
 };
 
 export default () => {
-  const Scrollable = astalify(Gtk.ScrolledWindow);
   const ListBox = astalify(Gtk.ListBox);
-
-  const Header = Widget.CenterBox({
-    cssClasses: ["header"],
-    orientation: Gtk.Orientation.HORIZONTAL,
-    startWidget: Widget.Label({
-      // label: bind(ts, "selectedProject"),
-    }),
-  });
-
-  const Subheader = Widget.CenterBox({
-    cssClasses: ["subheader"],
-    orientation: Gtk.Orientation.HORIZONTAL,
-    startWidget: Widget.Label({
-      // label: bind(ts, "selectedTag"),
-    }),
-  });
-
-  const TopBar = Widget.Box({
-    vertical: true,
-    hexpand: true,
-    children: [Header, Subheader],
-  });
 
   const CommandBar = Widget.Entry({
     hexpand: true,
@@ -88,7 +123,6 @@ export default () => {
   });
 
   const Content = ListBox({
-    orientation: Gtk.Orientation.VERTICAL,
     hexpand: true,
     vexpand: true,
     setup: (self) => {
@@ -108,25 +142,16 @@ export default () => {
     },
   });
 
+  const Scrollable = new Gtk.ScrolledWindow({
+    child: Content,
+  });
+
   return Widget.Box({
     cssClasses: ["widget-container", "tasklist"],
     hexpand: true,
+    vexpand: true,
     vertical: true,
     spacing: 12,
-    children: [
-      TopBar,
-      Scrollable({
-        child: Content,
-      }),
-      // CommandBar,
-    ],
-    // setup: (self) => {
-    //   EventControllerKeySetup({
-    //     name: "Tasklist",
-    //     widget: self,
-    //     forwardTo: CommandBar,
-    //     binds: {},
-    //   });
-    // },
+    children: [TopBar(), Scrollable],
   });
 };

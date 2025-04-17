@@ -1,10 +1,10 @@
 import { DashTabLayout } from "@/components/DashTabLayout.ts";
-import Categorized from "./categorized/Categorized";
+import Projects from "./projects/Projects";
 
 export default () => {
   return DashTabLayout({
     name: "Tasks and things",
     cssClasses: ["tasks"],
-    pages: [{ name: "Categorized", ui: Categorized }],
+    pages: [{ name: "Projects", ui: Projects }],
   });
 };

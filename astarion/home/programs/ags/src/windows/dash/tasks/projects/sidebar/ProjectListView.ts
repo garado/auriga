@@ -1,8 +1,18 @@
+/**
+ * █▀█ █▀█ █▀█ ░░█ █▀▀ █▀▀ ▀█▀   █░░ █ █▀ ▀█▀   █░█ █ █▀▀ █░█░█
+/* █▀▀ █▀▄ █▄█ █▄█ ██▄ █▄▄ ░█░   █▄▄ █ ▄█ ░█░   ▀▄▀ █ ██▄ ▀▄▀▄▀
+ * 
+ * Convert TaskWarrior project hierarchy of type Tree<Project>
+ * into a list view widget
+ */
+
 import { Project } from "@/services/Tasks";
 import { Gio, GObject } from "astal";
 import { Gtk, Widget } from "astal/gtk4";
 import Ts from "@/services/Tasks";
 import Tree, { TreeNode } from "@/utils/Tree";
+
+const ts = Ts.get_default();
 
 /**
  * GObject wrapper for TreeNode<Project>
@@ -49,21 +59,8 @@ const GProjectNode = GObject.registerClass(
       this._node = project; // Store the original node for reference
     }
 
-    // Method to get children as TreeNodes
     getChildNodes(): TreeNode<Project>[] {
       return this._node.children || [];
-    }
-
-    printTree(): void {
-      for (let i = 0; i < this._node.children.length; i++) {
-        const row = this.get_item(i) as Gtk.TreeListRow;
-        const item = row.get_item() as TreeNode<Project>;
-
-        const indent = "  ".repeat(row.get_depth());
-        const isLeaf = !row.get_has_child();
-
-        print(`${indent}${isLeaf ? "•" : "▶"} ${item.name}`);
-      }
     }
   },
 );
@@ -124,8 +121,27 @@ const ProjectTreeList = (data: Tree<Project>) => {
   // Create factory for list items
   const factory = new Gtk.SignalListItemFactory();
 
-  factory.connect("setup", (_factory, listItem) => {
-    // Main horizontal box for the row
+  // Instantiate list widget
+  factory.connect("setup", (_factory, listItem: Gtk.ListItem) => {
+    const expander = new Gtk.TreeExpander({
+      cssClasses: ["expander"],
+      marginEnd: 6,
+      hexpand: false,
+    });
+
+    const label = Widget.Label({
+      halign: Gtk.Align.START,
+      hexpand: false,
+      ellipsize: 3, // PANGO_ELLIPSIZE_END
+      cssClasses: ["project"],
+    });
+
+    const button = new Gtk.Button({
+      cssClasses: ["flat"],
+      hexpand: false,
+      child: label,
+    });
+
     const box = Widget.Box({
       orientation: Gtk.Orientation.HORIZONTAL,
       spacing: 6,
@@ -134,41 +150,14 @@ const ProjectTreeList = (data: Tree<Project>) => {
       marginTop: 3,
       marginBottom: 3,
       hexpand: false,
+      children: [expander, button],
     });
-
-    /* Create expander for hierarchy with correct CSS classes */
-    const expander = new Gtk.TreeExpander({
-      cssClasses: ["expander"],
-      marginEnd: 6,
-      hexpand: false,
-    });
-
-    /* Clickable button for the row */
-    const button = new Gtk.Button({
-      cssClasses: ["flat"],
-      hexpand: false,
-    });
-
-    // Create label for project name
-    const label = new Gtk.Label({
-      halign: Gtk.Align.START,
-      hexpand: false,
-      ellipsize: 3, // PANGO_ELLIPSIZE_END
-      cssClasses: ["project"],
-    });
-
-    // Add label to button
-    button.set_child(label);
-
-    // Add widgets to box
-    box.append(expander);
-    box.append(button);
 
     // Store references to widgets
     listItem.set_child(box);
   });
 
-  // Bind - Update widgets with data
+  // Update list widget with data
   factory.connect("bind", (_factory, listItem: Gtk.ListItem) => {
     const box = listItem.get_child() as Gtk.Box;
     const expander = box.get_first_child() as Gtk.TreeExpander;
@@ -213,55 +202,44 @@ const ProjectTreeList = (data: Tree<Project>) => {
   const selectionModel = new Gtk.SingleSelection({
     model: treeModel,
     autoselect: false,
-    can_unselect: true,
+    canUnselect: true,
   });
 
-  // Handle selection changes
   selectionModel.connect("selection-changed", (model, _position, _nItems) => {
     const selected = model.get_selected();
     if (selected !== Gtk.INVALID_LIST_POSITION) {
       const treeListRow = model.get_item(selected) as Gtk.TreeListRow;
       const gProject = treeListRow.get_item() as GProjectNode;
-      // You can trigger any action here when a row is selected
-      // For example, update a detail view or save the selection
+
+      if (ts.selectedProject != gProject._node) {
+        ts.newProjectSelected(gProject._node);
+      }
     }
   });
 
-  // Create and return ListView
   const listView = new Gtk.ListView({
     model: selectionModel,
     factory: factory,
-    show_separators: true,
-    css_classes: ["project-tree-view"],
+    showSeparators: true,
+    cssClasses: ["project-tree-view"],
     vexpand: true,
   });
 
-  // Add the ListView to a ScrolledWindow for scrolling
-  const scrolled = new Gtk.ScrolledWindow({
-    hscrollbar_policy: Gtk.PolicyType.NEVER,
-    vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+  return new Gtk.ScrolledWindow({
+    hscrollbarPolicy: Gtk.PolicyType.NEVER,
+    vscrollbarPolicy: Gtk.PolicyType.AUTOMATIC,
     hexpand: true,
     vexpand: true,
+    child: listView,
   });
-
-  scrolled.set_child(listView);
-  return scrolled;
 };
 
 export const ProjectListView = () => {
-  const ts = Ts.get_default();
-
   const box = Widget.Box({
     orientation: Gtk.Orientation.VERTICAL,
     vexpand: true,
     hexpand: false,
     setup: (self) => {
-      // Initial render
-      if (ts.data) {
-        self.append(ProjectTreeList(ts.data));
-      }
-
-      // Listen for data changes
       ts.connect("notify::data", () => {
         if (ts.data) {
           const widget = ProjectTreeList(ts.data);
