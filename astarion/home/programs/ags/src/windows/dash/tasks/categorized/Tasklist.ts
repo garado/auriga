@@ -63,7 +63,7 @@ export default () => {
     cssClasses: ["header"],
     orientation: Gtk.Orientation.HORIZONTAL,
     startWidget: Widget.Label({
-      label: bind(ts, "selectedProject"),
+      // label: bind(ts, "selectedProject"),
     }),
   });
 
@@ -71,7 +71,7 @@ export default () => {
     cssClasses: ["subheader"],
     orientation: Gtk.Orientation.HORIZONTAL,
     startWidget: Widget.Label({
-      label: bind(ts, "selectedTag"),
+      // label: bind(ts, "selectedTag"),
     }),
   });
 
@@ -118,15 +118,15 @@ export default () => {
       Scrollable({
         child: Content,
       }),
-      CommandBar,
+      // CommandBar,
     ],
-    setup: (self) => {
-      EventControllerKeySetup({
-        name: "Tasklist",
-        widget: self,
-        forwardTo: CommandBar,
-        binds: {},
-      });
-    },
+    // setup: (self) => {
+    //   EventControllerKeySetup({
+    //     name: "Tasklist",
+    //     widget: self,
+    //     forwardTo: CommandBar,
+    //     binds: {},
+    //   });
+    // },
   });
 };
