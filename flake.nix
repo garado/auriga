@@ -68,7 +68,7 @@
       };
 
       # Surface Go 2
-      astraea = nixpkgs.lib.nixosSystem {
+      archaea = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
         # Set all inputs parameters as special arguments for all submodules,
