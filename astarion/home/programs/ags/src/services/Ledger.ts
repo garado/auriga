@@ -202,7 +202,7 @@ export default class Ledger extends GObject.Object {
   declare debtsLiabilities: Object;
 
   @property(Object)
-  declare monthlyBreakdown: Object;
+  declare monthlyBreakdown: Array<Object>;
 
   @property(Number)
   declare incomeThisMonth: Number;
@@ -227,7 +227,7 @@ export default class Ledger extends GObject.Object {
       incomeThisMonth: 0,
       expensesThisMonth: 0,
       debtsLiabilities: {},
-      monthlyBreakdown: {},
+      monthlyBreakdown: [],
       balancesOverTime: [],
       monthlySpendingByCategory: {
         subcategories: {},
@@ -396,9 +396,9 @@ export default class Ledger extends GObject.Object {
         const total = Math.abs(Number(fields[1].replace("$", "")));
 
         if (fields[0].includes("Income")) {
-          this.incomeThisMonth = total.toFixed(2);
+          this.incomeThisMonth = Number(total.toFixed(2));
         } else if (fields[0].includes("Expenses")) {
-          this.expensesThisMonth = total.toFixed(2);
+          this.expensesThisMonth = Number(total.toFixed(2));
         }
       });
     });
@@ -526,6 +526,9 @@ export default class Ledger extends GObject.Object {
       .catch((err) => print(`whatever: ${err}`));
   };
 
+  /**
+   * I have to be honest this was vibe coded
+   */
   #aggregateMonthlySpendingByCategory = (
     monthlyData: MonthlySpending,
   ): CategorySpend => {

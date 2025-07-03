@@ -39,10 +39,15 @@
       border-left-style: solid
       border-left-color: $neutral-800
       border-left-width: 4px
+      transition: 0.1s all
 
       &.active
         background-color: $neutral-700
         border-left-color: $neutral-100
+
+      &:hover:not(.active)
+        background-color: $neutral-700
+        border-left-color: $neutral-700
 
   .tab-stack
     min-height: $dashboard-height

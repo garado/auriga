@@ -80,8 +80,8 @@ const SpeakerWidget = (sink: AstalWp.Endpoint) => {
           min: 0,
           max: 100,
           value: bind(sink, "volume").as((volume) => volume * 100),
-          onChangeValue: (self, _: any, newValue: number) => {
-            sink.set_volume(newValue / 100.0);
+          onChangeValue: ({ value }) => {
+            sink.set_volume(value / 100.0);
           },
         }),
         transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,

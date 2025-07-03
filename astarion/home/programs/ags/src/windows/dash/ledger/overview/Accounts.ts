@@ -31,6 +31,7 @@ const Account = (data: DisplayAccountProps) => {
     cssClasses: ["balance"],
     halign: Gtk.Align.START,
     label: label,
+    selectable: true,
   });
 
   return Widget.Box({

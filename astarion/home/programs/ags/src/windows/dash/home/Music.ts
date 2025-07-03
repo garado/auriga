@@ -68,13 +68,13 @@ const MediaPlayer = (player: Mpris.Player) => {
     hexpand: true,
     setup: (self) => {
       self.add_overlay(Info);
-      self.add_overlay(
-        Visualizer({
-          bars: 20,
-          barHeight: 1.5,
-          smooth: true,
-        }),
-      );
+      // self.add_overlay(
+      //   Visualizer({
+      //     bars: 20,
+      //     barHeight: 1.5,
+      //     smooth: true,
+      //   }),
+      // );
     },
   });
 };

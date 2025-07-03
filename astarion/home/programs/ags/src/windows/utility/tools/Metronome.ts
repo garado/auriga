@@ -18,7 +18,7 @@ export const Metronome = () => {
       (err) => console.error(err),
     );
 
-    PlayPause.set_from_icon_name("pause-symbolic");
+    // PlayPause.set_from_icon_name("pause-symbolic");
   };
 
   const stopMetronome = () => {
@@ -28,7 +28,7 @@ export const Metronome = () => {
 
     proc = null;
 
-    PlayPause.set_from_icon_name("play-symbolic");
+    // PlayPause.set_from_icon_name("play-symbolic");
   };
 
   const Bpm = Widget.Entry({

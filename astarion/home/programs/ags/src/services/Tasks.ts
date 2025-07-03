@@ -206,7 +206,7 @@ export default class Tasks extends GObject.Object {
    **************************************************/
 
   newProjectSelected = (project: TreeNode<Project>) => {
-    this.#fetchTasksForProjects(project.data);
     this.selectedProject = project;
+    this.#fetchTasksForProjects(project.data);
   };
 }

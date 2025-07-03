@@ -1,6 +1,7 @@
 import { Widget } from "astal/gtk4";
 
 import { Metronome } from "./Metronome";
+import Calculator from "./Calculator";
 
 export const Tools = () => {
   return Widget.Box({
@@ -8,6 +9,7 @@ export const Tools = () => {
     vexpand: true,
     hexpand: true,
     vertical: true,
-    children: [Metronome()],
+    spacing: 20,
+    children: [Metronome(), Calculator()],
   });
 };

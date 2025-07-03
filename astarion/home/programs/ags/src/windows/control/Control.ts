@@ -1,4 +1,4 @@
-import { App, Astal, Gtk, Widget } from "astal/gtk4";
+import { App, Astal, astalify, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 import { SysFetch } from "@/windows/control/SysFetch.ts";
 import { Notifications } from "@/windows/control/Notifications";
@@ -7,6 +7,8 @@ import { Theme } from "@/windows/control/settings/Theme.ts";
 import { PowerProfiles } from "@/windows/control/settings/PowerProfiles.ts";
 import { Network } from "@/windows/control/settings/Network.ts";
 import { Bluetooth } from "@/windows/control/settings/Bluetooth.ts";
+import { Speaker } from "@/windows/control/settings/Speaker.ts";
+import { Monitors } from "@/windows/control//settings/Monitors.ts";
 import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 /******************************************
@@ -25,6 +27,8 @@ export const QuickSettings = () =>
       PowerProfiles(globalRevealerState),
       Network(globalRevealerState),
       Bluetooth(globalRevealerState),
+      Speaker(globalRevealerState),
+      Monitors(globalRevealerState),
     ],
   });
 

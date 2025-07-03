@@ -2,6 +2,7 @@ import { App, Astal, Gtk, Widget, astalify } from "astal/gtk4";
 import { Variable, GLib, bind } from "astal";
 
 import { Gemini } from "@/windows/utility/Gemini.ts";
+import { Tools } from "@/windows/utility/tools/Tools.ts";
 
 /******************************************
  * MODULE-LEVEL VARIABLES
@@ -21,14 +22,12 @@ const NotebookTabLabel = (label: string) =>
 
 const UtilityPanel = () =>
   Notebook({
+    focusable: false,
     halign: Gtk.Align.CENTER,
     cssClasses: ["utility"],
     setup: (self) => {
+      self.append_page(Tools(), NotebookTabLabel("Tools"));
       self.append_page(Gemini(), NotebookTabLabel("Gemini"));
-      self.append_page(
-        Widget.Label({ label: "Tools" }),
-        NotebookTabLabel("Tools"),
-      );
     },
   });
 

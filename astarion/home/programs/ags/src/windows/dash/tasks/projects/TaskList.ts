@@ -9,8 +9,20 @@ import { Gdk, Gtk, Widget, astalify, hook } from "astal/gtk4";
 import Tasks, { Task } from "@/services/Tasks";
 import { relativeTimeFromISO } from "@/utils/Helpers";
 import { bind } from "astal";
+import Pango from "gi://Pango?version=1.0";
 
 const ts = Tasks.get_default();
+
+const commonPrefix = (str1: string, str2: string): string => {
+  let prefix = "";
+  let i = 0;
+  while (i < str1.length && i < str2.length && str1[i] === str2[i]) {
+    prefix += str1[i];
+    i++;
+  }
+
+  return prefix;
+};
 
 /**
  * Show if no tasks are present.
@@ -89,7 +101,27 @@ const TaskWidget = (task: Task) => {
 
   const Due = Widget.Label({
     cssClasses: ["due"],
+    hexpand: false,
+    justify: Gtk.Justification.LEFT,
+    ellipsize: Pango.EllipsizeMode.END,
     label: task.due ? relativeTimeFromISO(task.due) : "No due date",
+  });
+
+  const Project = Widget.Label({
+    cssClasses: ["project"],
+    hexpand: false,
+    ellipsize: Pango.EllipsizeMode.END,
+    justify: Gtk.Justification.LEFT,
+    setup: (self) => {
+      const hierarchy = [
+        ...ts.selectedProject.data.hierarchy,
+        ts.selectedProject.data.name,
+      ];
+
+      const prefix = commonPrefix(task.project, hierarchy.join("."));
+      const display = task.project.replace(prefix, "");
+      self.label = display.replace(/^\./, "");
+    },
   });
 
   /* My task urgencies appear to be roughly in the range 0 to 25ish.
@@ -106,7 +138,11 @@ const TaskWidget = (task: Task) => {
       vertical: false,
       children: [Indicator, Desc],
     }),
-    endWidget: Due,
+    endWidget: Widget.Box({
+      spacing: 6,
+      vertical: false,
+      children: [Project, Due],
+    }),
     // onButtonPressed: () => {
     //   ts.selectedTask = task;
     // },

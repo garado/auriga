@@ -35,10 +35,11 @@
 
   .project
     &:hover 
-      color: red
+      color: $primary-500
 
   .expander
-    background-color: red
+    .icon
+      -gtk-icon-size: 0.8rem
   
 /*********************************************************
  * TASKLIST
@@ -54,6 +55,10 @@
   .task
     padding: 0.3rem
     transition: 0.2s all
+
+    .project
+      color: $neutral-300
+      min-width: 5rem
 
     &.urgency-100 
       color: $red-100

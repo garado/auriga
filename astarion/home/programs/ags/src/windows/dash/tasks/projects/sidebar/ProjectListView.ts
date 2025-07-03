@@ -24,7 +24,7 @@ const GProjectNode = GObject.registerClass(
         "data",
         "data",
         "Project data",
-        GObject.ParamFlags.READWRITE,
+        "Project data",
         GObject.Object,
       ),
       hasChildren: GObject.ParamSpec.boolean(
@@ -127,6 +127,9 @@ const ProjectTreeList = (data: Tree<Project>) => {
       cssClasses: ["expander"],
       marginEnd: 6,
       hexpand: false,
+      child: Widget.Image({
+        cssClasses: ["icon"],
+      }),
     });
 
     const label = Widget.Label({
@@ -136,7 +139,7 @@ const ProjectTreeList = (data: Tree<Project>) => {
       cssClasses: ["project"],
     });
 
-    const button = new Gtk.Button({
+    const button = Widget.Button({
       cssClasses: ["flat"],
       hexpand: false,
       child: label,
@@ -164,37 +167,37 @@ const ProjectTreeList = (data: Tree<Project>) => {
     const button = expander.get_next_sibling() as Gtk.Button;
     const label = button.get_child() as Gtk.Label;
 
-    // Get row and item data
     const treeListRow = listItem.get_item() as Gtk.TreeListRow;
     const gProject = treeListRow.get_item() as GProjectNode;
 
-    // Connect expander to the row
     expander.set_list_row(treeListRow);
 
-    // Show/hide expander based on whether item has children
     if (gProject.hasChildren) {
       expander.add_css_class("expandable");
+      (expander.child as Gtk.Image).iconName = "caret-down-symbolic";
     }
 
-    // Set project name in label
     if (gProject && gProject.data) {
       label.set_label(gProject.data.name || "Untitled Project");
     } else {
       label.set_label("Unknown Project");
     }
 
-    /* Add indentation based on depth */
     box.set_margin_start(6 + gProject.depth * 12);
 
-    // Handle button click to toggle expansion
     button.connect("clicked", () => {
       const isExpanded = treeListRow.get_expanded();
       treeListRow.set_expanded(!isExpanded);
 
-      // Select this row
       const selectionModel = listView.get_model() as Gtk.SingleSelection;
       const position = listItem.get_position();
       selectionModel.set_selected(position);
+
+      if (gProject.hasChildren) {
+        (expander.child as Gtk.Image).iconName = treeListRow.expanded
+          ? "caret-up-symbolic"
+          : "caret-down-symbolic";
+      }
     });
   });
 
@@ -202,7 +205,7 @@ const ProjectTreeList = (data: Tree<Project>) => {
   const selectionModel = new Gtk.SingleSelection({
     model: treeModel,
     autoselect: false,
-    canUnselect: true,
+    canUnselect: false,
   });
 
   selectionModel.connect("selection-changed", (model, _position, _nItems) => {

@@ -5,6 +5,7 @@ import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 
 import Ledger, { DebtsLiabilitiesProps } from "@/services/Ledger.ts";
+import Pango from "gi://Pango?version=1.0";
 const ledger = Ledger.get_default();
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
@@ -56,6 +57,7 @@ const DebtWidget = (account: string) => {
         ? ["debts-amount", "greentext"]
         : ["debts-amount", "redtext"],
     label: String(totalAmountOwed.toFixed(2)),
+    ellipsize: Pango.EllipsizeMode.END,
   });
 
   /**
@@ -67,8 +69,8 @@ const DebtWidget = (account: string) => {
     const desc = Widget.Label({
       cssClasses: ["desc"],
       halign: Gtk.Align.END,
-      truncate: "end",
       label: txn.desc,
+      ellipsize: Pango.EllipsizeMode.END,
     });
 
     const amount = Widget.Label({

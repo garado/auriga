@@ -1,7 +1,8 @@
 import { Gtk, Gdk, Widget, hook, astalify } from "astal/gtk4";
 import Goals, { Annotation, Goal } from "@/services/Goals";
-import { bind } from "astal";
+import { bind, exec } from "astal";
 import { formatISODateToCustomFormat } from "@/utils/Helpers";
+import { Dropdown } from "@/components/Dropdown";
 
 const gs = Goals.get_default();
 
@@ -190,6 +191,10 @@ const GoalDetails = () => {
     },
   });
 
+  const TimescaleWidget = Dropdown({
+    exclusive: true,
+  });
+
   return ListBox({
     cssClasses: ["details"],
     hexpand: true,
@@ -201,9 +206,10 @@ const GoalDetails = () => {
         ["Status", StatusWidget],
         ["Due", DueWidget],
         ["Parent", ParentWidget],
-        ["UUID", UUIDWidget],
+        ["Timescale", TimescaleWidget],
         ["Why", WhyWidget],
         ["Icon", IconWidget],
+        ["UUID", UUIDWidget],
       ];
 
       /* Populate listbox with rows */

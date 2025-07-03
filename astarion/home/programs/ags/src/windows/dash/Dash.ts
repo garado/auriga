@@ -1,7 +1,7 @@
 /* █▀▄ ▄▀█ █▀ █░█ */
 /* █▄▀ █▀█ ▄█ █▀█ */
 
-import { App, Astal, Gtk, Widget } from "astal/gtk4";
+import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 import { bind, Variable } from "astal";
 
 import Home from "@/windows/dash/home/Home";
@@ -77,6 +77,8 @@ const DashTabBar = () =>
  */
 const DashTabEntry = (tabData: DashTabData) =>
   Widget.Button({
+    canFocus: false,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
     cssClasses: bind(activeTabIndex).as((index) =>
       index == dashTabData.indexOf(tabData)
         ? ["active", "tab-entry"]

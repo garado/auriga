@@ -22,6 +22,7 @@ export const SegmentedButtonGroup = (props: {
   const Container = Widget.Box({
     orientation: 0,
     spacing: 0,
+    canFocus: false,
     cssClasses: ["segmented-toggle-button-container"],
     children: props.buttons.map((btn) =>
       ToggleButton({

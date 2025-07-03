@@ -1,24 +1,23 @@
-/* █▀▀ █▀▀ █▀▄▀█ █ █▄░█ █   ▄▀█ █▀█ █ */
-/* █▄█ ██▄ █░▀░█ █ █░▀█ █   █▀█ █▀▀ █ */
+/**
+ * █▀▀ █▀▀ █▀▄▀█ █ █▄░█ █   ▄▀█ █▀█ █
+ * █▄█ ██▄ █░▀░█ █ █░▀█ █   █▀█ █▀▀ █
+ *
+ * Quickly use AI
+ */
 
 /**
  * Idea and UI inspiration taken from kotontrion's chatgpt widget,
  * as posted in unixporn discord
  */
 
-import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
-import { Variable, GLib, bind } from "astal";
-import Gio from "gi://Gio";
+import { Gdk, Gtk, Widget, astalify } from "astal/gtk4";
 import { CustomSourceView } from "@/components/CustomSourceView";
 import GeminiService, {
   ConversationType,
   ConversationData,
 } from "@/services/Gemini";
-import { setConsoleLogDomain } from "console";
 
 const gs = GeminiService.get_default();
-
-const Scrollable = astalify(Gtk.ScrolledWindow);
 
 /*************************************************************************
  * HELPERS
@@ -75,7 +74,6 @@ const markdownToPangoMarkup = (text: string) => {
       { name: "BOLD", re: /(\*\*)(\S[\s\S]*?\S)(\*\*)/g, sub: "<b>$2</b>" },
       { name: "UND", re: /(__)(\S[\s\S]*?\S)(__)/g, sub: "<u>$2</u>" },
       { name: "EMPH", re: /\*(\S.*?\S)\*/g, sub: "<i>$1</i>" },
-      // { name: 'EMPH', re: /_(\S.*?\S)_/g, sub: "<i>$1</i>" },
       {
         name: "HEXCOLOR",
         re: /#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/g,
@@ -92,7 +90,6 @@ const markdownToPangoMarkup = (text: string) => {
           monospaceFonts +
           '">$2</span>',
       },
-      // { name: 'UND', re: /(__|\*\*)(\S[\s\S]*?\S)(__|\*\*)/g, sub: "<u>$2</u>" },
     ],
   };
 
@@ -134,7 +131,6 @@ const tokenizeReponse = (markdown: string) => {
     const match = remainingStr.match("```");
 
     if (match) {
-      /* Grab language */
       let lang = undefined;
 
       if (isCode) {
@@ -168,19 +164,6 @@ const tokenizeReponse = (markdown: string) => {
 /*************************************************************************
  * WIDGETS
  *************************************************************************/
-
-/**
- * Just a header thingy that says "Gemini".
- */
-const HeaderBar = () =>
-  Widget.CenterBox({
-    startWidget: Widget.Label({
-      hexpand: true,
-      cssClasses: ["header"],
-      label: "Gemini",
-      xalign: 0,
-    }),
-  });
 
 /**
  * Renders a prompt or a response.
@@ -224,12 +207,9 @@ const ConversationPiece = (props: {
    * And then after the API call is done, the "Thinking..." gets updated to
    * the actual response content. */
   Object.assign(Final, {
-    /* This is triggered after callback */
     setContent: (responseText: string) => {
-      /* Remove 'Thinking...' */
       Content.remove(Content.children[0]);
 
-      /* Tokenize to check if there's code snippets */
       const tokens = tokenizeReponse(responseText);
 
       tokens.map((token) => {
@@ -297,50 +277,40 @@ const ConversationContainer = () =>
 export const Gemini = () => {
   const Container = ConversationContainer();
 
-  /**
-   * Where the user types in prompts to Gemini
-   * Commands (put these at beginning of prompt)
-   *    - /clr  to clear all responses
-   *    - /cont to toggle continuing the conversation (TODO)
-   *    - /cns  to toggle responding concisely (TODO)
-   */
-  const PromptEntryBox = Widget.Entry({
+  const PromptEntryBox = new Gtk.TextView({
     cssClasses: ["prompt-entry"],
     canFocus: true,
     focusOnClick: true,
     focusable: true,
-    placeholderText: "Talk to Gemini",
-    onActivate: (self) => {
-      /* Check for commands */
-      if ("/clr" == self.text) {
-        Container.children.forEach((child) => {
-          Container.remove(child);
-        });
-      } else if ("/cont" == self.text) {
-        self.text = "/cont ";
-      } else {
-        gs.prompt(Container.children.length, self.text);
-      }
-      self.text = "";
-    },
-    onFocusEnter: (self) => {
-      self.add_css_class("focus");
-    },
-    onFocusLeave: (self) => {
-      self.remove_css_class("focus");
-    },
+    wrapMode: Gtk.WrapMode.WORD_CHAR, // Enable text wrapping
+    hexpand: true, // Allow horizontal expansion
+    vexpand: false, // Start with minimal vertical size
   });
+
+  const keyController = new Gtk.EventControllerKey();
+  PromptEntryBox.add_controller(keyController);
+
+  keyController.connect(
+    "key-pressed",
+    (_controller, keyval, _keycode, state) => {
+      if (
+        (keyval === Gdk.KEY_Return || keyval === Gdk.KEY_KP_Enter) &&
+        !(state & Gdk.ModifierType.SHIFT_MASK)
+      ) {
+        print("pressed entr");
+        gs.prompt(Container.children.length, PromptEntryBox.buffer.text);
+        PromptEntryBox.buffer.set_text("", -1);
+        return true;
+      }
+      return false;
+    },
+  );
 
   const Final = Widget.CenterBox({
     cssClasses: ["gemini"],
     orientation: 1,
     hexpand: false,
-    // startWidget: Widget.Box({
-    //   vertical: true,
-    //   vexpand: true,
-    //   children: [Container],
-    // }),
-    startWidget: Scrollable({
+    startWidget: new Gtk.ScrolledWindow({
       vexpand: true,
       hexpand: false,
       child: Container,
