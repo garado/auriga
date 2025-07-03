@@ -10,7 +10,7 @@
     ./lf.nix
     ./newsboat.nix
     ./nvim
-    ./qutebrowser.nix
+    # ./qutebrowser.nix
     ./taskwarrior.nix
     ./wpaperd.nix
     ./zsh

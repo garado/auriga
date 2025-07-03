@@ -11,6 +11,15 @@ local plugins = {
     event = "BufEnter",
   },
 
+  -- {
+  --   "startup-nvim/startup.nvim",
+  --   dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim", "nvim-telescope/telescope-file-browser.nvim" },
+  --   event = "BufEnter",
+  --   config = function()
+  --     require("startup").setup({theme = "evil"}) -- put theme name here
+  --   end
+  -- },
+
   {
     "neovim/nvim-lspconfig",
     config = function()

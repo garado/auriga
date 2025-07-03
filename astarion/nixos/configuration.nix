@@ -130,11 +130,12 @@ in {
     # python
     python3
 
-    # guitarix        # Amp sim
-    # qjackctl        # Alllll for the amp sim
-    # libjack2
-    # jack2
-    # jack_capture
+    guitarix        # Amp sim
+    qjackctl        # Alllll for the amp sim
+    libjack2
+    jack2
+    jack_capture
+
     prismlauncher   # Minecraft
     sox             # Play audio
     audacity        # Audio editing
@@ -154,6 +155,8 @@ in {
     pulse.enable = true;
     wireplumber.enable = false;
   };
+
+  services.tumbler.enable = true;
 
   environment.variables = {
     EDITOR = "nvim";

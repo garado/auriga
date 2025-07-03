@@ -8,7 +8,7 @@
     
     package = pkgs.taskwarrior;
 
-    dataLocation = "/home/alexis/Enchiridion/self/todo/.taskwiki/";
+    dataLocation = "/home/alexis/Documents/tasks/";
 
     # User-defined attributes
     config = {

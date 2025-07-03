@@ -54,7 +54,7 @@
           ./astarion/nixos/configuration.nix
 
           inputs.musnix.nixosModules.musnix
-        
+
           home-manager.nixosModules.home-manager
 
           {

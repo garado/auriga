@@ -32,7 +32,7 @@
       gtksourceview5
 
       # Productivity
-      obsidian qutebrowser
+      obsidian
 
       inputs.ags.packages.${pkgs.system}.io
 
