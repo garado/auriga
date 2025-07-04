@@ -28,7 +28,7 @@
     hardware.url = "github:nixos/nixos-hardware";
 
     # Widgets
-    ags.url = "github:Aylur/ags";
+    ags.url = "github:Aylur/ags/v2.3.0";
 
     # Real-time audio
     musnix.url = "github:musnix/musnix";
@@ -51,7 +51,7 @@
         specialArgs = {inherit inputs;};
 
         modules = [
-          ./astarion/nixos/configuration.nix
+          ./hosts/astarion/nixos/configuration.nix
 
           inputs.musnix.nixosModules.musnix
 
@@ -61,7 +61,7 @@
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {inherit inputs;};
             home-manager.backupFileExtension = "hm-backup";
-            home-manager.users.alexis = import ./astarion/home/home.nix;
+            home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
           }
         ];
 
@@ -76,7 +76,7 @@
         specialArgs = {inherit inputs;};
 
         modules = [
-          ./astarion/nixos/configuration.nix
+          ./hosts/astarion/nixos/configuration.nix
 
           inputs.musnix.nixosModules.musnix
         
@@ -85,7 +85,7 @@
           {
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {inherit inputs;};
-            home-manager.users.alexis = import ./astarion/home/home.nix;
+            home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
           }
         ];
 

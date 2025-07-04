@@ -1,0 +1,62 @@
+
+// █▄▀ ▄▀█ █▄░█ ▄▀█ █▀▀ ▄▀█ █░█░█ ▄▀█
+// █░█ █▀█ █░▀█ █▀█ █▄█ █▀█ ▀▄▀▄▀ █▀█
+
+@use 'sass:list'
+
+$img-notrofi: url('/home/alexis/Github/dotfiles/hosts/astarion/home/services/ags/assets/notrofi/kanagawa.jpg')
+
+$red-100: #ff6b6b
+$red-200: #ff3f3f
+$red-300: #e82424
+$red-400: #c31e1e
+$red-500: #8f1717
+
+$yellow-100: #fff3d6
+$yellow-200: #f8dab0
+$yellow-300: #e6c384
+$yellow-400: #c5a76c
+$yellow-500: #a48d56
+
+$green-100: #c8e3a6
+$green-200: #b0d48b
+$green-300: #98bb6c
+$green-400: #7fa158
+$green-500: #678747
+
+$neutral-100: #dcd7ba
+$neutral-200: #cdc69d
+$neutral-300: #b3ac86
+$neutral-400: #736f5d
+$neutral-500: #5f5c4e
+$neutral-600: #42403a
+$neutral-700: #353435
+$neutral-800: #212126
+$neutral-900: #16161b
+
+$primary-100: #8faedf
+$primary-200: #7e9dcb
+$primary-300: #6e8cb7
+$primary-400: #5e7ba3
+$primary-500: #4e6a8f
+$primary-600: #3e597b
+$primary-700: #2f4867
+$primary-800: #1f3753
+$primary-900: #262f54
+
+$accent-1:  #ffa066
+$accent-2:  #ff5d62
+$accent-3:  #72a7bc
+$accent-4:  #727169
+$accent-5:  #7fb4ca
+$accent-6:  #c8c093
+$accent-7:  #dcd7ba
+$accent-8:  #6a9589
+$accent-9:  #957fb8
+$accent-10: #7e9cd8
+
+$accents: #ffa066, #ff5d62, #72a7bc, #727169, #7fb4ca, #c8c093, #dcd7ba, #6a9589, #957fb8, #7e9cd8
+
+@for $index from 1 through list.length($accents)
+  .accent-#{$index}
+    background-color: list.nth($accents, $index)
