@@ -1,0 +1,100 @@
+
+@use '../../theme/theme' as *
+
+/****************************************
+ * GENERAL
+ ****************************************/
+
+.utility
+  margin-left: 0.8rem
+  margin-top:    0.8rem
+  margin-bottom: 0.8rem
+  font-family: $font-stack
+  background-color: $neutral-800
+  border-radius: $border-radius
+  min-width: 28rem
+  padding: 1.6rem
+
+.utility .tab-label
+  padding: 0.6rem 1rem
+
+  &.active
+    border-bottom: 3px solid $primary-500
+
+/****************************************
+ * GEMINI
+ ****************************************/
+
+.utility .gemini
+  .header
+    font-size: 2rem
+    border-bottom: 2px solid $neutral-600
+
+  .prompt-entry
+    border-style: solid
+    border-width: 4px
+    border-radius: $border-radius
+    padding: 0.4rem
+    transition: 0.1s all
+
+    &.focus
+      border-color: $primary-500
+
+    &:not(.focus)
+      border-color: $neutral-500
+
+  .speaker
+    font-weight: 500
+    font-size: 1.4rem
+
+    &.user
+      color: $primary-400
+
+    &.gemini
+      color: $accent-1
+
+  // Seems like there's no direct CSS selector for selected/highlighted text 
+  // on Gtk.Label. But in Gtk Inspector, the selected text is a child of the
+  // actual label. So - apply a class to the selectable label ('content'), 
+  // and set the bg color of all children.
+  .content
+    *
+      background-color: $yellow-500
+
+/****************************************
+ * TOOLS
+ ****************************************/
+
+.tools .metronome
+  background-color: $primary-400
+  border-radius: $border-radius
+  padding: 1rem
+
+  .bpm
+    font-size: 8rem
+    font-weight: 400
+
+  .bpm-control
+    padding-left: 1rem
+    padding-right: 1rem
+    -gtk-icon-size: 2rem
+
+.tools .calculator
+  padding: 1rem
+  background-color: $neutral-700
+
+  .entry-container
+    border-bottom: 0.2rem solid $neutral-800
+    margin-bottom: 1rem
+
+    .entry
+      font-size: 2rem
+
+  .button
+    background-color: $neutral-600
+    padding: 2rem
+    border-radius: $border-radius
+    transition: 0.1s all
+
+    &:hover
+      background-color: $neutral-500

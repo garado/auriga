@@ -1,0 +1,47 @@
+
+@use 'theme'
+
+.bar
+  font-family: theme.$font-stack
+  padding-left:   0.6rem
+  padding-right:  0.6rem
+  padding-top:    0.6rem
+  padding-bottom: 0.6rem
+  color: theme.$neutral-100
+
+  .time, .battery
+    font-size: theme.$font-size-s
+
+  .workspaces
+    min-width:  0.5rem
+    min-height: 0.5rem
+    border-radius: 100%
+    color: theme.$neutral-500
+
+    .not-empty
+      color: theme.$neutral-200
+
+    .focused
+      color: theme.$primary-500
+
+  .volume-indicator
+    trough
+      border-radius: theme.$border-radius
+      margin: 0rem 0.45rem
+      border-color: theme.$neutral-700
+      background-color: theme.$neutral-700
+
+      block.filled
+        border-color: transparent
+        background-color: theme.$neutral-600
+
+      block.empty
+        border-color: transparent
+        background-color: theme.$primary-500
+
+  .battery
+    &.dying
+      color: theme.$red-500
+
+    &.charging
+      color: theme.$green-500

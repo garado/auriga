@@ -1,0 +1,143 @@
+
+@use '../../../theme/theme' as *
+@use '../../../mixins' as *
+
+/***************************************************
+ * GENERAL
+ ***************************************************/
+
+.goals
+  padding: 2rem
+
+/***************************************************
+ * TOP BAR
+ ***************************************************/
+
+.goals .top-bar
+  .header
+    font-size: 2rem
+
+  .search-container
+    font-size: 1rem
+
+  .filters
+    min-height: 2.5rem
+
+/***************************************************
+ * GOALBOX
+ ***************************************************/
+
+.goals .overview .goalbox
+  min-height: 15rem
+  background-color: $primary-400
+  padding: 0.8rem
+  transition: 0.2s all
+  border-radius: $border-radius
+  border-color: $primary-400
+  border-style: solid
+  border-width: 3px
+
+  &:hover
+    border-color: $neutral-100
+
+  .description
+    font-size: 1.4rem
+    font-weight: 500
+
+  .goal-icon
+    color: $primary-800
+    -gtk-icon-size: 2rem
+
+  /* Custom categories */
+  &.career
+    @include goalbox-colorize($accent-1)
+  
+  &.personal
+    @include goalbox-colorize($accent-2)
+  
+  &.relationships
+    @include goalbox-colorize($accent-3)
+  
+  &.mental
+    @include goalbox-colorize($accent-4)
+  
+  &.health
+    @include goalbox-colorize($accent-5)
+  
+  &.financial
+    @include goalbox-colorize($accent-6)
+  
+  &.travel
+    @include goalbox-colorize($accent-7)
+
+/***************************************************
+ * FILTER BUTTONS
+ ***************************************************/
+  
+.goals .overview .filters
+  button
+    color: $neutral-300
+    border-radius: 2px
+    background-color: $neutral-700
+
+    &:hover
+      background-color: $primary-900
+
+    &.toggled
+      color: $neutral-100
+      transition: 0.1s all
+      background-color: $primary-500
+
+/********************************************************
+ * SIDEBAR
+ ********************************************************/
+
+.goals .sidebar
+  min-width: 20rem
+  background-color: $neutral-700
+  padding: 1.4rem
+
+  .section-header
+    font-size: 1.2rem
+    font-weight: 700
+
+  .description
+    font-size: 1.4rem
+    font-weight: 700
+
+  .details
+    .key
+      color: $neutral-200
+      min-width: 5rem
+
+    .value
+      .text
+        .selection
+          background-color: $yellow-500
+
+    * 
+      padding: 0.1rem
+
+  .annotations
+    .date
+      color: $neutral-200
+      min-width: 5rem
+    
+    * 
+      padding: 0.1rem
+  
+  .children
+    *
+      padding: 0.15rem
+
+    .completed
+      font-weight: 500
+    
+    .pending
+      color: $neutral-200
+
+    .link
+      transition: 0.3s all
+
+      &:hover
+        color: $primary-500

@@ -1,0 +1,115 @@
+
+@use '../../../theme/theme' as *
+@use 'sass:color'
+
+/****************************************************
+ * EVENT BOX
+ ****************************************************/
+
+.calendar .week .eventbox
+  padding: 0.5rem
+  background-color: $primary-500
+  box-shadow: 2px 2px 2px 2px rgba(0 0 0 / 20%)
+  border-width: 2px 
+  border-style: solid 
+  border-color: transparent
+  border-radius: $border-radius
+  margin-right: 0.75rem
+  transition: 0.1s all
+  
+  &:focus, &:hover
+    border-color: $neutral-100
+
+  .title
+    font-weight: 500
+
+  .times, .location
+    font-size: 0.8rem
+
+  &.elapsed
+    color: $neutral-300
+
+  /* Calendar colors */
+  &.Schedule
+    background-color: $primary-500
+
+    &.elapsed
+      background-color: desaturate(darken($primary-500, 20%), 10%)
+
+  &.Events
+    background-color: $red-500
+
+    &.elapsed
+      background-color: desaturate(darken($red-500, 20%), 10%)
+
+  &.dragging
+    opacity: 0.5
+    border-style: dashed
+
+/****************************************************
+ * SCROLLBAR
+ ****************************************************/
+
+.calendar .week .scroll
+  trough
+    margin-left: 1rem
+    min-width: 0.6rem
+    background-color: $neutral-700
+
+    slider
+      background-color: $neutral-300
+      min-width: 0.4rem
+
+/****************************************************
+ * GRIDLINES
+ ****************************************************/
+
+.calendar .week .weekview-gridlines
+  color: $neutral-700
+
+/****************************************************
+ * DATE LABELS
+ ****************************************************/
+
+.calendar .week .date-label
+  margin-bottom: 1rem
+
+  .number
+    font-size: 2rem
+
+  &.active
+    color: $primary-400
+
+/****************************************************
+ * HOUR LABELS
+ ****************************************************/
+
+.calendar .week .hour-label
+  color: $neutral-400
+  font-size: 0.8rem
+  font-weight: 500
+  background-color: $neutral-900
+
+/****************************************************
+ * DAY VIEW
+ ****************************************************/
+
+.calendar .week .day-view
+  &:not(:last-child)
+    border-right: 2px solid $neutral-700
+
+/****************************************************
+ * MULTIDAY
+ ****************************************************/
+
+.calendar .week .multiday
+  .multiday-event-widget
+    border-radius: $border-radius
+    font-size: 0.8rem
+    padding: 0.2rem 0.2rem 0.2rem 0.4rem
+    border: 2px solid rgba(0, 0, 0, 0)
+    border-radius: $border-radius
+    box-shadow: 4px 4px 4px 4px rgba(0 0 0 / 30%)
+
+    &:focus, &:hover
+      border: 2px solid $neutral-100

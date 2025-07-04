@@ -1,0 +1,134 @@
+@use '../theme'
+
+/* Main content */
+.goals .overview
+  .header
+    font-size: 2rem
+
+  .category-header
+    font-size: 2rem
+    padding: 0.2rem
+
+  .big-picture-header
+    font-size: 3rem
+    padding: 0.2rem
+
+  .goalbox
+    background-color: rgba(0, 0, 0, 0.2)
+
+    &.completed
+      background-color: rgba(96, 120, 97, 0.2)
+      
+    &:hover
+      .imagebox
+        opacity: 0.9
+
+    &:focus
+      border: 5px solid theme.$primary-300
+
+    .interior // the acutal goal widget
+      padding: 0.8rem
+
+      .big-picture-title
+        font-size: 1.8rem
+
+      .title
+        font-size: 1.2rem
+        font-weight: 500
+
+      .completed
+        background-color: theme.$green-500
+        color: theme.$neutral-100
+        padding: 0.3rem 0.4rem
+        font-size: 0.9rem
+        border-radius: theme.$border-radius-m
+
+      .failed
+        background-color: theme.$red-500
+        color: theme.$neutral-100
+        padding: 0.3rem 0.4rem
+        font-size: 0.9rem
+        border-radius: theme.$border-radius-m
+
+      /* Pinned subgoal */
+      .pinned
+        // color: theme.$neutral-200
+
+    .imagebox
+      transition: 0.15s all
+      background-repeat: no-repeat
+      background-size: cover
+      opacity: 0.5
+
+    .main
+      transition: 0.15s all
+
+/* Sidebar */
+.goals .overview .sidebar
+  background-color: theme.$neutral-800
+
+  .top
+    .sidebar-header
+      padding: 0.8rem
+      font-size: 2rem
+
+    .navigation
+      padding: 0.8rem
+      font-size: 1.2rem
+      transition: 0.1s all
+
+    .background
+      padding: 0.8rem
+      background-color: theme.$primary-700
+      background-repeat: no-repeat
+      background-size: cover
+      opacity: 0.4
+
+    .completion-status
+      margin-left: 0.8rem
+      padding: 0.4rem 0.8rem
+      border-radius: 0.1rem
+
+      &.completed
+        background-color: theme.$green-500
+        color: theme.$neutral-100
+      
+      &.failed
+        background-color: theme.$red-500
+        color: theme.$neutral-100
+
+  .subheader
+    font-size: 1.4rem
+    margin-bottom: 0.2rem
+
+  .information
+    padding: 1.8rem
+
+    .dependency
+      margin-left: 0.4rem
+      font-size: 1.2rem
+
+      .checkbox
+        &:hover
+          transition: 0.1s all
+          color: theme.$primary-400
+
+      .description 
+        &:hover
+          transition: 0.1s all
+          color: theme.$primary-400
+
+/* Filter buttons */
+.goals .overview .filters
+  button
+    color: theme.$neutral-300
+    border-radius: 2px
+    background-color: theme.$neutral-700
+
+    &:hover
+      background-color: theme.$primary-900
+
+    &.toggled
+      color: theme.$neutral-100
+      transition: 0.1s all
+      background-color: theme.$primary-500

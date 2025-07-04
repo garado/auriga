@@ -1,0 +1,27 @@
+
+@use "defaults"
+@use "bar"
+@use "utility/utility"
+@use "control/control"
+@use "dashboard/dashboard"
+@use "notrofi"
+@use "notifications"
+@use "widgets/widgets"
+@use "theme"
+
+*
+  all: unset // remove default gtk styling
+
+  transition: 0.1s all
+
+  /* Uncomment to debug focusable widgets */
+  // &:focus 
+  //   background-color: red
+
+.dropshadow
+  margin: 15px
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 10px
+
+.dropshadow-left
+  margin-left: 15px
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 10px

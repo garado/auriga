@@ -1,0 +1,12 @@
+
+@use '../theme/theme' as *
+
+@mixin goalbox-colorize($color)
+  background-color: desaturate(darken($color, 10%), 10%)
+  border-color: desaturate(darken($color, 10%), 10%)
+
+  &:hover
+    border-color: $neutral-100
+
+  .goal-icon
+    color: red

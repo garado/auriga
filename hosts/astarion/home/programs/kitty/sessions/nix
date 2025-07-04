@@ -1,0 +1,11 @@
+new_tab re
+cd $HOME/Github/dotfiles/
+launch zsh
+
+new_tab dots
+cd $HOME/Github/dotfiles/
+launch nvim
+
+new_tab
+cd $HOME/Github/dotfiles/
+launch zsh

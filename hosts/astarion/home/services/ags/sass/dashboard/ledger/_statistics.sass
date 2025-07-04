@@ -1,0 +1,82 @@
+@use "../../theme"
+
+/********************************************
+ * GENERAL
+ ********************************************/
+
+/********************************************
+ * STOCKBOX
+ ********************************************/
+
+.ledger .statistics .stockbox-container
+  min-width: 12rem
+  background-color: theme.$primary-800
+  padding: 1.8rem
+
+.ledger .statistics .stockbox
+  margin: 1rem
+
+  .ticker-symbol
+    font-size: 1.4rem
+  
+  .fund-name
+    font-size: 0.8rem
+    color: theme.$neutral-200
+  
+  .value-held
+    font-size: 1.4rem
+
+  .percent-change
+    font-size: 0.8rem
+    font-weight: 500
+    color: theme.$green-200
+
+    .up
+      color: theme.$green-200
+
+    .down
+      color: theme.$red-200
+
+/********************************************
+ * GRAPH
+ ********************************************/
+
+.ledger .statistics .graph
+  .header
+    color: theme.$neutral-100
+    font-size: 4rem
+
+  .animator
+    background-color: theme.$neutral-900
+    
+  // .fire-graph
+    /* haven't figured out nested classes */
+
+.ledger .statistics .sidebar
+  background-color: theme.$neutral-700
+
+/* @TODO figure out nested classes so I can define these above */
+
+.fire-graph
+  &.vertical-intersect
+    color: theme.$neutral-200
+
+  &.grid
+    color: theme.$neutral-800
+
+.balance
+  &.plot
+    color: theme.$primary-500
+
+  &.horizontal-intersect
+    color: theme.$neutral-300
+
+  &.fit
+    color: theme.$primary-800
+
+.target
+  &.plot
+    color: theme.$green-500
+
+  &.horizontal-intersect
+    color: theme.$neutral-300

@@ -1,0 +1,25 @@
+@use '../theme' as theme
+
+.life .quote
+  margin-left:  10rem
+  margin-right: 10rem
+
+  .quote-text
+    font-size: 2rem
+
+  .quote-attribute
+    font-size: 1.2rem
+    color: theme.$neutral-400
+    margin-bottom: 2rem
+
+.life .squares
+  transition: 0.1s all
+
+  .one-week
+    background-color: theme.$neutral-700
+
+    &.passed
+      background-color: theme.$primary-500
+
+    &.notable
+      background-color: theme.$neutral-100

@@ -1,0 +1,15 @@
+new_tab js
+cd $HOME/Github/dotfiles/hosts/astarion/home/services/ags/
+launch nvim
+
+new_tab services
+cd $HOME/Github/dotfiles/hosts/astarion/home/services/ags/
+launch nvim
+
+new_tab sass
+cd $HOME/Github/dotfiles/hosts/astarion/home/services/ags/sass/
+launch nvim
+
+new_tab ags
+cd $HOME/Github/dotfiles/hosts/astarion/home/services/ags/
+launch zsh

@@ -1,0 +1,269 @@
+@use '../theme' as theme
+
+/*********************************************
+ * General
+ *********************************************/
+
+.home
+  .left
+    min-width: calc(theme.$dashboard-width * 0.2)
+  
+  .center
+    min-width: calc(theme.$dashboard-width * 0.3)
+  
+  .right
+    min-width: calc(theme.$dashboard-width * 0.3)
+
+/*********************************************
+ * Book
+ *********************************************/
+
+.home .book
+  .header
+    font-size: 1rem
+    font-weight: 600
+
+  .cover
+    border-radius: theme.$border-radius
+    background-repeat: no-repeat
+    background-size: cover
+    background-position: center
+
+  .info
+    // background-color: red
+    .title
+      font-size: 2rem
+      font-weight: 500
+
+    .author
+      color: theme.$neutral-300
+
+    .progress
+        // LevelBar styling
+        trough
+          margin-top: 0.4rem
+          border-color: theme.$neutral-500
+          background-color: theme.$neutral-500
+
+          block.filled
+            border-color: transparent
+            background-color: theme.$primary-500
+            min-height: 0.2rem
+
+          block.empty
+            border-color: transparent
+            background-color: theme.$neutral-500
+    
+
+/*********************************************
+ * Media player
+ *********************************************/
+
+.home .player
+  .album-art
+    border-radius: theme.$border-radius
+    background-image: url('/home/alexis/Github/dotfiles/home/services/ags/assets/no-music.jpg')
+    transition: all 0.25s ease-out
+    background-size: 100%
+    background-position: center
+    opacity: 0.3
+ 
+  .album-art-gradient
+    border-radius: theme.$border-radius
+    background-size: cover
+    background-position: center
+    opacity: 0.3
+    background: theme.$primary-500
+ 
+  .info
+    margin: 1rem
+    color: theme.$neutral-100
+    background-color: rgba(0, 0, 0, 0)
+ 
+    .title
+      font-size: 1.8rem
+      font-weight: bold
+ 
+    .artist
+      font-size: 1rem
+      font-weight: bold
+
+  .kotontrion-cava
+    color: theme.$primary-500
+
+/*********************************************
+ * RSS
+ *********************************************/
+
+.home .rss
+  padding: 1.2rem
+  background-color: theme.$primary-800
+  border-radius: theme.$border-radius
+
+  .rss-header
+    font-size: 1.4rem
+    padding-bottom: 0.4rem
+
+  .rss-separator
+    background-color: theme.$neutral-100
+    opacity: 0.2
+    padding: 0.1rem
+    margin-top:    0.6rem
+    margin-bottom: 0.6rem
+
+  .rss-entry
+    .title
+      font-size: 1.15rem
+  
+    .source
+      padding-right: 1rem
+  
+    .entry-bottom
+      padding-top: 0.4rem
+  
+      .icon
+        padding-right: 0.3rem
+
+/*********************************************
+ * PROFILE
+ *********************************************/
+
+.home .profile
+  margin: 2.5rem 1rem
+
+  .pfp-circle-border
+    min-height: 8rem
+    min-width:  8rem
+    font-size: 0.3rem
+    background-color: theme.$neutral-900
+    color: theme.$primary-800
+
+  .pfp
+    min-height: 7rem
+    min-width:  7rem
+    border-radius: 50%
+    background-size: cover
+    background-position: center
+
+  .username
+    margin-top: 0.4rem
+    font-size: 1.3rem
+
+  .splash
+    color: theme.$neutral-300
+
+
+/*********************************************
+ * CLOCK
+ *********************************************/
+
+.home .clock
+  border-radius: theme.$border-radius
+  background-color: theme.$neutral-800
+  padding: 2rem 1rem
+
+  .time
+    font-size: 4rem
+    color: theme.$primary-500
+
+  .date
+    margin-top: -0.5rem
+    color: theme.$neutral-100
+
+/*********************************************
+ * QUOTE
+ *********************************************/
+
+.home .quote
+  padding: theme.$spacing-s
+
+  .quote-text
+    color: theme.$neutral-100
+    font-size: 1.2rem
+
+  .author
+    color: theme.$neutral-300
+    font-size: 1rem
+
+
+/*********************************************
+ * AGENDA
+ *********************************************/
+
+.home .agenda
+  .day-header
+    min-width: 350px
+    border-color: theme.$neutral-600
+    border-style: solid
+    border-width: 0 0 1.5px 0
+    font-weight: 500
+    padding-bottom: 0.5rem
+
+    .date 
+      color: theme.$neutral-300
+
+    .today
+      transition: none
+      color: theme.$primary-400
+
+  .day-event
+    border-color: theme.$primary-400
+    border-style: solid
+    border-width: 0 0 0 2.5px
+    padding-left: 0.5rem
+
+    .event-title
+
+    .event-time
+
+  .day-task
+    border-color: theme.$primary-400
+    border-style: solid
+    border-width: 0 0 0 2.5px
+
+    .task-title
+
+
+.home
+  .github
+    padding: 0.2rem
+
+    .header
+      color: theme.$neutral-100
+      font-size: 1.8rem
+
+    .subheader
+      color: theme.$neutral-300
+      font-size: 1rem
+
+    .contrib-container
+      margin-top: 1rem
+
+  .weather
+    .hi-lo-label
+      font-size: 1.2rem
+
+    .hi-lo-value
+      font-size: 1.2rem
+      font-weight: bold
+
+// whyyyy cant i add this under 'github' without breaking
+.intensity-0 // lowest intensity
+  background-color: theme.$neutral-600
+  min-width: 0.8rem
+
+.intensity-1
+  background-color: theme.$primary-300
+  min-width: 0.8rem
+
+.intensity-2
+  background-color: theme.$primary-500
+  min-width: 0.8rem
+
+.intensity-3
+  background-color: theme.$primary-700
+  min-width: 0.8rem
+
+.intensity-4
+  background-color: theme.$primary-900
+  min-width: 0.8rem

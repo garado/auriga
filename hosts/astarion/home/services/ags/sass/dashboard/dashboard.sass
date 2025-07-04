@@ -1,0 +1,84 @@
+@use '../theme' as theme
+@use 'home'
+@use 'ledger/ledger'
+@use 'calendar/calendar'
+@use 'goals'
+@use 'tasks'
+@use 'life'
+
+slider
+  background-color: theme.$neutral-200
+
+.dashboard
+  transition: all 0.15s ease
+  font-family: theme.$font-stack
+  border-radius: theme.$border-radius
+
+  .placeholder-text
+    color: theme.$neutral-300
+
+  /* Navigate between tabs To the left of content */
+  .tab-bar
+    border-right: theme.$spacing-s solid theme.$neutral-900
+    min-width: 4rem
+    min-height: theme.$dashboard-height
+    background-color: theme.$neutral-800
+    border-top-left-radius: theme.$border-radius
+    border-bottom-left-radius: theme.$border-radius
+
+    .active
+      background-color: theme.$neutral-600
+      border-left: 2px solid theme.$neutral-100
+
+    :hover
+      transition: all 0.25s ease
+      background-color: theme.$neutral-600
+  
+    .tab-bar-entry
+      padding: 1rem
+      color: theme.$neutral-100
+  
+  /* Holds tab contents */
+  .tab-container
+    border-top-right-radius: theme.$border-radius
+    border-bottom-right-radius: theme.$border-radius
+    background-color: theme.$neutral-900
+    min-width: theme.$dashboard-width
+    min-height: calc(theme.$dashboard-height - (2 * theme.$spacing-s))
+    padding-right: theme.$spacing-s
+    padding-top: theme.$spacing-s
+    padding-bottom: theme.$spacing-s
+
+  .widget-container
+    background-color: theme.$neutral-800
+    border-radius: theme.$border-radius
+  
+    .widget-container-padding
+      padding: theme.$spacing-s
+  
+  .dash-widget-container
+    background-color: theme.$neutral-800
+    border-radius: theme.$border-radius
+  
+    .widget-container-padding
+      padding: theme.$spacing-s
+
+  .dashtab
+    .header
+      margin-top: 0.5rem
+      margin-bottom: 0.5rem
+      font-size: 2rem
+
+    .action-btn
+      background-color: theme.$neutral-700
+      border-radius: theme.$border-radius
+
+      &:hover
+        background-color: theme.$neutral-600
+
+/* Global stuff */
+.redtext
+  color: theme.$red-300
+
+.greentext
+  color: theme.$green-300

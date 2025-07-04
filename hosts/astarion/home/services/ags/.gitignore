@@ -1,0 +1,4 @@
+# .gitignore for astarion ags config
+
+userconfig.js
+sass/_colorscheme.sass

@@ -1,0 +1,79 @@
+
+@use '../../../theme/theme' as *
+
+/*********************************************************
+ * GENERAL
+ *********************************************************/
+
+.tasks
+  .indicator
+    min-width: 1rem
+
+/*********************************************************
+ * CATEGORY + SUBCATEGORY CONTAINERS
+ * (aka "Sidebar")
+ *********************************************************/
+
+.tasks .categorized .sidebar
+  min-width: 16rem
+
+  >
+    padding: 2rem
+    :not(:last-child)
+      margin-bottom: 1rem
+
+  .header
+    font-size: 1.4rem
+    font-weight: 600
+    margin-bottom: 0.2rem
+
+  .item
+    padding: 0.2rem
+
+  .active
+    color: $primary-500
+
+  .project
+    &:hover 
+      color: $primary-500
+
+  .expander
+    .icon
+      -gtk-icon-size: 0.8rem
+  
+/*********************************************************
+ * TASKLIST
+ *********************************************************/
+
+.tasks .categorized .tasklist
+  .header
+    font-size: 1.6rem
+
+  .subheader
+    color: $neutral-300
+
+  .task
+    padding: 0.3rem
+    transition: 0.2s all
+
+    .project
+      color: $neutral-300
+      min-width: 5rem
+
+    &.urgency-100 
+      color: $red-100
+
+    &.urgency-200 
+      color: $red-200
+
+    &.urgency-300 
+      color: $red-300
+
+    &.urgency-400 
+      color: $red-400
+
+    &.urgency-500 
+      color: $red-500
+
+    &:hover
+      color: $primary-500

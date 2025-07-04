@@ -1,0 +1,42 @@
+
+@use '../../theme/theme' as *
+
+.bar
+  padding: 0.75rem 0rem 0.75rem 0.75rem
+
+  .center
+    .workspaces
+      .workspace
+        padding: 0.25rem 0rem
+
+      .empty
+        color: $neutral-500
+
+      .focused
+        color: $primary-400
+
+  .bottom
+    .volume
+      scale
+        trough
+          border-color: $neutral-700
+          background-color: $neutral-700
+
+          fill
+            background-color: transparent
+
+          highlight
+            background-color: $primary-500
+
+    .battery
+      .charging
+        color: $green-300
+
+      // .critical
+      //   color: $red-300
+
+      // .low
+      //   color: $yellow-300
+
+    *:not(:last-child) 
+      padding-bottom: 0.5rem

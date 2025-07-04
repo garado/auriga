@@ -1,0 +1,60 @@
+@use 'theme' as theme
+
+.notrofi
+  background-color: theme.$neutral-800
+  color:            theme.$neutral-100
+  border-radius:    theme.$border-radius
+
+  .top-part
+    min-height:       14rem
+    min-width:        30rem
+    border-radius:    theme.$border-radius
+    background-size:      cover
+    background-position:  center
+    background-image:     theme.$img-notrofi
+
+    .entry-container
+      padding:          1rem
+      background-color: theme.$neutral-800
+
+      .entry
+        color:          theme.$neutral-100
+        min-width:      14rem
+        border-radius:  2px
+
+  .content
+    padding:        1rem
+    border-radius:  theme.$border-radius
+
+  .tab-container
+    padding-left:   1rem
+    padding-right:  1rem
+    padding-bottom: 1rem
+    border-radius:  theme.$border-radius
+
+    button
+      border-radius:    theme.$border-radius
+      padding-top:      0.7rem
+      padding-bottom:   0.7rem
+      background-color: theme.$neutral-700
+
+      &:hover, &:focus
+        background-color: theme.$primary-700
+
+    .active
+      background-color: theme.$primary-700
+  
+
+  // Style the app/client buttons
+  .item
+    background-color: theme.$neutral-800
+
+    &:hover, &:focus
+      border-color:     transparent
+      background-color: theme.$primary-700
+
+    .workspace-id
+      font-size:        0.8rem
+      min-width:        1.3rem
+      min-height:       1.3rem
+      background-color: theme.$neutral-500

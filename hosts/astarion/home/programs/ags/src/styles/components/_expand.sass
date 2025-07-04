@@ -1,0 +1,25 @@
+
+@use '../theme/theme' as *
+
+.expander
+  .tab
+    border-top-left-radius: $border-radius
+    border-top-right-radius: $border-radius
+    background-color: $neutral-700
+    padding: 0.6rem
+    transition: 0.25s all
+
+    &.revealed
+      border-bottom-left-radius: 0
+      border-bottom-right-radius: 0
+
+    &:not(.revealed)
+      border-bottom-left-radius: $border-radius
+      border-bottom-right-radius: $border-radius
+
+  .content-revealer
+    .content
+      padding: 0.6rem
+      background-color: $neutral-600
+      border-bottom-left-radius: $border-radius
+      border-bottom-right-radius: $border-radius

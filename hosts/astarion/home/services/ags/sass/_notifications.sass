@@ -1,0 +1,62 @@
+
+// █▄░█ █▀█ ▀█▀ █ █▀▀ █ █▀▀ ▄▀█ ▀█▀ █ █▀█ █▄░█ █▀
+// █░▀█ █▄█ ░█░ █ █▀░ █ █▄▄ █▀█ ░█░ █ █▄█ █░▀█ ▄█
+
+@use 'theme' as theme
+
+.notification-popups
+  font-family: theme.$font-stack
+  margin: 1rem
+  min-width: 22rem
+
+  .notification
+    min-width: 20rem
+    min-height: 4rem
+    background-color: theme.$neutral-900
+    border-top-left-radius: theme.$border-radius
+    border-top-right-radius: theme.$border-radius
+
+    .content
+      padding-top: 0.8rem
+      padding-left: 1.4rem
+      padding-right: 1.4rem
+
+      .title
+        font-weight: bold
+
+      .body
+
+      .actions
+
+      .app
+
+    .timeout
+      trough
+        min-height: 0.24rem
+        padding-top: 0.3rem
+        border-color: transparent
+
+        block.filled
+          border-color: transparent
+          border-bottom-left-radius: theme.$border-radius
+          border-bottom-right-radius: theme.$border-radius
+
+        block.empty
+          border-color: transparent
+          background-color: theme.$neutral-500
+          border-bottom-left-radius: theme.$border-radius
+          border-bottom-right-radius: theme.$border-radius
+
+// "Randomize" accent colors for app name and timeout bar
+// Doesn't work though
+@for $i from 1 through length(theme.$accents)
+  .notification-popups:nth-child( #{length(theme.$accents)}n + #{$i} )
+    .notification
+      .content
+        .app
+          color: nth(theme.$accents, $i)
+
+      .timeout
+        trough
+          block.filled
+            background-color: nth(theme.$accents, $i)
