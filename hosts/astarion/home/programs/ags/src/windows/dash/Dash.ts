@@ -9,7 +9,7 @@ import Ledger from "@/windows/dash/ledger/Ledger";
 import Calendar from "@/windows/dash/calendar/Calendar";
 import Goals from "@/windows/dash/goals/Goals";
 import Tasks from "@/windows/dash/tasks/Tasks";
-import { SmartStack } from "@/components/SmartStack";
+import { AnimatedStack } from "@/components/AnimatedStack";
 import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 /***********************************************************
@@ -97,10 +97,10 @@ const DashTabEntry = (tabData: DashTabData) =>
  * Holds tab content.
  */
 const DashTabStack = () =>
-  SmartStack({
+  AnimatedStack({
     name: "DashTabStack",
     cssClasses: ["tab-stack"],
-    bindNumberedSwitchTo: activeTabIndex,
+    activePageIndex: activeTabIndex,
     vertical: true,
     children: dashTabData,
   });

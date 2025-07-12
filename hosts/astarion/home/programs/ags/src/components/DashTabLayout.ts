@@ -7,7 +7,7 @@
 import { Gtk, Gdk, Widget } from "astal/gtk4";
 import { bind, Variable } from "astal";
 import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
-import { SmartStack } from "@/components/SmartStack";
+import { AnimatedStack } from "@/components/AnimatedStack";
 
 export type DashLayoutAction = {
   name: string;
@@ -54,10 +54,10 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
     endWidget: PageButtonContainer(),
   });
 
-  const PageStack = SmartStack({
+  const PageStack = AnimatedStack({
     cssClasses: [...["page-stack"], ...dashLayout.cssClasses],
     children: dashLayout.pages,
-    bindNamedSwitchTo: activePage,
+    activePageName: activePage,
   });
 
   /**
