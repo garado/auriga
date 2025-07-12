@@ -15,14 +15,14 @@
  *****************************************************************************/
 
 import { Gtk, Widget } from "astal/gtk4";
-import { Binding } from "astal";
+import { Variable } from "astal";
 import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
 /*****************************************************************************
  * Interfaces
  *****************************************************************************/
 
-interface StackChild extends Gtk.Stack {
+export interface AnimatedStackChild extends Gtk.Stack {
   ui: () => Gtk.Widget;
   name: string;
 }
@@ -37,11 +37,11 @@ interface AnimatedStackWidget extends Gtk.Stack {
 
 export const AnimatedStack = (props: {
   name?: string;
-  children: Array<StackChild>;
+  children: Array<AnimatedStackChild>;
   vertical?: boolean;
   cssClasses?: Array<string>;
-  activePageName?: Binding<string>;
-  activePageIndex?: Binding<number>;
+  activePageName?: Variable<string>;
+  activePageIndex?: Variable<number>;
 }) => {
   const defaultTransition = props.vertical
     ? Gtk.StackTransitionType.SLIDE_DOWN
@@ -118,9 +118,9 @@ export const AnimatedStack = (props: {
 
     // @TODO Why does LSP complain if `as any` is removed
     if (props.activePageIndex) {
-      (props.activePageIndex as any).set(newIndex);
+      props.activePageIndex.set(newIndex);
     } else if (props.activePageName) {
-      (props.activePageName as any).set(props.children[newIndex].name);
+      props.activePageName.set(props.children[newIndex].name);
     }
   };
 
