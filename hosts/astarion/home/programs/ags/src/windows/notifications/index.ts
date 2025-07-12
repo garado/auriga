@@ -1,5 +1,5 @@
 import { bind, timeout } from "astal";
-import { App, Astal, Gtk, Widget } from "astal/gtk4";
+import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 import { Notification } from "@/components/Notification";
 import Nd from "gi://AstalNotifd";
 
@@ -43,7 +43,7 @@ const Notifications = () =>
     },
   });
 
-export default () => {
+export default (monitor: Gdk.Monitor) => {
   const { TOP, RIGHT } = Astal.WindowAnchor;
 
   return Widget.Window({
@@ -54,6 +54,7 @@ export default () => {
     anchor: TOP | RIGHT,
     visible: bind(nd, "notifications").as((n) => n.length > 0),
     child: Notifications(),
+    gdkmonitor: monitor,
     setup: (self) => {
       /* Workaround for revealer bug.
        * https://github.com/wmww/gtk4-layer-shell/issues/60 */

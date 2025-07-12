@@ -98,12 +98,15 @@ App.start({
     res("Unhandled command");
   },
   main() {
+    // One instance per monitor
     App.get_monitors().map(Bar);
-    App.get_monitors().map(Dash);
-    App.get_monitors().map(Utility);
-    App.get_monitors().map(Control);
-    App.get_monitors().map(Launcher);
     App.get_monitors().map(Notifications);
+
+    // These pop up on the same monitor as the cursor
+    Dash();
+    Utility();
+    Control();
+    Launcher();
   },
 });
 

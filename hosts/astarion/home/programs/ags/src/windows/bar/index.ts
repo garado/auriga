@@ -9,7 +9,7 @@
  * Imports
  *****************************************************************************/
 
-import { App, Astal, Gtk, Widget } from "astal/gtk4";
+import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 import { Variable, bind, timeout } from "astal";
 import Battery from "gi://AstalBattery";
 import Hyprland from "gi://AstalHyprland";
@@ -212,7 +212,7 @@ const Bottom = () =>
     children: [VolumeSlider(), BatteryIndicator(), Time()],
   });
 
-export default () => {
+export default (monitor: Gdk.Monitor) => {
   const { TOP, LEFT, BOTTOM } = Astal.WindowAnchor;
 
   return Widget.Window({
@@ -221,6 +221,7 @@ export default () => {
     exclusivity: Astal.Exclusivity.EXCLUSIVE,
     application: App,
     name: "bar",
+    gdkmonitor: monitor,
 
     child: Widget.CenterBox({
       orientation: 1,
