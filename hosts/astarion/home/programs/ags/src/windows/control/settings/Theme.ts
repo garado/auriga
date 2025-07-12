@@ -1,11 +1,11 @@
 /* ▀█▀ █░█ █▀▀ █▀▄▀█ █▀▀ */
 /* ░█░ █▀█ ██▄ █░▀░█ ██▄ */
 
+import Gio from "gi://Gio";
 import { Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
-import Gio from "gi://Gio";
 
-import Settings from "@/services/Settings.ts";
+import Settings, { Theme as ThemeInterface } from "@/services/Settings.ts";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 
 const Picture = astalify(Gtk.Picture);
@@ -23,7 +23,11 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       cursor: Gdk.Cursor.new_from_name("pointer", null),
       valign: Gtk.Align.CENTER,
       children: [
-        PreviewImage(settings.availableThemes[themeName].preview),
+        PreviewImage(
+          (settings.availableThemes as Record<string, ThemeInterface>)[
+            themeName
+          ].preview,
+        ),
         ThemeInfoBar(themeName),
       ],
       onButtonPressed: () => {
@@ -36,9 +40,11 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       cssClasses: ["preview-image"],
       hexpand: true,
       vexpand: true,
-      file: Gio.File.new_for_path(file),
-      contentFit: Gtk.ContentFit.CONTAIN,
-      canShrink: false,
+      setup: (self) => {
+        self.set_file(Gio.File.new_for_path(file));
+        self.set_content_fit(Gtk.ContentFit.CONTAIN);
+        self.set_can_shrink(false);
+      },
     });
 
   const ThemeInfoBar = (themeName: string) =>
@@ -50,7 +56,7 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       }),
       endWidget: Widget.Image({
         iconName: "check-symbolic",
-        visible: bind(settings, "current-theme").as(
+        visible: bind(settings, "currentTheme").as(
           (currentTheme: string) => currentTheme === themeName,
         ),
       }),
@@ -58,7 +64,7 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
 
   return ExpansionPanel({
     icon: "palette-symbolic",
-    label: bind(settings, "current-theme"),
+    label: bind(settings, "currentTheme"),
     children: Object.keys(settings.availableThemes).map(ThemeButton),
     vertical: true,
     globalRevealerState: globalRevealerState,
