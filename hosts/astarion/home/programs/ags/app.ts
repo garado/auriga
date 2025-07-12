@@ -1,6 +1,5 @@
 import { Gtk, App } from "astal/gtk4";
 import { exec } from "astal/process";
-import { monitorFile } from "astal/file";
 import { timeout } from "astal/time";
 
 import "@/globals.ts";
