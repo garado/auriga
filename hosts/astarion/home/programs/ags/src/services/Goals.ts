@@ -1,12 +1,21 @@
+/* █▀▀ █▀█ ▄▀█ █░░ █▀ */
+/* █▄█ █▄█ █▀█ █▄▄ ▄█ */
+
+/* Service for interacting with goals, which are stored in Taskwarrior. */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { GObject, register, property, signal } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import { Levenshtein } from "@/utils/FuzzyFind.js";
 import UserConfig from "../../userconfig.js";
 
-/**********************************************
- * PUBLIC TYPEDEFS
- **********************************************/
+/*****************************************************************************
+ * Types/interfaces
+ *****************************************************************************/
 
 export interface Annotation {
   entry: string;
@@ -55,10 +64,6 @@ export class Goal {
   }
 }
 
-/**********************************************
- * PRIVATE TYPEDEFS
- **********************************************/
-
 interface Filters {
   pending: boolean;
   completed: boolean;
@@ -70,20 +75,20 @@ interface Filters {
   longterm: boolean;
   aspirational: boolean;
 }
-/**********************************************
- * UTILITY
- **********************************************/
 
-/**********************************************
- * CLASS DEFINITION
- **********************************************/
+/*****************************************************************************
+ * Module level variables
+ *****************************************************************************/
+
+const LEVENSHTEIN_MATCH_THRESHOLD = 20;
+
+/*****************************************************************************
+ * Class definition
+ *****************************************************************************/
 
 @register({ GTypeName: "Goals" })
 export default class Goals extends GObject.Object {
-  /**************************************************
-   * SET UP SINGLETON
-   **************************************************/
-
+  // Set up singleton ---------------------------------------------------------
   static instance: Goals;
 
   static get_default() {
@@ -94,10 +99,7 @@ export default class Goals extends GObject.Object {
     return this.instance;
   }
 
-  /**************************************************
-   * PROPERTIES
-   **************************************************/
-
+  // Properties ---------------------------------------------------------------
   private dataDirectory: string;
 
   @property(Object)
@@ -126,10 +128,7 @@ export default class Goals extends GObject.Object {
   @signal(Object)
   declare renderGoals: (data: any) => void;
 
-  /**************************************************
-   * PRIVATE FUNCTIONS
-   **************************************************/
-
+  // Private functions --------------------------------------------------------
   constructor() {
     super({
       filters: {
@@ -151,7 +150,8 @@ export default class Goals extends GObject.Object {
   }
 
   /**
-   * Insert goal.
+   * Insert goal into tree of parsed goals.
+   * @param {Goal} goal the goal to insert
    */
   #insertGoal = (goal: Goal) => {
     if (goal.project == undefined) {
@@ -163,10 +163,7 @@ export default class Goals extends GObject.Object {
 
     const category = goal.project;
 
-    /* Initialize fields */
-
-    /* Set image path (path may or may not exist) */
-    /* Path is: <splashDirectory>/<category>/#<uuidShort>.jpg */
+    // Set image path (path may or may not exist). Path is: <splashDirectory>/<category>/#<uuidShort>.jpg
     const uuidShort = goal.uuid.substring(0, 8);
     goal.imgpath = `${UserConfig.goals.splash}/${category}/#${uuidShort}.jpg`;
 
@@ -179,8 +176,7 @@ export default class Goals extends GObject.Object {
 
     goal.children = [];
 
-    /* If this is a new category, then create the root node for it
-     * And insert this goal as a child */
+    // If this is a new category, then create the root node for it, and insert this goal as a child
     if (this.data[category] == undefined) {
       log(
         "goalService",
@@ -200,32 +196,31 @@ export default class Goals extends GObject.Object {
       return;
     }
 
-    /* Is it a child of any existing goals? */
+    // Is it a child of any existing goals?
     const parent = this.#isDependency(goal);
 
     if (parent) {
-      /* If it is: Insert into the parent. */
+      // If it is: Insert into the parent.
       goal.parent = parent;
       parent.children.push(goal);
       return;
     } else {
-      /* If is it not: Insert at top level. */
+      // If is it not: Insert at top level.
       goal.parent = this.data[category];
       this.data[category].children.push(goal);
     }
 
-    /* Is it a parent of any existing goals? */
+    // Is it a parent of any existing goals?
     const foundChildren: Array<Goal> = [];
     this.#findDependencies(goal, foundChildren);
 
     if (foundChildren) {
-      /* If the current goal is a parent:
-       * Remove the found child from its existing parent. */
+      // If the current goal is a parent: Remove the found child from its existing parent.
       foundChildren.forEach((child: Goal) => {
         const indexWithinPreviousParent = child.parent!.children.indexOf(child);
         child.parent!.children.splice(indexWithinPreviousParent, 1);
 
-        /* Insert the found child into the current goal. */
+        // Insert the found child into the current goal.
         child.parent = goal;
         goal.children.push(child);
       });
@@ -233,7 +228,7 @@ export default class Goals extends GObject.Object {
   };
 
   /**
-   * Sort in this order:
+   * Sort everything in the goals tree in this order:
    *  - due date
    *  - completion percentage
    *  - alphabetical (description)
@@ -256,10 +251,13 @@ export default class Goals extends GObject.Object {
 
   /**
    * Check if goal is failed.
-   * Taskwarrior statuses only support 'pending' or 'completed'
-   * A failed task in my TW setup is recorded as 'completed' but has an
-   * annotation saying 'failed'.
+   *
+   * NOTE:
+   * Taskwarrior statuses only support 'pending' or 'completed'.
+   * A failed task in my TW setup is recorded as 'completed' but has an annotation saying 'failed'.
    * This program uses 3 statuses: pending, completed, and failed
+   *
+   * @param {Goal} goal - The goal to check.
    */
   #isTaskFailed = (goal: Goal) => {
     // if (goal.status == "completed" && goal.annotations != undefined) {
@@ -273,8 +271,10 @@ export default class Goals extends GObject.Object {
   };
 
   /**
-   * Check if the given goal is a child of any other goals that
-   * were already inserted.
+   * Check if the given goal is a child of any other goals that were already inserted.
+   *
+   * @param {Goal} goal - determine if this goal is a child
+   * @param {Goal} nodeToSearch - where to start the child search
    */
   #isDependency = (goal: Goal, nodeToSearch?: Goal): null | Goal => {
     if (nodeToSearch == undefined) {
@@ -297,8 +297,10 @@ export default class Goals extends GObject.Object {
   };
 
   /**
-   * Check if the given goal is the parent of any other goals
-   * that were already inserted.
+   * Check if the given goal is the parent of any other goals that were already inserted.
+   * @param {Goal} goal
+   * @param {Array<Goal} foundChildren
+   * @param {Goal} nodeToSearch
    */
   #findDependencies = (
     goal: Goal,
@@ -321,9 +323,7 @@ export default class Goals extends GObject.Object {
     }
   };
 
-  /**************************************************
-   * PUBLIC FUNCTIONS
-   **************************************************/
+  // Public functions ---------------------------------------------------------
 
   /**
    * Fetch and store all goals.
@@ -346,8 +346,9 @@ export default class Goals extends GObject.Object {
   };
 
   /**
-   * Return the children of a given node which satisfy the
-   * currently active uifilters.
+   * Check if a given goal matches the currently applied UI filters.
+   * @param {Goal} goal - the goal to check
+   * @returns boolean - TRUE if given goal matches filter; FALSE otherwise
    */
   isMatching = (goal: Goal): boolean => {
     const statusMatch =
@@ -369,10 +370,10 @@ export default class Goals extends GObject.Object {
 
     if (this.search) {
       const descScore = Levenshtein(goal.description, this.search);
-      descriptionMatch = descScore < 20;
+      descriptionMatch = descScore < LEVENSHTEIN_MATCH_THRESHOLD;
 
       const catScore = Levenshtein(goal.project, this.search);
-      categoryMatch = catScore < 20;
+      categoryMatch = catScore < LEVENSHTEIN_MATCH_THRESHOLD;
     }
 
     return statusMatch && stateMatch && descriptionMatch;
@@ -387,7 +388,6 @@ export default class Goals extends GObject.Object {
   categorySort = (a: Goal, b: Goal): number => {
     if (a.project !== b.project) {
       return a.project > b.project ? -1 : 1;
-    } else if (false) {
     } else if (a.description != b.description) {
       return a.description > b.description ? -1 : 1;
     }
@@ -404,7 +404,7 @@ export default class Goals extends GObject.Object {
     if (a.due !== b.due) {
       return a.due > b.due ? 1 : -1;
     } else if (false) {
-      /* TODO: By completion percentage */
+      // @TODO: By completion percentage
     } else if (a.description != b.description) {
       return a.description > b.description ? -1 : 1;
     }
@@ -415,17 +415,13 @@ export default class Goals extends GObject.Object {
     this.notify("filters");
   };
 
-  /**************************************************
-   * PUBLIC MOD FUNCTIONS
-   **************************************************/
-
   /**
    * Modify a goal.
    * @param {Goal} goal - goal to modify
    * @param {string} modType - the property to modify
    * @param {string} value - the new property value to set
    *
-   * note: quote escaping not handled properly
+   * Note: quote escaping not handled properly.
    */
   modify = (goal: Goal, modType: string, value: string) => {
     const cmd = `task rc.data.location="${this.dataDirectory}" ${goal.uuid} modify ${modType}:"${value}"`;
