@@ -1,37 +1,38 @@
 /* █░█ █░░ █▀▀ █▀▄ █▀▀ █▀▀ █▀█ */
 /* █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄ */
 
+/* Service for interfacing with hledger. */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
 import Gio from "gi://Gio";
-import UserConfig from "../../userconfig.js";
 
-const INCLUDES = " -f /home/alexis/Enchiridion/self/ledger/2024/2024.ledger ";
+import { log } from "@/globals.ts";
+
+import UserConfig from "../../userconfig.js";
+import { Binding } from "astal";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const CSV = " --output-format csv ";
 const BALANCE_TREND_CACHEFILE = "/tmp/ags/ledgerbal";
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+const INCLUDES = UserConfig.ledger.includes
+  .map((file: string) => `-f "${file.replace(/"/g, '\\"')}"`)
+  .join(" ");
 
-/**********************************************
- * PUBLIC TYPEDEFS
- **********************************************/
-
-export type DisplayAccountProps = {
-  displayName: string;
-  total: Number | Binding<Number>;
-};
+/*****************************************************************************
+ * Types/interfaces
+ *****************************************************************************/
 
 export type DebtsLiabilitiesProps = {
   desc: string;
-  total: string;
-};
-
-export type TransactionData = {
-  txnidx: string;
-  date: string;
-  code: string;
-  desc: string;
-  account: string;
-  amount: string;
   total: string;
 };
 
@@ -42,28 +43,80 @@ export interface CategorySpend {
 
 // { "2025-01": CategorySpend, "2025-02": CategorySpend, ... }
 type MonthlySpending = Record<string, CategorySpend>;
+
 type CategoryTotals = Record<string, number[]>; // { "Food": [JanTotal, FebTotal, ...], "Transport": [...] }
 
-/**********************************************
- * PRIVATE TYPEDEFS
- **********************************************/
+// REWRITTEN INTERFACES ----------------------------
 
 /**
- * Order of fields from `hledger register` CSV output.
+ * @interface
  */
-enum HLedgerRegCSV {
-  TxnIdx,
-  Date,
-  Code,
-  Desc,
-  Account,
-  Amount,
-  Total,
+export interface AccountConfig {
+  accountName: string;
+  displayName: string;
 }
 
-/**********************************************
- * UTILITY
- **********************************************/
+/**
+ * @interface
+ */
+export interface Account {
+  displayName: string;
+  total: Number | Binding<Number>;
+}
+
+export interface TransactionData {
+  txnidx: string;
+  date: string;
+  code: string;
+  desc: string;
+  account: string;
+  amount: string;
+  total: string;
+}
+
+/**
+ * Define types for data parsed from a line from `hledger register` CSV output.
+ * @interface
+ * @name HLedgerRegisterRow
+ */
+interface HLedgerRegisterRow {
+  txnidx: string;
+  date: string;
+  code: string;
+  desc: string;
+  account: string;
+  amount: string;
+  total: string;
+}
+
+/**
+ * Order of fields in a line from `hledger register` CSV output.
+ * @enum
+ * @name HLedgerRegisterFields
+ */
+enum HLedgerRegisterFields {
+  txnidx,
+  date,
+  code,
+  desc,
+  account,
+  amount,
+  total,
+}
+
+interface HLedgerBalanceRow {
+  account: string;
+  balance: string;
+}
+
+enum HLedgerBalanceFields {
+  account,
+  balance,
+}
+
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 const getLastNMonthsDays = (n: number) => {
   const now = new Date();
@@ -165,16 +218,13 @@ const recursiveSubtotalSum = (category: CategorySpend): number => {
   return subtotal ?? 0;
 };
 
-/**********************************************
- * CLASS DEFINITION
- **********************************************/
+/*****************************************************************************
+ * Class definition
+ *****************************************************************************/
 
 @register({ GTypeName: "Ledger" })
 export default class Ledger extends GObject.Object {
-  /**************************************************
-   * SET UP SINGLETON
-   **************************************************/
-
+  // Singleton -----------------------------------------------------------------
   static instance: Ledger;
 
   static get_default() {
@@ -185,15 +235,12 @@ export default class Ledger extends GObject.Object {
     return this.instance;
   }
 
-  /**************************************************
-   * PROPERTIES
-   **************************************************/
-
+  // Properties ----------------------------------------------------------------
   @property(Object)
   declare balancesOverTime: Array<Number>;
 
   @property(Object)
-  declare displayAccounts: Array<DisplayAccountProps>;
+  declare displayAccounts: Array<Account>;
 
   @property(Object)
   declare transactions: Array<TransactionData>;
@@ -216,24 +263,22 @@ export default class Ledger extends GObject.Object {
   @property(Object)
   declare monthlySpendingByCategory: Object;
 
-  /**************************************************
-   * PRIVATE FUNCTIONS
-   **************************************************/
-
+  // Private main functions ----------------------------------------------------
   constructor() {
-    super({
-      displayAccounts: [],
-      netWorth: 0,
-      incomeThisMonth: 0,
-      expensesThisMonth: 0,
-      debtsLiabilities: {},
-      monthlyBreakdown: [],
-      balancesOverTime: [],
-      monthlySpendingByCategory: {
-        subcategories: {},
-        subtotal: [0],
-      },
-    } as any);
+    super();
+
+    // Default values
+    this.displayAccounts = [];
+    this.netWorth = 0;
+    this.incomeThisMonth = 0;
+    this.expensesThisMonth = 0;
+    this.debtsLiabilities = {};
+    this.monthlyBreakdown = [];
+    this.balancesOverTime = [];
+    this.monthlySpendingByCategory = {
+      subcategories: {},
+      subtotal: [0],
+    };
 
     this.initAll();
   }
@@ -315,45 +360,111 @@ export default class Ledger extends GObject.Object {
   }
 
   /**
-   * Initialize account data for the accounts defined in UserConfig.
+   * Initialize account balance data for accounts defined in UserConfig.
+   * Fetches current balances from hledger and converts them to display format.
    *
-   * Raw output for each account:
-   *      "account","balance"
-   *      "Assets:Checking:NFCU","$11064.66"
-   *      "total","$11064.66"
+   * This method:
+   * 1. Builds hledger balance commands for each configured account
+   * 2. Executes commands in parallel for better performance
+   * 3. Parses CSV output and converts to Account format
+   * 4. Updates the displayAccounts property with results
    *
-   * This gets transformed into:
-   *      a DisplayAccountProps instance
+   * @private
+   * @returns void
+   *
+   * @example
+   * Raw hledger output for each account:
+   * ```
+   * "account","balance"
+   * "Assets:Checking","$11064.66"
+   * "total","$11064.66"
+   * ```
+   *
+   * Gets transformed into:
+   * ```typescript
+   * {
+   *   displayName: "Checking Account",
+   *   total: 11064.66
+   * }
+   * ```
    */
   #initAccountData() {
-    const commands = UserConfig.ledger.accountList.map((accountData) => {
-      /* use `--infer-market-prices -X '$'` to convert shares to $ */
-      return `hledger ${INCLUDES} balance "${accountData.accountName}" ${CSV} -X "$" --infer-market-prices`;
-    });
+    // Build hledger commands for each account
+    const commands = UserConfig.ledger.accountList.map(
+      (accountData: AccountConfig) => {
+        // use `--infer-market-prices -X '$'` to convert shares to $
+        return `hledger ${INCLUDES} balance "${accountData.accountName}" ${CSV} -X "$" --infer-market-prices`;
+      },
+    );
 
-    const promises = commands.map(async (cmd) => {
+    // Execute all commands in parallel
+    const promises = commands.map(async (cmd: string) => {
       return execAsync(`bash -c '${cmd}'`);
     });
 
     Promise.all(promises)
-      .then((result) => {
-        const tmpDisplayAccounts: DisplayAccountProps[] = [];
+      .then((results) => {
+        const tmpAccountData: Array<Account> = [];
 
+        // Process each account's result
         for (let i = 0; i < UserConfig.ledger.accountList.length; i++) {
-          const lines = result[i].replaceAll('"', "").split("\n");
-          const totalStr = lines[lines.length - 1].split(",").pop();
+          const accountConfig = UserConfig.ledger.accountList[i];
 
-          const output: DisplayAccountProps = {
-            displayName: UserConfig.ledger.accountList[i].displayName,
-            total: Number(totalStr.replace("$", "")) || 0,
-          };
+          try {
+            const balanceRows = this.parseBalanceCSV(results[i]);
 
-          tmpDisplayAccounts.push(output);
+            if (balanceRows.length === 0) {
+              console.warn(
+                `No balance data found for account: ${accountConfig.displayName}`,
+              );
+              tmpAccountData.push({
+                displayName: accountConfig.displayName,
+                total: 0,
+              });
+              continue;
+            }
+
+            // Get the total row (should be the last row)
+            const totalRow =
+              balanceRows.find((row) => row.account === "total") ||
+              balanceRows[balanceRows.length - 1];
+
+            const balance = this.parseAmount(totalRow.balance);
+
+            const output: Account = {
+              displayName: accountConfig.displayName,
+              total: balance,
+            };
+
+            tmpAccountData.push(output);
+          } catch (parseError) {
+            console.error(
+              `Failed to parse balance data for account ${accountConfig.displayName}:`,
+              parseError,
+            );
+
+            // Add account with 0 balance as fallback to prevent UI breakage
+            tmpAccountData.push({
+              displayName: accountConfig.displayName,
+              total: 0,
+            });
+          }
         }
 
-        this.displayAccounts = tmpDisplayAccounts;
+        // Update the property with all results
+        this.displayAccounts = tmpAccountData;
+
+        log(
+          "ledgerService",
+          `#initAccountData: Successfully loaded ${tmpAccountData.length} account balances`,
+        );
       })
-      .catch((err) => print(`initAccountData: ${err}`));
+      .catch((err) => {
+        console.error(`Failed to fetch account data:`, err);
+
+        // Set empty array as fallback to prevent UI crashes
+        this.displayAccounts = [];
+      });
   }
 
   /**
@@ -427,15 +538,17 @@ export default class Ledger extends GObject.Object {
         lines.map((line) => {
           const fields = line.split(",");
 
-          const account = fields[HLedgerRegCSV.Account];
+          const account = fields[HLedgerRegisterFields.account];
 
           if (tmp[account] == undefined) {
             tmp[account] = [];
           }
 
           tmp[account].push({
-            desc: fields[HLedgerRegCSV.Desc],
-            total: Number(fields[HLedgerRegCSV.Amount].replace("$", "")),
+            desc: fields[HLedgerRegisterFields.desc],
+            total: Number(
+              fields[HLedgerRegisterFields.amount].replace("$", ""),
+            ),
           });
         });
 
@@ -491,12 +604,12 @@ export default class Ledger extends GObject.Object {
 
         /* This takes the raw CSV output and turns it into an array of
          * TransactionData objects, where the object keys are the fields of the
-         * HLedgerRegCSV enum. */
+         * HLedgerRegisterFields enum. */
         this.transactions = out.map((line) => {
           line = line.split(",");
 
           return Object.fromEntries(
-            Object.keys(HLedgerRegCSV)
+            Object.keys(HLedgerRegisterFields)
               .filter((k) => isNaN(Number(k))) /* exclude numeric keys */
               .map((key, index) => [key.toLowerCase(), line[index]]),
           );
@@ -612,4 +725,56 @@ export default class Ledger extends GObject.Object {
         print(`calculateMonthlySpend (${first} - ${last}): ${err}`),
       );
   };
+
+  // Private helper functions --------------------------------------------------
+
+  /**
+   * Parses CSV output from hledger balance command into structured data.
+   *
+   * @param csvOutput - Raw CSV string from hledger balance command
+   * @returns Array of parsed balance rows
+   * @throws {Error} When CSV output is invalid or malformed
+   */
+  parseBalanceCSV(csvOutput: string): HLedgerBalanceRow[] {
+    if (!csvOutput || typeof csvOutput !== "string") {
+      throw new Error("Invalid CSV output");
+    }
+
+    const lines = csvOutput.replaceAll('"', "").split("\n");
+    const dataLines = lines.slice(1).filter((line) => line.trim() !== ""); // Skip header, remove empty lines
+
+    return dataLines.map((line) => {
+      const fields = line.split(",");
+      if (fields.length < 2) {
+        throw new Error(`Invalid balance CSV row: ${line}`);
+      }
+      return {
+        account: fields[0],
+        balance: fields[1],
+      };
+    });
+  }
+
+  /**
+   * Parses a monetary amount string into a numeric value.
+   * Handles various currency symbols and formatting.
+   *
+   * @param amountStr - String representation of monetary amount (e.g., "$1,234.56", "€500.00")
+   * @returns Numeric value of the amount, or 0 if parsing fails
+   */
+  parseAmount(amountStr: string): number {
+    if (!amountStr || typeof amountStr !== "string") {
+      return 0;
+    }
+
+    const cleaned = amountStr.replace(/[^0-9.-]/g, "");
+    const parsed = Number(cleaned);
+
+    if (isNaN(parsed)) {
+      console.warn(`Failed to parse amount: "${amountStr}"`);
+      return 0;
+    }
+
+    return parsed;
+  }
 }
