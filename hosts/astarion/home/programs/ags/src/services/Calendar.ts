@@ -26,6 +26,7 @@
 
 import { GObject, register, property, signal } from "astal/gobject";
 import { exec, execAsync } from "astal/process";
+import { log } from "@/globals";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -95,13 +96,8 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 const TMPFILE = "/tmp/ags/gcalcli";
 
-/**
- * The user's UTC offset.
- *
- * date +%z returns "-0700" for UTC-7, so there's extra math to
- * convert that string to a usable integer.
- */
-const USER_UTC_OFFSET = Number(exec("date +%z")) / 100;
+// The user's UTC offset.
+const USER_UTC_OFFSET = new Date().getTimezoneOffset() / -60;
 
 /**********************************************
  * CLASS DEFINITION
@@ -128,13 +124,13 @@ export default class Calendar extends GObject.Object {
    **************************************************/
 
   @property(String)
-  declare today: String;
+  declare today: string;
 
   @property(Object)
-  declare viewrange: Array<String>;
+  declare viewrange: Array<string>;
 
   @property(Object)
-  declare viewdata: Object;
+  declare viewdata: Record<string, Array<Event>>;
 
   @signal(Object, Object)
   declare viewrangeChanged: (
@@ -185,27 +181,37 @@ export default class Calendar extends GObject.Object {
    */
   #parseEventFromTSV(line: string) {
     const rawData = line.trim().split("\t");
-    const event = {};
 
-    /* Populate event data with information parsed from TSV */
-    for (let i = 0; i < rawData.length; i++) {
-      event[GcalcliCSVEnum[i]] = rawData[i];
+    if (rawData.length < Object.keys(GcalcliCSVEnum).length / 2) {
+      return null; // Invalid data
     }
 
+    const event: Partial<Event> = {};
+
+    // Populate event data with information parsed from TSV
+    event.startDate = rawData[GcalcliCSVEnum.startDate];
+    event.startTime = rawData[GcalcliCSVEnum.startTime];
+    event.endDate = rawData[GcalcliCSVEnum.endDate];
+    event.endTime = rawData[GcalcliCSVEnum.endTime];
+    event.description = rawData[GcalcliCSVEnum.description];
+    event.location = rawData[GcalcliCSVEnum.location];
+    event.calendar = rawData[GcalcliCSVEnum.calendar];
+
+    // Populate inferred data
     event.multiDay = event.startDate != event.endDate;
     event.allDay = event.startTime == "" && event.endTime == "";
     event.startedBeforeThisWeek = !this.viewrange.includes(event.startDate);
     event.endsAfterThisWeek = !this.viewrange.includes(event.endDate);
 
     if (event.multiDay || event.allDay) {
-      return event;
+      return event as Event; // No need to populate the rest
     }
 
-    /* Get unix epoch timetamps */
+    // Get unix epoch timetamps
     event.startTS = new Date(`${event.startDate} ${event.startTime}`).getTime();
     event.endTS = new Date(`${event.endDate} ${event.endTime}`).getTime();
 
-    /* Get fractional hours. 5:30PM -> 17.5; 9:15AM -> 9.25 */
+    // Get fractional hours. 5:30PM -> 17.5; 9:15AM -> 9.25
     const startRe = /(\d\d):(\d\d)/.exec(event.startTime);
     event.startFH = Number(startRe[1]) + Number(startRe[2]) / 60;
 
@@ -214,7 +220,7 @@ export default class Calendar extends GObject.Object {
 
     event.durationFH = (event.endTS - event.startTS) / (60 * 60 * 1000);
 
-    return event;
+    return event as Event;
   }
 
   constructor() {
@@ -234,18 +240,19 @@ export default class Calendar extends GObject.Object {
   /**
    * Given a start date YYYY-MM-DD, figure out the new viewrange and grab
    * data for the new viewrange.
+   * @param {string} dateStr The date to set the viewrange to.
    */
-  #setNewViewrange(date: string) {
-    log("calService", `#setNewViewrange: Starting ${date}`);
+  #setNewViewrange(dateStr: string) {
+    log("calService", `#setNewViewrange: Starting ${dateStr}`);
 
     this.viewrange = [];
     this.viewdata = {};
 
-    /* Initialize the timestamp to the Sunday of the given week */
-    date = new Date(date);
-    let ts = date.setDate(date.getUTCDate() - date.getUTCDay());
-    log("calService", `#setNewViewrange: Timestamp is ${new Date(ts)}`);
+    // Initialize the timestamp to the Sunday of the given week
+    const date = new Date(dateStr);
 
+    // Determine the days in that week
+    let ts = date.setDate(date.getUTCDate() - date.getUTCDay());
     for (let i = 0; i < 7; i++) {
       const localDate = new Date(ts);
       const dateStr = this.getDateStr(localDate);
@@ -260,8 +267,7 @@ export default class Calendar extends GObject.Object {
   /**
    * Read cached data from cache and save to this.viewdata for displaying
    *
-   * @param dates Array of strings (YYYY-MM-DD) which represent the dates to
-   *              whose data to fetch from the cache.
+   * @param dates Array of strings (YYYY-MM-DD) which represent the dates to whose data to fetch from the cache.
    */
   #readCache(dates: Array<String>) {
     log("calService", `#readCache: ${dates}`);
@@ -296,9 +302,9 @@ export default class Calendar extends GObject.Object {
 
   /**
    * Parse TSV data from cachefile.
-   * @param out Raw TSV from cachefile.
+   * @param {string} out Raw TSV from cachefile.
    */
-  #parseData(out) {
+  #parseData(out: string) {
     log("calService", "#parseData: Parsing data");
 
     out.split("\n").forEach((eventLine) => {
@@ -319,7 +325,11 @@ export default class Calendar extends GObject.Object {
     this.emit("viewrange-changed", this.viewrange, this.viewdata);
   }
 
-  #sortEvents(events) {
+  /**
+   * Sort an array of events.
+   * @param {Array<Event>} events Events to sort.
+   */
+  #sortEvents(events: Array<Event>) {
     return events.sort(function (a, b) {
       if (a.startFH < b.startFH) return -1;
       if (a.startFH > b.startFH) return 1;
