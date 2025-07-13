@@ -22,7 +22,7 @@ import { setupEventController } from "@/utils/EventControllerKeySetup";
  * Interfaces
  *****************************************************************************/
 
-export interface AnimatedStackChild extends Gtk.Stack {
+export interface AnimatedStackChild {
   ui: () => Gtk.Widget;
   name: string;
 }

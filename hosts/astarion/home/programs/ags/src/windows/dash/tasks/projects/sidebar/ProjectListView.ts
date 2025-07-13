@@ -2,17 +2,40 @@
  * █▀█ █▀█ █▀█ ░░█ █▀▀ █▀▀ ▀█▀   █░░ █ █▀ ▀█▀   █░█ █ █▀▀ █░█░█
 /* █▀▀ █▀▄ █▄█ █▄█ ██▄ █▄▄ ░█░   █▄▄ █ ▄█ ░█░   ▀▄▀ █ ██▄ ▀▄▀▄▀
  * 
- * Convert TaskWarrior project hierarchy of type Tree<Project>
- * into a list view widget
+ * Convert TaskWarrior project hierarchy (Tree<Project>) into a ListView widget
  */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { Project } from "@/services/Tasks";
 import { Gio, GObject } from "astal";
 import { Gtk, Widget } from "astal/gtk4";
 import Ts from "@/services/Tasks";
 import Tree, { TreeNode } from "@/utils/Tree";
+import Pango from "gi://Pango?version=1.0";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const ts = Ts.get_default();
+
+/*****************************************************************************
+ * Types, interfaces, classes
+ *****************************************************************************/
+
+/**
+ * Interface for the GProjectNode instances
+ */
+interface GProjectNodeInterface {
+  data: Project;
+  hasChildren: boolean;
+  depth: number;
+  _node: TreeNode<Project>;
+  getChildNodes(): TreeNode<Project>[];
+}
 
 /**
  * GObject wrapper for TreeNode<Project>
@@ -65,9 +88,12 @@ const GProjectNode = GObject.registerClass(
   },
 );
 
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
+
 /**
- * @function createListStoreFromNodes
- * @brief Creates a Gio.ListStore from an array of TreeNode<Project>
+ * Creates a Gio.ListStore from an array of TreeNode<Project>
  */
 const createListStoreFromNodes = (
   nodes: TreeNode<Project>[],
@@ -84,8 +110,28 @@ const createListStoreFromNodes = (
 };
 
 /**
- * @function ProjectTreeList
- * @brief Create GtkListView from Tree<Project>
+ * Clears existing children and rebuilds the tree view
+ */
+const rebuildTreeView = (container: Gtk.Box, data: Tree<Project>) => {
+  // Clear existing children
+  let child = container.get_first_child();
+  while (child) {
+    const next = child.get_next_sibling();
+    container.remove(child);
+    child = next;
+  }
+
+  // Add new tree view
+  const widget = ProjectTreeList(data);
+  container.append(widget);
+};
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
+
+/**
+ * Create GtkListView from Tree<Project>.
  */
 const ProjectTreeList = (data: Tree<Project>) => {
   if (!data || !data.root) {
@@ -105,7 +151,7 @@ const ProjectTreeList = (data: Tree<Project>) => {
 
     // Function to get children
     (item: GObject.Object) => {
-      const gProject = item as GProjectNode;
+      const gProject = item as unknown as GProjectNodeInterface;
 
       // Only create child model if this node has children
       if (!gProject.hasChildren) {
@@ -135,7 +181,7 @@ const ProjectTreeList = (data: Tree<Project>) => {
     const label = Widget.Label({
       halign: Gtk.Align.START,
       hexpand: false,
-      ellipsize: 3, // PANGO_ELLIPSIZE_END
+      ellipsize: Pango.EllipsizeMode.END,
       cssClasses: ["project"],
     });
 
@@ -168,7 +214,7 @@ const ProjectTreeList = (data: Tree<Project>) => {
     const label = button.get_child() as Gtk.Label;
 
     const treeListRow = listItem.get_item() as Gtk.TreeListRow;
-    const gProject = treeListRow.get_item() as GProjectNode;
+    const gProject = treeListRow.get_item() as GProjectNodeInterface;
 
     expander.set_list_row(treeListRow);
 
@@ -212,7 +258,7 @@ const ProjectTreeList = (data: Tree<Project>) => {
     const selected = model.get_selected();
     if (selected !== Gtk.INVALID_LIST_POSITION) {
       const treeListRow = model.get_item(selected) as Gtk.TreeListRow;
-      const gProject = treeListRow.get_item() as GProjectNode;
+      const gProject = treeListRow.get_item() as GProjectNodeInterface;
 
       if (ts.selectedProject != gProject._node) {
         ts.newProjectSelected(gProject._node);
@@ -245,8 +291,7 @@ export const ProjectListView = () => {
     setup: (self) => {
       ts.connect("notify::data", () => {
         if (ts.data) {
-          const widget = ProjectTreeList(ts.data);
-          self.append(widget);
+          rebuildTreeView(self, ts.data);
         }
       });
     },
