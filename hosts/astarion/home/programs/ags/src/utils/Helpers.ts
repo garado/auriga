@@ -1,13 +1,29 @@
+/**
+ * █▀▄▀█ █ █▀ █▀▀   █░█ █▀▀ █░░ █▀█ █▀▀ █▀█   █▀▀ █░█ █▄░█ █▀▀ ▀█▀ █ █▀█ █▄░█ █▀
+ * █░▀░█ █ ▄█ █▄▄   █▀█ ██▄ █▄▄ █▀▀ ██▄ █▀▄   █▀░ █▄█ █░▀█ █▄▄ ░█░ █ █▄█ █░▀█ ▄█
+ *
+ * Collection of frequently used helper functions.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gtk } from "astal/gtk4";
+
+/*****************************************************************************
+ * Function definitions
+ *****************************************************************************/
 
 /**
  * Convert ISO8601 date to relative time
- * @param {string} isoDate - an ISO8601 date, e.g. 20250630T070000Z =>
- * June 30, 2025, at 07:00:00 UTC
- * @return {string} the relative time
+ *
+ * @returns {string} the relative time
+ *
+ * @param {string} isoDate - an ISO8601 date, e.g. 20250630T070000Z => June 30, 2025, at 07:00:00 UTC
  */
 export const relativeTimeFromISO = (isoDate: string): string => {
-  /* Ensure the input is in a valid ISO 8601 format with separators */
+  // Ensure the input is in a valid ISO 8601 format with separators
   const formattedDate = isoDate.replace(
     /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
     "$1-$2-$3T$4:$5:$6Z",
@@ -43,7 +59,7 @@ export const relativeTimeFromISO = (isoDate: string): string => {
  * @param {string} isoDate - ISO date to convert
  */
 export const formatISODateToCustomFormat = (isoDate: string): string => {
-  /* Ensure the input is in a valid ISO 8601 format with separators */
+  // Ensure the input is in a valid ISO 8601 format with separators
   const formattedDate = isoDate.replace(
     /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
     "$1-$2-$3T$4:$5:$6Z",
@@ -68,7 +84,7 @@ export const formatISODateToCustomFormat = (isoDate: string): string => {
 };
 
 /**
- * To get CSS information for the InteractiveGraph widget, you need to do some weird CSS shit.
+ * Given a CSS class name, return its `color` property.
  */
 export const getCairoColorFromClass = (...rest: Array<string>): any => {
   const dummyWidget = new Gtk.Box();
