@@ -104,11 +104,19 @@ enum HLedgerRegisterFields {
   total,
 }
 
+/**
+ * CSV output format for hledger `balance` and `balancesheet` commands.
+ * @interface
+ */
 interface HLedgerBalanceRow {
   account: string;
   balance: string;
 }
 
+/**
+ * Enum for CSV output of hledger `balance` and `balancesheet` commands.
+ * @interface
+ */
 enum HLedgerBalanceFields {
   account,
   balance,
@@ -468,22 +476,71 @@ export default class Ledger extends GObject.Object {
   }
 
   /**
-   * Get total net worth (assets - liabilities)
+   * Calculate and update total net worth (assets minus liabilities).
+   * Uses hledger's balance sheet command to get the net position.
+   *
+   * The balance sheet command returns CSV with account categories and their totals,
+   * with the final row containing the net worth calculation.
+   *
+   * @private
+   * @returns {void}
+   *
+   * @example
+   * Raw hledger balance sheet output:
+   * ```
+   * "account","balance"
+   * "Assets","$50000.00"
+   * "Liabilities","$-10000.00"
+   * "Net:","$40000.00"
+   * ```
+   *
+   * The last row contains the net worth: $40,000
    */
-  #initNetWorth() {
+  #initNetWorth(): void {
     log("ledgerService", "#initNetWorth");
 
-    const cmd = `hledger ${INCLUDES} bs --depth 1 -X '$' --infer-market-prices ${CSV}`;
+    // Use balance sheet command:
+    // `hledger bs --depth 0 -X '$' --infer-market-prices --output-format csv`
+    // -X '$' converts all currencies to dollars; --infer-market-prices converts investments to dollars
+    const cmd = `hledger ${INCLUDES} bs --depth 0 -X '$' --infer-market-prices ${CSV}`;
 
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
-        const lines = out.replaceAll('"', "").split("\n");
-        const netWorthStr = lines[lines.length - 1].split(",")[1];
-        const netWorth = Number(netWorthStr.replace("$", ""));
+        try {
+          const balanceRows = this.parseBalanceCSV(out);
 
-        this.netWorth = netWorth;
+          if (balanceRows.length === 0) {
+            throw new Error("No balance sheet data returned from hledger");
+          }
+
+          // The net worth is in the last row
+          const netWorthRow = balanceRows[balanceRows.length - 1];
+          const netWorth = this.parseAmount(netWorthRow.balance);
+
+          if (isNaN(netWorth)) {
+            throw new Error(`Invalid net worth value: ${netWorthRow.balance}`);
+          }
+
+          this.netWorth = netWorth;
+          log("ledgerService", `Net worth updated: $${netWorth.toFixed(2)}`);
+        } catch (parseError) {
+          console.error(`Failed to parse net worth data:`, parseError);
+          console.error(`Raw hledger output:`, out);
+
+          // Keep previous value or set to 0 if first time
+          if (this.netWorth === undefined) {
+            this.netWorth = 0;
+          }
+        }
       })
-      .catch((err) => print(`#initNetWorth: ${err}`));
+      .catch((err) => {
+        console.error(`Failed to fetch net worth:`, err);
+
+        // Keep previous value or set to 0 if first time
+        if (this.netWorth === undefined) {
+          this.netWorth = 0;
+        }
+      });
   }
 
   /**
