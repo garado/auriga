@@ -1,21 +1,23 @@
+/**
+ * ▄▀█ █▀█ █▀█   █░░ ▄▀█ █░█ █▄░█ █▀▀ █░█ █▀▀ █▀█
+ * █▀█ █▀▀ █▀▀   █▄▄ █▀█ █▄█ █░▀█ █▄▄ █▀█ ██▄ █▀▄
+ *
+ * Simple app launcher widget.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
-import { GObject } from "astal/gobject";
-import Apps, { Application } from "gi://AstalApps";
+import Apps from "gi://AstalApps";
 
-/******************************************
- * MODULE-LEVEL VARIABLES
- ******************************************/
-
-enum LauncherTabs {
-  Apps,
-  Windows,
-  Sessions,
-}
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
-
-const currentTab = LauncherTabs.Apps;
 
 const globalRevealerState = Variable(false);
 
@@ -27,14 +29,14 @@ const appSearch = new Apps.Apps({
 
 const searchResults = Variable(appSearch.fuzzy_query(""));
 
-/******************************************
- * WIDGETS
- ******************************************/
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 /**
- * Application
+ * Widget representing a single application in the launcher.
  */
-const AppEntry = (app) => {
+const AppEntry = (app: Apps.Application) => {
   const Final = Widget.Box({
     cssClasses: ["result"],
     vexpand: false,
@@ -45,9 +47,7 @@ const AppEntry = (app) => {
         label: app.name,
       }),
     ],
-    onButtonPressed: (self) => {
-      app.launch();
-    },
+    onButtonPressed: app.launch,
   });
 
   /* Assign helper function */
@@ -59,23 +59,25 @@ const AppEntry = (app) => {
 };
 
 /**
- * Contains all search results
+ * Contains all search results.
  */
 const SearchResultContainer = () => {
   return Scrollable({
     vexpand: true,
     visible: true,
-    child: [
-      Widget.Box({
-        vertical: true,
-        children: bind(searchResults).as((x) => x.map(AppEntry)),
-      }),
-    ],
+    setup: (self) => {
+      self.set_child(
+        Widget.Box({
+          vertical: true,
+          children: bind(searchResults).as((x) => x.map(AppEntry)),
+        }),
+      );
+    },
   });
 };
 
 /**
- * Type stuff here
+ * Text entry box for user to search for applications.
  */
 const PromptBox = () => {
   const SearchIcon = Widget.Image({
@@ -89,7 +91,7 @@ const PromptBox = () => {
     cssClasses: ["text-entry"],
     onActivate: (self) => {
       searchResults.get()[0].launch();
-      App.toggleWindow("launcher");
+      App.toggle_window("launcher");
       self.text = "";
     },
     onKeyReleased: (self) => {
@@ -139,8 +141,7 @@ export default () => {
       child: Launcher(),
     }),
     setup: (self) => {
-      /* Workaround for revealer bug.
-       * https://github.com/wmww/gtk4-layer-shell/issues/60 */
+      // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);
     },
     onNotifyVisible: (self) => {
