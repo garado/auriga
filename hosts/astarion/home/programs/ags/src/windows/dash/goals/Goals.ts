@@ -4,7 +4,7 @@ import { GoalBox } from "@/windows/dash/goals/GoalBox";
 import TopBar from "./TopBar";
 import { Sidebar } from "./Sidebar";
 import { bind } from "astal";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
 const gs = Goals.get_default();
 
@@ -104,10 +104,9 @@ export default () => {
     spacing: 12,
     children: [TopBar(), Overlay],
     setup: (self) => {
-      EventControllerKeySetup({
+      setupEventController({
         name: "Goals",
         widget: self,
-        forwardTo: null,
         binds: {
           Escape: () => {
             gs.sidebarVisible = false;

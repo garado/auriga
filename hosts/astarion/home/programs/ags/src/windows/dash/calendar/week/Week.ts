@@ -3,7 +3,7 @@ import { DateLabels } from "@/windows/dash/calendar/week/DateLabels";
 import { MultiDayEvents } from "@/windows/dash/calendar/week/MultiDayEvents";
 import { WeekView } from "@/windows/dash/calendar/week/WeekView";
 import { Gridlines } from "@/windows/dash/calendar/week/Gridlines";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
 export const Week = () => {
   const Scrollable = astalify(Gtk.ScrolledWindow);
@@ -35,9 +35,9 @@ export const Week = () => {
     hexpand: true,
     children: [_DateLabels, _MultiDayEvents, WeekViewContainer],
     setup: (self) => {
-      EventControllerKeySetup({
+      setupEventController({
         widget: self,
-        forwardTo: _WeekViewContent,
+        forwardTarget: _WeekViewContent,
         binds: {},
       });
     },

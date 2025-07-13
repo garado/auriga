@@ -16,7 +16,7 @@
 
 import { Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
 /*****************************************************************************
  * Interfaces
@@ -57,10 +57,10 @@ export const AnimatedStack = (props: {
         self.add_named(c.ui(), c.name);
       });
 
-      EventControllerKeySetup({
+      setupEventController({
         widget: self,
         name: props.name || "AnimatedStack",
-        forwardTo: () => self.get_visible_child(),
+        forwardTarget: () => self.get_visible_child(),
         binds: {
           H: () => {
             (self as AnimatedStackWidget).iterTab(-1);

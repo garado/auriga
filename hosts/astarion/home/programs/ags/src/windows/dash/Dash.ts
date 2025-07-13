@@ -10,7 +10,7 @@ import Calendar from "@/windows/dash/calendar/Calendar";
 import Goals from "@/windows/dash/goals/Goals";
 import Tasks from "@/windows/dash/tasks/Tasks";
 import { AnimatedStack } from "@/components/AnimatedStack";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
 /***********************************************************
  * SETUP
@@ -141,10 +141,10 @@ export default () => {
         };
       }
 
-      EventControllerKeySetup({
+      setupEventController({
         name: "DashWindow",
         widget: self,
-        forwardTo: () => TabStack.get_visible_child(),
+        forwardTarget: () => TabStack.get_visible_child(),
         binds: binds,
       });
     },

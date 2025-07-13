@@ -4,7 +4,7 @@ import { Accounts } from "@/windows/dash/ledger/overview/Accounts.ts";
 import { Debts } from "@/windows/dash/ledger/overview/DebtsLiabilities.ts";
 import { Breakdown } from "@/windows/dash/ledger/overview/Breakdown.ts";
 import { Transactions } from "@/windows/dash/ledger/overview/RecentTransactions.ts";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 import Ledger from "@/services/Ledger";
 
 const WIDGET_SPACING = 20;
@@ -23,7 +23,7 @@ export const Overview = () => {
       self.attach(Transactions(), 1, 0, 1, 1);
       self.attach(Breakdown(), 1, 1, 1, 1);
 
-      EventControllerKeySetup({
+      setupEventController({
         name: "LedgerOverview",
         widget: self,
         binds: {
