@@ -31,10 +31,10 @@ const INCLUDES = UserConfig.ledger.includes
  * Types/interfaces
  *****************************************************************************/
 
-export type DebtsLiabilitiesProps = {
+export interface DebtItem {
   desc: string;
-  total: string;
-};
+  total: number;
+}
 
 export interface CategorySpend {
   subtotal: number;
@@ -47,6 +47,15 @@ type MonthlySpending = Record<string, CategorySpend>;
 type CategoryTotals = Record<string, number[]>; // { "Food": [JanTotal, FebTotal, ...], "Transport": [...] }
 
 // REWRITTEN INTERFACES ----------------------------
+
+/**
+ * Represents spending data for a single category.
+ * @interface
+ */
+interface CategorySpending {
+  category: string;
+  total: number;
+}
 
 /**
  * @interface
@@ -102,6 +111,7 @@ enum HLedgerRegisterFields {
   account,
   amount,
   total,
+  LENGTH,
 }
 
 /**
@@ -248,16 +258,16 @@ export default class Ledger extends GObject.Object {
   declare balancesOverTime: Array<Number>;
 
   @property(Object)
-  declare displayAccounts: Array<Account>;
+  declare accountData: Array<Account>;
 
   @property(Object)
   declare transactions: Array<TransactionData>;
 
   @property(Object)
-  declare debtsLiabilities: Object;
+  declare debtItems: Record<string, Array<DebtItem>>;
 
   @property(Object)
-  declare monthlyBreakdown: Array<Object>;
+  declare monthlyCategorySpending: Array<CategorySpending>;
 
   @property(Number)
   declare incomeThisMonth: Number;
@@ -276,12 +286,12 @@ export default class Ledger extends GObject.Object {
     super();
 
     // Default values
-    this.displayAccounts = [];
+    this.accountData = [];
     this.netWorth = 0;
     this.incomeThisMonth = 0;
     this.expensesThisMonth = 0;
-    this.debtsLiabilities = {};
-    this.monthlyBreakdown = [];
+    this.debtItems = {};
+    this.monthlyCategorySpending = [];
     this.balancesOverTime = [];
     this.monthlySpendingByCategory = {
       subcategories: {},
@@ -297,12 +307,12 @@ export default class Ledger extends GObject.Object {
   initAll() {
     this.#initAccountData();
     this.#initNetWorth();
-    this.#initMonthlyIncomeExpenses();
-    this.#initDebtsLiabilities();
-    this.#initMonthlyBreakdown();
+    this.#initMonthlyTotals();
+    this.#initDebtItems();
+    this.#initCategorySpending();
     this.#initRecentTransactions();
     this.#initBalanceTrends();
-    this.#whatever();
+    this.#initSpendingAnalysis();
   }
 
   /**
@@ -310,7 +320,7 @@ export default class Ledger extends GObject.Object {
    * Uses a single hledger command with --daily flag to get daily net worth snapshots.
    *
    * The command outputs one CSV row per day with the net worth for that date.
-   * Results are cached to avoid expensive recalculation.
+   * Results are cached to file avoid expensive recalculation.
    *
    * @private
    * @returns {void}
@@ -320,8 +330,6 @@ export default class Ledger extends GObject.Object {
 
     /**
      * Fetch all balance trends from hledger using the --daily flag.
-     * This replaces the previous approach of chaining hundreds of individual commands.
-     *
      * hledger bs -X '$' --infer-market-prices --depth O --output-format csv --daily
      */
     const fetchAllFromLedger = () => {
@@ -387,9 +395,9 @@ export default class Ledger extends GObject.Object {
    *
    * This method:
    * 1. Builds hledger balance commands for each configured account
-   * 2. Executes commands in parallel for better performance
+   * 2. Executes commands in parallel
    * 3. Parses CSV output and converts to Account format
-   * 4. Updates the displayAccounts property with results
+   * 4. Updates the accountData property with results
    *
    * @private
    * @returns void
@@ -474,7 +482,7 @@ export default class Ledger extends GObject.Object {
         }
 
         // Update the property with all results
-        this.displayAccounts = tmpAccountData;
+        this.accountData = tmpAccountData;
 
         log(
           "ledgerService",
@@ -485,7 +493,7 @@ export default class Ledger extends GObject.Object {
         console.error(`Failed to fetch account data:`, err);
 
         // Set empty array as fallback to prevent UI crashes
-        this.displayAccounts = [];
+        this.accountData = [];
       });
   }
 
@@ -558,138 +566,215 @@ export default class Ledger extends GObject.Object {
   }
 
   /**
-   * @function initMonthlyIncomeExpenses
-   * @brief Get total income and expenses for this month
+   * Initialize monthly income and expenses for the last 30 days.
+   *
+   * Uses hledger balance command with --depth 1 to get only top-level categories,
+   * filtered to the current month using --begin parameter.
+   *
+   * @private
+   * @returns {void}
    */
-  #initMonthlyIncomeExpenses() {
-    log("ledgerService", "#initMonthlyIncomeExpenses");
+  #initMonthlyTotals(): void {
+    log("ledgerService", "#initMonthlyTotals");
 
-    const monthStart = `${new Date().getMonth() + 1}/01`;
-    const cmd = `hledger ${INCLUDES} bal --depth 1 -X '$' --infer-market-price ${CSV} -b ${monthStart}`;
+    // Calculate date 30 days ago
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    execAsync(`bash -c '${cmd}'`).then((out) => {
-      const lines = out.replaceAll('"', "").split("\n");
-      const relevantLines = lines.filter(
-        (str) => str.includes("Income") || str.includes("Expenses"),
-      );
+    // 30 days ago in YYYY-MM-DD format
+    const startDate = thirtyDaysAgo.toISOString().slice(0, 10);
 
-      relevantLines.forEach((element) => {
-        const fields = element.split(",");
-        const total = Math.abs(Number(fields[1].replace("$", "")));
+    // hledger bal ^Income ^Expenses --depth 1 -X '$' --infer-market-price --output-format csv --no-total -b ${startDate}
+    const cmd = `hledger ${INCLUDES} bal ^Income ^Expenses --depth 1 -X '$' --infer-market-price ${CSV} --no-total -b ${startDate}`;
 
-        if (fields[0].includes("Income")) {
-          this.incomeThisMonth = Number(total.toFixed(2));
-        } else if (fields[0].includes("Expenses")) {
-          this.expensesThisMonth = Number(total.toFixed(2));
-        }
-      });
+    execAsync(`bash -c '${cmd}' | tail -n -2`).then((out) => {
+      try {
+        const balanceRows = this.parseBalanceCSV(out);
+
+        balanceRows.forEach((row) => {
+          const accountName = row.account.toLowerCase();
+          const absoluteAmount = Math.abs(this.parseAmount(row.balance));
+
+          if (accountName.includes("income")) {
+            this.incomeThisMonth = absoluteAmount;
+          } else if (accountName.includes("expenses")) {
+            this.expensesThisMonth = absoluteAmount;
+          }
+        });
+      } catch (error) {
+        console.error(`Failed to parse monthly income/expenses data:`, error);
+        console.error(`Raw hledger output:`, out);
+
+        this.incomeThisMonth = 0;
+        this.expensesThisMonth = 0;
+      }
     });
   }
 
   /**
-   * Parse **uncleared** debts and liabilities.
+   * Load pending debts and liabilities from uncleared transactions.
    *
-   * This is specific to the way I personally use hledger.
-   * Liabilities for things like credit cards are never marked as pending/cleared.
-   * Debts/liabilities to other people (e.g. if I owe someone $20) are marked as pending,
-   * then are cleared when they are paid back.
-   * This function is specifically for those interpersonal debts/liabilities.
+   * This function is specific to a personal hledger workflow where:
+   * - Credit card liabilities are never marked as pending/cleared
+   * - Interpersonal debts (money owed to/from people) are marked as pending
+   * - When debts are paid back, they get cleared
+   *
+   * Only fetches pending (uncleared) transactions to show outstanding debts.
+   * Groups transactions by account to show who owes what.
+   *
+   * @private
+   * @returns {void}
+   *
+   * @example
+   * Raw hledger register output:
+   * ```
+   * "1","2024-01-15","","Lunch split","Liabilities:John","$15.00","$15.00"
+   * "2","2024-01-16","","Gas money","Reimbursements:Work","$25.00","$40.00"
+   * ```
+   *
+   * Gets grouped into:
+   * ```typescript
+   * {
+   *   "Liabilities:John": [{ desc: "Lunch split", total: 15.00 }],
+   *   "Reimbursements:Work": [{ desc: "Gas money", total: 25.00 }]
+   * }
+   * ```
    */
-  #initDebtsLiabilities() {
-    log("ledgerService", "#initDebtsLiabilities");
+  #initDebtItems(): void {
+    log("ledgerService", "#initDebtItems");
 
-    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV} | tail -n 40`;
+    // hledger register Reimbursements Liabilities --pending --output-format csv
+    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV}`;
 
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
-        const lines = out.replaceAll('"', "").split("\n").slice(1);
+        try {
+          this.debtItems = this.#parseDebtsLiabilitiesCSV(out);
+        } catch (parseError) {
+          console.error(`Failed to parse debts/liabilities data:`, parseError);
+          console.error(`Raw hledger output:`, out);
 
-        const tmp = {};
-
-        lines.map((line) => {
-          const fields = line.split(",");
-
-          const account = fields[HLedgerRegisterFields.account];
-
-          if (tmp[account] == undefined) {
-            tmp[account] = [];
-          }
-
-          tmp[account].push({
-            desc: fields[HLedgerRegisterFields.desc],
-            total: Number(
-              fields[HLedgerRegisterFields.amount].replace("$", ""),
-            ),
-          });
-        });
-
-        this.debtsLiabilities = tmp;
+          // Set empty object as fallback
+          this.debtItems = {};
+        }
       })
-      .catch((err) => print(`#initDebtsLiabilities: ${err}`));
+      .catch((err) => {
+        console.error(`Failed to fetch debts/liabilities:`, err);
+
+        // Set empty object as fallback to prevent UI crashes
+        this.debtItems = {};
+      });
   }
 
   /**
-   * Initializes spending data for the current month.
-   * Used in a pie chart.
+   * Load spending breakdown by category for the current month.
+   * Fetches expense data at depth 2 to get subcategories (e.g., "Food", "Transport")
+   * and calculates totals for pie chart visualization.
+   *
+   * Uses --depth 2 to get meaningful subcategories without too much detail,
+   * and --no-total to exclude the summary total row.
+   *
+   * @private
+   * @returns {void}
+   *
+   * @example
+   * Raw hledger balance output:
+   * ```
+   * "account","balance"
+   * "Expenses:Food","$450.00"
+   * "Expenses:Transport","$120.00"
+   * "Expenses:Entertainment","$80.00"
+   * ```
+   *
+   * Gets transformed into:
+   * ```typescript
+   * [
+   *   { category: "Food", total: 450.00 },
+   *   { category: "Transport", total: 120.00 },
+   *   { category: "Entertainment", total: 80.00 }
+   * ]
+   * ```
    */
-  #initMonthlyBreakdown() {
-    log("ledgerService", `#initMonthlyBreakdown`);
+  #initCategorySpending(): void {
+    log("ledgerService", `#initCategorySpending`);
 
-    const monthStart = `${new Date().getMonth() + 1}/01`;
-    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${monthStart} --no-total --depth 2 ${CSV}`;
+    // Calculate date 30 days ago
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    this.monthlyBreakdown = [];
+    // 30 days ago in YYYY-MM-DD format
+    const startDate = thirtyDaysAgo.toISOString().slice(0, 10);
+
+    // hledger bal Expenses --no-total --depth 2 --output-format csv --begin monthStart
+    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${startDate} --no-total --depth 2 ${CSV}`;
 
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
-        const row = out.replaceAll('"', "").split("\n").slice(1);
-
-        row.forEach((data) => {
-          const fields = data.split(",");
-
-          const category = fields[0].split(":")[1];
-          const price = Number(fields[1].replace("$", ""));
-
-          this.monthlyBreakdown.push({
-            category: category,
-            total: price,
-          });
-        });
-
-        this.notify("monthly-breakdown");
+        try {
+          this.monthlyCategorySpending = this.#parseCategorySpendingCSV(out);
+          // this.notify("monthly-category-spending");
+        } catch (parseError) {
+          console.error(`Failed to parse category spending data:`, parseError);
+          console.error(`Raw hledger output:`, out);
+          this.monthlyCategorySpending = [];
+          // this.notify("monthly-category-spending");
+        }
       })
-      .catch((err) => print(`initMonthlyBreakdown: ${err}`));
+      .catch((err) => {
+        console.error(`Failed to fetch category spending:`, err);
+        this.monthlyCategorySpending = [];
+        // this.notify("monthly-category-spending");
+      });
   }
 
   /**
-   * Initialize recent transactions.
+   * Load the most recent income and expense transactions.
+   * Fetches the last 20 transactions from Income and Expenses accounts
+   * and parses them into structured TransactionData objects.
+   *
+   * Uses hledger register command to get detailed transaction history,
+   * limited to the most recent entries for performance.
+   *
+   * @private
+   * @returns {void}
+   *
+   * @example
+   * Raw hledger register output:
+   * ```
+   * "txnidx","date","code","desc","account","amount","total"
+   * "1","2024-01-15","","Grocery Store","Expenses:Food","$45.67","$45.67"
+   * "2","2024-01-16","","Salary","Income:Job","$-2000.00","$-1954.33"
+   * ```
+   *
+   * Gets parsed into TransactionData objects with proper field mapping.
    */
-  #initRecentTransactions() {
+  #initRecentTransactions(): void {
     log("ledgerService", "#initRecentTransactions");
 
-    const cmd = `hledger ${INCLUDES} reg Income Expenses ${CSV}`;
+    // hledger reg ^Income ^Expenses --output-format csv
+    const cmd = `hledger ${INCLUDES} reg ^Income ^Expenses ${CSV}`;
 
     execAsync(`bash -c '${cmd} | tail -n 20'`)
       .then((out) => {
-        out = out.replaceAll('"', "").split("\n").slice(1);
-
-        /* This takes the raw CSV output and turns it into an array of
-         * TransactionData objects, where the object keys are the fields of the
-         * HLedgerRegisterFields enum. */
-        this.transactions = out.map((line) => {
-          line = line.split(",");
-
-          return Object.fromEntries(
-            Object.keys(HLedgerRegisterFields)
-              .filter((k) => isNaN(Number(k))) /* exclude numeric keys */
-              .map((key, index) => [key.toLowerCase(), line[index]]),
+        try {
+          this.transactions = this.#parseRegisterTransactionsCSV(out);
+          log(
+            "ledgerService",
+            `Loaded ${this.transactions.length} recent transactions`,
           );
-        });
+        } catch (parseError) {
+          console.error(`Failed to parse recent transactions:`, parseError);
+          console.error(`Raw hledger output:`, out);
+          this.transactions = [];
+        }
       })
-      .catch((err) => print(`initRecentTransactions: ${err}`));
+      .catch((err) => {
+        console.error(`Failed to fetch recent transactions:`, err);
+        this.transactions = [];
+      });
   }
 
-  #whatever = () => {
+  #initSpendingAnalysis = () => {
     const monthStrings = getLastNMonthsDays(3);
 
     const promises = monthStrings.map(async (monthStr) => {
@@ -698,16 +783,16 @@ export default class Ledger extends GObject.Object {
 
     Promise.all(promises)
       .then((result) => {
-        const ugh = {} as MonthlySpending;
+        const spendingByMonth = {} as MonthlySpending;
 
         for (let i = 0; i < monthStrings.length; i++) {
-          ugh[monthStrings[i].first] = result[i]!;
+          spendingByMonth[monthStrings[i].first] = result[i]!;
         }
 
         this.monthlySpendingByCategory =
-          this.#aggregateMonthlySpendingByCategory(ugh);
+          this.#aggregateMonthlySpendingByCategory(spendingByMonth);
       })
-      .catch((err) => print(`whatever: ${err}`));
+      .catch((err) => print(`initSpendingAnalysis: ${err}`));
   };
 
   /**
@@ -800,33 +885,6 @@ export default class Ledger extends GObject.Object {
   // Private helper functions --------------------------------------------------
 
   /**
-   * Parses CSV output from hledger balance command into structured data.
-   *
-   * @param csvOutput - Raw CSV string from hledger balance command
-   * @returns Array of parsed balance rows
-   * @throws {Error} When CSV output is invalid or malformed
-   */
-  parseBalanceCSV(csvOutput: string): HLedgerBalanceRow[] {
-    if (!csvOutput || typeof csvOutput !== "string") {
-      throw new Error("Invalid CSV output");
-    }
-
-    const lines = csvOutput.replaceAll('"', "").split("\n");
-    const dataLines = lines.slice(1).filter((line) => line.trim() !== ""); // Skip header, remove empty lines
-
-    return dataLines.map((line) => {
-      const fields = line.split(",");
-      if (fields.length < 2) {
-        throw new Error(`Invalid balance CSV row: ${line}`);
-      }
-      return {
-        account: fields[0],
-        balance: fields[1],
-      };
-    });
-  }
-
-  /**
    * Parses a monetary amount string into a numeric value.
    * Handles various currency symbols and formatting.
    *
@@ -850,6 +908,33 @@ export default class Ledger extends GObject.Object {
   }
 
   /**
+   * Parses CSV output from hledger balance command into structured data.
+   *
+   * @param csvOutput - Raw CSV string from hledger balance command
+   * @returns Array of parsed balance rows
+   * @throws {Error} When CSV output is invalid or malformed
+   */
+  parseBalanceCSV(csvOutput: string): Array<HLedgerBalanceRow> {
+    if (!csvOutput || typeof csvOutput !== "string") {
+      throw new Error("Invalid CSV output");
+    }
+
+    const lines = csvOutput.replaceAll('"', "").split("\n");
+    const dataLines = lines.slice(1).filter((line) => line.trim() !== ""); // Skip header, remove empty lines
+
+    return dataLines.map((line) => {
+      const fields = line.split(",");
+      if (fields.length < 2) {
+        throw new Error(`Invalid balance CSV row: ${line}`);
+      }
+      return {
+        account: fields[0],
+        balance: fields[1],
+      };
+    });
+  }
+
+  /**
    * Parses CSV output from hledger daily balance sheet command.
    * The --daily flag outputs a single row with all daily balances as comma-separated values.
    *
@@ -863,7 +948,7 @@ export default class Ledger extends GObject.Object {
    * Input: `"Net:","$4199.26","$4087.17","$1454.35"`
    * Output: [4199.26, 4087.17, 1454.35]
    */
-  #parseBalanceTrendCSV(csvOutput: string): number[] {
+  #parseBalanceTrendCSV(csvOutput: string): Array<number> {
     if (!csvOutput || typeof csvOutput !== "string") {
       throw new Error(
         "Invalid balance trend CSV output: expected non-empty string",
@@ -902,5 +987,206 @@ export default class Ledger extends GObject.Object {
 
       return balance;
     });
+  }
+
+  /**
+   * Parses CSV output from hledger register command into TransactionData objects.
+   * Maps CSV fields using the HLedgerRegCSV enum to proper object properties.
+   *
+   * @param csvOutput - Raw CSV string from hledger register command
+   * @returns Array of parsed transaction objects
+   * @throws {Error} When CSV output is invalid or malformed
+   *
+   * @private
+   *
+   * @example
+   * Input CSV row: `"1","2024-01-15","","Store","Expenses:Food","$45.67","$45.67"`
+   * Output object: `{ txnidx: "1", date: "2024-01-15", desc: "Store", ... }`
+   */
+  #parseRegisterTransactionsCSV(csvOutput: string): Array<TransactionData> {
+    if (!csvOutput || typeof csvOutput !== "string") {
+      throw new Error(
+        "Invalid transactions CSV output: expected non-empty string",
+      );
+    }
+
+    const lines = csvOutput.replaceAll('"', "").split("\n");
+
+    // Remove header row and filter out empty lines
+    const dataLines = lines.slice(1).filter((line) => line.trim() !== "");
+
+    if (dataLines.length === 0) {
+      console.warn("No transaction data found");
+      return [];
+    }
+
+    return dataLines.map((line, index) => {
+      const fields = line.split(",");
+
+      // Validate we have enough fields for a complete transaction
+      if (fields.length != HLedgerRegisterFields.LENGTH) {
+        // Divide by 2 because enum has numeric keys too
+        console.warn(
+          `Invalid transaction CSV row at line ${index + 2}: insufficient fields in "${line}"`,
+        );
+
+        // Return a minimal valid transaction object
+        return {
+          txnidx: "",
+          date: "",
+          code: "",
+          desc: "Invalid transaction",
+          account: "",
+          amount: "$0.00",
+          total: "$0.00",
+        } as TransactionData;
+      }
+
+      // Map CSV fields to object properties using the enum
+      const transaction: TransactionData = {
+        txnidx: fields[HLedgerRegisterFields.txnidx] || "",
+        date: fields[HLedgerRegisterFields.date] || "",
+        code: fields[HLedgerRegisterFields.code] || "",
+        desc: fields[HLedgerRegisterFields.desc] || "",
+        account: fields[HLedgerRegisterFields.account] || "",
+        amount: fields[HLedgerRegisterFields.amount] || "$0.00",
+        total: fields[HLedgerRegisterFields.total] || "$0.00",
+      };
+
+      return transaction;
+    });
+  }
+
+  /**
+   * Parses CSV output from hledger register command for debts and liabilities.
+   * Groups transactions by account and creates DebtItem objects.
+   *
+   * @param csvOutput - Raw CSV string from hledger register --pending command
+   * @returns Object with accounts as keys and arrays of debt/liability transactions as values
+   * @throws {Error} When CSV output is invalid or malformed
+   *
+   * @private
+   */
+  #parseDebtsLiabilitiesCSV(csvOutput: string): Record<string, DebtItem[]> {
+    if (!csvOutput || typeof csvOutput !== "string") {
+      throw new Error(
+        "Invalid debts/liabilities CSV output: expected non-empty string",
+      );
+    }
+
+    const lines = csvOutput.replaceAll('"', "").split("\n");
+    const dataLines = lines.slice(1).filter((line) => line.trim() !== "");
+
+    if (dataLines.length === 0) {
+      console.info("No pending debts or liabilities found");
+      return {};
+    }
+
+    const groupedByAccount: Record<string, DebtItem[]> = {};
+
+    dataLines.forEach((line, index) => {
+      const fields = line.split(",");
+
+      if (fields.length != HLedgerRegisterFields.LENGTH) {
+        console.warn(
+          `Invalid debt/liability CSV row at line ${index + 2}: insufficient fields in "${line}"`,
+        );
+        return;
+      }
+
+      const account = fields[HLedgerRegisterFields.account];
+      const description = fields[HLedgerRegisterFields.desc];
+      const amountStr = fields[HLedgerRegisterFields.amount];
+
+      // Validate required fields
+      if (!account || !description || !amountStr) {
+        console.warn(
+          `Missing required fields in debt/liability row at line ${index + 2}: "${line}"`,
+        );
+        return; // Skip this line
+      }
+
+      const amount = this.parseAmount(amountStr);
+
+      // Initialize account array if it doesn't exist
+      if (!groupedByAccount[account]) {
+        groupedByAccount[account] = [];
+      }
+
+      // Add transaction to the account group
+      groupedByAccount[account].push({
+        desc: description,
+        total: amount,
+      });
+    });
+
+    return groupedByAccount;
+  }
+
+  /**
+   * Parses CSV output from hledger balance command for category spending data.
+   * Extracts category names from account paths and converts amounts to numbers.
+   *
+   * @param csvOutput - Raw CSV string from hledger balance Expenses command
+   * @returns Array of category spending objects
+   * @throws {Error} When CSV output is invalid or malformed
+   *
+   * @private
+   *
+   * @example
+   * Input: `"Expenses:Food","$450.00"`
+   * Output: `{ category: "Food", total: 450.00 }`
+   */
+  #parseCategorySpendingCSV(csvOutput: string): Array<CategorySpending> {
+    if (!csvOutput || typeof csvOutput !== "string") {
+      throw new Error(
+        "Invalid category spending CSV output: expected non-empty string",
+      );
+    }
+
+    const lines = csvOutput.replaceAll('"', "").split("\n");
+
+    // Remove header row and filter out empty lines
+    const dataLines = lines.slice(1).filter((line) => line.trim() !== "");
+
+    if (dataLines.length === 0) {
+      console.info("No category spending data found for current month");
+      return [];
+    }
+
+    return dataLines
+      .map((line, index) => {
+        const fields = line.split(",");
+
+        if (fields.length < 2) {
+          console.warn(
+            `Invalid category spending CSV row at line ${index + 2}: insufficient fields in "${line}"`,
+          );
+          return { category: "Unknown", total: 0 };
+        }
+
+        const accountPath = fields[0];
+        const amountStr = fields[1];
+
+        // Extract category name from account path (e.g., "Expenses:Food" → "Food")
+        const pathParts = accountPath.split(":");
+        const category = pathParts.length > 1 ? pathParts[1] : pathParts[0];
+
+        // Parse the amount
+        const amount = this.parseAmount(amountStr);
+
+        if (!category) {
+          console.warn(
+            `Could not extract category name from account path: "${accountPath}"`,
+          );
+          return { category: "Unknown", total: amount };
+        }
+
+        return {
+          category: category,
+          total: amount,
+        };
+      })
+      .filter((item) => item.total > 0); // Filter out zero or negative amounts
   }
 }

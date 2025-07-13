@@ -4,7 +4,7 @@
 import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 
-import Ledger, { DebtsLiabilitiesProps } from "@/services/Ledger.ts";
+import Ledger, { DebtItem } from "@/services/Ledger.ts";
 import Pango from "gi://Pango?version=1.0";
 const ledger = Ledger.get_default();
 
@@ -19,7 +19,7 @@ const DebtBoxContainer = () =>
     hexpand: true,
     vertical: true,
     spacing: 14,
-    children: bind(ledger, "debts-liabilities").as((x) =>
+    children: bind(ledger, "debt-items").as((x) =>
       Object.keys(x).map(DebtWidget),
     ),
   });
@@ -29,7 +29,7 @@ const DebtBoxContainer = () =>
  */
 const DebtWidget = (account: string) => {
   /* Array of objects representing uncleared transactions for this account. */
-  const debtData = ledger.debtsLiabilities[account];
+  const debtData = ledger.debtItems[account];
 
   const whoOwesYou = Widget.Label({
     cssClasses: ["debts-account"],
@@ -38,7 +38,7 @@ const DebtWidget = (account: string) => {
   });
 
   /* Parse total amount owed */
-  const amounts = debtData.map((txn: DebtsLiabilitiesProps) => txn.total);
+  const amounts = debtData.map((txn: DebtItem) => txn.total);
   let totalAmountOwed = 0;
   amounts.forEach((n: number) => (totalAmountOwed += n));
 
@@ -65,7 +65,7 @@ const DebtWidget = (account: string) => {
    * (If someone owes you $52 for X and $56 for Y,
    * this will create 2 widgets: one for X, one for Y)
    */
-  const txnWidgets = debtData.map((txn: DebtsLiabilitiesProps) => {
+  const txnWidgets = debtData.map((txn: DebtItem) => {
     const desc = Widget.Label({
       cssClasses: ["desc"],
       halign: Gtk.Align.END,

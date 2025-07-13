@@ -7,7 +7,7 @@ import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 
 import PieChart from "@/components/PieChart.ts";
-import Ledger, { DebtsLiabilitiesProps } from "@/services/Ledger.ts";
+import Ledger, { DebtTransaction } from "@/services/Ledger.ts";
 
 const ledger = Ledger.get_default();
 
@@ -16,7 +16,7 @@ const PieChartContainer = () =>
     hpack: "center",
     vpack: "center",
     spacing: 24,
-    children: bind(ledger, "monthly-breakdown").as((breakdown) => {
+    children: bind(ledger, "monthlyCategorySpending").as((breakdown) => {
       if (breakdown === undefined) return;
 
       return [
@@ -41,7 +41,7 @@ export const Breakdown = () => {
         spacing: 20,
         children: [
           Widget.Label({
-            label: "Monthly Breakdown",
+            label: "Recent Spending",
             cssClasses: ["widget-header"],
           }),
           PieChartContainer(),

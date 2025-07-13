@@ -56,14 +56,14 @@ export const Accounts = () => {
         total: bind(ledger, "netWorth"),
       }),
       Account({
-        displayName: "Income",
+        displayName: "Income (last 30 days)",
         total: bind(ledger, "incomeThisMonth"),
       }),
       Account({
-        displayName: "Expenses",
+        displayName: "Expenses (last 30 days)",
         total: bind(ledger, "expensesThisMonth"),
       }),
-      bind(ledger, "displayAccounts").as((x) => x.map(Account)),
+      bind(ledger, "accountData").as((x) => x.map(Account)),
     ],
   });
 };
