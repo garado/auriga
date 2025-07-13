@@ -306,59 +306,73 @@ export default class Ledger extends GObject.Object {
   }
 
   /**
-   * Fetch balance trend data.
+   * Initialize balance trend data over time using hledger's daily balance sheet output.
+   * Uses a single hledger command with --daily flag to get daily net worth snapshots.
+   *
+   * The command outputs one CSV row per day with the net worth for that date.
+   * Results are cached to avoid expensive recalculation.
+   *
+   * @private
+   * @returns {void}
    */
-  #initBalanceTrends() {
-    /* Run if cachefile doesn't exist */
+  #initBalanceTrends(): void {
+    log("ledgerService", "#initBalanceTrends");
+
+    /**
+     * Fetch all balance trends from hledger using the --daily flag.
+     * This replaces the previous approach of chaining hundreds of individual commands.
+     *
+     * hledger bs -X '$' --infer-market-prices --depth O --output-format csv --daily
+     */
     const fetchAllFromLedger = () => {
-      /* @TODO Init timestamp to user-configurable date */
-      /* let ts = new Date(new Date().getFullYear(), 0, 1).valueOf() */
-      let ts = new Date(2024, 0, 1).valueOf();
-      const now = Date.now().valueOf();
+      const cmd = `hledger ${INCLUDES} bs -X '$' --infer-market-prices --depth 0 --output-format csv --daily`;
 
-      /**
-       * To get total balance trends:
-       * Chain together multiple `ledger balance --end ${timestamp}` commands.
-       * The output of each command will be put on a new line.
-       * Get total balance (Assets - Liabilities) by piping to `tail -n 1`.
-       */
-
-      let cmd = "";
-      let baseCmd = `hledger ${INCLUDES} balance ^Assets ^Liabilities --depth 1 --exchange '$'`;
-
-      while (ts < now) {
-        const year = new Date(ts).getFullYear();
-        const month = new Date(ts).getMonth() + 1;
-        const date = new Date(ts).getDate();
-        cmd += `${baseCmd} -e ${year}/${month}/${date} | tail -n 1 ; \n`;
-        ts += MILLISECONDS_PER_DAY;
-      }
-
-      cmd = cmd.trimEnd();
-      cmd = cmd.slice(0, -1);
-
-      execAsync(`bash -c "\(${cmd}\) | tee ${BALANCE_TREND_CACHEFILE}"`)
+      execAsync(`bash -c "${cmd} | tail -n 1 | tee ${BALANCE_TREND_CACHEFILE}"`)
         .then((out) => {
-          this.balancesOverTime = out
-            .split("\n")
-            .map((x) => Number(x.replace(/[^0-9.]/g, "")));
-          this.balancesOverTime = [];
+          try {
+            this.balancesOverTime = this.#parseBalanceTrendCSV(out);
+            log(
+              "ledgerService",
+              `Loaded ${this.balancesOverTime.length} daily balance data points`,
+            );
+          } catch (parseError) {
+            console.error(`Failed to parse balance trend data:`, parseError);
+            this.balancesOverTime = [];
+          }
         })
-        .catch((err) => print(`LedgerService: initBalanceGraph: ${err}`));
+        .catch((err) => {
+          console.error(`Failed to fetch balance trends:`, err);
+          this.balancesOverTime = [];
+        });
     };
 
+    /**
+     * Load balance trends from cached file.
+     */
     const fetchFromFile = () => {
       const cmd = `cat ${BALANCE_TREND_CACHEFILE}`;
 
       execAsync(cmd)
         .then((out) => {
-          this.balancesOverTime = out
-            .split("\n")
-            .map((x) => Number(x.replace(/[^0-9.]/g, "")));
+          try {
+            this.balancesOverTime = this.#parseBalanceTrendCSV(out);
+            log(
+              "ledgerService",
+              `Loaded ${this.balancesOverTime.length} cached balance data points`,
+            );
+          } catch (parseError) {
+            console.error(`Failed to parse cached balance data:`, parseError);
+            // If cache is corrupted, fetch fresh data
+            fetchAllFromLedger();
+          }
         })
-        .catch(print);
+        .catch((err) => {
+          console.warn(`Cache file read failed, fetching fresh data:`, err);
+          fetchAllFromLedger();
+        });
     };
 
+    // Check if cache file exists
     const cfile = Gio.File.new_for_path(BALANCE_TREND_CACHEFILE);
     if (!cfile.query_exists(null)) {
       fetchAllFromLedger();
@@ -833,5 +847,60 @@ export default class Ledger extends GObject.Object {
     }
 
     return parsed;
+  }
+
+  /**
+   * Parses CSV output from hledger daily balance sheet command.
+   * The --daily flag outputs a single row with all daily balances as comma-separated values.
+   *
+   * @param csvOutput - Single CSV row with daily balance amounts
+   * @returns Array of numeric balance values for each day
+   * @throws {Error} When CSV output is invalid or malformed
+   *
+   * @private
+   *
+   * @example
+   * Input: `"Net:","$4199.26","$4087.17","$1454.35"`
+   * Output: [4199.26, 4087.17, 1454.35]
+   */
+  #parseBalanceTrendCSV(csvOutput: string): number[] {
+    if (!csvOutput || typeof csvOutput !== "string") {
+      throw new Error(
+        "Invalid balance trend CSV output: expected non-empty string",
+      );
+    }
+
+    const trimmed = csvOutput.trim();
+    if (trimmed === "") {
+      console.warn("Empty balance trend data");
+      return [];
+    }
+
+    // Split by comma and remove quotes
+    const fields = trimmed
+      .split(",")
+      .map((field) => field.replaceAll('"', "").trim());
+
+    if (fields.length < 2) {
+      throw new Error(
+        `Invalid balance trend format: expected at least 2 fields, got ${fields.length}`,
+      );
+    }
+
+    // First field is "Net:" label; rest are daily balance amounts
+    const balanceFields = fields.slice(1);
+
+    return balanceFields.map((amountStr, index) => {
+      const balance = this.parseAmount(amountStr);
+
+      if (isNaN(balance)) {
+        console.warn(
+          `Invalid balance amount at position ${index + 1}: "${amountStr}"`,
+        );
+        return 0;
+      }
+
+      return balance;
+    });
   }
 }
