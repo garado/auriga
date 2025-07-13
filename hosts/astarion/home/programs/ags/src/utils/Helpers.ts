@@ -1,3 +1,5 @@
+import { Gtk } from "astal/gtk4";
+
 /**
  * Convert ISO8601 date to relative time
  * @param {string} isoDate - an ISO8601 date, e.g. 20250630T070000Z =>
@@ -63,4 +65,18 @@ export const formatISODateToCustomFormat = (isoDate: string): string => {
 
   // Format the date
   return formatter.format(date).replace(",", ""); // Replace comma for desired format
+};
+
+/**
+ * To get CSS information for the InteractiveGraph widget, you need to do some weird CSS shit.
+ */
+export const getCairoColorFromClass = (...rest: Array<string>): any => {
+  const dummyWidget = new Gtk.Box();
+  const dummyContext = dummyWidget.get_style_context();
+
+  for (const c of rest) {
+    dummyContext.add_class(c);
+  }
+
+  return dummyContext.get_color();
 };

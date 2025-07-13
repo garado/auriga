@@ -7,6 +7,7 @@
  * Imports
  *****************************************************************************/
 
+import { getCairoColorFromClass } from "@/utils/Helpers";
 import { Gtk, Widget, astalify } from "astal/gtk4";
 
 /*****************************************************************************
@@ -69,20 +70,6 @@ interface GridConfig {
 /*****************************************************************************
  * Helper functions
  *****************************************************************************/
-
-/**
- * To get CSS information for the InteractiveGraph widget, you need to do some weird CSS shit.
- */
-const getCairoColorFromClass = (...rest: Array<string>): CairoColor => {
-  const dummyWidget = new Gtk.Box();
-  const dummyContext = dummyWidget.get_style_context();
-
-  for (const c of rest) {
-    dummyContext.add_class(c);
-  }
-
-  return dummyContext.get_color();
-};
 
 /**
  * Set Cairo context source color.

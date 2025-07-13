@@ -1,5 +1,19 @@
+/* █░█ █ █▀ █░█ ▄▀█ █░░ █ ▀█ █▀▀ █▀█ */
+/* ▀▄▀ █ ▄█ █▄█ █▀█ █▄▄ █ █▄ ██▄ █▀▄ */
+
+/* Music visualizer widget.
+ * I think I got this from Kotontrion or someone else on the astal discord - I don't remember. */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gtk, astalify } from "astal/gtk4";
 import AstalCava from "gi://AstalCava?version=0.1";
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export const Visualizer = (props: {
   bars: number;
@@ -13,12 +27,12 @@ export const Visualizer = (props: {
   props.barHeight = props.barHeight ? props.barHeight : 100;
 
   /**
-   * Widget to draw.
+   * Update visualizer widget.
    *
    * @param self
    * @param cr - Cairo context
    */
-  const onDraw = (self, cr) => {
+  const onDraw = (self: Gtk.DrawingArea, cr: any) => {
     const context = self.get_style_context();
     const h = self.get_allocated_height();
     const w = self.get_allocated_width();
