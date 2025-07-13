@@ -20,7 +20,7 @@ const Scrollable = astalify(Gtk.ScrolledWindow);
 export const ExpansionPanel = (props: {
   icon?: string;
   label?: string | Binding<string>;
-  children: Array<Gtk.Widget>;
+  children: Array<Gtk.Widget> | Binding<Gtk.Widget[]>;
   maxDropdownHeight: number;
   vertical: boolean;
   cssClasses?: Array<string>;
