@@ -9,7 +9,7 @@
  * Imports
  *****************************************************************************/
 
-import { Astal, Gtk, Widget, astalify } from "astal/gtk4";
+import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 import { Visualizer } from "@/components/Visualizer";
 import Mpris from "gi://AstalMpris";
@@ -76,10 +76,8 @@ const MediaPlayer = (player: Mpris.Player) => {
       self.set_content_fit(Gtk.ContentFit.COVER);
 
       if (player != null) {
-        const file = bind(player, "coverArt").as((c) =>
-          Gio.File.new_for_path(`${c}`),
-        );
-
+        const coverArtPath = bind(player, "coverArt").as((c) => `${c}`);
+        const file = Gio.File.new_for_path(coverArtPath.get());
         self.set_file(file);
       } else {
         const file = Gio.File.new_for_path(
