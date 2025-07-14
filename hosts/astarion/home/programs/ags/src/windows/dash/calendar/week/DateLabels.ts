@@ -21,14 +21,14 @@ export const DateLabels = () => {
 
         const number = Widget.Label({
           cssClasses: ["number"],
-          label: bind(cal, "viewrange").as((viewrange) =>
-            viewrange[i].slice(-2),
+          label: bind(cal, "weekDates").as((weekDates) =>
+            weekDates[i].slice(-2),
           ),
         });
 
         const dateLabel = Widget.Box({
-          cssClasses: bind(cal, "viewrange").as((viewrange) =>
-            viewrange[i] == cal.today
+          cssClasses: bind(cal, "weekDates").as((weekDates) =>
+            weekDates[i] == cal.today
               ? ["date-label", "active"]
               : ["date-label"],
           ),

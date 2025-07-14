@@ -16,8 +16,8 @@ export const MultiDayEvents = () =>
     setup: (self) => {},
     // self.hook(
     //   CalSvc,
-    //   (self, viewrange, viewdata) => {
-    //     if (viewrange == undefined && viewdata == undefined) return;
+    //   (self, weekDates, viewdata) => {
+    //     if (weekDates == undefined && viewdata == undefined) return;
     //
     //     /* Clear any old events */
     //     self.get_children().forEach((event) => {
@@ -41,6 +41,6 @@ export const MultiDayEvents = () =>
     //       self.heightRequest = 10;
     //     }
     //   },
-    //   "viewrange-changed",
+    //   "weekDates-changed",
     // ),
   });

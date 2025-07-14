@@ -11,14 +11,14 @@
  *  - Home tab agenda view
  *
  * Terminology:
- *  - viewrange
+ *  - weekDates
  *      - For calendar weekview, this is the range of viewable dates
  *        for the current week (starting Sunday)
  *
  * Calendar week view program flow:
  *  - constructor
- *    - initWeekData: Init viewrange for the current week
- *      - setNewViewrange(str: date): Find all dates for the week which
+ *    - initWeekData: Init weekDates for the current week
+ *      - setNewweekDates(str: date): Find all dates for the week which
  *        includes `date`
  *        - readCache(array: dates): Read all event data starting or
  *          ending on the given dates
@@ -122,14 +122,14 @@ export default class Calendar extends GObject.Object {
   declare today: string;
 
   @property(Object)
-  declare viewrange: Array<string>;
+  declare weekDates: Array<string>;
 
   @property(Object)
   declare weekEvents: Record<string, Array<Event>>;
 
   @signal(Object, Object)
-  declare viewrangeChanged: (
-    viewrange: Array<string>,
+  declare weekdatesChanged: (
+    weekDates: Array<string>,
     weekEvents: Object,
   ) => void;
 
@@ -155,7 +155,7 @@ export default class Calendar extends GObject.Object {
    * @param {string} dateStr - A string YYYY-MM-DD
    */
   queryEventsFromDate(dateStr: string) {
-    if (this.viewrange.includes(dateStr)) {
+    if (this.weekDates.includes(dateStr)) {
       return this.weekEvents[dateStr];
     }
 
@@ -195,8 +195,8 @@ export default class Calendar extends GObject.Object {
     // Populate inferred data
     event.multiDay = event.startDate != event.endDate;
     event.allDay = event.startTime == "" && event.endTime == "";
-    event.startedBeforeThisWeek = !this.viewrange.includes(event.startDate);
-    event.endsAfterThisWeek = !this.viewrange.includes(event.endDate);
+    event.startedBeforeThisWeek = !this.weekDates.includes(event.startDate);
+    event.endsAfterThisWeek = !this.weekDates.includes(event.endDate);
 
     if (event.multiDay || event.allDay) {
       return event as Event; // No need to populate the rest
@@ -236,18 +236,18 @@ export default class Calendar extends GObject.Object {
   #initWeekData(startDate = new Date()) {
     log("calService", `#initWeekData: Called with d = ${startDate}`);
     this.today = this.getDateStr(startDate);
-    this.#setNewViewrange(this.today);
+    this.#setNewweekDates(this.today);
   }
 
   /**
-   * Given a start date YYYY-MM-DD, figure out the new viewrange and grab data for the new viewrange.
+   * Given a start date YYYY-MM-DD, figure out the new weekDates and grab data for the new weekDates.
    *
-   * @param {string} dateStr The date to set the viewrange to.
+   * @param {string} dateStr The date to set the weekDates to.
    */
-  #setNewViewrange(dateStr: string) {
-    log("calService", `#setNewViewrange: Starting ${dateStr}`);
+  #setNewweekDates(dateStr: string) {
+    log("calService", `#setNewweekDates: Starting ${dateStr}`);
 
-    this.viewrange = [];
+    this.weekDates = [];
     this.weekEvents = {};
 
     // Initialize the timestamp to the Sunday of the given week
@@ -259,12 +259,12 @@ export default class Calendar extends GObject.Object {
     for (let i = 0; i < DAYS_PER_WEEK; i++) {
       const localDate = new Date(ts);
       const dateStr = this.getDateStr(localDate);
-      this.viewrange.push(dateStr);
+      this.weekDates.push(dateStr);
       this.weekEvents[dateStr] = [];
       ts += MS_PER_DAY;
     }
 
-    this.#readCache(this.viewrange);
+    this.#readCache(this.weekDates);
   }
 
   /**
@@ -326,12 +326,12 @@ export default class Calendar extends GObject.Object {
     });
 
     // Sort events for each day
-    for (let i = 0; i < this.viewrange.length; i++) {
-      const thisDateStr = this.viewrange[i];
+    for (let i = 0; i < this.weekDates.length; i++) {
+      const thisDateStr = this.weekDates[i];
       this.#sortEvents(this.weekEvents[thisDateStr]);
     }
 
-    this.emit("viewrange-changed", this.viewrange, this.weekEvents);
+    this.emit("weekdates-changed", this.weekDates, this.weekEvents);
   }
 
   /**

@@ -61,7 +61,7 @@ export class _WeekGrid extends Gtk.Fixed {
    * being displayed.
    */
   @property(Object)
-  declare viewrange: string[];
+  declare weekDates: string[];
 
   /**
    * Array storing references to all child EventBox widgets.
@@ -100,10 +100,10 @@ export class _WeekGrid extends Gtk.Fixed {
     hook(
       this,
       cal,
-      "viewrange-changed",
-      (_, viewrange: Array<String>, weekEvents: Object) => {
+      "weekdates-changed",
+      (_, weekDates: Array<String>, weekEvents: Object) => {
         this.weekEvents = weekEvents;
-        this.viewrange = viewrange;
+        this.weekDates = weekDates;
 
         // Store widget references
         this.eventWidgets = [];
@@ -129,7 +129,7 @@ export class _WeekGrid extends Gtk.Fixed {
     for (let i = 0; i < 7; i++) {
       /* Clear existing widgets (TODO) */
 
-      this.layoutDate(this.viewrange[i]);
+      this.layoutDate(this.weekDates[i]);
     }
   };
 
@@ -140,7 +140,7 @@ export class _WeekGrid extends Gtk.Fixed {
   layoutDate = (date: string) => {
     let events: Array<Event> = this.weekEvents[date];
 
-    const index = this.viewrange.indexOf(date);
+    const index = this.weekDates.indexOf(date);
 
     let group: Array<Event> = [];
     let lastGroupEventEnd: number | null = 0;
@@ -284,13 +284,13 @@ export class _WeekGrid extends Gtk.Fixed {
       if (!isSorted) {
         this.put(
           group[i],
-          xPos + w * this.viewrange.indexOf(group[i].event.startDate),
+          xPos + w * this.weekDates.indexOf(group[i].event.startDate),
           yPos,
         );
       } else {
         this.move(
           group[i],
-          xPos + w * this.viewrange.indexOf(group[i].event.startDate),
+          xPos + w * this.weekDates.indexOf(group[i].event.startDate),
           yPos,
         );
       }

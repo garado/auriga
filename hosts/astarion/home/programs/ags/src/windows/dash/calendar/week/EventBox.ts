@@ -141,8 +141,8 @@ export class _EventBox extends Gtk.Box {
       /* Update data and UI based on new position */
       this.updatedEvent.startTime = `${fhToTimeStr(this.dragDataToFloatHour())}`;
       this.updatedEvent.endTime = `${fhToTimeStr(this.dragDataToFloatHour() + this.event.durationFH)}`;
-      this.updatedEvent.startDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
-      this.updatedEvent.endDate = `${cal.viewrange[this.dragDataToWeekday()]}`;
+      this.updatedEvent.startDate = `${cal.weekDates[this.dragDataToWeekday()]}`;
+      this.updatedEvent.endDate = `${cal.weekDates[this.dragDataToWeekday()]}`;
 
       this.times.label = `${this.updatedEvent.startTime} - ${this.updatedEvent.endTime}`;
     });
