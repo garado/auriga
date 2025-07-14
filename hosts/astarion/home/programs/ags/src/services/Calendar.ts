@@ -122,16 +122,16 @@ export default class Calendar extends GObject.Object {
   declare today: string;
 
   @property(Object)
-  declare weekDates: Array<string>;
+  declare weekDates: string[];
+
+  @property(Boolean)
+  declare initComplete: boolean;
 
   @property(Object)
-  declare weekEvents: Record<string, Array<Event>>;
+  declare weekEvents: Record<string, Event[]>;
 
   @signal(Object, Object)
-  declare weekdatesChanged: (
-    weekDates: Array<string>,
-    weekEvents: Object,
-  ) => void;
+  declare weekdatesChanged: (weekDates: string[], weekEvents: Object) => void;
 
   /* Private functions *******************************************************/
 
@@ -226,6 +226,7 @@ export default class Calendar extends GObject.Object {
 
   constructor() {
     super();
+    this.initComplete = false;
     this.#initWeekData();
   }
 
@@ -332,6 +333,7 @@ export default class Calendar extends GObject.Object {
     }
 
     this.emit("weekdates-changed", this.weekDates, this.weekEvents);
+    this.initComplete = true;
   }
 
   /**

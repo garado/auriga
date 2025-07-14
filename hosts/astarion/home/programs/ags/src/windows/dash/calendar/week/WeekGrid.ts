@@ -89,6 +89,11 @@ export class _WeekGrid extends Gtk.Fixed {
   @property(Object)
   declare nextWidgetId: number;
 
+  /**
+   */
+  @property(Boolean)
+  declare isRealized: boolean;
+
   // Private functions ---------------------------------------------------------
 
   constructor(props?: Partial<WeekGridProps>) {
@@ -97,30 +102,48 @@ export class _WeekGrid extends Gtk.Fixed {
     this.vexpand = false;
     this.hexpand = false;
 
-    hook(
-      this,
-      cal,
-      "weekdates-changed",
-      (_, weekDates: Array<String>, weekEvents: Object) => {
-        this.weekEvents = weekEvents;
-        this.weekDates = weekDates;
+    // Update this widget when new data is available
+    hook(this, cal, "weekdates-changed", () => {
+      this.onNewDataAvailable();
+    });
 
-        // Store widget references
-        this.eventWidgets = [];
-        this.id = 0;
-      },
-    );
+    // Sometimes calendar service finishes initializing before this widget does.
+    // In that case, the hook above won't get triggered. So also run the hook manually.
+    if (cal.initComplete) {
+      this.onNewDataAvailable();
+    }
 
-    // Before rendering, wait until this widget's size has been allocated.
-    // This happens shortly after the "realize" signal is emitted.
+    // Wait for size allocation before rendering widget so that child widgets can be properly positioned
     this.connect("realize", () => {
-      timeout(10, () => {
+      timeout(50, () => {
         this.containerHeight = this.get_allocated_height();
         this.containerWidth = this.get_allocated_width();
-        this.createAll();
+        this.isRealized = true;
+        this.tryRender();
       });
     });
   }
+
+  /**
+   * Runs when new data is available.
+   */
+  private onNewDataAvailable = () => {
+    this.weekEvents = cal.weekEvents;
+    this.weekDates = cal.weekDates;
+    this.eventWidgets = [];
+    this.nextWidgetId = 0;
+    this.tryRender();
+  };
+
+  /**
+   * Attempt to render the week grid.
+   * We can only render the widget if data is available AND size is allocated.
+   */
+  private tryRender = () => {
+    if (this.isRealized && cal.initComplete) {
+      this.createAll();
+    }
+  };
 
   /**
    * Render all events for every day in the given week.
@@ -199,7 +222,7 @@ export class _WeekGrid extends Gtk.Fixed {
       /* Multi-day events are handled in `MultiDayEvents.ts` */
       if (group[i].multiDay || group[i].allDay) continue;
 
-      const h = this.containerHeight * uiVars.heightScale;
+      const h = this.containerHeight;
       const w = this.containerWidth / 7;
 
       const xPos = (i / group.length) * (w / group.length);
@@ -273,7 +296,7 @@ export class _WeekGrid extends Gtk.Fixed {
     }
 
     for (let i = 0; i < group.length; i++) {
-      const h = this.containerHeight * uiVars.heightScale;
+      const h = this.containerHeight;
       const w = this.containerWidth / 7;
 
       const xPos = (i / group.length) * (w / group.length);
