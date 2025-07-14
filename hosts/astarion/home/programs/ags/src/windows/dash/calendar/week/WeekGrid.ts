@@ -20,7 +20,7 @@ import { Gtk, hook } from "astal/gtk4";
 import { property, register } from "astal/gobject";
 import { timeout } from "astal";
 
-import Calendar, { Event, uiVars } from "@/services/Calendar";
+import Calendar, { Event } from "@/services/Calendar";
 import { EventBox } from "@/windows/dash/calendar/week/EventBox";
 
 /*****************************************************************************
@@ -29,15 +29,26 @@ import { EventBox } from "@/windows/dash/calendar/week/EventBox";
 
 const cal = Calendar.get_default();
 
+const DAYS_PER_WEEK = 7;
+const HOURS_PER_DAY = 24;
+const REALIZATION_TIMEOUT_MS = 50;
+
 /*****************************************************************************
  * Helper functions
  *****************************************************************************/
 
 /**
- * Returns true if events A and B collide.
+ * Returns true if the two given events overlap.
+ *
+ * @param firstEvent - The first event to check for overlap
+ * @param secondEvent - The second event to check for overlap
+ * @returns True if the events overlap in time, false otherwise
  **/
-const collidesWith = (a: Event, b: Event): boolean => {
-  return !(a.endTS <= b.startTS || b.endTS <= a.startTS);
+const doEventsOverlap = (firstEvent: Event, secondEvent: Event): boolean => {
+  return !(
+    firstEvent.endTS <= secondEvent.startTS ||
+    secondEvent.endTS <= firstEvent.startTS
+  );
 };
 
 /*****************************************************************************
@@ -68,7 +79,7 @@ export class _WeekGrid extends Gtk.Fixed {
    * Gtk.Fixed doesn't automatically track children, so manual tracking is needed for manipulation and cleanup
    */
   @property(Object)
-  declare eventWidgets: (typeof EventBox)[];
+  declare eventWidgets: Gtk.Widget[];
 
   /**
    * The allocated pixel height of the WeekGrid widget, used for calculating event positions and sizes
@@ -90,6 +101,7 @@ export class _WeekGrid extends Gtk.Fixed {
   declare nextWidgetId: number;
 
   /**
+   * If widget has been allocated a size.
    */
   @property(Boolean)
   declare isRealized: boolean;
@@ -114,8 +126,11 @@ export class _WeekGrid extends Gtk.Fixed {
     }
 
     // Wait for size allocation before rendering widget so that child widgets can be properly positioned
+    // Size allocation is available shortly after the "realize" signal is emitted
+    // (Note: This WeekGrid is overlaid on top of the Gridlines widget, and therefore is allocated the same size
+    // as the Gridlines widget)
     this.connect("realize", () => {
-      timeout(50, () => {
+      timeout(REALIZATION_TIMEOUT_MS, () => {
         this.containerHeight = this.get_allocated_height();
         this.containerWidth = this.get_allocated_width();
         this.isRealized = true;
@@ -128,108 +143,138 @@ export class _WeekGrid extends Gtk.Fixed {
    * Runs when new data is available.
    */
   private onNewDataAvailable = () => {
+    // Store new data
     this.weekEvents = cal.weekEvents;
     this.weekDates = cal.weekDates;
+
+    // Reset widget state
     this.eventWidgets = [];
     this.nextWidgetId = 0;
+
     this.tryRender();
   };
 
   /**
+   * Removes all existing event widgets from the grid and resets widget tracking state.
+   */
+  private clearAllEventWidgets = () => {
+    this.eventWidgets.forEach((widget) => {
+      this.remove(widget);
+    });
+
+    this.eventWidgets = [];
+
+    this.nextWidgetId = 0;
+  };
+
+  /**
    * Attempt to render the week grid.
-   * We can only render the widget if data is available AND size is allocated.
+   * Only render the widget if data is available AND size is allocated.
    */
   private tryRender = () => {
     if (this.isRealized && cal.initComplete) {
-      this.createAll();
+      this.renderAllDays();
     }
   };
 
   /**
    * Render all events for every day in the given week.
    */
-  createAll = () => {
-    for (let i = 0; i < 7; i++) {
-      /* Clear existing widgets (TODO) */
+  private renderAllDays = () => {
+    this.clearAllEventWidgets();
 
-      this.layoutDate(this.weekDates[i]);
+    for (let dayIndex = 0; dayIndex < DAYS_PER_WEEK; dayIndex++) {
+      this.renderEventsForDate(this.weekDates[dayIndex]);
     }
   };
 
   /**
    * Render the events for a given date.
-   * @param {string} date - The date whose events to render.
+   *
+   * This function organizes overlapping events into groups and renders one group at a time.
+   * This is because overlapping events have special rendering logic.
+   *
+   * Assumption: `this.weekEvents` has events sorted chronologically.
+   *
+   * @param targetDate - The date whose events should be rendered (YYYY-MM-DD)
    */
-  layoutDate = (date: string) => {
-    let events: Array<Event> = this.weekEvents[date];
+  private renderEventsForDate = (targetDate: string) => {
+    const eventsForDate: Event[] = this.weekEvents[targetDate];
 
-    const index = this.weekDates.indexOf(date);
+    const dayIndex = this.weekDates.indexOf(targetDate);
 
-    let group: Array<Event> = [];
-    let lastGroupEventEnd: number | null = 0;
-    let placed = false;
+    let currentGroup: Event[] = [];
+    let lastGroupEventEnd: number = 0;
+    let wasEventPlaced = false;
 
-    events.forEach((currEvent) => {
-      if (currEvent.startFH >= lastGroupEventEnd) {
-        this.createCollidingEvents(group, index);
-        group = [];
-        lastGroupEventEnd = null;
+    eventsForDate.forEach((currentEvent) => {
+      // If current event starts after the last group ended, render the previous group
+      if (currentEvent.startFH >= lastGroupEventEnd) {
+        this.renderEventGroup(currentGroup, dayIndex);
+        currentGroup = [];
+        lastGroupEventEnd = 0;
       }
 
-      placed = false;
+      wasEventPlaced = false;
 
-      for (let i = 0; i < group.length; i++) {
-        if (collidesWith(group[i], currEvent)) {
-          group.push(currEvent);
-          placed = true;
+      // Try to place the current event in the existing group by checking for overlaps
+      for (let i = 0; i < currentGroup.length; i++) {
+        if (doEventsOverlap(currentGroup[i], currentEvent)) {
+          currentGroup.push(currentEvent);
+          wasEventPlaced = true;
           break;
         }
       }
 
-      if (!placed) {
-        this.createCollidingEvents(group, index);
-        group = [];
-        group.push(currEvent);
+      // If event doesn't overlap with current group, render current group and start new one
+      if (!wasEventPlaced) {
+        this.renderEventGroup(currentGroup, dayIndex);
+        currentGroup = [];
+        currentGroup.push(currentEvent);
       }
 
-      if (lastGroupEventEnd == null || currEvent.endFH > lastGroupEventEnd) {
-        lastGroupEventEnd = currEvent.endFH;
+      // Update the end time of the current group so we'll know if the next event overlaps with this group
+      if (lastGroupEventEnd == null || currentEvent.endFH > lastGroupEventEnd) {
+        lastGroupEventEnd = currentEvent.endFH;
       }
     });
 
-    if (group.length > 0) {
-      this.createCollidingEvents(group, index);
+    // Render any remaining events in the final group
+    if (currentGroup.length > 0) {
+      this.renderEventGroup(currentGroup, dayIndex);
     }
   };
 
   /**
-   * Render a group of overlapping eventboxes.
-   * If group.length == 1, then render the eventbox normally.
+   * Render a group of overlapping events within a specific day column.
+   * Events are sorted by duration (longest first) and start time (earliest first) for better visual hierarchy.
    *
-   * @param {Array<Event>} group - group of events to render
-   * @param {number} index - the index of the day of the week that is
-   * being rendered
+   * @param group - group of events to render
+   * @param dayIndex - the dayIndex of the day of the week that is being rendered
    */
-  createCollidingEvents = (group: Array<Event>, index: number) => {
-    group = group.sort((a, b) => {
-      if (a.durationFH > b.durationFH) return -1;
-      if (a.durationFH < b.durationFH) return 1;
-      if (a.startTS > b.startTS) return -1;
-      if (a.startTS > b.startTS) return 1;
+  renderEventGroup = (eventGroup: Event[], dayIndex: number) => {
+    const sortedGroup = eventGroup.sort((firstEvent, secondEvent) => {
+      if (firstEvent.durationFH > secondEvent.durationFH) return -1;
+      if (firstEvent.durationFH < secondEvent.durationFH) return 1;
+      if (firstEvent.startTS < secondEvent.startTS) return -1;
+      if (firstEvent.startTS > secondEvent.startTS) return 1;
+      return 0;
     });
 
-    for (let i = 0; i < group.length; i++) {
-      /* Multi-day events are handled in `MultiDayEvents.ts` */
-      if (group[i].multiDay || group[i].allDay) continue;
+    for (let eventIndex = 0; eventIndex < sortedGroup.length; eventIndex++) {
+      const currentEvent = sortedGroup[eventIndex];
+
+      // Skip multi-day and all-day events (handled elsewhere)
+      if (currentEvent.multiDay || currentEvent.allDay) continue;
 
       const h = this.containerHeight;
-      const w = this.containerWidth / 7;
+      const w = this.containerWidth / DAYS_PER_WEEK;
 
-      const xPos = (i / group.length) * (w / group.length);
-      const yPos = group[i].startFH * (h / 24);
+      const xPos = (eventIndex / sortedGroup.length) * (w / sortedGroup.length);
+      const yPos = currentEvent.startFH * (h / HOURS_PER_DAY);
 
       const eBox = EventBox({
-        event: group[i],
+        event: currentEvent,
         dayHeight: h,
         dayWidth: w,
         id: this.nextWidgetId++,
@@ -237,85 +282,93 @@ export class _WeekGrid extends Gtk.Fixed {
 
       eBox.widthRequest = w - xPos;
 
-      /* Make sure to update UI when dragged */
-      eBox.connect("dragged", this.renderEventsAfterChange);
+      eBox.connect("dragged", this.handleDragEventComplete);
 
-      this.put(eBox, xPos + w * index, yPos);
+      this.put(eBox, xPos + w * dayIndex, yPos);
 
-      /* Store child reference since Gtk.Fixed doesn't store it automatically */
+      // Store child reference since Gtk.Fixed doesn't store it automatically
       this.eventWidgets.push(eBox);
     }
   };
 
   /**
-   * Handle redrawing after an eventbox is moved.
-   * To avoid UI update issues, this function finds the eventboxes
-   * that were affected by the move, and only redraws/repositions
-   * those.
+   * Handle repositioning after an eventbox is dragged.
    *
-   * @param {EventBox} moved - The eventbox that was moved.
+   * This repositions events affected by the old position, then repositions events affected by the new position.
+   *
+   * @param moved - The eventbox widget that was moved.
    */
-  renderEventsAfterChange = (moved) => {
-    /* Find events that collided with the moved event's previous position. */
-    let collisionsOnOldDate = this.eventWidgets.filter((e) => {
-      return collidesWith(e.event, moved.event);
+  handleDragEventComplete = (draggedEvent: any) => {
+    const collisionsOnOldDate = this.eventWidgets.filter((event: any) => {
+      return doEventsOverlap(event.event, draggedEvent.event);
     });
 
-    this.replaceCollidingEvents(collisionsOnOldDate);
+    this.repositionEventGroup(collisionsOnOldDate);
 
-    /* Render new date */
-    moved.event = moved.updatedEvent;
+    // Update stored event data to new position
+    draggedEvent.event = draggedEvent.updatedEvent;
 
-    const collisionsOnNewDate = this.eventWidgets.filter((e) => {
-      return collidesWith(e.event, moved.event);
+    const collisionsOnNewDate = this.eventWidgets.filter((event: any) => {
+      return doEventsOverlap(event.event, draggedEvent.event);
     });
 
-    this.replaceCollidingEvents(collisionsOnNewDate);
+    this.repositionEventGroup(collisionsOnNewDate);
 
-    moved.updateUI();
+    draggedEvent.updateUI();
   };
 
-  replaceCollidingEvents = (group) => {
-    group = group.sort((a, b) => {
+  /**
+   * Repositions a group of overlapping events to maintain proper layout after changes.
+   * Handles z-ordering by removing and re-adding widgets if their IDs are out of order.
+   *
+   * @param eventGroup - Array of EventBox widgets that need repositioning
+   */
+  repositionEventGroup = (eventGroup: any[]) => {
+    const sortedGroup = eventGroup.sort((a: any, b: any) => {
       if (a.event.durationFH > b.event.durationFH) return -1;
       if (a.event.durationFH < b.event.durationFH) return 1;
-      if (a.event.startTS > b.event.startTS) return -1;
+      if (a.event.startTS < b.event.startTS) return -1;
       if (a.event.startTS > b.event.startTS) return 1;
+      return 0;
     });
 
-    /* You cannot control z-offset of Gtk.Fixed children.
-     * Widgets that are added first are drawn first. */
-    const idList = group.map((e) => e.id);
-    const isSorted = idList.every((val, i) => i === 0 || val >= idList[i - 1]);
+    // Gtk.Fixed has no z-order property - the "z-order" is defined by the order in which widgets are added
+    // So ensure that widgets are sorted correctly after repositioning
+    const widgetIds = sortedGroup.map((e) => e.id);
+    const isSorted = widgetIds.every(
+      (val, i) => i === 0 || val >= widgetIds[i - 1],
+    );
 
+    // If sort order is wrong, remove widgets and reassign IDs to fix drawing order
     if (!isSorted) {
-      group.map((e) => {
-        this.remove(e);
-        e.id = this.nextWidgetId++;
+      sortedGroup.forEach((eventWidget) => {
+        this.remove(eventWidget);
+        eventWidget.id = this.nextWidgetId++;
       });
     }
 
-    for (let i = 0; i < group.length; i++) {
+    // Reposition all events in the group
+    for (let eventIndex = 0; eventIndex < sortedGroup.length; eventIndex++) {
+      const currentEventWidget = sortedGroup[eventIndex];
+
       const h = this.containerHeight;
-      const w = this.containerWidth / 7;
+      const w = this.containerWidth / DAYS_PER_WEEK;
 
-      const xPos = (i / group.length) * (w / group.length);
-      const yPos = group[i].event.startFH * (h / 24);
+      const xPos = (eventIndex / sortedGroup.length) * (w / sortedGroup.length);
+      const yPos = currentEventWidget.event.startFH * (h / HOURS_PER_DAY);
 
-      group[i].widthRequest = w - xPos;
+      currentEventWidget.widthRequest = w - xPos;
+
+      const dayColumnIndex = this.weekDates.indexOf(
+        currentEventWidget.event.startDate,
+      );
+
+      const finalXPos = xPos + w * dayColumnIndex;
 
       if (!isSorted) {
-        this.put(
-          group[i],
-          xPos + w * this.weekDates.indexOf(group[i].event.startDate),
-          yPos,
-        );
+        this.put(currentEventWidget, finalXPos, yPos);
       } else {
-        this.move(
-          group[i],
-          xPos + w * this.weekDates.indexOf(group[i].event.startDate),
-          yPos,
-        );
+        this.move(currentEventWidget, finalXPos, yPos);
       }
     }
   };
