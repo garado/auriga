@@ -1,17 +1,37 @@
-/* Custom widget implementation for calendar week view, which
- * displays all events for a given week. */
+/**
+ * █░█░█ █▀▀ █▀▀ █▄▀   █▀▀ █▀█ █ █▀▄
+ * ▀▄▀▄▀ ██▄ ██▄ █░█   █▄█ █▀▄ █ █▄▀
+ *
+ * Week event grid container for 7-day calendar view.
+ *
+ * This component provides the main container/grid where calendar events are positioned
+ * and displayed within a weekly view. It handles the layout logic for placing events
+ * in their appropriate time slots and day columns, similar to Google Calendar's week view.
+ *
+ * @TODO Add keyboard navigation support
+ * @TODO Optimize rendering for large numbers of events
+ */
 
-import { Gdk, Gtk, Widget, hook } from "astal/gtk4";
-import { register, property, signal } from "astal/gobject";
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
+import { Gtk, hook } from "astal/gtk4";
+import { property, register } from "astal/gobject";
 import { timeout } from "astal";
-import Calendar, { Event, fhToTimeStr, uiVars } from "@/services/Calendar";
+
+import Calendar, { Event, uiVars } from "@/services/Calendar";
 import { EventBox } from "@/windows/dash/calendar/week/EventBox";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const cal = Calendar.get_default();
 
-/*********************************************************
- * MISC
- *********************************************************/
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 /**
  * Returns true if events A and B collide.
@@ -20,29 +40,58 @@ const collidesWith = (a: Event, b: Event): boolean => {
   return !(a.endTS <= b.startTS || b.endTS <= a.startTS);
 };
 
-/*********************************************************
- * WIDGET DEFINITION
- *********************************************************/
+/*****************************************************************************
+ * Class definition
+ *****************************************************************************/
 
-interface WeekViewProps extends Gtk.Fixed.ConstructorProps {}
+interface WeekGridProps extends Gtk.Fixed.ConstructorProps {}
 
-@register({ GTypeName: "WeekView" })
-export class _WeekView extends Gtk.Fixed {
-  /* Properties */
+@register({ GTypeName: "WeekGrid" })
+export class _WeekGrid extends Gtk.Fixed {
+  // Properties ----------------------------------------------------------------
 
-  /* Private */
-  private viewdata;
-  private viewrange;
-  private children;
-  private height;
-  private width;
-  private id;
+  /**
+   * Event data organized by date for the current week.
+   */
+  @property(Object)
+  declare weekEvents: Record<string, Event[]>;
 
-  /**********************************************
-   * PRIVATE FUNCTIONS
-   **********************************************/
+  /**
+   * Array of 7 date strings (YYYY-MM-DD) representing the dates for the current week
+   * being displayed.
+   */
+  @property(Object)
+  declare viewrange: string[];
 
-  constructor(props?: Partial<WeekViewProps>) {
+  /**
+   * Array storing references to all child EventBox widgets.
+   * Gtk.Fixed doesn't automatically track children, so manual tracking is needed for manipulation and cleanup
+   */
+  @property(Object)
+  declare eventWidgets: (typeof EventBox)[];
+
+  /**
+   * The allocated pixel height of the WeekGrid widget, used for calculating event positions and sizes
+   */
+  @property(Number)
+  declare containerHeight: number;
+
+  /**
+   * The allocated pixel width of the WeekGrid widget, used for calculating event positions and sizes
+   */
+  @property(Number)
+  declare containerWidth: number;
+
+  /**
+   * Auto-incrementing counter used to assign unique IDs to EventBox widgets.
+   * Higher IDs are rendered on top (z-order)
+   */
+  @property(Object)
+  declare nextWidgetId: number;
+
+  // Private functions ---------------------------------------------------------
+
+  constructor(props?: Partial<WeekGridProps>) {
     super(props as any);
 
     this.vexpand = false;
@@ -52,23 +101,22 @@ export class _WeekView extends Gtk.Fixed {
       this,
       cal,
       "viewrange-changed",
-      (_, viewrange: Array<String>, viewdata: Object) => {
-        this.viewdata = viewdata;
+      (_, viewrange: Array<String>, weekEvents: Object) => {
+        this.weekEvents = weekEvents;
         this.viewrange = viewrange;
 
-        /* Create a place to store widget references */
-        this.children = [];
+        // Store widget references
+        this.eventWidgets = [];
         this.id = 0;
       },
     );
 
-    /* Before rendering, we need to wait until this widget's size
-     * has been allocated. This happens shortly after the "realize"
-     * signal is emitted. */
+    // Before rendering, wait until this widget's size has been allocated.
+    // This happens shortly after the "realize" signal is emitted.
     this.connect("realize", () => {
       timeout(10, () => {
-        this.height = this.get_allocated_height();
-        this.width = this.get_allocated_width();
+        this.containerHeight = this.get_allocated_height();
+        this.containerWidth = this.get_allocated_width();
         this.createAll();
       });
     });
@@ -90,7 +138,7 @@ export class _WeekView extends Gtk.Fixed {
    * @param {string} date - The date whose events to render.
    */
   layoutDate = (date: string) => {
-    let events: Array<Event> = this.viewdata[date];
+    let events: Array<Event> = this.weekEvents[date];
 
     const index = this.viewrange.indexOf(date);
 
@@ -151,8 +199,8 @@ export class _WeekView extends Gtk.Fixed {
       /* Multi-day events are handled in `MultiDayEvents.ts` */
       if (group[i].multiDay || group[i].allDay) continue;
 
-      const h = this.height * uiVars.heightScale;
-      const w = this.width / 7;
+      const h = this.containerHeight * uiVars.heightScale;
+      const w = this.containerWidth / 7;
 
       const xPos = (i / group.length) * (w / group.length);
       const yPos = group[i].startFH * (h / 24);
@@ -161,7 +209,7 @@ export class _WeekView extends Gtk.Fixed {
         event: group[i],
         dayHeight: h,
         dayWidth: w,
-        id: this.id++,
+        id: this.nextWidgetId++,
       });
 
       eBox.widthRequest = w - xPos;
@@ -172,7 +220,7 @@ export class _WeekView extends Gtk.Fixed {
       this.put(eBox, xPos + w * index, yPos);
 
       /* Store child reference since Gtk.Fixed doesn't store it automatically */
-      this.children.push(eBox);
+      this.eventWidgets.push(eBox);
     }
   };
 
@@ -186,7 +234,7 @@ export class _WeekView extends Gtk.Fixed {
    */
   renderEventsAfterChange = (moved) => {
     /* Find events that collided with the moved event's previous position. */
-    let collisionsOnOldDate = this.children.filter((e) => {
+    let collisionsOnOldDate = this.eventWidgets.filter((e) => {
       return collidesWith(e.event, moved.event);
     });
 
@@ -195,7 +243,7 @@ export class _WeekView extends Gtk.Fixed {
     /* Render new date */
     moved.event = moved.updatedEvent;
 
-    const collisionsOnNewDate = this.children.filter((e) => {
+    const collisionsOnNewDate = this.eventWidgets.filter((e) => {
       return collidesWith(e.event, moved.event);
     });
 
@@ -220,13 +268,13 @@ export class _WeekView extends Gtk.Fixed {
     if (!isSorted) {
       group.map((e) => {
         this.remove(e);
-        e.id = this.id++;
+        e.id = this.nextWidgetId++;
       });
     }
 
     for (let i = 0; i < group.length; i++) {
-      const h = this.height * uiVars.heightScale;
-      const w = this.width / 7;
+      const h = this.containerHeight * uiVars.heightScale;
+      const w = this.containerWidth / 7;
 
       const xPos = (i / group.length) * (w / group.length);
       const yPos = group[i].event.startFH * (h / 24);
@@ -250,6 +298,6 @@ export class _WeekView extends Gtk.Fixed {
   };
 }
 
-export const WeekView = (props: Partial<WeekViewProps>) => {
-  return new _WeekView(props);
+export const WeekGrid = (props?: Partial<WeekGridProps>) => {
+  return new _WeekGrid(props);
 };

@@ -125,12 +125,12 @@ export default class Calendar extends GObject.Object {
   declare viewrange: Array<string>;
 
   @property(Object)
-  declare viewdata: Record<string, Array<Event>>;
+  declare weekEvents: Record<string, Array<Event>>;
 
   @signal(Object, Object)
   declare viewrangeChanged: (
     viewrange: Array<string>,
-    viewdata: Object,
+    weekEvents: Object,
   ) => void;
 
   /* Private functions *******************************************************/
@@ -156,7 +156,7 @@ export default class Calendar extends GObject.Object {
    */
   queryEventsFromDate(dateStr: string) {
     if (this.viewrange.includes(dateStr)) {
-      return this.viewdata[dateStr];
+      return this.weekEvents[dateStr];
     }
 
     const cmd = `grep -E '(${dateStr})' ${TMPFILE}`;
@@ -248,7 +248,7 @@ export default class Calendar extends GObject.Object {
     log("calService", `#setNewViewrange: Starting ${dateStr}`);
 
     this.viewrange = [];
-    this.viewdata = {};
+    this.weekEvents = {};
 
     // Initialize the timestamp to the Sunday of the given week
     const date = new Date(dateStr);
@@ -260,7 +260,7 @@ export default class Calendar extends GObject.Object {
       const localDate = new Date(ts);
       const dateStr = this.getDateStr(localDate);
       this.viewrange.push(dateStr);
-      this.viewdata[dateStr] = [];
+      this.weekEvents[dateStr] = [];
       ts += MS_PER_DAY;
     }
 
@@ -268,7 +268,7 @@ export default class Calendar extends GObject.Object {
   }
 
   /**
-   * Read cached data from cache and save to this.viewdata for displaying
+   * Read cached data from cache and save to this.weekEvents for displaying
    *
    * @param dates Array of strings (YYYY-MM-DD) which represent the dates to whose data to fetch from the cache.
    */
@@ -319,19 +319,19 @@ export default class Calendar extends GObject.Object {
       if (event === null) return;
 
       if (event.startedBeforeThisWeek) {
-        this.viewdata[event.endDate].push(event);
+        this.weekEvents[event.endDate].push(event);
       } else {
-        this.viewdata[event.startDate].push(event);
+        this.weekEvents[event.startDate].push(event);
       }
     });
 
     // Sort events for each day
     for (let i = 0; i < this.viewrange.length; i++) {
       const thisDateStr = this.viewrange[i];
-      this.#sortEvents(this.viewdata[thisDateStr]);
+      this.#sortEvents(this.weekEvents[thisDateStr]);
     }
 
-    this.emit("viewrange-changed", this.viewrange, this.viewdata);
+    this.emit("viewrange-changed", this.viewrange, this.weekEvents);
   }
 
   /**
