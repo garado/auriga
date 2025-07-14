@@ -9,7 +9,7 @@
  * Imports
  *****************************************************************************/
 
-import { Gtk, Widget, astalify } from "astal/gtk4";
+import { Gtk, Widget, astalify, hook } from "astal/gtk4";
 import { bind } from "astal";
 import { Visualizer } from "@/components/Visualizer";
 import Mpris from "gi://AstalMpris";
@@ -36,6 +36,18 @@ const lengthStr = (length: number): string => {
   const min = Math.floor(length / 60);
   const sec = Math.floor(length % 60).toFixed(2);
   return `${min}:${sec}`;
+};
+
+/**
+ * Get path for cover art to display.
+ * @returns Gio.File for the cover art image
+ */
+const getFileForCoverArt = (coverArt: string | null): Gio.File => {
+  const path =
+    coverArt ||
+    "/home/alexis/github/dotfiles/hosts/astarion/home/programs/ags/src/assets/default-player-bg.jpg";
+
+  return Gio.File.new_for_path(path);
 };
 
 /*****************************************************************************
@@ -75,16 +87,17 @@ const MediaPlayer = (player: Mpris.Player) => {
     setup: (self) => {
       self.set_content_fit(Gtk.ContentFit.COVER);
 
+      // Set cover art
       if (player != null) {
-        const coverArtPath = bind(player, "coverArt").as((c) => `${c}`);
-        const file = Gio.File.new_for_path(coverArtPath.get());
-        self.set_file(file);
-      } else {
-        const file = Gio.File.new_for_path(
-          "/home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/src/assets/default-player-bg.jpg",
-        );
+        // Set initial file
+        self.set_file(getFileForCoverArt(player.coverArt));
 
-        self.set_file(file);
+        // Update reactively
+        hook(self, player, "notify::coverArt", () => {
+          self.set_file(getFileForCoverArt(player.coverArt));
+        });
+      } else {
+        self.set_file(getFileForCoverArt(null));
       }
     },
   });
