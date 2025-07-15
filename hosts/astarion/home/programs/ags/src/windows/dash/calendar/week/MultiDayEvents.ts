@@ -1,9 +1,29 @@
+/**
+ * █▀▄▀█ █░█ █░░ ▀█▀ █ ▄▄ █▀▄ ▄▀█ █▄█   █▀▀ █░█ █▀▀ █▄░█ ▀█▀ █▀
+ * █░▀░█ █▄█ █▄▄ ░█░ █ ░░ █▄▀ █▀█ ░█░   ██▄ ▀▄▀ ██▄ █░▀█ ░█░ ▄█
+ *
+ * Widget pinned above the week grid showing all-day or multi-day events.
+ * Very WIP.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gtk, Widget, astalify } from "astal/gtk4";
 import { GLib } from "astal";
 import Calendar, { DAY_NAMES } from "@/services/Calendar";
 import { Gridlines } from "@/windows/dash/calendar/week/Gridlines";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const Fixed = astalify(Gtk.Fixed);
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 /**
  * Widget showing multi-day events for the week.

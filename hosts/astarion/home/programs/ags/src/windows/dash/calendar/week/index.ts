@@ -9,12 +9,12 @@
  * Imports
  *****************************************************************************/
 
-import { DateLabels } from "@/windows/dash/calendar/week/DateLabels";
 import { Gridlines } from "@/windows/dash/calendar/week/Gridlines";
 import { MultiDayEvents } from "@/windows/dash/calendar/week/MultiDayEvents";
 import { WeekGrid } from "@/windows/dash/calendar/week/WeekGrid";
 import { astalify, Gtk, Widget } from "astal/gtk4";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { WeekDateHeaders } from "./WeekDateHeaders";
 
 /*****************************************************************************
  * Widget definition
@@ -24,7 +24,7 @@ export const Week = () => {
   const Scrollable = astalify(Gtk.ScrolledWindow);
 
   // Instantiate components
-  const _DateLabels = DateLabels();
+  const _WeekDateHeaders = WeekDateHeaders();
   const _MultiDayEvents = MultiDayEvents();
   const _WeekGridContent = WeekGrid();
   const _Gridlines = Gridlines();
@@ -49,7 +49,7 @@ export const Week = () => {
     vertical: true,
     vexpand: true,
     hexpand: true,
-    children: [_DateLabels, _MultiDayEvents, WeekGridContainer],
+    children: [_WeekDateHeaders, _MultiDayEvents, WeekGridContainer],
     setup: (self) => {
       setupEventController({
         widget: self,
