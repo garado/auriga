@@ -44,60 +44,58 @@ const CSS_CLASSES = {
 const BUTTON_LAYOUT = [
   // Row 1: Memory and clear functions
   [
-    { text: "MC", type: "memory", tooltip: "Memory Clear" },
-    { text: "MR", type: "memory", tooltip: "Memory Recall" },
-    { text: "M+", type: "memory", tooltip: "Memory Add" },
-    { text: "M-", type: "memory", tooltip: "Memory Subtract" },
+    { text: "MC", type: "memory" },
+    { text: "MR", type: "memory" },
+    { text: "M+", type: "memory" },
+    { text: "M-", type: "memory" },
   ],
   // Row 2: Advanced functions
   [
-    { text: "√", type: "function", tooltip: "Square Root", action: "sqrt" },
-    { text: "x²", type: "function", tooltip: "Square", action: "square" },
+    { text: "√", type: "function", action: "sqrt" },
+    { text: "x²", type: "function", action: "square" },
     {
       text: "1/x",
       type: "function",
-      tooltip: "Reciprocal",
       action: "reciprocal",
     },
-    { text: "C", type: "clear", tooltip: "Clear All" },
+    { text: "C", type: "clear" },
   ],
   // Row 3: Numbers and basic operations
   [
-    { text: "7", type: "number", tooltip: "Seven" },
-    { text: "8", type: "number", tooltip: "Eight" },
-    { text: "9", type: "number", tooltip: "Nine" },
-    { text: "÷", type: "operator", tooltip: "Divide", action: "/" },
+    { text: "7", type: "number" },
+    { text: "8", type: "number" },
+    { text: "9", type: "number" },
+    { text: "÷", type: "operator", action: "/" },
   ],
   // Row 4
   [
-    { text: "4", type: "number", tooltip: "Four" },
-    { text: "5", type: "number", tooltip: "Five" },
-    { text: "6", type: "number", tooltip: "Six" },
-    { text: "×", type: "operator", tooltip: "Multiply", action: "*" },
+    { text: "4", type: "number" },
+    { text: "5", type: "number" },
+    { text: "6", type: "number" },
+    { text: "×", type: "operator", action: "*" },
   ],
   // Row 5
   [
-    { text: "1", type: "number", tooltip: "One" },
-    { text: "2", type: "number", tooltip: "Two" },
-    { text: "3", type: "number", tooltip: "Three" },
-    { text: "−", type: "operator", tooltip: "Subtract", action: "-" },
+    { text: "1", type: "number" },
+    { text: "2", type: "number" },
+    { text: "3", type: "number" },
+    { text: "−", type: "operator", action: "-" },
   ],
   // Row 6
   [
-    { text: "0", type: "number", tooltip: "Zero", span: 2 },
-    { text: ".", type: "number", tooltip: "Decimal Point" },
-    { text: "+", type: "operator", tooltip: "Add" },
+    { text: "0", type: "number", span: 2 },
+    { text: ".", type: "number" },
+    { text: "+", type: "operator" },
   ],
   // Row 7
   [
     {
       text: "⌫",
       type: "special",
-      tooltip: "Backspace",
       action: "backspace",
       span: 2,
     },
-    { text: "=", type: "equals", tooltip: "Calculate", span: 2 },
+    { text: "=", type: "equals", span: 2 },
   ],
 ] as const;
 
@@ -141,7 +139,6 @@ interface ButtonConfig {
     | "equals"
     | "clear"
     | "memory";
-  tooltip: string;
   action?: string;
   span?: number;
 }
@@ -532,7 +529,6 @@ const createCalculatorButton = (config: ButtonConfig) => {
   return Widget.Button({
     cssClasses: getCssClasses(),
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    tooltipText: config.tooltip,
     child: Widget.Label({
       label: config.text,
     }),
