@@ -12,11 +12,11 @@
 import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 import { bind, Variable } from "astal";
 
-import Home from "@/windows/dash/home/Home";
-import Ledger from "@/windows/dash/ledger/Ledger";
-import Calendar from "@/windows/dash/calendar/Calendar";
-import Goals from "@/windows/dash/goals/";
-import Tasks from "@/windows/dash/tasks/Tasks";
+import Home from "@/windows/dash/home";
+import Ledger from "@/windows/dash/ledger";
+import Calendar from "@/windows/dash/calendar";
+import Goals from "@/windows/dash/goals";
+import Tasks from "@/windows/dash/tasks";
 import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 

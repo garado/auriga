@@ -2,7 +2,7 @@ import { App, Astal, Gtk, Widget, astalify } from "astal/gtk4";
 import { Variable, GLib, bind } from "astal";
 
 import { Gemini } from "@/windows/utility/Gemini.ts";
-import { Tools } from "@/windows/utility/tools/Tools.ts";
+import { Tools } from "@/windows/utility/tools";
 
 /******************************************
  * MODULE-LEVEL VARIABLES

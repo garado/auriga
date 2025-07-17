@@ -13,7 +13,7 @@
  * Imports
  *****************************************************************************/
 
-import { Schedule } from "@/windows/dash/calendar/schedule/Schedule";
+import { Schedule } from "@/windows/dash/calendar/schedule";
 import { DashTabLayout } from "@/components/DashTabLayout";
 import { Week } from "./week";
 

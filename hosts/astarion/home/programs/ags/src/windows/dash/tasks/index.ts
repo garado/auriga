@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 import { DashTabLayout } from "@/components/DashTabLayout.ts";
-import Projects from "./projects/Projects";
+import Projects from "./projects/";
 
 /*****************************************************************************
  * Widget definition

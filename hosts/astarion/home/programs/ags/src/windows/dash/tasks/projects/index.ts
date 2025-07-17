@@ -15,7 +15,7 @@
 
 import { Widget } from "astal/gtk4";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
-import Sidebar from "./sidebar/Sidebar";
+import Sidebar from "./sidebar";
 import Tasklist from "./TaskList";
 
 /*****************************************************************************

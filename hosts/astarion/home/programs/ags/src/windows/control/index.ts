@@ -14,7 +14,7 @@ import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 import { SysFetch } from "@/windows/control/SysFetch.ts";
 import { Notifications } from "@/windows/control/Notifications";
-import { Actions } from "@/windows/control/actions/Actions";
+import { Actions } from "@/windows/control/actions";
 import { Theme } from "@/windows/control/settings/Theme.ts";
 import { PowerProfiles } from "@/windows/control/settings/PowerProfiles.ts";
 import { Network } from "@/windows/control/settings/Network.ts";

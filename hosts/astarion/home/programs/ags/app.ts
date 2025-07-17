@@ -3,12 +3,12 @@ import { exec } from "astal/process";
 import { timeout } from "astal/time";
 
 import "@/globals.ts";
-import Bar from "@/windows/bar/Bar.ts";
-import Dash from "@/windows/dash/Dash.ts";
-import Utility from "@/windows/utility/Utility.ts";
-import Control from "@/windows/control/Control.ts";
-import Launcher from "@/windows/launcher/Launcher";
-import Notifications from "@/windows/notifications/Notifications";
+import Bar from "@/windows/bar";
+import Dash from "@/windows/dash";
+import Utility from "@/windows/utility";
+import Control from "@/windows/control";
+import Launcher from "@/windows/launcher";
+import Notifications from "@/windows/notifications";
 
 const TOGGLEABLE_WINDOWS = ["dash", "utility", "control", "launcher"];
 
