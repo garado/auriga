@@ -1,35 +1,47 @@
-/* █▀▄ ▄▀█ █▀ █░█   ▀█▀ ▄▀█ █▄▄   █░░ ▄▀█ █▄█ █▀█ █░█ ▀█▀ */
-/* █▄▀ █▀█ ▄█ █▀█   ░█░ █▀█ █▄█   █▄▄ █▀█ ░█░ █▄█ █▄█ ░█░ */
+/**
+ * █▀▄ ▄▀█ █▀ █░█   ▀█▀ ▄▀█ █▄▄   █░░ ▄▀█ █▄█ █▀█ █░█ ▀█▀
+ * █▄▀ █▀█ ▄█ █▀█   ░█░ █▀█ █▄█   █▄▄ █▀█ ░█░ █▄█ █▄█ ░█░
+ *
+ * Provides consistent implementation for dashboard tabs.
+ * Includes tab header, action buttons, and page switch buttons.
+ */
 
-/* Provides consistent implementation for dashboard tabs.
- * Includes tab header, action buttons, and page switch buttons. */
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
-import { Gtk, Gdk, Widget } from "astal/gtk4";
+import { Gtk, Widget } from "astal/gtk4";
 import { bind, Variable } from "astal";
+import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
 import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
-import { SmartStack } from "@/components/SmartStack";
+
+/*****************************************************************************
+ * Types and interfaces
+ *****************************************************************************/
 
 export type DashLayoutAction = {
   name: string;
   action: () => void;
 };
 
-/**
- * Custom type for dash layouts
- */
+// Custom type for dash layouts
 export type DashLayout = {
-  name: string /* Name of tab */;
-  pages: Array<Object> /* Pages to switch between */;
-  actions?: DashLayoutAction[] /* Global actions for the tab */;
+  name: string; // Name of tab
+  pages: Array<AnimatedStackChild>; // Pages to switch between
+  actions?: DashLayoutAction[]; // Global actions for the tab
   cssClasses?: Array<string>;
 };
 
+interface DashTabWidget extends Gtk.Box {
+  controller?: Gtk.EventControllerKey;
+}
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
+
 export const DashTabLayout = (dashLayout: DashLayout) => {
-  const activePage = Variable(dashLayout.pages[0].name);
-
-  const ActionButton = () => {};
-
-  const ActionButtonContainer = () => {};
+  const activePage: Variable<string> = Variable(dashLayout.pages[0].name);
 
   const PageButtonContainer = () =>
     SegmentedButtonGroup({
@@ -54,24 +66,23 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
     endWidget: PageButtonContainer(),
   });
 
-  const PageStack = SmartStack({
-    cssClasses: [...["page-stack"], ...dashLayout.cssClasses],
+  const PageStack = AnimatedStack({
+    cssClasses: [...["page-stack"], ...(dashLayout.cssClasses || [])],
     children: dashLayout.pages,
-    bindNamedSwitchTo: activePage,
+    activePageName: activePage,
   });
 
-  /**
-   * The final widget to return
-   */
-  const FinalWidget = Widget.Box({
+  return Widget.Box({
     cssClasses: ["tab-layout"],
-    orientation: 1,
+    orientation: Gtk.Orientation.VERTICAL,
     canFocus: true,
     children: [HeaderBar, PageStack],
     setup: (self) => {
-      self.controller = new Gtk.EventControllerKey();
-      self.add_controller(self.controller);
-      self.controller.connect("key-pressed", (controller, keyval) => {
+      const controller = new Gtk.EventControllerKey();
+      (self as DashTabWidget).controller = controller;
+      self.add_controller(controller);
+
+      controller.connect("key-pressed", (controller, keyval) => {
         log("dashKeyController", "DashTabLayout");
         switch (keyval) {
           default:
@@ -81,6 +92,4 @@ export const DashTabLayout = (dashLayout: DashLayout) => {
       });
     },
   });
-
-  return FinalWidget;
 };

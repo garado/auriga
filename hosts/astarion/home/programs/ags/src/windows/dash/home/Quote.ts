@@ -1,20 +1,35 @@
-/* █▀█ █░█ █▀█ ▀█▀ █▀▀ */
-/* ▀▀█ █▄█ █▄█ ░█░ ██▄ */
+/**
+ * █▀█ █░█ █▀█ ▀█▀ █▀▀
+ * ▀▀█ █▄█ █▄█ ░█░ ██▄
+ *
+ * Shows quote.
+ */
 
-/* Shows random quote from UserConfig. */
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { Gtk, Widget } from "astal/gtk4";
 import { Variable, bind } from "astal";
 
 import UserConfig from "../../../../userconfig.js";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const QUOTE_INDEX = 0;
 const AUTHOR_INDEX = 1;
+
 const quotes = UserConfig.quotes;
 
 const currentQuote = Variable(
   quotes[Math.floor(Math.random() * quotes.length)],
 );
+
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 // // Change quote every time the dashboard is closed
 // DashService.connect('dash-state-changed', (_, visible) => {
@@ -23,6 +38,10 @@ const currentQuote = Variable(
 //     currentQuote.value = quotes[Math.floor(Math.random() * quotes.length)]
 //   }
 // })
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 const QuoteText = () =>
   Widget.Label({

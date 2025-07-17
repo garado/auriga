@@ -2,8 +2,14 @@
  * ▀█▀ ▄▀█ █▀ █▄▀   █░░ █ █▀ ▀█▀
  * ░█░ █▀█ ▄█ █░█   █▄▄ █ ▄█ ░█░
  *
- * Shows tasks for the currently selected project.
+ * Displays tasks for the currently selected project.
+ *
+ * Used as component within 'Projects' page.
  */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { Gdk, Gtk, Widget, astalify, hook } from "astal/gtk4";
 import Tasks, { Task } from "@/services/Tasks";
@@ -11,7 +17,15 @@ import { relativeTimeFromISO } from "@/utils/Helpers";
 import { bind } from "astal";
 import Pango from "gi://Pango?version=1.0";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const ts = Tasks.get_default();
+
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 const commonPrefix = (str1: string, str2: string): string => {
   let prefix = "";
@@ -24,8 +38,12 @@ const commonPrefix = (str1: string, str2: string): string => {
   return prefix;
 };
 
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
+
 /**
- * Show if no tasks are present.
+ * Shown if no tasks are present.
  */
 const Placeholder = () =>
   Widget.Label({
@@ -34,8 +52,7 @@ const Placeholder = () =>
   });
 
 /**
- * Constructor for top bar showing statistics for the currently selected
- * project.
+ * Constructor for top bar which shows statistics for the currently selected project.
  */
 const TopBar = () => {
   const Header = Widget.CenterBox({
@@ -48,6 +65,9 @@ const TopBar = () => {
     }),
   });
 
+  /**
+   * Shows full project ancestry. (all parents of the project)
+   */
   const Breadcrumbs = Widget.Box({
     cssClasses: ["breadcrumbs"],
     children: bind(ts, "selectedProject").as((x) => {
@@ -124,8 +144,8 @@ const TaskWidget = (task: Task) => {
     },
   });
 
-  /* My task urgencies appear to be roughly in the range 0 to 25ish.
-   * Convert to range 1-5, so we can assign different shades of red to it. */
+  // My task urgencies appear to be roughly in the range 0 to 25ish
+  // Convert to range 1-5, so we can assign 5 different shades of red to it.
   const normalizedUrgency = Math.round((task.urgency / 25) * 5);
 
   return Widget.CenterBox({
@@ -148,6 +168,10 @@ const TaskWidget = (task: Task) => {
     // },
   });
 };
+
+/*****************************************************************************
+ * Composition
+ *****************************************************************************/
 
 export default () => {
   const ListBox = astalify(Gtk.ListBox);

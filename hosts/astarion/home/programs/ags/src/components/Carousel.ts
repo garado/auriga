@@ -1,9 +1,9 @@
 /* A stack of widgets with built-in arrow buttons to cycle between widgets in the stack.
  * The widget stack wraps around when navigating. */
 
-import { Gtk, Widget } from "astal/gtk4";
-import { SmartStack } from "./SmartStack";
-import { Variable } from "astal";
+import { Widget } from "astal/gtk4";
+import { AnimatedStack } from "./AnimatedStack";
+import { bind, Variable } from "astal";
 
 export interface CarouselContents {
   ui: () => void /* Function which generates a widget */;
@@ -13,7 +13,7 @@ export interface CarouselContents {
 export const Carousel = (children: Array<CarouselContents>) => {
   const activeWidgetName = Variable(children[0].name);
 
-  const stack = SmartStack({
+  const stack = AnimatedStack({
     children: children,
     bindNamedSwitchTo: activeWidgetName,
   });

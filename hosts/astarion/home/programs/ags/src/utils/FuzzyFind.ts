@@ -1,6 +1,13 @@
+/* █▀▀ █░█ ▀█ ▀█ █▄█   █▀▀ █ █▄░█ █▀▄ */
+/* █▀░ █▄█ █▄ █▄ ░█░   █▀░ █ █░▀█ █▄▀ */
+
+/* Simple fuzzy finding algorithm. */
+
 /**
- * Use Levenshtein distance to sort
- * A lower score is better
+ * Use Levenshtein distance to sort. A lower score is better.
+ *
+ * @param a - first string to compare
+ * @param b - second string to compare
  */
 export const Levenshtein = (a: string, b: string): number => {
   const tmp: number[][] = [];
@@ -28,6 +35,11 @@ export const Levenshtein = (a: string, b: string): number => {
 
 /**
  * FuzzyFind using the Levenshtein distance
+ *
+ * @returns The item that closest matches the query
+ *
+ * @param query - search term
+ * @param items - array of things to look through
  */
 export const FuzzyFind = (query: string, items: string[]): string[] => {
   const results = items.map((item) => ({

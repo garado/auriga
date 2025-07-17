@@ -2,10 +2,10 @@
  * ▀█▀ ▄▀█ █▀ █▄▀   █▀ █▀▀ █▀█ █░█ █ █▀▀ █▀▀
  * ░█░ █▀█ ▄█ █░█   ▄█ ██▄ █▀▄ ▀▄▀ █ █▄▄ ██▄
  *
- * For interfacing with Taskwarrior
+ * For interfacing with Taskwarrior.
  */
 
-import { GObject, register, property, signal } from "astal/gobject";
+import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import UserConfig from "../../userconfig.js";

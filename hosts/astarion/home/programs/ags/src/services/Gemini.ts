@@ -1,12 +1,27 @@
+/**
+ * █▀▀ █▀▀ █▀▄▀█ █ █▄░█ █
+ * █▄█ ██▄ █░▀░█ █ █░▀█ █
+ *
+ * Service for interacting with Gemini API.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { GObject, register, property, signal } from "astal/gobject";
 import { execAsync } from "astal/process";
 import UserConfig from "../../userconfig.js";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const GEMINI_API_KEY = UserConfig.gemini.api;
 
-/**********************************************
- * PUBLIC TYPEDEFS
- **********************************************/
+/*****************************************************************************
+ * Types/interfaces
+ *****************************************************************************/
 
 export enum ConversationType {
   Prompt,
@@ -18,17 +33,13 @@ export type ConversationData = {
   content: string;
 };
 
-/**********************************************
- * PRIVATE TYPEDEFS
- **********************************************/
-
-/**********************************************
- * UTILITY
- **********************************************/
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 /**
- * Escape quotes
- * (CANNOT get this to work so im just removing it all for now)
+ * Escape quotations.
+ * (CANNOT get this to work, so I'm just removing it all for now)
  */
 const escapeQuotes = (text: string) => {
   text = text.replaceAll('"', "");
@@ -36,16 +47,13 @@ const escapeQuotes = (text: string) => {
   return text;
 };
 
-/**********************************************
- * CLASS DEFINITION
- **********************************************/
+/*****************************************************************************
+ * Class definition
+ *****************************************************************************/
 
 @register({ GTypeName: "Gemini" })
 export default class Gemini extends GObject.Object {
-  /**************************************************
-   * SET UP SINGLETON
-   **************************************************/
-
+  // Set up singleton --------------------------------------------------------
   static instance: Gemini;
 
   static get_default() {
@@ -56,10 +64,7 @@ export default class Gemini extends GObject.Object {
     return this.instance;
   }
 
-  /**************************************************
-   * PROPERTIES
-   **************************************************/
-
+  // Properties --------------------------------------------------------------
   @signal(Number, String)
   declare promptReceived: (id: number, prompt: string) => void;
 
@@ -72,28 +77,26 @@ export default class Gemini extends GObject.Object {
   @property(Boolean)
   declare concise: boolean;
 
-  /**************************************************
-   * PRIVATE FUNCTIONS
-   **************************************************/
-
+  // Private functions -------------------------------------------------------
   constructor() {
     super();
     this.continue = false;
     this.concise = true;
   }
 
-  /**************************************************
-   * PUBLIC FUNCTIONS
-   **************************************************/
+  // Public functions --------------------------------------------------------
 
   /**
-   * Call Gemini API with user input
+   * Call Gemini API with user input.
+   *
+   * @param {number} id - The interaction identifier number.
+   * @param {string} promptText - User's prompt text.
    */
   prompt(id: number, promptText: string) {
     this.emit("prompt-received", id, promptText);
 
     const cmd = `curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
-                  -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "answer concisely ${escapeQuotes(promptText)}"}] }] }'`;
+                  -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "${escapeQuotes(promptText)}"}] }] }'`;
 
     execAsync(cmd)
       .then((result) => {

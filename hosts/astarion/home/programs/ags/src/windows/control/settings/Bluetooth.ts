@@ -1,9 +1,30 @@
+/**
+ * █▄▄ █░░ █░█ █▀▀ ▀█▀ █▀█ █▀█ ▀█▀ █░█
+ * █▄█ █▄▄ █▄█ ██▄ ░█░ █▄█ █▄█ ░█░ █▀█
+ *
+ * Bluetooth settings.
+ *
+ * Currently only supports connecting to devices.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gdk, Widget } from "astal/gtk4";
 import { Variable, bind } from "astal";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 import Bt, { AstalBluetoothDevice } from "gi://AstalBluetooth";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const bt = Bt.get_default();
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export const Bluetooth = (globalRevealerState: Variable<boolean>) => {
   const BluetoothWidget = (device: AstalBluetoothDevice) =>

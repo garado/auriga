@@ -1,14 +1,30 @@
-/* █▀█ █▀█ █▀█ █▀▀ █ █░░ █▀▀ */
-/* █▀▀ █▀▄ █▄█ █▀░ █ █▄▄ ██▄ */
+/**
+ * █▀█ █▀█ █▀█ █▀▀ █ █░░ █▀▀
+ * █▀▀ █▀▄ █▄█ █▀░ █ █▄▄ ██▄
+ *
+ *
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { astalify, Gtk, Widget } from "astal/gtk4";
+import { Gio } from "astal";
 
 import UserConfig from "../../../../userconfig.js";
-import { Gio } from "astal";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const PFP_PATH = UserConfig.profile.pfp;
 const PROFILE_NAME = UserConfig.profile.name;
 const SPLASH_OPTS = UserConfig.profile.splashText;
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export const Profile = () => {
   const Picture = astalify(Gtk.Picture);

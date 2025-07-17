@@ -1,9 +1,28 @@
+/**
+ * █▄░█ █▀█ ▀█▀ █ █▀▀ █ █▀▀ ▄▀█ ▀█▀ █ █▀█ █▄░█ █▀
+ * █░▀█ █▄█ ░█░ █ █▀░ █ █▄▄ █▀█ ░█░ █ █▄█ █░▀█ ▄█
+ *
+ * Widget showing recent notifications.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { bind } from "astal";
-import { Gtk, Widget } from "astal/gtk4";
+import { Widget } from "astal/gtk4";
 import { Notification } from "@/components/Notification";
 import Nd from "gi://AstalNotifd";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const nd = Nd.get_default();
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export const Notifications = () =>
   Widget.Box({
@@ -19,16 +38,22 @@ export const Notifications = () =>
         xalign: 0,
         label: "Notifications",
       }),
-      bind(nd, "notifications").as((notifs) => {
-        if (notifs.length > 0) {
-          return notifs.map(Notification);
-        } else {
-          return Widget.Label({
-            xalign: 0,
-            cssClasses: ["placeholder"],
-            label: "No notifications.",
-          });
-        }
+      Widget.Box({
+        vertical: true,
+        spacing: 10,
+        children: bind(nd, "notifications").as((notifs) => {
+          if (notifs.length > 0) {
+            return notifs.map(Notification);
+          } else {
+            return [
+              Widget.Label({
+                xalign: 0,
+                cssClasses: ["placeholder"],
+                label: "No notifications.",
+              }),
+            ];
+          }
+        }),
       }),
     ],
   });

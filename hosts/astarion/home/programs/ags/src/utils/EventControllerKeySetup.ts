@@ -1,39 +1,119 @@
+/* █▀▀ █░█ █▀▀ █▄░█ ▀█▀   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █▀█ █░░ █░░ █▀▀ █▀█   █▀ █▀▀ ▀█▀ █░█ █▀█ */
+/* ██▄ ▀▄▀ ██▄ █░▀█ ░█░   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █▄█ █▄▄ █▄▄ ██▄ █▀▄   ▄█ ██▄ ░█░ █▄█ █▀▀ */
+
+/* Utility function to automatically add an event controller to a widget with support
+ * for forwarding events to specific widgets. */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gtk, Gdk } from "astal/gtk4";
+import { log } from "@/globals.js";
 
-export const EventControllerKeySetup = (props: {
-  name?: string;
-  widget: Gtk.Widget;
-  binds: Object;
-  forwardTo?: Function | Gtk.Widget | null;
-}) => {
-  props.widget.controller = new Gtk.EventControllerKey(); // @ts-ignore
+/*****************************************************************************
+ * Types and interfaces
+ *****************************************************************************/
 
-  props.widget.add_controller(props.widget.controller); // @ts-ignore
+/**
+ * Widget extended with event controller functionality
+ */
+export interface EventControlledWidget extends Gtk.Widget {
+  controller: Gtk.EventControllerKey;
+}
 
-  props.widget.controller.connect("key-pressed", (_, keyval) => {
-    const keyvalStr = Gdk.keyval_name(keyval);
+/**
+ * Key binding handler function type
+ */
+export type KeyBindingHandler = () => void;
 
-    log(
-      "eventControllerKey",
-      `${props.name || "Unnamed controller"}: ${keyvalStr}`,
-    );
+/**
+ * Key bindings map - maps key names to their handler functions
+ */
+export type KeyBindings = Record<string, KeyBindingHandler>;
 
-    if (props.binds[keyvalStr]) {
-      props.binds[keyvalStr]();
+/**
+ * Function that returns a widget to forward events to
+ */
+export type ForwardTargetSelector = () => Gtk.Widget | null;
+
+/**
+ * Configuration options for event controller setup
+ */
+export interface EventControllerConfig {
+  name?: string; // Optional name for debugging
+  widget: Gtk.Widget; // Widget to attach event controller to
+  binds: KeyBindings; // Keybinding map
+
+  // Another widget to forward event to, if event is unhandled
+  forwardTarget?: ForwardTargetSelector | Gtk.Widget | null;
+}
+
+/*****************************************************************************
+ * Function definitions
+ *****************************************************************************/
+
+/**
+ * Sets up an event controller on a widget with key bindings and optional forwarding
+ *
+ * @param config - Configuration object for the event controller
+ * @returns The configured widget with event controller attached
+ *
+ * @example
+ * ```typescript
+ * const myWidget = new Gtk.Button();
+ * setupEventController({
+ *   name: "MyButton",
+ *   widget: myWidget,
+ *   binds: {
+ *     "Return": () => console.log("Enter pressed"),
+ *     "Escape": () => console.log("Escape pressed")
+ *   },
+ *   forwardTarget: parentWidget
+ * });
+ * ```
+ */
+export function setupEventController(
+  config: EventControllerConfig,
+): EventControlledWidget {
+  const { name, widget, binds, forwardTarget } = config;
+
+  // Cast widget to include controller property
+  const controlledWidget = widget as EventControlledWidget;
+
+  // Create and attach event controller
+  controlledWidget.controller = new Gtk.EventControllerKey();
+  controlledWidget.add_controller(controlledWidget.controller);
+
+  // Set up key press handler
+  // Handler returns TRUE if key is handled; FALSE otherwise
+  controlledWidget.controller.connect("key-pressed", (_, keyval) => {
+    const keyName = Gdk.keyval_name(keyval);
+    const controllerName = name || "Unnamed controller";
+
+    log("eventControllerKey", `${controllerName}: ${keyName}`);
+
+    if (keyName === null) return;
+
+    // Check if we have a binding for this key
+    const handler = binds[keyName];
+    if (handler) {
+      handler();
       return true;
-    } else {
-      let child = undefined;
-
-      if (props.forwardTo != undefined) {
-        if (typeof props.forwardTo == "function") {
-          child = props.forwardTo();
-        } else {
-          child = props.forwardTo;
-        }
-
-        props.widget.controller.forward(child);
-      }
-      return false;
     }
+
+    // Forward unhandled events if forwardTarget is specified
+    if (forwardTarget !== undefined && forwardTarget !== null) {
+      const targetWidget =
+        typeof forwardTarget === "function" ? forwardTarget() : forwardTarget;
+
+      if (targetWidget === null) return;
+
+      controlledWidget.controller.forward(targetWidget);
+    }
+
+    return false;
   });
-};
+
+  return controlledWidget;
+}

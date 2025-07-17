@@ -1,21 +1,35 @@
+/**
+ * ▄▀█ █▀█ █▀█
+ * █▀█ █▀▀ █▀▀
+ *
+ * Entry point for agsv2 desktop config.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gtk, App } from "astal/gtk4";
 import { exec } from "astal/process";
-import { monitorFile } from "astal/file";
 import { timeout } from "astal/time";
 
 import "@/globals.ts";
-import Bar from "@/windows/bar/Bar.ts";
-import Dash from "@/windows/dash/Dash.ts";
-import Utility from "@/windows/utility/Utility.ts";
-import Control from "@/windows/control/Control.ts";
-import Launcher from "@/windows/launcher/Launcher";
-import Notifications from "@/windows/notifications/Notifications";
+import Bar from "@/windows/bar";
+import Dash from "@/windows/dash";
+import Utility from "@/windows/utility";
+import Control from "@/windows/control";
+import Launcher from "@/windows/launcher";
+import Notifications from "@/windows/notifications";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const TOGGLEABLE_WINDOWS = ["dash", "utility", "control", "launcher"];
 
-/*******************************************
- * FUNCTIONS
- *******************************************/
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 /**
  * Hide/show window with revealer
@@ -57,9 +71,9 @@ const compileSASS = () => {
   exec("sass ./src/styles/main.sass /tmp/ags/style.css");
 };
 
-/*******************************************
- * RUN
- *******************************************/
+/*****************************************************************************
+ * Main content
+ *****************************************************************************/
 
 compileSASS();
 

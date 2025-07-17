@@ -1,4 +1,13 @@
-/* Provides consistent implementation for quick settings widgets. */
+/**
+ * █▀▀ ▀▄▀ █▀█ ▄▀█ █▄░█ █▀ █ █▀█ █▄░█   █▀█ ▄▀█ █▄░█ █▀▀ █░░
+ * ██▄ █░█ █▀▀ █▀█ █░▀█ ▄█ █ █▄█ █░▀█   █▀▀ █▀█ █░▀█ ██▄ █▄▄
+ *
+ * Provides consistent implementation for quick settings widgets.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { Gdk, Gtk, Widget, astalify } from "astal/gtk4";
 import { Binding, Variable, bind } from "astal";
@@ -6,10 +15,14 @@ import Pango from "gi://Pango?version=1.0";
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
 
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
+
 export const ExpansionPanel = (props: {
   icon?: string;
   label?: string | Binding<string>;
-  children: Array<Gtk.Widget>;
+  children: Array<Gtk.Widget> | Binding<Gtk.Widget[]>;
   maxDropdownHeight: number;
   vertical: boolean;
   cssClasses?: Array<string>;

@@ -1,15 +1,30 @@
-import { Astal, Gtk, Widget, astalify } from "astal/gtk4";
+/**
+ * █▀▄▀█ █░█ █▀ █ █▀▀
+ * █░▀░█ █▄█ ▄█ █ █▄▄
+ *
+ * playerctl
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
+import { Gtk, Widget, astalify, hook } from "astal/gtk4";
 import { bind } from "astal";
 import { Visualizer } from "@/components/Visualizer";
 import Mpris from "gi://AstalMpris";
 import Gio from "gi://Gio?version=2.0";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const mpris = Mpris.get_default();
 const Picture = astalify(Gtk.Picture);
 
-/****************************************************
- * HELPERS
- ****************************************************/
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 /**
  * Convert track length from seconds to "MM:SS".
@@ -24,7 +39,23 @@ const lengthStr = (length: number): string => {
 };
 
 /**
- * @param {Mpris.Player} player - The player to represent.
+ * Get path for cover art to display.
+ * @returns Gio.File for the cover art image
+ */
+const getFileForCoverArt = (coverArt: string | null): Gio.File => {
+  const path =
+    coverArt ||
+    "/home/alexis/github/dotfiles/hosts/astarion/home/programs/ags/src/assets/default-player-bg.jpg";
+
+  return Gio.File.new_for_path(path);
+};
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
+
+/**
+ * @param {Mpris.Player} player The media player to represent.
  */
 const MediaPlayer = (player: Mpris.Player) => {
   const Title = Widget.Label({
@@ -53,12 +84,22 @@ const MediaPlayer = (player: Mpris.Player) => {
     cssClasses: ["cover-art"],
     vexpand: true,
     hexpand: true,
-    contentFit: Gtk.ContentFit.COVER,
-    file: player
-      ? bind(player, "coverArt").as((c) => Gio.File.new_for_path(`${c}`))
-      : Gio.File.new_for_path(
-          "/home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/src/assets/default-player-bg.jpg",
-        ),
+    setup: (self) => {
+      self.set_content_fit(Gtk.ContentFit.COVER);
+
+      // Set cover art
+      if (player != null) {
+        // Set initial file
+        self.set_file(getFileForCoverArt(player.coverArt));
+
+        // Update reactively
+        hook(self, player, "notify::coverArt", () => {
+          self.set_file(getFileForCoverArt(player.coverArt));
+        });
+      } else {
+        self.set_file(getFileForCoverArt(null));
+      }
+    },
   });
 
   return Widget.Overlay({
@@ -78,10 +119,6 @@ const MediaPlayer = (player: Mpris.Player) => {
     },
   });
 };
-
-/****************************************************
- * WIDGETS
- ****************************************************/
 
 export const Music = () =>
   Widget.Box({

@@ -1,39 +1,66 @@
 
+/*****************************************************************************
+ * DASHBOARD LEDGER TAB: OVERVIEW PAGE
+ *****************************************************************************/
+
 @use '../../../theme/theme' as *
 
-/*******************************
+/*****************************************************************************
  * Account balances
- *******************************/
+ *****************************************************************************/
+
 .ledger .overview .accounts
   padding: 3rem
   background-color: $primary-800
   border-radius: $border-radius
 
-  .account
+  .account-card
     .account-name
       font-size: 0.8rem
       color: $neutral-100
 
-    .currency
-      padding-top: 0.25rem
-      padding-right: 0.25rem
-      color: $neutral-300
-      font-size: 0.8rem
-
-    .balance
+    .account-balance
       font-size: 2.4rem
       margin-bottom: -0.3rem
 
-/**********************************************
- * Pie chart with monthly breakdown
- **********************************************/
+/*****************************************************************************
+ * Spending breakdown
+ *****************************************************************************/
+
 .ledger .overview .breakdown
   .amount-text
     color: $neutral-400
 
-/**********************************************
+/*****************************************************************************
+ * Debts and liabilities
+ *****************************************************************************/
+
+.ledger .overview  .debts
+    // min-width: 20rem
+    // Top container for a single entry
+    // Contains account name and total owed
+    padding-left: 1rem
+    padding-right: 1rem
+
+    .entry-top 
+      font-size: 1rem
+
+    .entry-amount
+      margin-left: 2rem
+
+    // "you're owed" or "you owe"
+    .owe-type
+      font-size: 0.8rem
+      margin-bottom: -0.5rem
+
+    // ugh
+    .transaction
+      color: $neutral-300
+
+/*****************************************************************************
  * Budget
- **********************************************/
+ *****************************************************************************/
+
 .ledger .overview .budget
   padding-left: 1rem
   padding-right: 1rem
@@ -81,7 +108,7 @@
 .ledger .overview
   // List of transactions
   .transactions
-    min-width: 30rem
+    min-width: 24rem
     padding-left:  1rem
     padding-right: 1rem
 
@@ -103,26 +130,3 @@
       .account, .date
         color: $neutral-300
 
-// Widget showing who owes what
-// TODO: Better naming for css classes
-.ledger .overview  .debts
-    // min-width: 20rem
-    // Top container for a single entry
-    // Contains account name and total owed
-    padding-left: 1rem
-    padding-right: 1rem
-
-    .entry-top 
-      font-size: 1rem
-
-    .entry-amount
-      margin-left: 2rem
-
-    // "you're owed" or "you owe"
-    .owe-type
-      font-size: 0.8rem
-      margin-bottom: -0.5rem
-
-    // ugh
-    .transaction
-      color: $neutral-300

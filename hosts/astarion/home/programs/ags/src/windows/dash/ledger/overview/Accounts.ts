@@ -1,69 +1,169 @@
-/* ▄▀█ █▀▀ █▀▀ █▀█ █░█ █▄░█ ▀█▀ █▀ */
-/* █▀█ █▄▄ █▄▄ █▄█ █▄█ █░▀█ ░█░ ▄█ */
+/**
+ * ▄▀█ █▀▀ █▀▀ █▀█ █░█ █▄░█ ▀█▀ █▀
+ * █▀█ █▄▄ █▄▄ █▄█ █▄█ █░▀█ ░█░ ▄█
+ *
+ * Displays account balances, net worth, and financial summary.
+ * Shows balances for user-configured accounts plus monthly income/expense totals.
+ */
 
-/* Shows balances for the accounts defined in user config. */
-/* Also shows net worth and monthly income/expenses. */
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { Gtk, Widget } from "astal/gtk4";
-import { bind } from "astal";
+import { bind, Binding } from "astal";
+import Ledger, { Account } from "@/services/Ledger.ts";
 
-import Ledger, { DisplayAccountProps } from "@/services/Ledger.ts";
-const ledger = Ledger.get_default();
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
+const ledgerService = Ledger.get_default();
+
+/*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+const CSS_CLASSES = {
+  accounts: "accounts",
+  accountName: "account-name",
+  accountCard: "account-card",
+  accountBalance: "account-balance",
+} as const;
+
+const FORMATTING = {
+  decimalPlaces: 2,
+} as const;
+
+const SUMMARY_ACCOUNTS = {
+  netWorth: {
+    displayName: "Net Worth",
+    dataBinding: "netWorth" as const,
+  },
+  monthlyIncome: {
+    displayName: "Income (last 30 days)",
+    dataBinding: "incomeThisMonth" as const,
+  },
+  monthlyExpenses: {
+    displayName: "Expenses (last 30 days)",
+    dataBinding: "expensesThisMonth" as const,
+  },
+} as const;
+
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 
 /**
- * Constructor for a single account widget.
+ * Formats an account balance for display.
+ * @param total - The account total (number or binding)
+ * @returns Formatted string or binding for display
  */
-const Account = (data: DisplayAccountProps) => {
-  const name = Widget.Label({
-    cssClasses: ["account-name"],
+const formatAccountBalance = (
+  total: number | Binding<number>,
+): string | Binding<string> => {
+  if (total instanceof Object) {
+    // Handle reactive binding
+    return total.as((amount: number) =>
+      amount.toFixed(FORMATTING.decimalPlaces),
+    );
+  } else {
+    // Handle static number
+    return total.toFixed(FORMATTING.decimalPlaces);
+  }
+};
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
+
+/**
+ * Creates a label widget for the account name.
+ * @param displayName - The display name of the account
+ * @returns Widget containing the account name
+ */
+const createAccountNameLabel = (displayName: string) =>
+  Widget.Label({
+    cssClasses: [CSS_CLASSES.accountName],
     halign: Gtk.Align.START,
-    label: data.displayName,
+    label: displayName,
   });
 
-  let label: Binding<string> | string = 0;
-  if (data.total instanceof Object) {
-    label = data.total.as((x: number) => `${x}`);
-  } else {
-    label = `${data.total.toFixed(2)}`;
-  }
-
-  const amount = Widget.Label({
-    cssClasses: ["balance"],
+/**
+ * Creates a label widget for the account balance.
+ * @param formattedBalance - The formatted balance string or binding
+ * @returns Widget containing the account balance
+ */
+const createAccountBalanceLabel = (
+  formattedBalance: string | Binding<string>,
+) =>
+  Widget.Label({
+    cssClasses: [CSS_CLASSES.accountBalance],
     halign: Gtk.Align.START,
-    label: label,
+    label: formattedBalance,
     selectable: true,
   });
 
+/**
+ * Creates a single account widget displaying name and balance.
+ * @param accountData - The account data containing display name and total
+ * @returns Widget representing a single account card
+ */
+const createAccountWidget = (accountData: Account) => {
+  const formattedBalance = formatAccountBalance(accountData.total);
+
+  const nameLabel = createAccountNameLabel(accountData.displayName);
+  const balanceLabel = createAccountBalanceLabel(formattedBalance);
+
   return Widget.Box({
-    cssClasses: ["account"],
+    cssClasses: [CSS_CLASSES.accountCard],
     vertical: true,
     hexpand: false,
     halign: Gtk.Align.START,
     valign: Gtk.Align.CENTER,
-    children: [amount, name],
+    children: [balanceLabel, nameLabel],
   });
 };
 
+/**
+ * Creates a financial summary account widget.
+ * @param summaryConfig - Configuration object containing display name and data binding key
+ * @returns Widget representing a summary account (net worth, income, expenses)
+ */
+const createSummaryAccountWidget = (
+  summaryConfig: (typeof SUMMARY_ACCOUNTS)[keyof typeof SUMMARY_ACCOUNTS],
+) =>
+  createAccountWidget({
+    displayName: summaryConfig.displayName,
+    total: bind(ledgerService, summaryConfig.dataBinding),
+  });
+
+/**
+ * Creates the list of user-configured account widgets.
+ * @returns Array of widgets representing user accounts
+ */
+const createUserAccountWidgets = () =>
+  bind(ledgerService, "accountData").as((accounts) =>
+    accounts.map(createAccountWidget),
+  );
+
+/**
+ * Main accounts component that displays financial overview.
+ * Shows net worth, monthly income/expenses, and individual account balances.
+ * All amounts are selectable for easy copying.
+ * @returns Widget containing the complete accounts interface
+ */
 export const Accounts = () => {
   return Widget.Box({
-    cssClasses: ["accounts"],
-    orientation: 1,
+    cssClasses: [CSS_CLASSES.accounts],
+    orientation: Gtk.Orientation.VERTICAL,
     halign: Gtk.Align.START,
     homogeneous: true,
     children: [
-      Account({
-        displayName: "Net Worth",
-        total: bind(ledger, "netWorth"),
-      }),
-      Account({
-        displayName: "Income",
-        total: bind(ledger, "incomeThisMonth"),
-      }),
-      Account({
-        displayName: "Expenses",
-        total: bind(ledger, "expensesThisMonth"),
-      }),
-      bind(ledger, "displayAccounts").as((x) => x.map(Account)),
+      createSummaryAccountWidget(SUMMARY_ACCOUNTS.netWorth),
+      createSummaryAccountWidget(SUMMARY_ACCOUNTS.monthlyIncome),
+      createSummaryAccountWidget(SUMMARY_ACCOUNTS.monthlyExpenses),
+      createUserAccountWidgets(),
     ],
   });
 };

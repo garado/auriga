@@ -1,9 +1,28 @@
+/**
+ * █▄░█ █▀▀ ▀█▀ █░█░█ █▀█ █▀█ █▄▀   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █▀█ █░░
+ * █░▀█ ██▄ ░█░ ▀▄▀▄▀ █▄█ █▀▄ █░█   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █▄█ █▄▄
+ *
+ * Wifi controls.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gdk, Widget } from "astal/gtk4";
 import { Variable, bind } from "astal";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 import Nw, { AstalNetworkAccessPoint } from "gi://AstalNetwork";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const nw = Nw.get_default();
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export const Network = (globalRevealerState: Variable<boolean>) => {
   const NetworkItem = (ap: AstalNetworkAccessPoint) =>
@@ -23,7 +42,7 @@ export const Network = (globalRevealerState: Variable<boolean>) => {
   return ExpansionPanel({
     icon: "wifi-high-symbolic",
     label: bind(nw.wifi, "ssid").as((ssid) => ssid || "Disconnected"),
-    children: bind(nw.wifi, "access-points").as((ap) => ap.map(NetworkItem)),
+    children: bind(nw.wifi, "accessPoints").as((ap) => ap.map(NetworkItem)),
     cssClasses: ["wifi"],
     vertical: true,
     globalRevealerState: globalRevealerState,

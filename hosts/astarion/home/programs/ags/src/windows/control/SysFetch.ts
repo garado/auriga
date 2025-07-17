@@ -1,10 +1,15 @@
-/* █▀ █▄█ █▀ █ █▄░█ █▀▀ █▀█ */
-/* ▄█ ░█░ ▄█ █ █░▀█ █▀░ █▄█ */
+/**
+ * █▀ █▄█ █▀ █▀▀ █▀▀ ▀█▀ █▀▀ █░█
+ * ▄█ ░█░ ▄█ █▀░ ██▄ ░█░ █▄▄ █▀█
+ *
+ * Small widget for showing basic system info: user, host, uptime, battery life remaining.
+ */
 
-/* Small widget for showing basic system info -
- * user, host, uptime, battery life remaining */
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
-import { bind } from "astal";
+import { bind, Binding } from "astal";
 import { Gtk, Widget, astalify } from "astal/gtk4";
 import { exec } from "astal/process";
 import Battery from "gi://AstalBattery";
@@ -12,19 +17,22 @@ import Gio from "gi://Gio";
 
 import UserConfig from "../../../userconfig.js";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const Picture = astalify(Gtk.Picture);
 const bat = Battery.get_default();
 
-/******************************
- * HELPERS
- ******************************/
-
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
 /**
  * @function calcUptime
  * @brief Get uptime in "<x>d <y>h <z>m" format
  */
 const calcUptime = () => {
-  /* uptime in seconds */
+  // uptime in seconds
   const raw = Number(exec("cut -d. -f1 /proc/uptime"));
 
   const d = Math.floor(raw / 86400);
@@ -34,17 +42,15 @@ const calcUptime = () => {
   return `${d}d ${h}h ${m}m`;
 };
 
-/******************************
- * WIDGETS
- ******************************/
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 /**
  * Wee little template for all of the fetch info
  */
-const FetchTemplate = (key: string, value: string) => {
-  const labelValue = typeof value === "object" ? value : ` ~ ${value}`;
-
-  return Widget.Box({
+const FetchTemplate = (key: string, value: string | Binding<string>) =>
+  Widget.Box({
     vertical: false,
     children: [
       Widget.Label({
@@ -52,11 +58,10 @@ const FetchTemplate = (key: string, value: string) => {
         label: key,
       }),
       Widget.Label({
-        label: labelValue,
+        label: typeof value === "object" ? value : ` ~ ${value}`,
       }),
     ],
   });
-};
 
 const Fetch = () =>
   Widget.Box({
@@ -69,8 +74,7 @@ const Fetch = () =>
       FetchTemplate("machine", "fw13"),
       FetchTemplate(
         "rem",
-        bind(bat, "time-to-empty").as((seconds: number) => {
-          /* @TODO Not working */
+        bind(bat, "timeToEmpty").as((seconds: number) => {
           const h = Math.floor(seconds / 3600);
           const m = Math.floor((seconds % 3600) / 60);
           return ` ~ ${h}h ${m}m`;
@@ -83,8 +87,10 @@ const Fetch = () =>
 const Profile = () =>
   Picture({
     cssClasses: ["pfp"],
-    contentFit: Gtk.ContentFit.COVER,
-    file: Gio.File.new_for_path(UserConfig.profile.pfp),
+    setup: (self) => {
+      self.set_content_fit(Gtk.ContentFit.COVER);
+      self.set_file(Gio.File.new_for_path(UserConfig.profile.pfp));
+    },
   });
 
 export const SysFetch = () =>
