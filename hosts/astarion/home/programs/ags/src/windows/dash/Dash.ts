@@ -15,7 +15,7 @@ import { bind, Variable } from "astal";
 import Home from "@/windows/dash/home/Home";
 import Ledger from "@/windows/dash/ledger/Ledger";
 import Calendar from "@/windows/dash/calendar/Calendar";
-import Goals from "@/windows/dash/goals/Goals";
+import Goals from "@/windows/dash/goals/";
 import Tasks from "@/windows/dash/tasks/Tasks";
 import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
 import { setupEventController } from "@/utils/EventControllerKeySetup";

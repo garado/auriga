@@ -1,10 +1,49 @@
+/**
+ * █▀ █ █▀▄ █▀▀ █▄▄ ▄▀█ █▀█
+ * ▄█ █ █▄▀ ██▄ █▄█ █▀█ █▀▄
+ *
+ * Shows more detailed information for a particular goal.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gtk, Gdk, Widget, hook, astalify } from "astal/gtk4";
+import { bind } from "astal";
+
 import Goals, { Annotation, Goal } from "@/services/Goals";
-import { bind, exec } from "astal";
 import { formatISODateToCustomFormat } from "@/utils/Helpers";
 import { Dropdown } from "@/components/Dropdown";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const gs = Goals.get_default();
+
+/*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+/** Icon names for different goal statuses */
+const STATUS_ICONS = {
+  completed: "check-circle-symbolic",
+  default: "circle-symbolic",
+} as const;
+
+/** Maximum characters to display in goal description */
+const MAX_DESCRIPTION_CHARS = 30;
+
+/** Keyboard shortcuts */
+const KEYBOARD_SHORTCUTS = {
+  ENTER: Gdk.KEY_Return,
+  SHIFT_ENTER: Gdk.ModifierType.SHIFT_MASK,
+} as const;
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 /**
  * Show annotations.
