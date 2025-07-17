@@ -1,5 +1,13 @@
-/* █▄▄ ▄▀█ █▀█ */
-/* █▄█ █▀█ █▀▄ */
+/**
+ * █▄▄ ▄▀█ █▀█
+ * █▄█ █▀█ █▀▄
+ *
+ * Minimalist bar implementation.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable, bind, timeout } from "astal";
@@ -7,21 +15,20 @@ import Battery from "gi://AstalBattery";
 import Hyprland from "gi://AstalHyprland";
 import Wp from "gi://AstalWp";
 
-/****************************************************
- * MODULE-LEVEL VARIABLES
- ****************************************************/
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const wp = Wp.get_default();
 const hypr = Hyprland.get_default();
 const bat = Battery.get_default();
 const time = Variable("").poll(1000, "date '+%H\n%M'");
 
-/****************************************************
- * WIDGET DEFINITIONS
- ****************************************************/
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
-/* @TODO Not displaying anything working */
-/* @TODO Make this user-configurable */
+// @TODO Make this user-configurable
 const DistroIcon = () =>
   Widget.Image({
     visible: true,
@@ -29,10 +36,10 @@ const DistroIcon = () =>
   });
 
 /**
- * Container for all workspace indicators.
+ * Container for all workspace indicators
  */
 const Workspaces = () => {
-  /* @TODO Find out how to get the number of workspaces programatically */
+  // @TODO Find out how to get the number of workspaces programatically
   const wsIndices = [...Array(9).keys()];
 
   return Widget.Box({
@@ -49,7 +56,7 @@ const Workspaces = () => {
  * @param {number} wsIdx - The 0-indexed workspace number.
  */
 const WorkspaceIndicator = (wsIdx: number) => {
-  /* Param wsIdx is 0-indexed, but workspaces are 1-indexed. */
+  // Param wsIdx is 0-indexed, but workspaces are 1-indexed
   wsIdx += 1;
 
   const isFocused = bind(hypr, "focusedWorkspace").as((focused) => {
@@ -85,7 +92,7 @@ const WorkspaceIndicator = (wsIdx: number) => {
 /**
  * Shows battery percentage.
  *
- * @TODO I don't think levelClass is working; returns 'none' at 37%
+ * Note: I don't think levelClass is working; returns 'none' at 37%
  */
 const BatteryIndicator = () => {
   const isCharging = bind(bat, "state").as((s) => s == Battery.State.CHARGING);
@@ -99,6 +106,7 @@ const BatteryIndicator = () => {
     "high",
     "full",
   ];
+
   const levelClass = bind(bat, "batteryLevel").as(
     (lvl) => levelClassNames[lvl],
   );
@@ -133,7 +141,7 @@ const Time = () =>
     label: bind(time),
   });
 
-/* @BUG Slider does not show when oriented vertically */
+// @TODO Slider does not show when oriented vertically
 const VolumeSlider = () => {
   const revealSlider = Variable(false);
   let timer: any = null;
@@ -178,9 +186,9 @@ const VolumeSlider = () => {
   });
 };
 
-/****************************************************
- * UI ASSEMBLY
- ****************************************************/
+/*****************************************************************************
+ * Final composition
+ *****************************************************************************/
 
 const Top = () =>
   Widget.Box({

@@ -1,26 +1,40 @@
-/* █▀▄ ▄▀█ █▀ █░█ */
-/* █▄▀ █▀█ ▄█ █▀█ */
+/**
+ * █▀▄ ▄▀█ █▀ █░█
+ * █▄▀ █▀█ ▄█ █▀█
+ *
+ * Entrypoint for the dashboard, setting up the window and instantiating all tabs.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 import { bind, Variable } from "astal";
 
-import Home from "@/windows/dash/home/Home";
-import Ledger from "@/windows/dash/ledger/Ledger";
-import Calendar from "@/windows/dash/calendar/Calendar";
-import Goals from "@/windows/dash/goals/Goals";
-import Tasks from "@/windows/dash/tasks/Tasks";
-import { SmartStack } from "@/components/SmartStack";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
+import Home from "@/windows/dash/home";
+import Ledger from "@/windows/dash/ledger";
+import Calendar from "@/windows/dash/calendar";
+import Goals from "@/windows/dash/goals";
+import Tasks from "@/windows/dash/tasks";
+import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
-/***********************************************************
- * SETUP
- ***********************************************************/
+/*****************************************************************************
+ * Types and interfaces
+ *****************************************************************************/
 
-type DashTabData = {
+interface DashTabData {
+  ui: () => Gtk.Widget;
   name: string;
   icon: string;
-  ui: () => void;
-};
+}
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
+const activeTabIndex = Variable(0);
 
 const dashTabData: DashTabData[] = [
   {
@@ -50,16 +64,13 @@ const dashTabData: DashTabData[] = [
   },
 ];
 
-const activeTabIndex = Variable(0);
-
-/***********************************************************
- * WIDGETS
- ***********************************************************/
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 /**
  * @function DashTabBar
- * @brief Left-hand tab bar for indicating and switching the
- * currently active tab
+ * @brief Left-hand tab bar for indicating and switching the currently active tab
  */
 const DashTabBar = () =>
   Widget.CenterBox({
@@ -97,17 +108,22 @@ const DashTabEntry = (tabData: DashTabData) =>
  * Holds tab content.
  */
 const DashTabStack = () =>
-  SmartStack({
+  AnimatedStack({
     name: "DashTabStack",
     cssClasses: ["tab-stack"],
-    bindNumberedSwitchTo: activeTabIndex,
+    activePageIndex: activeTabIndex,
     vertical: true,
-    children: dashTabData,
+    children: dashTabData.map((tabData) => {
+      return {
+        ui: tabData.ui,
+        name: tabData.name,
+      } as AnimatedStackChild;
+    }),
   });
 
-/***********************************************************
- * EXPORT
- ***********************************************************/
+/*****************************************************************************
+ * Export
+ *****************************************************************************/
 
 export default () => {
   const TabBar = DashTabBar();
@@ -129,22 +145,22 @@ export default () => {
       }),
     }),
     setup: (self) => {
-      /* Workaround for revealer bug.
-       * https://github.com/wmww/gtk4-layer-shell/issues/60 */
+      // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);
 
-      const binds = {};
+      const binds: Record<string, () => void> = {};
 
       for (let i = 0; i < dashTabData.length; i++) {
-        binds[`${i + 1}`] = () => {
+        const thisIndex = `${i + 1}`;
+        binds[thisIndex] = () => {
           activeTabIndex.set(i);
         };
       }
 
-      EventControllerKeySetup({
+      setupEventController({
         name: "DashWindow",
         widget: self,
-        forwardTo: () => TabStack.get_visible_child(),
+        forwardTarget: () => TabStack.get_visible_child(),
         binds: binds,
       });
     },

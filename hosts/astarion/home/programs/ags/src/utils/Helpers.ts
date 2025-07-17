@@ -1,11 +1,29 @@
 /**
+ * █▀▄▀█ █ █▀ █▀▀   █░█ █▀▀ █░░ █▀█ █▀▀ █▀█   █▀▀ █░█ █▄░█ █▀▀ ▀█▀ █ █▀█ █▄░█ █▀
+ * █░▀░█ █ ▄█ █▄▄   █▀█ ██▄ █▄▄ █▀▀ ██▄ █▀▄   █▀░ █▄█ █░▀█ █▄▄ ░█░ █ █▄█ █░▀█ ▄█
+ *
+ * Collection of frequently used helper functions.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
+import { Gtk } from "astal/gtk4";
+
+/*****************************************************************************
+ * Function definitions
+ *****************************************************************************/
+
+/**
  * Convert ISO8601 date to relative time
- * @param {string} isoDate - an ISO8601 date, e.g. 20250630T070000Z =>
- * June 30, 2025, at 07:00:00 UTC
- * @return {string} the relative time
+ *
+ * @returns {string} the relative time
+ *
+ * @param {string} isoDate - an ISO8601 date, e.g. 20250630T070000Z => June 30, 2025, at 07:00:00 UTC
  */
 export const relativeTimeFromISO = (isoDate: string): string => {
-  /* Ensure the input is in a valid ISO 8601 format with separators */
+  // Ensure the input is in a valid ISO 8601 format with separators
   const formattedDate = isoDate.replace(
     /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
     "$1-$2-$3T$4:$5:$6Z",
@@ -41,7 +59,7 @@ export const relativeTimeFromISO = (isoDate: string): string => {
  * @param {string} isoDate - ISO date to convert
  */
 export const formatISODateToCustomFormat = (isoDate: string): string => {
-  /* Ensure the input is in a valid ISO 8601 format with separators */
+  // Ensure the input is in a valid ISO 8601 format with separators
   const formattedDate = isoDate.replace(
     /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
     "$1-$2-$3T$4:$5:$6Z",
@@ -63,4 +81,28 @@ export const formatISODateToCustomFormat = (isoDate: string): string => {
 
   // Format the date
   return formatter.format(date).replace(",", ""); // Replace comma for desired format
+};
+
+/**
+ * Given a CSS class name, return its `color` property.
+ */
+export const getCairoColorFromClass = (...rest: Array<string>): any => {
+  const dummyWidget = new Gtk.Box();
+  const dummyContext = dummyWidget.get_style_context();
+
+  for (const c of rest) {
+    dummyContext.add_class(c);
+  }
+
+  return dummyContext.get_color();
+};
+
+/**
+ * Sets the Cairo context color from a CSS class.
+ * @param cr - The Cairo drawing context
+ * @param cssClass - CSS class name to get color from
+ */
+export const setCairoColorFromClass = (cr: any, cssClass: string): void => {
+  const color = getCairoColorFromClass(cssClass);
+  cr.setSourceRGBA(color.red, color.green, color.blue, color.alpha);
 };

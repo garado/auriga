@@ -1,11 +1,32 @@
+/**
+ * █▀ █▀█ █▀▀ ▄▀█ █▄▀ █▀▀ █▀█
+ * ▄█ █▀▀ ██▄ █▀█ █░█ ██▄ █▀▄
+ *
+ * Audio sink controls.
+ *
+ * Supports setting default sink, muting sinks, and adjusting sink output volume.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import { Variable, bind, execAsync, timeout } from "astal";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 import AstalWp from "gi://AstalWp";
 import Pango from "gi://Pango?version=1.0";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const wp = AstalWp.get_default();
 const ToggleButton = astalify(Gtk.ToggleButton);
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 /**
  * Button to toggle if a sink is the default sink.
@@ -14,10 +35,6 @@ const SpeakerWidget_Default = (sink: AstalWp.Endpoint) =>
   ToggleButton({
     cssClasses: ["toggle"],
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    child: Widget.Image({
-      iconName: "lock-simple-symbolic",
-    }),
-    active: bind(sink, "is_default"),
     onClicked: () => {
       sink.set_is_default(!sink.is_default);
 
@@ -28,6 +45,18 @@ const SpeakerWidget_Default = (sink: AstalWp.Endpoint) =>
         });
       }
     },
+    setup: (self) => {
+      self.set_child(
+        Widget.Image({
+          iconName: "lock-simple-symbolic",
+        }),
+      );
+
+      // Manually bind the property, because the property throws an LSP error
+      bind(sink, "isDefault").subscribe((value) => {
+        self.active = Boolean(value);
+      });
+    },
   });
 
 /**
@@ -37,12 +66,20 @@ const SpeakerWidget_Mute = (sink: AstalWp.Endpoint) =>
   ToggleButton({
     cssClasses: ["toggle"],
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    child: Widget.Image({
-      iconName: "speaker-x-symbolic",
-    }),
-    active: bind(sink, "mute"),
     onClicked: () => {
       sink.set_mute(!sink.mute);
+    },
+    setup: (self) => {
+      self.set_child(
+        Widget.Image({
+          iconName: "speaker-x-symbolic",
+        }),
+      );
+
+      // Manually bind the property, because the property throws an LSP error
+      bind(sink, "mute").subscribe((value) => {
+        self.active = Boolean(value);
+      });
     },
   });
 

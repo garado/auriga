@@ -1,9 +1,30 @@
+/**
+ * █▀█ █▀█ █░█░█ █▀▀ █▀█   █▀█ █▀█ █▀█ █▀▀ █ █░░ █▀▀ █▀
+ * █▀▀ █▄█ ▀▄▀▄▀ ██▄ █▀▄   █▀▀ █▀▄ █▄█ █▀░ █ █▄▄ ██▄ ▄█
+ *
+ * Power profile selection.
+ *
+ * Toggle between power saver, balanced, and performance mode.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gdk, Widget } from "astal/gtk4";
 import { Variable, bind } from "astal";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 import Pp, { AstalPowerProfilesProfile } from "gi://AstalPowerProfiles";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const pp = Pp.get_default();
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export const PowerProfiles = (globalRevealerState: Variable<boolean>) => {
   const PowerProfile = (profile: AstalPowerProfilesProfile) =>
@@ -22,7 +43,7 @@ export const PowerProfiles = (globalRevealerState: Variable<boolean>) => {
 
   return ExpansionPanel({
     icon: "lightning-symbolic",
-    label: bind(pp, "active-profile"),
+    label: bind(pp, "activeProfile"),
     children: bind(pp, "profiles").as((pp) => pp.map(PowerProfile)),
     cssClasses: ["power-profiles"],
     vertical: true,

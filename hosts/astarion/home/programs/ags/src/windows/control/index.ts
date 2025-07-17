@@ -1,21 +1,36 @@
-import { App, Astal, astalify, Gtk, Widget } from "astal/gtk4";
+/**
+ * █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █▀█ █░░   █▀█ ▄▀█ █▄░█ █▀▀ █░░
+ * █▄▄ █▄█ █░▀█ ░█░ █▀▄ █▄█ █▄▄   █▀▀ █▀█ █░▀█ ██▄ █▄▄
+ *
+ * Control panel that slides open on right-hand side of the screen.
+ * Includes sysfetch and system configuration options.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
+import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 import { SysFetch } from "@/windows/control/SysFetch.ts";
 import { Notifications } from "@/windows/control/Notifications";
-import { Actions } from "@/windows/control/actions/Actions";
+import { Actions } from "@/windows/control/actions";
 import { Theme } from "@/windows/control/settings/Theme.ts";
 import { PowerProfiles } from "@/windows/control/settings/PowerProfiles.ts";
 import { Network } from "@/windows/control/settings/Network.ts";
 import { Bluetooth } from "@/windows/control/settings/Bluetooth.ts";
 import { Speaker } from "@/windows/control/settings/Speaker.ts";
 import { Monitors } from "@/windows/control//settings/Monitors.ts";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
 
-/******************************************
- * QUICK SETTINGS
- ******************************************/
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const globalRevealerState = Variable(false);
+
+/*****************************************************************************
+ * Widgets
+ *****************************************************************************/
 
 export const QuickSettings = () =>
   Widget.Box({
@@ -31,10 +46,6 @@ export const QuickSettings = () =>
       Monitors(globalRevealerState),
     ],
   });
-
-/******************************************
- * WIDGETS
- ******************************************/
 
 const ControlPanel = () => {
   return Widget.Box({
@@ -61,8 +72,7 @@ export default () => {
       child: ControlPanel(),
     }),
     setup: (self) => {
-      /* Workaround for revealer bug.
-       * https://github.com/wmww/gtk4-layer-shell/issues/60 */
+      // Workaround for revealer bug: https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);
     },
     onNotifyVisible: (self) => {

@@ -1,28 +1,39 @@
-/* █▀▀ █░░ █▀█ █▄▄ ▄▀█ █░░ */
-/* █▄█ █▄▄ █▄█ █▄█ █▀█ █▄▄ */
+/**
+ * █▀▀ █░░ █▀█ █▄▄ ▄▀█ █░░ █▀
+ * █▄█ █▄▄ █▄█ █▄█ █▀█ █▄▄ ▄█
+ *
+ * Global functions/definitions for project.
+ */
 
-/* Global project definitions */
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { Variable } from "astal";
 import UserConfig from "../userconfig.js";
 
+/*****************************************************************************
+ * Globals
+ *****************************************************************************/
+
+/** Logging flags to enable targeted module debugging. */
 const logFlags: { [key: string]: boolean } = {
-  /* Main execution (windows opening, SASS reload, etc) */
+  // Main execution (windows opening, SASS reload, etc)
   program: false,
   bar: false,
   notrofi: false,
   kitty: false,
   notif: false,
 
-  /* Dashboard stuff */
+  // Dashboard stuff
   dash: false,
   goalTab: false,
   calTab: false,
 
-  /* Other stuff */
+  // Other stuff
   ctrlGemini: false,
 
-  /* Service logging */
+  // Service logging
   dashService: false,
   taskService: true,
   calService: false,
@@ -34,15 +45,22 @@ const logFlags: { [key: string]: boolean } = {
   eventControllerKey: false,
 };
 
+/**
+ * Usage:
+ * log('goalService', 'log message here')
+ *
+ * The above will be displayed if the `goalService` flag is true.
+ */
 export function log(section: string, str: string) {
   if (logFlags[section]) {
     console.log(`${section.toUpperCase()}: ${str}`);
   }
 }
 
+/** Add things to globalThis so they can be used anywhere. */
 Object.assign(globalThis, {
   log: log,
 
-  /* Might be able to remove this now that we have the Settings service */
+  // Might be able to remove this now that we have the Settings service
   systemTheme: Variable(`${UserConfig.currentTheme}`),
 });

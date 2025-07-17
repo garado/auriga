@@ -1,12 +1,28 @@
-/* A stack of widgets with built-in arrow buttons to cycle between widgets in the stack.
- * The widget stack wraps around when navigating. */
+/**
+ * █▀▄ █▀█ █▀█ █▀█ █▀▄ █▀█ █░█░█ █▄░█
+ * █▄▀ █▀▄ █▄█ █▀▀ █▄▀ █▄█ ▀▄▀▄▀ █░▀█
+ *
+ * Wrapper for GtkDropDown.
+ * Currently doesn't do much. But it's here so it can be extended if needed.
+ */
 
-import { astalify, Gtk, Widget } from "astal/gtk4";
-import { Variable } from "astal";
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
+import { astalify, Gtk } from "astal/gtk4";
+
+/*****************************************************************************
+ * Types and interfaces
+ *****************************************************************************/
 
 export type DropDownProps = {
   exclusive: boolean;
 };
+
+/*****************************************************************************
+ * Main widget definition
+ *****************************************************************************/
 
 export const Dropdown = (props: DropDownProps) => {
   const dd = astalify(Gtk.DropDown);

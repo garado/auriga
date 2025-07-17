@@ -3,12 +3,24 @@
  * █▀▀ █▀▄ █▄█ █▄█ ██▄ █▄▄ ░█░   ▀▄▀ █ ██▄ ▀▄▀▄▀
  *
  * View tasks sorted by project.
+ *
+ * Includes:
+ * - Sidebar to navigate through all projects
+ * - List of tasks for the currently selected projects
  */
 
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Widget } from "astal/gtk4";
-import { EventControllerKeySetup } from "@/utils/EventControllerKeySetup";
-import Sidebar from "./sidebar/Sidebar";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
+import Sidebar from "./sidebar";
 import Tasklist from "./TaskList";
+
+/*****************************************************************************
+ * Composition
+ *****************************************************************************/
 
 export default () => {
   const sidebar = Sidebar();
@@ -20,10 +32,10 @@ export default () => {
     spacing: 12,
     children: [sidebar, tasklist],
     setup: (self) => {
-      EventControllerKeySetup({
+      setupEventController({
         name: "Projects",
         widget: self,
-        forwardTo: sidebar,
+        forwardTarget: sidebar,
         binds: {},
       });
     },

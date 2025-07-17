@@ -1,21 +1,50 @@
+/**
+ * ▄▀█ █▀▀ ▀█▀ █ █▀█ █▄░█ █▀
+ * █▀█ █▄▄ ░█░ █ █▄█ █░▀█ ▄█
+ *
+ * Implements quick actions in the control panel.
+ *
+ * These are simple on/off buttons to control toggleable settings,
+ * such as airplane mode, night shift, and DND.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import { bind, execAsync, Variable } from "astal";
-
 import Bt from "gi://AstalBluetooth";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const ToggleButton = astalify(Gtk.ToggleButton);
 const bt = Bt.get_default();
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 const BluetoothControl = () => {
   return ToggleButton({
     cssClasses: ["action-btn"],
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    active: bind(bt, "is-powered"),
     hexpand: true,
     tooltipText: "Enable/disable Bluetooth",
-    child: Widget.Image({
-      iconName: "bluetooth-symbolic",
-    }),
+    setup: (self) => {
+      self.set_child(
+        Widget.Image({
+          iconName: "bluetooth-symbolic",
+        }),
+      );
+
+      // Manually bind the property, because the property throws an LSP error
+      bind(bt, "isPowered").subscribe((value) => {
+        self.active = Boolean(value);
+      });
+    },
   });
 };
 
@@ -25,9 +54,13 @@ const WifiControl = () => {
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     tooltipText: "Enable/disable wifi",
-    child: Widget.Image({
-      iconName: "wifi-high-symbolic",
-    }),
+    setup: (self) => {
+      self.set_child(
+        Widget.Image({
+          iconName: "wifi-high-symbolic",
+        }),
+      );
+    },
   });
 };
 
@@ -37,9 +70,13 @@ const AirplaneControl = () => {
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     tooltipText: "Enable/disable airplane mode",
-    child: Widget.Image({
-      iconName: "airplane-tilt-symbolic",
-    }),
+    setup: (self) => {
+      self.set_child(
+        Widget.Image({
+          iconName: "airplane-tilt-symbolic",
+        }),
+      );
+    },
   });
 };
 
@@ -49,9 +86,13 @@ const DNDControl = () => {
     hexpand: true,
     tooltipText: "Enable/disable DND",
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    child: Widget.Image({
-      iconName: "bell-symbolic",
-    }),
+    setup: (self) => {
+      self.set_child(
+        Widget.Image({
+          iconName: "bell-symbolic",
+        }),
+      );
+    },
   });
 };
 
@@ -68,17 +109,29 @@ const GammastepControl = () => {
     hexpand: true,
     tooltipText: "Enable/disable nightshift (gammastep)",
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    child: Widget.Image({
-      iconName: "moon-symbolic",
-    }),
-    active: bind(gammastepActive),
     onDestroy: gammastepActive.drop,
     onButtonPressed: (self) => {
       const cmd = self.active ? "stop" : "start";
       execAsync(`systemctl --user ${cmd} gammastep.service`);
     },
+    setup: (self) => {
+      self.set_child(
+        Widget.Image({
+          iconName: "moon-symbolic",
+        }),
+      );
+
+      // Manually bind the property, because the property throws an LSP error
+      bind(gammastepActive).subscribe((value) => {
+        self.active = Boolean(value);
+      });
+    },
   });
 };
+
+/*****************************************************************************
+ * Composition
+ *****************************************************************************/
 
 export const Actions = () =>
   Widget.Box({

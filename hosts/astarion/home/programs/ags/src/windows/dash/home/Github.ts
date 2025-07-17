@@ -1,12 +1,23 @@
-/* █▀▀ █ ▀█▀ █░█ █░█ █▄▄   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █ █▄▄ █▀ */
-/* █▄█ █ ░█░ █▀█ █▄█ █▄█   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █ █▄█ ▄█ */
+/**
+ * █▀▀ █ ▀█▀ █░█ █░█ █▄▄   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █ █▄▄ █▀
+ * █▄█ █ ░█░ █▀█ █▄█ █▄█   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █ █▄█ ▄█
+ *
+ * Github contributions widget.
+ *
+ * @TODO This needs serious optimization.
+ */
 
-/* Github contributions widget.
- * @TODO This needs serious optimization. */
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
 
 import { Gtk, Widget, astalify, hook } from "astal/gtk4";
 import { Variable, bind } from "astal";
 import { exec, execAsync } from "astal/process";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const DrawingArea = astalify(Gtk.DrawingArea);
 const Grid = astalify(Gtk.Grid);
@@ -19,23 +30,28 @@ const NUM_ROWS = 7;
 const SQUARE_WIDTH = 10;
 const SQUARE_SPACING = 6;
 
-/* Populate the contribData and contribCount variables */
+// Populate the contribData and contribCount variables
 const url = "/tmp/ags/github/2025-02-08";
+
 execAsync(`bash -c 'cat ${url}'`)
   .then((x) => {
     const out = JSON.parse(x);
 
-    /* API returns data for the entire year including days
-     * in the future, so remove the last (365 - day of year) entries. */
+    // API returns data for the entire year including days in the future
+    // so remove the last (365 - day of year) entries
     const daysLeftInYear = 365 - Number(exec("date +%j"));
     contribData.set(out.contributions.slice(daysLeftInYear));
 
-    /* Count total contribs */
+    // Count total contribs
     let _contribCount = 0;
     out.years.forEach((y: number) => (_contribCount += y.total));
     contribCount.set(_contribCount);
   })
   .catch((err) => print(err));
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 /* Widget for a single contrib square */
 const ContribBox = (intensity = 0) =>
@@ -47,11 +63,10 @@ const ContribBox = (intensity = 0) =>
       const styles = self.get_style_context();
       const fg = styles.get_color();
 
-      /* Size */
-      const w = SQUARE_WIDTH;
+      // Size
       self.set_size_request(SQUARE_WIDTH, SQUARE_WIDTH);
 
-      self.set_draw_func((_, cr) => {
+      self.set_draw_func((_, cr: any) => {
         cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
         cr.rectangle(0, 0, SQUARE_WIDTH, SQUARE_WIDTH);
         cr.fill();
@@ -66,10 +81,11 @@ const ContribGrid = () =>
     vexpand: false,
     halign: Gtk.Align.CENTER,
     valign: Gtk.Align.CENTER,
-    rowSpacing: SQUARE_SPACING,
-    columnSpacing: SQUARE_SPACING,
     cssClasses: ["contrib-container"],
-    setup: (self) =>
+    setup: (self) => {
+      self.rowSpacing = SQUARE_SPACING;
+      self.columnSpacing = SQUARE_SPACING;
+
       hook(self, contribData, (self) => {
         for (let i = 0; i < NUM_ROWS; i++) {
           self.insert_row(i);
@@ -92,7 +108,8 @@ const ContribGrid = () =>
             span,
           );
         }
-      }),
+      });
+    },
   });
 
 const TotalContribs = () =>
@@ -100,6 +117,10 @@ const TotalContribs = () =>
     cssClasses: ["header"],
     label: bind(contribCount).as((value) => value.toString()),
   });
+
+/*****************************************************************************
+ * Composition
+ *****************************************************************************/
 
 export const Github = () =>
   Widget.Box({
