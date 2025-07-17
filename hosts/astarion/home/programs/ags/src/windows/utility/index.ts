@@ -1,18 +1,28 @@
-import { App, Astal, Gtk, Widget, astalify } from "astal/gtk4";
-import { Variable, GLib, bind } from "astal";
+/**
+ * █░█ ▀█▀ █ █░░ █ ▀█▀ █▄█   █▀█ ▄▀█ █▄░█ █▀▀ █░░
+ * █▄█ ░█░ █ █▄▄ █ ░█░ ░█░   █▀▀ █▀█ █░▀█ ██▄ █▄▄
+ *
+ * Left-hand panel containing commonly used tools.
+ */
 
-import { Gemini } from "@/windows/utility/Gemini.ts";
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
+import { App, Astal, Gtk, Widget, astalify } from "astal/gtk4";
+
+import { GeminiChat } from "@/windows/utility/GeminiChat";
 import { Tools } from "@/windows/utility/tools";
 
-/******************************************
- * MODULE-LEVEL VARIABLES
- ******************************************/
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const Notebook = astalify(Gtk.Notebook);
 
-/******************************************
- * WIDGETS
- ******************************************/
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 const NotebookTabLabel = (label: string) =>
   Widget.Label({
@@ -27,7 +37,7 @@ const UtilityPanel = () =>
     cssClasses: ["utility"],
     setup: (self) => {
       self.append_page(Tools(), NotebookTabLabel("Tools"));
-      self.append_page(Gemini(), NotebookTabLabel("Gemini"));
+      self.append_page(GeminiChat(), NotebookTabLabel("Gemini"));
     },
   });
 
@@ -47,8 +57,7 @@ export default () => {
       child: UtilityPanel(),
     }),
     setup: (self) => {
-      /* Workaround for revealer bug.
-       * https://github.com/wmww/gtk4-layer-shell/issues/60 */
+      // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);
     },
   });
