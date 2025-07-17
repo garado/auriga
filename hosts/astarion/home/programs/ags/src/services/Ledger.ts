@@ -1,6 +1,5 @@
 /* █░█ █░░ █▀▀ █▀▄ █▀▀ █▀▀ █▀█ */
 /* █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄ */
-
 /* Service for interfacing with hledger.
  * NOTE: This will be refactored as part of issue auriga-27 */
 
@@ -71,7 +70,7 @@ export interface AccountConfig {
  */
 export interface Account {
   displayName: string;
-  total: Number | Binding<Number>;
+  total: number | Binding<number>;
 }
 
 export interface TransactionData {
