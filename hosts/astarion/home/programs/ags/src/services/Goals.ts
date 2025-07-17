@@ -1,7 +1,9 @@
-/* █▀▀ █▀█ ▄▀█ █░░ █▀ */
-/* █▄█ █▄█ █▀█ █▄▄ ▄█ */
-
-/* Service for interacting with goals, which are stored in Taskwarrior. */
+/**
+ * █▀▀ █▀█ ▄▀█ █░░ █▀
+ * █▄█ █▄█ █▀█ █▄▄ ▄█
+ *
+ * Service for interacting with goals, which are stored in Taskwarrior.
+ */
 
 /*****************************************************************************
  * Imports

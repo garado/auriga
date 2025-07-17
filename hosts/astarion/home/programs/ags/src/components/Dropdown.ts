@@ -1,8 +1,10 @@
-/* █▀▄ █▀█ █▀█ █▀█ █▀▄ █▀█ █░█░█ █▄░█ */
-/* █▄▀ █▀▄ █▄█ █▀▀ █▄▀ █▄█ ▀▄▀▄▀ █░▀█ */
-
-/* Wrapper for GtkDropDown.
- * Currently doesn't do much. But it's here so it can be extended if needed. */
+/**
+ * █▀▄ █▀█ █▀█ █▀█ █▀▄ █▀█ █░█░█ █▄░█
+ * █▄▀ █▀▄ █▄█ █▀▀ █▄▀ █▄█ ▀▄▀▄▀ █░▀█
+ *
+ * Wrapper for GtkDropDown.
+ * Currently doesn't do much. But it's here so it can be extended if needed.
+ */
 
 /*****************************************************************************
  * Imports

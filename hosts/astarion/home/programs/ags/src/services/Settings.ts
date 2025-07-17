@@ -1,5 +1,7 @@
-/* █▀ █▀▀ ▀█▀ ▀█▀ █ █▄░█ █▀▀ █▀ */
-/* ▄█ ██▄ ░█░ ░█░ █ █░▀█ █▄█ ▄█ */
+/**
+ * █▀ █▀▀ ▀█▀ ▀█▀ █ █▄░█ █▀▀ █▀
+ * ▄█ ██▄ ░█░ ░█░ █ █░▀█ █▄█ ▄█
+ */
 
 import { App } from "astal/gtk4";
 import { GObject, register, property } from "astal/gobject";

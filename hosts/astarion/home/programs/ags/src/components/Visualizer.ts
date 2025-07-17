@@ -1,8 +1,10 @@
-/* █░█ █ █▀ █░█ ▄▀█ █░░ █ ▀█ █▀▀ █▀█ */
-/* ▀▄▀ █ ▄█ █▄█ █▀█ █▄▄ █ █▄ ██▄ █▀▄ */
-
-/* Music visualizer widget.
- * I think I got this from Kotontrion or someone else on the astal discord - I don't remember. */
+/**
+ * █░█ █ █▀ █░█ ▄▀█ █░░ █ ▀█ █▀▀ █▀█
+ * ▀▄▀ █ ▄█ █▄█ █▀█ █▄▄ █ █▄ ██▄ █▀▄
+ *
+ * Music visualizer widget.
+ * I think I got this from Kotontrion or someone else on the astal discord - I don't remember.
+ */
 
 /*****************************************************************************
  * Imports

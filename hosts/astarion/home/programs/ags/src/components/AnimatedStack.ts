@@ -1,14 +1,16 @@
-/* ▄▀█ █▄░█ █ █▀▄▀█ ▄▀█ ▀█▀ █▀▀ █▀▄   █▀ ▀█▀ ▄▀█ █▀▀ █▄▀ */
-/* █▀█ █░▀█ █ █░▀░█ █▀█ ░█░ ██▄ █▄▀   ▄█ ░█░ █▀█ █▄▄ █░█ */
-
-/* A Gtk.Stack, but the transition types are dynamically adjusted
+/**
+ * ▄▀█ █▄░█ █ █▀▄▀█ ▄▀█ ▀█▀ █▀▀ █▀▄   █▀ ▀█▀ ▄▀█ █▀▀ █▄▀
+ * █▀█ █░▀█ █ █░▀░█ █▀█ ░█░ ██▄ █▄▀   ▄█ ░█░ █▀█ █▄▄ █░█
+ *
+ * A Gtk.Stack, but the transition types are dynamically adjusted
  * based on the new visibleChild's index relative to the current
  * visibleChild.
  *
  * e.g. if the stack is laid out "vertically", the transitions will
  * switch between SLIDE_UP and SLIDE_DOWN. If the stack is laid out
  * "horizontally", they will will switch between SLIDE_LEFT and
- * SLIDE_RIGHT. */
+ * SLIDE_RIGHT.
+ */
 
 /*****************************************************************************
  * Imports

@@ -1,7 +1,7 @@
-/* █▀█ █ █▀▀   █▀▀ █░█ ▄▀█ █▀█ ▀█▀ */
-/* █▀▀ █ ██▄   █▄▄ █▀█ █▀█ █▀▄ ░█░ */
-
 /**
+ * █▀█ █ █▀▀   █▀▀ █░█ ▄▀█ █▀█ ▀█▀
+ * █▀▀ █ ██▄   █▄▄ █▀█ █▀█ █▀▄ ░█░
+ *
  * Pie chart widget and optional legend widget.
  *
  * To change the pie slice colors, in your CSS, define:

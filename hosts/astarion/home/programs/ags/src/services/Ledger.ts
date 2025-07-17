@@ -1,7 +1,10 @@
-/* █░█ █░░ █▀▀ █▀▄ █▀▀ █▀▀ █▀█ */
-/* █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄ */
-/* Service for interfacing with hledger.
- * NOTE: This will be refactored as part of issue auriga-27 */
+/**
+ * █░█ █░░ █▀▀ █▀▄ █▀▀ █▀▀ █▀█
+ * █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄
+ *
+ * Service for interfacing with hledger.
+ * NOTE: This will be refactored as part of issue auriga-27
+ */
 
 /*****************************************************************************
  * Imports

@@ -1,8 +1,10 @@
-/* █▀▄ ▄▀█ █▀ █░█   ▀█▀ ▄▀█ █▄▄   █░░ ▄▀█ █▄█ █▀█ █░█ ▀█▀ */
-/* █▄▀ █▀█ ▄█ █▀█   ░█░ █▀█ █▄█   █▄▄ █▀█ ░█░ █▄█ █▄█ ░█░ */
-
-/* Provides consistent implementation for dashboard tabs.
- * Includes tab header, action buttons, and page switch buttons. */
+/**
+ * █▀▄ ▄▀█ █▀ █░█   ▀█▀ ▄▀█ █▄▄   █░░ ▄▀█ █▄█ █▀█ █░█ ▀█▀
+ * █▄▀ █▀█ ▄█ █▀█   ░█░ █▀█ █▄█   █▄▄ █▀█ ░█░ █▄█ █▄█ ░█░
+ *
+ * Provides consistent implementation for dashboard tabs.
+ * Includes tab header, action buttons, and page switch buttons.
+ */
 
 /*****************************************************************************
  * Imports

@@ -1,7 +1,7 @@
-/* █▀▀ ▄▀█ █░░ █▀▀ █▄░█ █▀▄ ▄▀█ █▀█ */
-/* █▄▄ █▀█ █▄▄ ██▄ █░▀█ █▄▀ █▀█ █▀▄ */
-
 /**
+ * █▀▀ ▄▀█ █░░ █▀▀ █▄░█ █▀▄ ▄▀█ █▀█
+ * █▄▄ █▀█ █▄▄ ██▄ █░▀█ █▄▀ █▀█ █▀▄
+ *
  * A service to interface with gcalcli. Also provides helper functions
  * and stores variables for the UI.
  *
