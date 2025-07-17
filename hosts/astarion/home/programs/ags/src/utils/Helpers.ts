@@ -96,3 +96,13 @@ export const getCairoColorFromClass = (...rest: Array<string>): any => {
 
   return dummyContext.get_color();
 };
+
+/**
+ * Sets the Cairo context color from a CSS class.
+ * @param cr - The Cairo drawing context
+ * @param cssClass - CSS class name to get color from
+ */
+export const setCairoColorFromClass = (cr: any, cssClass: string): void => {
+  const color = getCairoColorFromClass(cssClass);
+  cr.setSourceRGBA(color.red, color.green, color.blue, color.alpha);
+};

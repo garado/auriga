@@ -1,7 +1,7 @@
 import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import Ledger from "@/services/Ledger";
 import { bind } from "astal";
-import Bar from "./Bar";
+import Bar from "./BarGraphBar";
 
 let maximum = 0;
 const DrawingArea = astalify(Gtk.DrawingArea);
