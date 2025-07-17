@@ -24,7 +24,7 @@ const Scrollable = astalify(Gtk.ScrolledWindow);
 export type GraphData = {
   name: string;
   values: Array<number>;
-  color: string;
+  color?: string;
   cssClass?: string;
   calculateFit?: boolean;
   dashed?: boolean;
