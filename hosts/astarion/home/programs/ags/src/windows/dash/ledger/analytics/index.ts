@@ -12,7 +12,7 @@
  *****************************************************************************/
 
 import { Widget } from "astal/gtk4";
-import { MonthlySpendBarGraph } from "./MonthlySpendBarGraph";
+import { MonthlySpendChart } from "./MonthlySpendChart";
 
 /*****************************************************************************
  * Widget definitions
@@ -23,6 +23,6 @@ export const Analytics = () => {
     vertical: false,
     hexpand: true,
     vexpand: true,
-    children: [MonthlySpendBarGraph()],
+    children: [MonthlySpendChart()],
   });
 };

@@ -21,8 +21,9 @@ import { Binding } from "astal";
  *****************************************************************************/
 
 const CSV = " --output-format csv ";
+
 const BALANCE_TREND_CACHEFILE = "/tmp/ags/ledgerbal";
-const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
 const INCLUDES = UserConfig.ledger.includes
   .map((file: string) => `-f "${file.replace(/"/g, '\\"')}"`)
   .join(" ");
