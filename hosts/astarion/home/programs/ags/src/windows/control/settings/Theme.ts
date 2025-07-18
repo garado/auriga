@@ -12,7 +12,9 @@
 import Gio from "gi://Gio";
 import { Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
-import Settings, { Theme as ThemeInterface } from "@/services/Settings.ts";
+import SettingsManager, {
+  Theme as ThemeInterface,
+} from "@/services/SettingsManager";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 
 /*****************************************************************************
@@ -20,7 +22,7 @@ import { ExpansionPanel } from "@/components/ExpansionPanel.js";
  *****************************************************************************/
 
 const Picture = astalify(Gtk.Picture);
-const settings = Settings.get_default();
+const settings = SettingsManager.get_default();
 
 /*****************************************************************************
  * Widget definition
