@@ -20,8 +20,8 @@
 
     hyprland.url = "github:hyprwm/Hyprland";
 
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins";
+    hyprsplit = {
+      url = "github:shezdy/hyprsplit";
       inputs.hyprland.follows = "hyprland";
     };
 
@@ -38,7 +38,12 @@
   # Nix will fetch all the inputs (flakes) above, load *their* flake.nix files, and
   # then call the `outputs` function below with the results from loading all the
   # flakes above.
-  outputs = { home-manager, nixpkgs, ... } @ inputs: {
+  outputs = { 
+    home-manager, 
+    nixpkgs, 
+    hyprsplit, 
+    ... 
+  } @ inputs: {
 
     nixosConfigurations = {
 
