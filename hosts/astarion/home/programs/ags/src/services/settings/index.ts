@@ -18,6 +18,7 @@ import { exec, execAsync } from "astal/process";
 
 import { AccountConfig } from "../Ledger.ts";
 import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
+import { fileWrite } from "@/utils/File.ts";
 
 /*****************************************************************************
  * Constants
@@ -92,6 +93,11 @@ export interface SystemConfig {
   dashGoals: {
     directory: string;
     categoryIcons: Record<string, string>;
+  };
+
+  utility: {
+    /** List of available paint colors. Used in paint mixing widget. */
+    availablePaintColors: string[];
   };
 
   misc: {
@@ -204,20 +210,16 @@ export default class SettingsManager extends GObject.Object {
    * Apply astal CSS theme.
    */
   private applyCSSTheme = (themeName: string) => {
-    // SASS: @forward 'oldtheme' ==> @forward 'newtheme'
-    const sassCmd = `sed -i \"s#forward.*#forward \\"${themeName}\\"#g\" ${APP_PATHS.SASS_COLORS_PATH}`;
+    // Create/update colors.sass file
+    const colorsContent = `@forward "${themeName}"`;
+    fileWrite(APP_PATHS.SASS_COLORS_PATH, colorsContent);
 
-    execAsync(`bash -c '${sassCmd}'`)
-      .then((_) => {
-        execAsync(
-          `sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`,
-        )
-          .then(() => {
-            App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
-          })
-          .catch(console.log);
+    // Compile SASS and apply CSS
+    execAsync(`sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`)
+      .then(() => {
+        App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
       })
-      .catch(console.log);
+      .catch(console.error);
 
     // UserConfig: currentTheme: 'kanagawa' => currentTheme: 'newTheme'
     const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" ${APP_PATHS.USER_CONFIG_PATH}`;
