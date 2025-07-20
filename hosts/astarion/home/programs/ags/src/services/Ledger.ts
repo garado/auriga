@@ -16,18 +16,20 @@ import Gio from "gi://Gio";
 
 import { log } from "@/globals.ts";
 
-import UserConfig from "../../userconfig.js";
 import { Binding } from "astal";
+import SettingsManager from "./settings";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
+const ledgerConfig = SettingsManager.get_default().config.dashLedger;
+
 const CSV = " --output-format csv ";
 
 const BALANCE_TREND_CACHEFILE = "/tmp/ags/ledgerbal";
 
-const INCLUDES = UserConfig.ledger.includes
+const INCLUDES = ledgerConfig.includes
   .map((file: string) => `-f "${file.replace(/"/g, '\\"')}"`)
   .join(" ");
 
@@ -394,7 +396,7 @@ export default class Ledger extends GObject.Object {
   }
 
   /**
-   * Initialize account balance data for accounts defined in UserConfig.
+   * Initialize account balance data for accounts defined in user config.
    * Fetches current balances from hledger and converts them to display format.
    *
    * This method:
@@ -424,7 +426,7 @@ export default class Ledger extends GObject.Object {
    */
   #initAccountData() {
     // Build hledger commands for each account
-    const commands = UserConfig.ledger.accountList.map(
+    const commands = ledgerConfig.accountList.map(
       (accountData: AccountConfig) => {
         // use `--infer-market-prices -X '$'` to convert shares to $
         return `hledger ${INCLUDES} balance "${accountData.accountName}" ${CSV} -X "$" --infer-market-prices`;
@@ -441,8 +443,8 @@ export default class Ledger extends GObject.Object {
         const tmpAccountData: Array<Account> = [];
 
         // Process each account's result
-        for (let i = 0; i < UserConfig.ledger.accountList.length; i++) {
-          const accountConfig = UserConfig.ledger.accountList[i];
+        for (let i = 0; i < ledgerConfig.accountList.length; i++) {
+          const accountConfig = ledgerConfig.accountList[i];
 
           try {
             const balanceRows = this.parseBalanceCSV(results[i]);

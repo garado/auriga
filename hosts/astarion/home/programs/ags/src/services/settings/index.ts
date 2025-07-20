@@ -2,7 +2,10 @@
  * █▀ █▀▀ ▀█▀ ▀█▀ █ █▄░█ █▀▀ █▀   █▀▄▀█ ▄▀█ █▄░█ ▄▀█ █▀▀ █▀▀ █▀█
  * ▄█ ██▄ ░█░ ░█░ █ █░▀█ █▄█ ▄█   █░▀░█ █▀█ █░▀█ █▀█ █▄█ ██▄ █▀▄
  *
- * Manages user settings.
+ * Service for reading initial user settings and supplying settings to the reset
+ * of the application.
+ *
+ * Also responsible for updating user settings.
  */
 
 /*****************************************************************************
@@ -12,92 +15,91 @@
 import { App } from "astal/gtk4";
 import { GObject, register, property } from "astal/gobject";
 import { exec, execAsync } from "astal/process";
-import UserConfig from "../../userconfig.js";
+
+import { AccountConfig } from "../Ledger.ts";
+import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
+import { UserConfig } from "userconfig.ts";
+
+/*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+export const APP_PATHS = {
+  SASS_COLORS_PATH: `${SRC}/src/styles/theme/colors/colors.sass`,
+  SASS_MAIN_PATH: `${SRC}/styles/main.sass`,
+  COMPILED_CSS_PATH: "/tmp/ags/style.css",
+  USER_CONFIG_PATH: `${SRC}/userconfig.ts`,
+  NVIM_CONFIG_PATH: "$NVCFG/chadrc.lua",
+  RELOAD_SCRIPT_PATH: `${SRC}/scripts/nvim-reload.py`,
+} as const;
 
 /*****************************************************************************
  * Types and interfaces
  *****************************************************************************/
 
-export interface ThemeDetails {
+export interface ThemeConfig {
   nvim: string;
   kitty: string;
   wallpaper: string;
   preview: string;
 }
 
-interface SystemConfig {
-  nvim: {
-    configPath: string;
-    reloadScript: string;
+export interface SystemConfig {
+  theme: {
+    /** Current desktop theme. */
+    currentTheme: string;
+
+    /** Configuration for each individual theme. */
+    themeConfig: Record<string, ThemeConfig>;
   };
-  astal: {
-    sassColorsPath: string;
-    sassMainPath: string;
-    compiledCssPath: string;
-    userConfigPath: string;
-  };
-  wallpaper: {
-    transitionConfig: {
-      type: string;
-      step: number;
-      fps: number;
-      duration: number;
-      bezier: string;
+
+  /** Define the order of dashboard tabs. */
+  dashTabs: string[];
+
+  dashHome: {
+    profile: {
+      name: string;
+      pfp: string;
+      splashText: string[];
     };
+
+    /** Quotes to display. */
+    quotes: [string, string][];
+
+    /** Github username. */
+    github: string;
   };
-  currentTheme: string;
-  themeDetails: Record<string, ThemeDetails>;
+
+  dashCalendar: {
+    /** Adjust the color of events in the calendar based on the calendar name */
+    colors: Record<string, string>;
+  };
+
+  dashLedger: {
+    /** All files to include when calling ledger commands. */
+    includes: string[];
+
+    /** When files in this directory change, the ledger service is refreshed */
+    monitorDir: string;
+
+    /* List of accounts to display, in order */
+    accountList: AccountConfig[];
+  };
+
+  dashTasks: {
+    directory: string;
+  };
+
+  dashGoals: {
+    directory: string;
+    categoryIcons: Record<string, string>;
+  };
+
+  misc: {
+    /** @TODO use sops instead */
+    geminiAPI: string;
+  };
 }
-
-/*****************************************************************************
- * Constants
- *****************************************************************************/
-
-export const AVAILABLE_THEMES = [
-  "mountain",
-  "kanagawa",
-  // "gruvbox",
-  // "nord",
-  // "yoru",
-  // "nostalgia",
-];
-
-const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
-  nvim: {
-    configPath: "$NVCFG/chadrc.lua",
-    reloadScript: "$AGSCFG/scripts/nvim-reload.py",
-  },
-  astal: {
-    sassColorsPath: `${SRC}/src/styles/theme/colors/colors.sass`,
-    sassMainPath: "./src/styles/main.sass",
-    compiledCssPath: "/tmp/ags/style.css",
-    userConfigPath: "$AGSCFG/userconfig.js",
-  },
-  wallpaper: {
-    transitionConfig: {
-      type: "fade",
-      step: 20,
-      fps: 255,
-      duration: 1.5,
-      bezier: ".69,.89,.73,.46",
-    },
-  },
-  currentTheme: "mountain",
-  themeDetails: {
-    mountain: {
-      nvim: "mountain",
-      kitty: "Mountain Fuji",
-      wallpaper: `${SRC}/assets/themes/wallpapers/mountain.jpg`,
-      preview: `${SRC}/assets/themes/preview/mountain.png`,
-    },
-    kanagawa: {
-      nvim: "kanagawa",
-      kitty: "Kanagawa ",
-      wallpaper: `${SRC}/assets/themes/wallpapers/kanagawa.jpg`,
-      preview: `${SRC}/assets/themes/preview/kanagawa.png`,
-    },
-  },
-};
 
 /*****************************************************************************
  * Helper functions
@@ -121,26 +123,12 @@ export default class SettingsManager extends GObject.Object {
   }
 
   // Properties --------------------------------------------------------------
-  @property(Object) declare systemConfig: SystemConfig;
-
-  @property(String) declare private _currentTheme: string;
-
-  @property(String)
-  get currentTheme() {
-    return this._currentTheme;
-  }
-
-  set currentTheme(themeName: string) {
-    this._currentTheme = themeName;
-    this.applyTheme(themeName);
-    this.notify("current-theme");
-  }
+  @property(Object) declare config: SystemConfig;
 
   // Private functions -------------------------------------------------------
   constructor() {
     super();
-    this.systemConfig = this.mergeSystemConfig(DEFAULT_SYSTEM_CONFIG, {});
-    this.currentTheme = UserConfig.currentTheme;
+    this.config = this.mergeSystemConfig(DEFAULT_SYSTEM_CONFIG, UserConfig);
   }
 
   /**
@@ -148,7 +136,7 @@ export default class SettingsManager extends GObject.Object {
    * WARNING: This is very specific to my setup.
    */
   private applyNeovimTheme = (themeName: string) => {
-    const nvimThemeName = this.systemConfig.themeDetails[themeName].nvim;
+    const nvimThemeName = this.config.theme.themeConfig[themeName].nvim;
 
     if (nvimThemeName) {
       const nvimPath = "$NVCFG/chadrc.lua";
@@ -163,7 +151,7 @@ export default class SettingsManager extends GObject.Object {
   };
 
   private applyWallpaper = (themeName: string) => {
-    const wallpaper = this.systemConfig.themeDetails[themeName].wallpaper;
+    const wallpaper = this.config.theme.themeConfig[themeName].wallpaper;
 
     if (wallpaper) {
       const cmd = `swww img ${wallpaper} --transition-type fade --transition-step 20 --transition-fps 255 --transition-duration 1.5 --transition-bezier .69,.89,.73,.46`;
@@ -186,13 +174,13 @@ export default class SettingsManager extends GObject.Object {
       .catch(print);
 
     // UserConfig: currentTheme: 'kanagawa' => currentTheme: 'newTheme'
-    const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" $AGSCFG/userconfig.js`;
+    const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" $AGSCFG/${APP_PATHS.USER_CONFIG_PATH}`;
     execAsync(`bash -c '${configCmd}'`).catch(print);
   };
 
   // Public functions --------------------------------------------------------
   applyTheme(themeName: string) {
-    const themeDetails = this.availableThemes[themeName];
+    const themeDetails = this.config.theme.themeConfig[themeName];
 
     // Change terminal theme
     if (themeDetails.kitty) {

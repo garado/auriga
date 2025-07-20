@@ -11,16 +11,13 @@
 
 import { astalify, Gtk, Widget } from "astal/gtk4";
 import { Gio } from "astal";
-
-import UserConfig from "../../../../userconfig.js";
+import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const PFP_PATH = UserConfig.profile.pfp;
-const PROFILE_NAME = UserConfig.profile.name;
-const SPLASH_OPTS = UserConfig.profile.splashText;
+const profileConfig = SettingsManager.get_default().config.dashHome.profile;
 
 /*****************************************************************************
  * Widget definition
@@ -35,19 +32,22 @@ export const Profile = () => {
       vexpand: false,
       cssClasses: ["pfp"],
       contentFit: Gtk.ContentFit.COVER,
-      file: Gio.File.new_for_path(PFP_PATH),
+      file: Gio.File.new_for_path(profileConfig.pfp),
     });
 
   const Username = () =>
     Widget.Label({
       cssClasses: ["username"],
-      label: PROFILE_NAME,
+      label: profileConfig.name,
     });
 
   const Splash = () =>
     Widget.Label({
       cssClasses: ["splash"],
-      label: SPLASH_OPTS[Math.floor(Math.random() * SPLASH_OPTS.length)],
+      label:
+        profileConfig.splashText[
+          Math.floor(Math.random() * profileConfig.splashText.length)
+        ],
     });
 
   return Widget.Box({

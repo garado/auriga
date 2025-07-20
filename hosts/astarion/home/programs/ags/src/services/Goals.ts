@@ -13,7 +13,7 @@ import { GObject, register, property, signal } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import { Levenshtein } from "@/utils/FuzzyFind.js";
-import UserConfig from "../../userconfig.js";
+import SettingsManager from "./settings";
 
 /*****************************************************************************
  * Types/interfaces
@@ -82,6 +82,8 @@ interface Filters {
  * Module level variables
  *****************************************************************************/
 
+const goalsConfig = SettingsManager.get_default().config.dashGoals;
+
 const LEVENSHTEIN_MATCH_THRESHOLD = 20;
 
 /*****************************************************************************
@@ -145,7 +147,7 @@ export default class Goals extends GObject.Object {
       search: "",
     });
 
-    this.dataDirectory = UserConfig.goals.directory;
+    this.dataDirectory = goalsConfig.directory;
     this.data = {};
 
     this.fetchGoals();
@@ -164,10 +166,6 @@ export default class Goals extends GObject.Object {
     }
 
     const category = goal.project;
-
-    // Set image path (path may or may not exist). Path is: <splashDirectory>/<category>/#<uuidShort>.jpg
-    const uuidShort = goal.uuid.substring(0, 8);
-    goal.imgpath = `${UserConfig.goals.splash}/${category}/#${uuidShort}.jpg`;
 
     if (this.#isTaskFailed(goal)) {
       goal.status = "failed";
