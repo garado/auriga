@@ -94,6 +94,11 @@ export interface SystemConfig {
     categoryIcons: Record<string, string>;
   };
 
+  utility: {
+    /** List of available paint colors. Used in paint mixing widget. */
+    availablePaintColors: string[];
+  };
+
   misc: {
     /** @TODO use sops instead */
     geminiAPI: string;
