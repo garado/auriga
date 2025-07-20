@@ -16,52 +16,52 @@ import Pango from "gi://Pango?version=1.0";
 const Scrollable = astalify(Gtk.ScrolledWindow);
 
 /*****************************************************************************
+ * Types and interface
+ *****************************************************************************/
+
+interface ExpansionPanelInterace {
+  /**
+   * Optional user-provided content for expander tab.
+   * A default expander tab will be created if not provided.
+   */
+  expandTabContent?: Gtk.Widget;
+
+  /** Icon to display in default expander tab content. */
+  icon?: string;
+
+  /** Label to display in default expander tab content. */
+  label?: string | Binding<string>;
+
+  /**
+   * Child widgets to display in expander tab.
+   * @TODO Make more generic - just accept widget; let user fully handle
+   * dropdown content
+   */
+  children: Array<Gtk.Widget> | Binding<Gtk.Widget[]>;
+
+  /** Whether children in dropdown are aligned vertically.
+   * @TODO Once this widget is made more generic, this will be removed */
+  vertical: boolean;
+
+  /** Maximum dropdown height. Note that the dropdown has a vertical scrollbar. */
+  maxDropdownHeight: number;
+
+  /** CSS classes to add to the expander. */
+  cssClasses?: Array<string>;
+
+  globalRevealerState: Variable<boolean>;
+}
+
+/*****************************************************************************
  * Widget definition
  *****************************************************************************/
 
-export const ExpansionPanel = (props: {
-  icon?: string;
-  label?: string | Binding<string>;
-  children: Array<Gtk.Widget> | Binding<Gtk.Widget[]>;
-  maxDropdownHeight: number;
-  vertical: boolean;
-  cssClasses?: Array<string>;
-  globalRevealerState: Variable<boolean>;
-}) => {
+export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const contentRevealerState = Variable(false);
 
   /********************************************************
    * TOP TAB
    ********************************************************/
-
-  /**
-   * Top tab. Clicking reveals/hides the dropdown content.
-   */
-  const ExpanderTab = () =>
-    Widget.Box({
-      cursor: Gdk.Cursor.new_from_name("pointer", null),
-      hexpand: true,
-      spacing: 10,
-      cssClasses: ["tab"],
-      vertical: false,
-      children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
-      onButtonPressed: (self) => {
-        if (!self.has_css_class("revealed")) {
-          props.globalRevealerState.set(!props.globalRevealerState.get());
-        }
-
-        contentRevealerState.set(!contentRevealerState.get());
-      },
-      setup: (self) => {
-        contentRevealerState.subscribe((state) => {
-          if (state) {
-            self.add_css_class("revealed");
-          } else {
-            self.remove_css_class("revealed");
-          }
-        });
-      },
-    });
 
   /**
    * Icon describing content.
@@ -89,6 +89,47 @@ export const ExpansionPanel = (props: {
       iconName: bind(contentRevealerState).as((state) =>
         state ? "caret-up-symbolic" : "caret-down-symbolic",
       ),
+    });
+
+  /* User can optionally define expansion tab content. */
+  let expandTabContent;
+
+  if (props.expandTabContent) {
+    expandTabContent = props.expandTabContent;
+  } else {
+    expandTabContent = Widget.Box({
+      spacing: 10,
+      vertical: false,
+      children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
+    });
+  }
+
+  /**
+   * Top tab. Clicking reveals/hides the dropdown content.
+   */
+  const ExpanderTab = () =>
+    Widget.Box({
+      cursor: Gdk.Cursor.new_from_name("pointer", null),
+      hexpand: true,
+      cssClasses: ["tab"],
+      vertical: false,
+      children: [expandTabContent],
+      onButtonPressed: (self) => {
+        if (!self.has_css_class("revealed")) {
+          props.globalRevealerState.set(!props.globalRevealerState.get());
+        }
+
+        contentRevealerState.set(!contentRevealerState.get());
+      },
+      setup: (self) => {
+        contentRevealerState.subscribe((state) => {
+          if (state) {
+            self.add_css_class("revealed");
+          } else {
+            self.remove_css_class("revealed");
+          }
+        });
+      },
     });
 
   /********************************************************
