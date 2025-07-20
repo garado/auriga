@@ -90,6 +90,9 @@ let allMixInstructions: Gtk.Box;
  * Helper functions
  *****************************************************************************/
 
+/** Check if input is valid hex color. */
+const isValidHexColor = (input: string) => /^#[0-9A-F]{6}$/i.test(input);
+
 /**
  * Pick color with hyprpicker
  */
@@ -98,11 +101,14 @@ const pickColor = async (): Promise<void> => {
     App.get_window(WINDOW_NAMES.UTILITY)?.set_visible(false);
 
     // Small delay to ensure window fully hides before hyprpicker launches
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     const cmd = `hyprpicker --no-fancy --render-inactive --format=hex`;
-    const selectedColor = await execAsync(cmd);
-    promptMixingInstructions(selectedColor, utilityConfig.availablePaintColors);
+    const output = await execAsync(cmd);
+
+    if (isValidHexColor(output)) {
+      promptMixingInstructions(output, utilityConfig.availablePaintColors);
+    }
 
     App.get_window(WINDOW_NAMES.UTILITY)?.set_visible(true);
   } catch (error) {
