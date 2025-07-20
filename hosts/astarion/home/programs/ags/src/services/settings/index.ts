@@ -18,7 +18,6 @@ import { exec, execAsync } from "astal/process";
 
 import { AccountConfig } from "../Ledger.ts";
 import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
-import { UserConfig } from "userconfig.ts";
 
 /*****************************************************************************
  * Constants
@@ -128,7 +127,17 @@ export default class SettingsManager extends GObject.Object {
   // Private functions -------------------------------------------------------
   constructor() {
     super();
-    this.config = this.mergeSystemConfig(DEFAULT_SYSTEM_CONFIG, UserConfig);
+
+    let userConfig;
+
+    try {
+      userConfig = require("userconfig.ts").UserConfig;
+      print(userConfig);
+    } catch {
+      userConfig = {};
+    }
+
+    this.config = this.mergeSystemConfig(DEFAULT_SYSTEM_CONFIG, userConfig);
   }
 
   /**

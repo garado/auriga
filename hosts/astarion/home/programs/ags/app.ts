@@ -68,7 +68,7 @@ const openWindow = (windowName: string) => {
 };
 
 const compileSASS = () => {
-  exec("sass ./src/styles/main.sass /tmp/ags/style.css");
+  exec(`sass ${SRC}/src/styles/main.sass /tmp/ags/style.css`);
 };
 
 /*****************************************************************************
@@ -79,7 +79,7 @@ compileSASS();
 
 App.start({
   css: "/tmp/ags/style.css",
-  icons: "./src/assets/icons/",
+  icons: `${SRC}/assets/icons/`,
   requestHandler(request: string, res: (response: any) => void) {
     const [command, ...args] = request.split(" ");
 
