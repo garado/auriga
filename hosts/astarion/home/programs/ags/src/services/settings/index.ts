@@ -25,11 +25,11 @@ import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
 
 export const APP_PATHS = {
   SASS_COLORS_PATH: `${SRC}/src/styles/theme/colors/colors.sass`,
-  SASS_MAIN_PATH: `${SRC}/styles/main.sass`,
+  SASS_MAIN_PATH: `${SRC}/src/styles/main.sass`,
   COMPILED_CSS_PATH: "/tmp/ags/style.css",
   USER_CONFIG_PATH: `${SRC}/userconfig.ts`,
   NVIM_CONFIG_PATH: "$NVCFG/chadrc.lua",
-  RELOAD_SCRIPT_PATH: `${SRC}/scripts/nvim-reload.py`,
+  NVIM_RELOAD_SCRIPT_PATH: `${SRC}/src/scripts/nvim-reload.py`,
 } as const;
 
 /*****************************************************************************
@@ -124,6 +124,28 @@ export default class SettingsManager extends GObject.Object {
   // Properties --------------------------------------------------------------
   @property(Object) declare config: SystemConfig;
 
+  @property(Object) declare availableThemes: string[];
+
+  declare private _currentTheme: string;
+
+  @property(String)
+  get currentTheme(): string {
+    return this._currentTheme;
+  }
+
+  set currentTheme(newTheme: string) {
+    if (
+      newTheme == this._currentTheme ||
+      !this.availableThemes.includes(newTheme)
+    ) {
+      return;
+    }
+
+    this._currentTheme = newTheme;
+    this.applyTheme(newTheme);
+    this.notify("current-theme");
+  }
+
   // Private functions -------------------------------------------------------
   constructor() {
     super();
@@ -137,6 +159,14 @@ export default class SettingsManager extends GObject.Object {
     }
 
     this.config = this.mergeSystemConfig(DEFAULT_SYSTEM_CONFIG, userConfig);
+
+    const availableThemes: string[] = [];
+    Object.keys(this.config.theme.themeConfig).forEach((themeName) => {
+      availableThemes.push(themeName);
+    });
+
+    this.availableThemes = availableThemes;
+    this.currentTheme = this.config.theme.currentTheme;
   }
 
   /**
@@ -152,50 +182,69 @@ export default class SettingsManager extends GObject.Object {
 
       exec(`bash -c "${nvimCmd} ${nvimPath}"`);
 
-      execAsync(`bash -c 'python3 ${SRC}/scripts/nvim-reload.py'`)
-        .then(print)
-        .catch(print);
+      execAsync(`bash -c 'python3 ${APP_PATHS.NVIM_RELOAD_SCRIPT_PATH}'`).catch(
+        console.log,
+      );
     }
   };
 
+  /**
+   * Apply wallpaper.
+   */
   private applyWallpaper = (themeName: string) => {
     const wallpaper = this.config.theme.themeConfig[themeName].wallpaper;
 
     if (wallpaper) {
       const cmd = `swww img ${wallpaper} --transition-type fade --transition-step 20 --transition-fps 255 --transition-duration 1.5 --transition-bezier .69,.89,.73,.46`;
-      execAsync(cmd).catch(print);
+      execAsync(cmd).catch(console.log);
     }
   };
 
+  /**
+   * Apply astal CSS theme.
+   */
   private applyCSSTheme = (themeName: string) => {
     // SASS: @forward 'oldtheme' ==> @forward 'newtheme'
-    const sassCmd = `sed -i \"s#forward.*#forward \\"${themeName}\\"#g\" ${SRC}/src/styles/theme/colors/colors.sass`;
+    const sassCmd = `sed -i \"s#forward.*#forward \\"${themeName}\\"#g\" ${APP_PATHS.SASS_COLORS_PATH}`;
+
     execAsync(`bash -c '${sassCmd}'`)
       .then((_) => {
-        // Tell other widgets the theme changed so they can update their styles
-        execAsync(`sass ${SRC}/src/styles/main.sass /tmp/ags/style.css`).then(
-          () => {
-            App.apply_css("/tmp/ags/style.css");
-          },
-        );
+        execAsync(
+          `sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`,
+        )
+          .then(() => {
+            App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
+          })
+          .catch(console.log);
       })
-      .catch(print);
+      .catch(console.log);
 
     // UserConfig: currentTheme: 'kanagawa' => currentTheme: 'newTheme'
-    const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" $AGSCFG/${APP_PATHS.USER_CONFIG_PATH}`;
-    execAsync(`bash -c '${configCmd}'`).catch(print);
+    const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" ${APP_PATHS.USER_CONFIG_PATH}`;
+    execAsync(`bash -c '${configCmd}'`).catch(console.log);
+  };
+
+  /**
+   * Apply Kitty theme.
+   */
+  private applyKittyTheme = (themeName: string) => {
+    const themeConfig = this.config.theme.themeConfig;
+
+    if (themeConfig[themeName].kitty) {
+      execAsync(`kitty +kitten themes "${themeConfig[themeName].kitty}"`).catch(
+        () => {
+          execAsync(`bash -c "pgrep kitty | xargs kill -USR1"`);
+        },
+      );
+    }
   };
 
   // Public functions --------------------------------------------------------
   applyTheme(themeName: string) {
-    const themeDetails = this.config.theme.themeConfig[themeName];
-
-    // Change terminal theme
-    if (themeDetails.kitty) {
-      execAsync(`kitty +kitten themes "${themeDetails.kitty}"`).catch(() => {
-        execAsync(`bash -c "pgrep kitty | xargs kill -USR1"`);
-      });
-    }
+    this.applyKittyTheme(themeName);
+    this.applyNeovimTheme(themeName);
+    this.applyWallpaper(themeName);
+    this.applyCSSTheme(themeName);
   }
 
   // Private helper functions ------------------------------------------------

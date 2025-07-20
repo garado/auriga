@@ -38,7 +38,7 @@ export const QuickSettings = () =>
     spacing: 15,
     cssClasses: ["settings"],
     children: [
-      // Theme(globalRevealerState),
+      Theme(globalRevealerState),
       PowerProfiles(globalRevealerState),
       Network(globalRevealerState),
       Bluetooth(globalRevealerState),
