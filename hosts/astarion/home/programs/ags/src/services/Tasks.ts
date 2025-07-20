@@ -8,8 +8,8 @@
 import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
-import UserConfig from "../../userconfig.js";
 import Tree, { TreeNode } from "@/utils/Tree.js";
+import SettingsManager from "./settings";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -65,8 +65,10 @@ export class Task {
 }
 
 /**********************************************
- * PRIVATE TYPEDEFS
+ * MODULE LEVEL VARIABLES
  **********************************************/
+
+const taskConfig = SettingsManager.get_default().config.dashTasks;
 
 /**********************************************
  * UTILITY
@@ -114,7 +116,7 @@ export default class Tasks extends GObject.Object {
   constructor() {
     super();
 
-    this.dataDirectory = UserConfig.task.directory;
+    this.dataDirectory = taskConfig.directory;
     this.data = new Tree<Project>();
     this.displayedTasks = [];
 

@@ -15,12 +15,13 @@ import { exec } from "astal/process";
 import Battery from "gi://AstalBattery";
 import Gio from "gi://Gio";
 
-import UserConfig from "../../../userconfig.js";
+import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
+const homeConfig = SettingsManager.get_default().config.dashHome;
 const Picture = astalify(Gtk.Picture);
 const bat = Battery.get_default();
 
@@ -89,7 +90,7 @@ const Profile = () =>
     cssClasses: ["pfp"],
     setup: (self) => {
       self.set_content_fit(Gtk.ContentFit.COVER);
-      self.set_file(Gio.File.new_for_path(UserConfig.profile.pfp));
+      self.set_file(Gio.File.new_for_path(homeConfig.profile.pfp));
     },
   });
 

@@ -11,13 +11,13 @@
 
 import { GObject, register, property, signal } from "astal/gobject";
 import { execAsync } from "astal/process";
-import UserConfig from "../../userconfig.js";
+import SettingsManager from "./settings";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const GEMINI_API_KEY = UserConfig.gemini.api;
+const GEMINI_API_KEY = SettingsManager.get_default().config.misc.geminiAPI;
 
 /*****************************************************************************
  * Types/interfaces

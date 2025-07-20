@@ -12,7 +12,7 @@
 import Gio from "gi://Gio";
 import { Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
-import Settings, { Theme as ThemeInterface } from "@/services/Settings.ts";
+import SettingsManager from "@/services/settings";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 
 /*****************************************************************************
@@ -20,7 +20,8 @@ import { ExpansionPanel } from "@/components/ExpansionPanel.js";
  *****************************************************************************/
 
 const Picture = astalify(Gtk.Picture);
-const settings = Settings.get_default();
+const settings = SettingsManager.get_default();
+const themeConfig = settings.config.theme.themeConfig;
 
 /*****************************************************************************
  * Widget definition
@@ -35,11 +36,7 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       cursor: Gdk.Cursor.new_from_name("pointer", null),
       valign: Gtk.Align.CENTER,
       children: [
-        ThemePreviewImage(
-          (settings.availableThemes as Record<string, ThemeInterface>)[
-            themeName
-          ].preview,
-        ),
+        ThemePreviewImage(themeConfig[themeName].preview),
         ThemeInfoBar(themeName),
       ],
       onButtonPressed: () => {
@@ -77,7 +74,7 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
   return ExpansionPanel({
     icon: "palette-symbolic",
     label: bind(settings, "currentTheme"),
-    children: Object.keys(settings.availableThemes).map(ThemeSelectButton),
+    children: settings.availableThemes.map(ThemeSelectButton),
     vertical: true,
     globalRevealerState: globalRevealerState,
     maxDropdownHeight: 800,

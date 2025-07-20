@@ -47,8 +47,8 @@ const GProjectNode = GObject.registerClass(
         "data",
         "data",
         "Project data",
-        "Project data",
-        GObject.Object,
+        GObject.ParamFlags.READWRITE,
+        GObject.Object.$gtype,
       ),
       hasChildren: GObject.ParamSpec.boolean(
         "hasChildren",
