@@ -1,11 +1,11 @@
 {
-  description = "Auriga Development Shell";
+  description = "Auriga Desktop Environment Development Shell";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
     ags = {
-      url = "github:aylur/ags";
+      url = "github:Aylur/ags/v2.3.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -22,7 +22,7 @@
       default = ags.lib.bundle {
         inherit pkgs;
         src = ./.;
-        name = "my-shell";
+        name = "auriga";
         entry = "app.ts";
         gtk4 = true;
 
