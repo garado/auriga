@@ -1,0 +1,42 @@
+
+@use '../../theme/theme' as *
+
+.tools .paint-mixer
+  background-color: $neutral-900
+  border-radius: $border-radius
+  padding: 1rem
+
+  .paint-mixer-header
+    margin-bottom: 0.8rem
+
+    .paint-mixer-title
+      font-size: 1.4rem
+
+    .paint-mixer-picker-launcher, .paint-mixer-clear-button
+      background-color: $neutral-600
+      padding: 0.2rem 0.8rem
+      border-radius: $border-radius
+      transition: 0.1s all
+
+      &:hover
+        background-color: $neutral-700
+
+  .paint-mixer-instructions-container
+    .paint-mixer-placeholder
+      color: $neutral-300
+
+    .paint-mixer-instructions
+      .tab
+        border-top-left-radius: $border-radius
+        border-top-right-radius: $border-radius
+        background-color: $neutral-700
+        padding: 0.6rem
+        transition: 0.25s all
+
+        &.revealed
+          border-bottom-left-radius: 0
+          border-bottom-right-radius: 0
+
+        &:not(.revealed)
+          border-bottom-left-radius: $border-radius
+          border-bottom-right-radius: $border-radius

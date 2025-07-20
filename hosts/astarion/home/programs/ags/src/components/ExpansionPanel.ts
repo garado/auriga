@@ -91,46 +91,47 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
       ),
     });
 
-  /* User can optionally define expansion tab content. */
-  let expandTabContent;
-
-  if (props.expandTabContent) {
-    expandTabContent = props.expandTabContent;
-  } else {
-    expandTabContent = Widget.Box({
-      spacing: 10,
-      vertical: false,
-      children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
-    });
-  }
-
   /**
    * Top tab. Clicking reveals/hides the dropdown content.
    */
-  const ExpanderTab = () =>
+  const DefaultExpanderTab = () =>
     Widget.Box({
       cursor: Gdk.Cursor.new_from_name("pointer", null),
       hexpand: true,
       cssClasses: ["tab"],
       vertical: false,
-      children: [expandTabContent],
-      onButtonPressed: (self) => {
-        if (!self.has_css_class("revealed")) {
-          props.globalRevealerState.set(!props.globalRevealerState.get());
-        }
-
-        contentRevealerState.set(!contentRevealerState.get());
-      },
-      setup: (self) => {
-        contentRevealerState.subscribe((state) => {
-          if (state) {
-            self.add_css_class("revealed");
-          } else {
-            self.remove_css_class("revealed");
-          }
-        });
-      },
+      spacing: 10,
+      children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
     });
+
+  /* User can optionally define expansion tab content. */
+  let expanderTabWidget;
+
+  if (props.expandTabContent) {
+    expanderTabWidget = props.expandTabContent;
+  } else {
+    expanderTabWidget = DefaultExpanderTab();
+  }
+
+  const eventController = new Gtk.EventControllerLegacy();
+  expanderTabWidget.add_controller(eventController);
+
+  eventController.connect("event", (_, event) => {
+    if (event.get_event_type() === Gdk.EventType.BUTTON_PRESS) {
+      if (!expanderTabWidget.has_css_class("revealed")) {
+        props.globalRevealerState.set(!props.globalRevealerState.get());
+      }
+      contentRevealerState.set(!contentRevealerState.get());
+    }
+  });
+
+  contentRevealerState.subscribe((state) => {
+    if (state) {
+      expanderTabWidget.add_css_class("revealed");
+    } else {
+      expanderTabWidget.remove_css_class("revealed");
+    }
+  });
 
   /********************************************************
    * CONTENT
@@ -179,7 +180,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const Final = Widget.Box({
     cssClasses: ["expander", ...(props.cssClasses || [])],
     vertical: true,
-    children: [ExpanderTab(), ContentRevealer()],
+    children: [expanderTabWidget, ContentRevealer()],
     setup: () => {
       /* Closing the global revealer closes this revealer too */
       props.globalRevealerState.subscribe(() => {

@@ -27,6 +27,14 @@ import Notifications from "@/windows/notifications";
 
 const TOGGLEABLE_WINDOWS = ["dash", "utility", "control", "launcher"];
 
+// @TODO Migrate to using window_names everywhere
+export const WINDOW_NAMES = {
+  UTILITY: "utility",
+  DASHBOARD: "dash",
+  CONTROL: "control",
+  LAUNCHER: "launcher",
+} as const;
+
 /*****************************************************************************
  * Helper functions
  *****************************************************************************/
