@@ -132,7 +132,6 @@ export default class SettingsManager extends GObject.Object {
 
     try {
       userConfig = require("userconfig.ts").UserConfig;
-      print(userConfig);
     } catch {
       userConfig = {};
     }
