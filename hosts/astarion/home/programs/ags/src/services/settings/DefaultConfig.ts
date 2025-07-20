@@ -89,6 +89,11 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
     categoryIcons: {},
   },
 
+  utility: {
+    /** List of available paint colors. Used in paint mixing widget. */
+    availablePaintColors: ["cyan", "magenta", "yellow", "black", "white"],
+  },
+
   misc: {
     geminiAPI: "",
   },

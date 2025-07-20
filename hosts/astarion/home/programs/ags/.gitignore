@@ -5,5 +5,5 @@ node_modules/
 # User-editable
 userconfig.ts
 
-# Modified after each theme switch
+# Auto-modified after each theme switch
 src/styles/theme/colors/colors.sass

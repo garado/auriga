@@ -65,12 +65,6 @@ export default class Gemini extends GObject.Object {
   }
 
   // Properties --------------------------------------------------------------
-  @signal(Number, String)
-  declare promptReceived: (id: number, prompt: string) => void;
-
-  @signal(Number, String)
-  declare responseReceived: (id: number, response: string) => void;
-
   @property(Boolean)
   declare continue: boolean;
 
@@ -92,9 +86,11 @@ export default class Gemini extends GObject.Object {
    * @param {number} id - The interaction identifier number.
    * @param {string} promptText - User's prompt text.
    */
-  prompt(id: number, promptText: string) {
-    this.emit("prompt-received", id, promptText);
-
+  prompt(
+    id: number,
+    promptText: string,
+    callback: (id: number, response: string) => void,
+  ) {
     const cmd = `curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
                   -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "${escapeQuotes(promptText)}"}] }] }'`;
 
@@ -102,8 +98,9 @@ export default class Gemini extends GObject.Object {
       .then((result) => {
         const response =
           JSON.parse(result).candidates[0].content.parts[0].text.trim();
-        this.emit("response-received", id + 1, response);
+
+        callback(id, response);
       })
-      .catch((err) => print(`prompt: ${err}`));
+      .catch(console.log);
   }
 }
