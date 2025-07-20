@@ -11,8 +11,7 @@
 
 import { Gtk, Widget } from "astal/gtk4";
 import { Variable, bind } from "astal";
-
-import UserConfig from "../../../../userconfig.js";
+import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
  * Module-level variables
@@ -21,7 +20,7 @@ import UserConfig from "../../../../userconfig.js";
 const QUOTE_INDEX = 0;
 const AUTHOR_INDEX = 1;
 
-const quotes = UserConfig.quotes;
+const quotes = SettingsManager.get_default().config.dashHome.quotes;
 
 const currentQuote = Variable(
   quotes[Math.floor(Math.random() * quotes.length)],

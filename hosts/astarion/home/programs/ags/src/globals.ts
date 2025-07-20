@@ -6,13 +6,6 @@
  */
 
 /*****************************************************************************
- * Imports
- *****************************************************************************/
-
-import { Variable } from "astal";
-import UserConfig from "../userconfig.js";
-
-/*****************************************************************************
  * Globals
  *****************************************************************************/
 
@@ -60,7 +53,4 @@ export function log(section: string, str: string) {
 /** Add things to globalThis so they can be used anywhere. */
 Object.assign(globalThis, {
   log: log,
-
-  // Might be able to remove this now that we have the Settings service
-  systemTheme: Variable(`${UserConfig.currentTheme}`),
 });

@@ -14,11 +14,13 @@ import { register, property } from "astal/gobject";
 
 import Goals, { Goal } from "@/services/Goals";
 import { relativeTimeFromISO } from "@/utils/Helpers.js";
-import UserConfig from "../../../../userconfig.js";
+import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
+
+const goalsConfig = SettingsManager.get_default().config.dashGoals;
 
 const gs = Goals.get_default();
 
@@ -50,7 +52,7 @@ interface GoalBoxProps extends Gtk.Box.ConstructorProps {
  * @returns Icon name or default fallback
  */
 const getCategoryIcon = (projectName: string): string => {
-  const categoryIcons = UserConfig.goals?.categoryIcons;
+  const categoryIcons = goalsConfig.categoryIcons;
   return categoryIcons?.[projectName] || "folder-symbolic";
 };
 
