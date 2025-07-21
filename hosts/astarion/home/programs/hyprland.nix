@@ -10,9 +10,9 @@
     systemd.enable = true;
 
     # Plugins
-    # plugins = with pkgs.hyprlandPlugins; [
-    #   hyprsplit
-    # ];
+    plugins = with pkgs.hyprlandPlugins; [
+      hyprsplit
+    ];
 
     settings = {
       # Execute these programs at launch
@@ -22,12 +22,12 @@
       ];
 
       # Plugin options
-      # plugin = {
-      #   hyprsplit = {
-      #     num_workspaces = 9;
-      #     persistent_workspaces = false;
-      #   };
-      # };
+      plugin = {
+        hyprsplit = {
+          num_workspaces = 9;
+          persistent_workspaces = false;
+        };
+      };
 
       cursor = {
         no_warps = false;
@@ -152,30 +152,30 @@
         "ALT_L, k, movefocus, d"
 
         # Switch workspaces
-        "ALT_L, 1, workspace, 1"
-        "ALT_L, 2, workspace, 2"
-        "ALT_L, 3, workspace, 3"
-        "ALT_L, 4, workspace, 4"
-        "ALT_L, 5, workspace, 5"
-        "ALT_L, 6, workspace, 6"
-        "ALT_L, 7, workspace, 7"
-        "ALT_L, 8, workspace, 8"
-        "ALT_L, 9, workspace, 9"
+        "ALT_L, 1, split:workspace, 1"
+        "ALT_L, 2, split:workspace, 2"
+        "ALT_L, 3, split:workspace, 3"
+        "ALT_L, 4, split:workspace, 4"
+        "ALT_L, 5, split:workspace, 5"
+        "ALT_L, 6, split:workspace, 6"
+        "ALT_L, 7, split:workspace, 7"
+        "ALT_L, 8, split:workspace, 8"
+        "ALT_L, 9, split:workspace, 9"
         
         # Switch to next/previous workspace
         "$mainMod, TAB, workspace, +1"
         "$mainMod SHIFT, TAB, workspace, -1"
 
         # Move active window to a workspace with mainMod + SHIFT + [0-9]
-        "ALT_L SHIFT, 1, movetoworkspace, 1"
-        "ALT_L SHIFT, 2, movetoworkspace, 2"
-        "ALT_L SHIFT, 3, movetoworkspace, 3"
-        "ALT_L SHIFT, 4, movetoworkspace, 4"
-        "ALT_L SHIFT, 5, movetoworkspace, 5"
-        "ALT_L SHIFT, 6, movetoworkspace, 6"
-        "ALT_L SHIFT, 7, movetoworkspace, 7"
-        "ALT_L SHIFT, 8, movetoworkspace, 8"
-        "ALT_L SHIFT, 9, movetoworkspace, 9"
+        "ALT_L SHIFT, 1, split:movetoworkspace, 1"
+        "ALT_L SHIFT, 2, split:movetoworkspace, 2"
+        "ALT_L SHIFT, 3, split:movetoworkspace, 3"
+        "ALT_L SHIFT, 4, split:movetoworkspace, 4"
+        "ALT_L SHIFT, 5, split:movetoworkspace, 5"
+        "ALT_L SHIFT, 6, split:movetoworkspace, 6"
+        "ALT_L SHIFT, 7, split:movetoworkspace, 7"
+        "ALT_L SHIFT, 8, split:movetoworkspace, 8"
+        "ALT_L SHIFT, 9, split:movetoworkspace, 9"
        
         # Vimlinke resize
         "ALT_L CTRL, h, resizeactive, -90 0"

@@ -19,10 +19,19 @@ import Wp from "gi://AstalWp";
  * Module-level variables
  *****************************************************************************/
 
+/** @TODO Determine this programmatically */
+const NUM_WORKSPACES = 9;
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const wp = Wp.get_default();
 const hypr = Hyprland.get_default();
 const bat = Battery.get_default();
 const time = Variable("").poll(1000, "date '+%H\n%M'");
+
+let barInstances = 0;
 
 /*****************************************************************************
  * Widget definitions
@@ -40,7 +49,7 @@ const DistroIcon = () =>
  */
 const Workspaces = () => {
   // @TODO Find out how to get the number of workspaces programatically
-  const wsIndices = [...Array(9).keys()];
+  const wsIndices = [...Array(NUM_WORKSPACES).keys()];
 
   return Widget.Box({
     cssClasses: ["workspaces"],
@@ -53,20 +62,26 @@ const Workspaces = () => {
  * Indicator for a single workspace.
  * Clicking focuses the respective workspace.
  *
- * @param {number} wsIdx - The 0-indexed workspace number.
+ * @param {number} workspaceIndex - The 0-indexed workspace number (0-8 for workspaces 1-9)
  */
-const WorkspaceIndicator = (wsIdx: number) => {
-  // Param wsIdx is 0-indexed, but workspaces are 1-indexed
-  wsIdx += 1;
+const WorkspaceIndicator = (workspaceIndex: number) => {
+  // Convert 0-indexed to 1-indexed workspace ID
+  const localWorkspaceId = workspaceIndex + 1;
+
+  // Calculate actual workspace ID for multi-monitor setup
+  // If barInstances = 1 (first monitor): workspaces 1-9
+  // If barInstances = 2 (second monitor): workspaces 10-18
+  // If barInstances = 3 (third monitor): workspaces 19-27
+  const actualWorkspaceId =
+    (barInstances - 1) * NUM_WORKSPACES + localWorkspaceId;
 
   const isFocused = bind(hypr, "focusedWorkspace").as((focused) => {
-    return focused?.id == wsIdx;
+    return focused?.id === actualWorkspaceId; // Use === for comparison
   });
 
-  /* 'workspaces' property will only include a workspace if there are
-   * clients on it. So if the workspace isn't found, then it's empty. */
+  /* Check if the ACTUAL workspace ID is empty, not the local one */
   const isEmpty = bind(hypr, "workspaces").as((workspaces) => {
-    return workspaces.find((ws) => ws.id == wsIdx) == undefined;
+    return workspaces.find((ws) => ws.id === actualWorkspaceId) === undefined;
   });
 
   const cssClasses = Variable.derive(
@@ -81,10 +96,10 @@ const WorkspaceIndicator = (wsIdx: number) => {
     child: Widget.Label({
       cssClasses: bind(cssClasses),
       justify: Gtk.Justification.CENTER,
-      label: `${wsIdx}`,
+      label: `${localWorkspaceId}`, // Show local workspace number (1-9)
     }),
     onClicked: () => {
-      hypr.dispatch("workspace", `${wsIdx}`);
+      hypr.dispatch("workspace", `${actualWorkspaceId}`); // Dispatch to actual workspace
     },
   });
 };
@@ -213,6 +228,8 @@ const Bottom = () =>
   });
 
 export default (monitor: Gdk.Monitor) => {
+  barInstances += 1;
+
   const { TOP, LEFT, BOTTOM } = Astal.WindowAnchor;
 
   return Widget.Window({
