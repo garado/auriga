@@ -31,11 +31,20 @@
 
     .monitor-item
       background-color: $primary-500
+      border: 2px solid $primary-700
+      transition: 0.1s all
 
       .monitor-label
 
-      .is-dragging
-        background-color: red
+      &:hover
+        background-color: $primary-600
+        border: 2px solid $primary-800
+
+      &.is-dragging
+        border: 2px dashed $primary-800
+
+      &.collision
+        background-color: $red-500
 
 /**********************************************
  * SYSFETCH

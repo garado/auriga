@@ -35,7 +35,6 @@ const CSS_CLASSES = {
  * Module-level variables
  *****************************************************************************/
 
-const GtkFixed = astalify(Gtk.Fixed);
 const monitors = Gdk.DisplayManager.get().get_default_display()?.get_monitors();
 
 /*****************************************************************************
@@ -43,9 +42,7 @@ const monitors = Gdk.DisplayManager.get().get_default_display()?.get_monitors();
  *****************************************************************************/
 
 const Arrangement = () => {
-  const surface = GtkFixed({});
-
-  const arrangment = new MonitorArrangement(surface, true);
+  const arrangment = new MonitorArrangement({ allowOverlap: false });
 
   if (!monitors) return arrangment;
 
