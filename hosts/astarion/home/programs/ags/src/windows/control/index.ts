@@ -20,7 +20,7 @@ import { PowerProfiles } from "@/windows/control/settings/PowerProfiles.ts";
 import { Network } from "@/windows/control/settings/Network.ts";
 import { Bluetooth } from "@/windows/control/settings/Bluetooth.ts";
 import { Speaker } from "@/windows/control/settings/Speaker.ts";
-import { Monitors } from "@/windows/control//settings/Monitors.ts";
+import { Monitors } from "@/windows/control/settings/monitors";
 
 /*****************************************************************************
  * Module-level variables
