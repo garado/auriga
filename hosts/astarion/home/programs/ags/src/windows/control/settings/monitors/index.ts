@@ -11,7 +11,6 @@
  * Imports
  *****************************************************************************/
 
-import { astalify, Gdk, Gtk } from "astal/gtk4";
 import { Variable } from "astal";
 
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
@@ -35,30 +34,15 @@ const CSS_CLASSES = {
  * Module-level variables
  *****************************************************************************/
 
-const monitors = Gdk.DisplayManager.get().get_default_display()?.get_monitors();
-
 /*****************************************************************************
  * Widgets
  *****************************************************************************/
-
-const Arrangement = () => {
-  const arrangment = new MonitorArrangement({ allowOverlap: false });
-
-  if (!monitors) return arrangment;
-
-  for (let i = 0; i < monitors?.get_n_items(); i++) {
-    const monitor = monitors?.get_item(i);
-    arrangment.addMonitor(monitor);
-  }
-
-  return arrangment;
-};
 
 export const Monitors = (globalRevealerState: Variable<boolean>) => {
   return ExpansionPanel({
     icon: "monitor-symbolic",
     label: "Monitor control",
-    children: [Arrangement()],
+    children: [new MonitorArrangement({ allowOverlap: false })],
     cssClasses: [CSS_CLASSES.CONTAINER],
     vertical: true,
     globalRevealerState: globalRevealerState,

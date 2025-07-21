@@ -12,7 +12,7 @@
 import { Gtk, Gdk, Widget } from "astal/gtk4";
 
 import { DraggableBox, DraggableBoxClass } from "@/components/Draggable";
-import { execAsync, register } from "astal";
+import { execAsync, register, timeout } from "astal";
 
 /*****************************************************************************
  * Classes
@@ -40,32 +40,69 @@ export class MonitorArrangement extends Gtk.Box {
   private monitorWidgets: Map<string, DraggableBoxClass> = new Map();
   private allowOverlap: boolean = false;
 
+  private canvasWidth: number = 0;
+  private canvasHeight: number = 0;
+
   // Display area configuration
-  private readonly CANVAS_WIDTH = 300;
-  private readonly CANVAS_HEIGHT = 200;
   private readonly MONITOR_SCALE = 0.05; // 10% of actual size for display
 
   constructor(props: { allowOverlap?: boolean }) {
     super();
 
-    // Property init
+    // Args init
     const allowOverlap = props.allowOverlap ?? false;
 
+    // Property init
     this.add_css_class(CSS_CLASSES.ARRANGEMENT);
-    this.container = new Gtk.Fixed();
-    this.allowOverlap = allowOverlap;
-    this.vexpand = false;
+    this.vexpand = true;
     this.hexpand = false;
-    this.setupCanvas();
+    this.allowOverlap = allowOverlap;
+
+    // Child init
+    this.container = new Gtk.Fixed({
+      vexpand: true,
+      hexpand: true,
+    });
+
     this.append(this.container);
+
+    this.setupSizeMonitoring();
+    this.setupCanvas();
   }
 
   private setupCanvas() {
-    this.heightRequest = this.CANVAS_HEIGHT;
-    this.widthRequest = this.CANVAS_WIDTH;
-    this.container.heightRequest = this.CANVAS_HEIGHT;
-    this.container.widthRequest = this.CANVAS_WIDTH;
+    this.heightRequest = this.canvasHeight;
+    this.widthRequest = this.canvasWidth;
+    this.container.heightRequest = this.canvasHeight;
+    this.container.widthRequest = this.canvasWidth;
     this.container.add_css_class(CSS_CLASSES.CANVAS);
+  }
+
+  /**
+   * Monitor size changes and update canvas dimensions
+   */
+  private setupSizeMonitoring() {
+    this.connect("realize", () => {
+      timeout(50, () => {
+        const allocation = this.get_allocation();
+        const newWidth = allocation.width;
+        const newHeight = allocation.height;
+
+        if (newWidth !== this.canvasWidth || newHeight !== this.canvasHeight) {
+          this.canvasWidth = newWidth;
+          this.canvasHeight = newHeight;
+
+          const monitors = Gdk.DisplayManager.get()
+            .get_default_display()
+            ?.get_monitors();
+
+          for (let i = 0; i < monitors!.get_n_items(); i++) {
+            const monitor = monitors!.get_item(i) as Gdk.Monitor;
+            this.addMonitor(monitor);
+          }
+        }
+      });
+    });
   }
 
   /**
@@ -100,17 +137,17 @@ export class MonitorArrangement extends Gtk.Box {
       snapY: false,
       xIncrement: 1,
       yIncrement: 1,
-      totalWidth: this.CANVAS_WIDTH,
-      totalHeight: this.CANVAS_HEIGHT,
+      totalWidth: this.canvasWidth,
+      totalHeight: this.canvasHeight,
       xDivisions: 1,
       yDivisions: 1,
     };
 
     const bounds = {
       minX: 0,
-      maxX: this.CANVAS_WIDTH - displayWidth,
+      maxX: this.canvasWidth - displayWidth,
       minY: 0,
-      maxY: this.CANVAS_HEIGHT - displayHeight,
+      maxY: this.canvasHeight - displayHeight,
     };
 
     const draggable = DraggableBox({
@@ -140,8 +177,8 @@ export class MonitorArrangement extends Gtk.Box {
       css_classes: [CSS_CLASSES.MONITOR_LABEL],
       wrap: true,
       justify: Gtk.Justification.CENTER,
-      halign: Gtk.Align.BASELINE_FILL,
-      valign: Gtk.Align.BASELINE_FILL,
+      halign: Gtk.Align.FILL,
+      valign: Gtk.Align.FILL,
       vexpand: true,
     });
 
