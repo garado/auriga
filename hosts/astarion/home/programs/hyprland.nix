@@ -194,8 +194,14 @@
         "$mainMod, m, fullscreen, 1"  # Maximize
         "$mainMod, v, togglefloating" # Floating
         "$mainMod, s, pin"            # Sticky (for floating windows)
+
+        # Vimlike monitor focusing
+        "$mainMod SHIFT, h, focusmonitor, l"
+        "$mainMod SHIFT, j, focusmonitor, d"
+        "$mainMod SHIFT, k, focusmonitor, u"
+        "$mainMod SHIFT, l, focusmonitor, r"
       ];
-     
+
       # Mouse binds
       bindm = [
         # Move/resize windows with mainMod + LMB/RMB and dragging
