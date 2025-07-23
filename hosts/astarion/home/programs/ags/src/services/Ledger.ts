@@ -10,13 +10,13 @@
  * Imports
  *****************************************************************************/
 
+import { Binding } from "astal";
 import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
 import Gio from "gi://Gio";
 
 import { log } from "@/globals.ts";
 
-import { Binding } from "astal";
 import SettingsManager from "./settings";
 
 /*****************************************************************************
@@ -289,6 +289,8 @@ export default class Ledger extends GObject.Object {
 
   // Private main functions ----------------------------------------------------
   constructor() {
+    console.log("Ledger service constructed");
+
     super();
 
     // Default values

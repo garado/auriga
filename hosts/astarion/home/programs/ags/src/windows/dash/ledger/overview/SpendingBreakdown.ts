@@ -14,13 +14,13 @@ import { Gtk, Widget } from "astal/gtk4";
 import { bind } from "astal";
 
 import PieChart from "@/components/PieChart.ts";
-import Ledger from "@/services/Ledger.ts";
+import { Services } from "@/services/LazyService";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+const ledgerService = Services.ledger;
 
 /*****************************************************************************
  * Constants

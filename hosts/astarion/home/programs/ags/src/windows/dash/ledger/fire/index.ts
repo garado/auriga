@@ -15,14 +15,14 @@
 import { Widget } from "astal/gtk4";
 import { bind } from "astal";
 
-import Ledger from "@/services/Ledger";
 import InteractiveGraph from "@/components/InteractiveGraph";
+import { Services } from "@/services/LazyService";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+const ledgerService = Services.ledger;
 
 /*****************************************************************************
  * Helper functions

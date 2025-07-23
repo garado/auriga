@@ -19,7 +19,7 @@ import { Debts } from "@/windows/dash/ledger/overview/DebtsLiabilities.ts";
 import { SpendingBreakdown } from "@/windows/dash/ledger/overview/SpendingBreakdown.ts";
 import { Transactions } from "@/windows/dash/ledger/overview/RecentTransactions.ts";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
-import Ledger from "@/services/Ledger";
+import { Services } from "@/services/LazyService";
 
 /*****************************************************************************
  * Module-level variables
@@ -30,6 +30,8 @@ const Grid = astalify(Gtk.Grid);
 /*****************************************************************************
  * Constants
  *****************************************************************************/
+
+const ledgerService = Services.ledger;
 
 const WIDGET_SPACING = 20;
 
@@ -57,8 +59,7 @@ export const Overview = () => {
         name: "LedgerOverview",
         widget: self,
         binds: {
-          [KEYBOARD_SHORTCUTS.REFRESH_LEDGER]: () =>
-            Ledger.get_default().initAll(),
+          [KEYBOARD_SHORTCUTS.REFRESH_LEDGER]: () => ledgerService.initAll(),
         },
       });
     },

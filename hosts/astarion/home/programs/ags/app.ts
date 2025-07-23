@@ -5,13 +5,35 @@
  * Entry point for agsv2 desktop config.
  */
 
+const initProfiler = {
+  start: GLib.get_monotonic_time(),
+  lastMark: GLib.get_monotonic_time(),
+
+  mark(name: string) {
+    const now = GLib.get_monotonic_time();
+    const totalElapsed = (now - this.start) / 1000;
+    const sinceLastMark = (now - this.lastMark) / 1000;
+
+    console.log(
+      `⏱️  ${totalElapsed.toFixed(2)}ms (+${sinceLastMark.toFixed(2)}ms) - ${name}`,
+    );
+
+    this.lastMark = now;
+  },
+};
+
+initProfiler.mark("Begin");
+
 /*****************************************************************************
  * Imports
  *****************************************************************************/
 
 import { Gtk, App } from "astal/gtk4";
+import { GLib } from "astal";
 import { exec } from "astal/process";
-import { timeout } from "astal/time";
+import { idle, timeout } from "astal/time";
+
+initProfiler.mark("Core imports end");
 
 import "@/globals.ts";
 import Bar from "@/windows/bar";
@@ -20,6 +42,8 @@ import Utility from "@/windows/utility";
 import Control from "@/windows/control";
 import Launcher from "@/windows/launcher";
 import Notifications from "@/windows/notifications";
+
+initProfiler.mark("Custom imports end");
 
 /*****************************************************************************
  * Module-level variables
@@ -83,7 +107,11 @@ const compileSASS = () => {
  * Main content
  *****************************************************************************/
 
+initProfiler.mark("Starting config");
+
 compileSASS();
+
+initProfiler.mark("SASS compiled");
 
 App.start({
   css: "/tmp/ags/style.css",
@@ -98,12 +126,32 @@ App.start({
     res("Unhandled command");
   },
   main() {
+    initProfiler.mark("App start called");
+
     App.get_monitors().map(Bar);
+    initProfiler.mark("Bar");
+
     App.get_monitors().map(Dash);
+
+    initProfiler.mark("Dash");
     App.get_monitors().map(Utility);
+    initProfiler.mark("Utils");
     App.get_monitors().map(Control);
+    initProfiler.mark("Control");
     App.get_monitors().map(Launcher);
+    initProfiler.mark("Launcher");
     App.get_monitors().map(Notifications);
+    initProfiler.mark("Notifs");
+
+    initProfiler.mark("All widgets created");
+
+    // Check when actually rendered
+    idle(() => {
+      initProfiler.mark("First idle callback");
+      timeout(50, () => {
+        initProfiler.mark("UI should be visible now");
+      });
+    });
   },
 });
 

@@ -14,7 +14,7 @@
 
 import { App } from "astal/gtk4";
 import { GObject, register, property } from "astal/gobject";
-import { exec, execAsync } from "astal/process";
+import { execAsync } from "astal/process";
 
 import { AccountConfig } from "../Ledger.ts";
 import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
@@ -183,14 +183,12 @@ export default class SettingsManager extends GObject.Object {
     const nvimThemeName = this.config.theme.themeConfig[themeName].nvim;
 
     if (nvimThemeName) {
-      const nvimPath = "$NVCFG/chadrc.lua";
-      const nvimCmd = `sed -i 's/theme = \\".*\\"/theme = \\"${nvimThemeName}\\"/g'`;
+      const script = `
+sed -i 's/theme = ".*"/theme = "${nvimThemeName}"/g' $NVCFG/chadrc.lua
+python3 ${APP_PATHS.NVIM_RELOAD_SCRIPT_PATH}
+`;
 
-      exec(`bash -c "${nvimCmd} ${nvimPath}"`);
-
-      execAsync(`bash -c 'python3 ${APP_PATHS.NVIM_RELOAD_SCRIPT_PATH}'`).catch(
-        console.log,
-      );
+      execAsync(["bash", "-c", script]).catch(console.log);
     }
   };
 

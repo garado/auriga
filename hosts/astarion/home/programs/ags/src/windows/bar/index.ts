@@ -12,17 +12,28 @@
 import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable, bind, timeout } from "astal";
 import Battery from "gi://AstalBattery";
-import Hyprland from "gi://AstalHyprland";
-import Wp from "gi://AstalWp";
+
+import { Services } from "@/services/LazyService";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const wp = Wp.get_default();
-const hypr = Hyprland.get_default();
-const bat = Battery.get_default();
+const wp = Services.wp;
+const hypr = Services.hypr;
+const bat = Services.bat;
+
 const time = Variable("").poll(1000, "date '+%H\n%M'");
+
+const focusedWorkspace = bind(hypr, "focusedWorkspace");
+
+const workspaceStates = bind(hypr, "workspaces").as((workspaces) => {
+  const states = new Map();
+  workspaces.forEach((ws) =>
+    states.set(ws.id, { exists: true, focused: false }),
+  );
+  return states;
+});
 
 /*****************************************************************************
  * Widget definitions
@@ -59,27 +70,16 @@ const WorkspaceIndicator = (wsIdx: number) => {
   // Param wsIdx is 0-indexed, but workspaces are 1-indexed
   wsIdx += 1;
 
-  const isFocused = bind(hypr, "focusedWorkspace").as((focused) => {
-    return focused?.id == wsIdx;
-  });
-
-  /* 'workspaces' property will only include a workspace if there are
-   * clients on it. So if the workspace isn't found, then it's empty. */
-  const isEmpty = bind(hypr, "workspaces").as((workspaces) => {
-    return workspaces.find((ws) => ws.id == wsIdx) == undefined;
-  });
-
-  const cssClasses = Variable.derive(
-    [isFocused, isEmpty],
-    (isFocused: boolean, isEmpty: boolean) => {
-      return [isEmpty ? "empty" : "", isFocused ? "focused" : ""];
-    },
-  );
-
   return Widget.Button({
     cssClasses: ["workspace"],
     child: Widget.Label({
-      cssClasses: bind(cssClasses),
+      // cssClasses: bind(hypr, "focusedWorkspace").as((focused) => {
+      //   const isFocused = focused?.id == wsIdx;
+      //   const workspaces = hypr.get_workspaces();
+      //   const isEmpty = !workspaces.some((ws) => ws.id == wsIdx);
+      //
+      //   return [isEmpty ? "empty" : "", isFocused ? "focused" : ""];
+      // }),
       justify: Gtk.Justification.CENTER,
       label: `${wsIdx}`,
     }),
@@ -209,7 +209,7 @@ const Bottom = () =>
     halign: Gtk.Align.CENTER,
     cssClasses: ["bottom"],
     orientation: 1,
-    children: [VolumeSlider(), BatteryIndicator(), Time()],
+    children: [BatteryIndicator(), Time()],
   });
 
 export default () => {

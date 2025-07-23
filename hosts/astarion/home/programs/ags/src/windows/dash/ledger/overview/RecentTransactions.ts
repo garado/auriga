@@ -13,13 +13,14 @@
 import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 
-import Ledger, { TransactionData } from "@/services/Ledger.ts";
+import { TransactionData } from "@/services/Ledger.ts";
+import { Services } from "@/services/LazyService";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+const ledgerService = Services.ledger;
 
 const ScrollableWindow = astalify(Gtk.ScrolledWindow);
 

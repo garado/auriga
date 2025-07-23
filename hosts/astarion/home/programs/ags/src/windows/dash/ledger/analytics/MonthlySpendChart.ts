@@ -11,15 +11,13 @@
  *****************************************************************************/
 
 import { Gtk, Widget } from "astal/gtk4";
-import Ledger from "@/services/Ledger";
 import { bind } from "astal";
 import Bar from "./BarGraphBar";
+import { Services } from "@/services/LazyService";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
-
-const ledgerService = Ledger.get_default();
 
 /*****************************************************************************
  * Constants
@@ -304,7 +302,7 @@ const createComponentHeader = () =>
 const createCenteredCategoriesContainer = () =>
   Widget.Box({
     halign: Gtk.Align.CENTER,
-    children: bind(ledgerService, "monthlySpendingByCategory").as(
+    children: bind(Services.ledger, "monthlySpendingByCategory").as(
       (spendingData) => createCategoriesContainer(spendingData),
     ),
   });
