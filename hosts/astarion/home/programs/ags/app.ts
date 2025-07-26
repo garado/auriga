@@ -2,7 +2,7 @@
  * ▄▀█ █▀█ █▀█
  * █▀█ █▀▀ █▀▀
  *
- * Entry point for agsv2 desktop config.
+ * Entry point for Auriga desktop config.
  */
 
 /*****************************************************************************
