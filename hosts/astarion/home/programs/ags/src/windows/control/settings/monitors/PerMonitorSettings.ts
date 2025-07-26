@@ -12,9 +12,7 @@
  *****************************************************************************/
 
 import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
-import { GLib, Variable } from "astal";
-
-import { ExpansionPanel } from "@/components/ExpansionPanel";
+import { GLib } from "astal";
 
 /*****************************************************************************
  * Types and interfaces
@@ -37,6 +35,9 @@ export interface MonitorData {
  * Helper functions
  *****************************************************************************/
 
+/**
+ * hyprctl call to get data for all monitors, both enabled and disabled.
+ */
 const getMonitorData = () => {
   try {
     const [success, stdout] = GLib.spawn_command_line_sync(
@@ -51,6 +52,9 @@ const getMonitorData = () => {
   }
 };
 
+/**
+ * Use hyprctl to enable or disable a monitor.
+ */
 const setMonitorEnable = (monitorName: string, enable: boolean) => {
   print(`enable: ${enable}`);
   GLib.spawn_command_line_async(
@@ -93,6 +97,9 @@ const Monitor = (monitorData: MonitorData) => {
   });
 };
 
+/**
+ * Container for all per-monitor settings.
+ */
 export const PerMonitorSettings = () => {
   const allMonitorData = getMonitorData();
 
