@@ -49,7 +49,10 @@ interface ExpansionPanelInterace {
   /** CSS classes to add to the expander. */
   cssClasses?: Array<string>;
 
-  globalRevealerState: Variable<boolean>;
+  /** Hover to expand */
+  hoverToExpand?: boolean;
+
+  globalRevealerState?: Variable<boolean>;
 }
 
 /*****************************************************************************
@@ -113,25 +116,27 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
     expanderTabWidget = DefaultExpanderTab();
   }
 
-  const eventController = new Gtk.EventControllerLegacy();
-  expanderTabWidget.add_controller(eventController);
+  /* Handle click to expand */
+  if (!props.hoverToExpand) {
+    const clickGesture = new Gtk.GestureClick();
 
-  eventController.connect("event", (_, event) => {
-    if (event.get_event_type() === Gdk.EventType.BUTTON_PRESS) {
+    expanderTabWidget.add_controller(clickGesture);
+
+    clickGesture.connect("pressed", () => {
       if (!expanderTabWidget.has_css_class("revealed")) {
-        props.globalRevealerState.set(!props.globalRevealerState.get());
+        props.globalRevealerState?.set(!props.globalRevealerState.get());
       }
       contentRevealerState.set(!contentRevealerState.get());
-    }
-  });
+    });
 
-  contentRevealerState.subscribe((state) => {
-    if (state) {
-      expanderTabWidget.add_css_class("revealed");
-    } else {
-      expanderTabWidget.remove_css_class("revealed");
-    }
-  });
+    contentRevealerState.subscribe((state) => {
+      if (state) {
+        expanderTabWidget.add_css_class("revealed");
+      } else {
+        expanderTabWidget.remove_css_class("revealed");
+      }
+    });
+  }
 
   /********************************************************
    * CONTENT
@@ -177,17 +182,36 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
    * FINAL
    ********************************************************/
 
-  const Final = Widget.Box({
+  const final = Widget.Box({
     cssClasses: ["expander", ...(props.cssClasses || [])],
     vertical: true,
     children: [expanderTabWidget, ContentRevealer()],
     setup: () => {
       /* Closing the global revealer closes this revealer too */
-      props.globalRevealerState.subscribe(() => {
+      props.globalRevealerState?.subscribe(() => {
         contentRevealerState.set(false);
       });
     },
   });
 
-  return Final;
+  if (props.hoverToExpand) {
+    const motionController = new Gtk.EventControllerMotion();
+    final.add_controller(motionController);
+
+    motionController.connect("enter", () => {
+      if (!expanderTabWidget.has_css_class("revealed")) {
+        props.globalRevealerState?.set(true);
+      }
+      contentRevealerState.set(true);
+    });
+
+    motionController.connect("leave", () => {
+      if (!expanderTabWidget.has_css_class("revealed")) {
+        props.globalRevealerState?.set(false);
+      }
+      contentRevealerState.set(false);
+    });
+  }
+
+  return final;
 };
