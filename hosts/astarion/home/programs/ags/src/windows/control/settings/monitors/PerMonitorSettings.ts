@@ -56,7 +56,6 @@ const getMonitorData = () => {
  * Use hyprctl to enable or disable a monitor.
  */
 const setMonitorEnable = (monitorName: string, enable: boolean) => {
-  print(`enable: ${enable}`);
   GLib.spawn_command_line_async(
     `hyprctl keyword monitor ${monitorName},${enable ? "enable" : "disable"}`,
   );
