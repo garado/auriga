@@ -67,9 +67,9 @@
     pointerCursor = {
       gtk.enable = true;
       x11.enable = true;
-      name = "WhiteSur-cursors";
-      package = pkgs.whitesur-cursors;
-      size = 32;
+      name = "Vimix";
+      package = pkgs.vimix-cursor-theme;
+      size = 24;
     };
   }; /* end home */
 
