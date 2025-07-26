@@ -71,7 +71,7 @@ const Monitor = (monitorData: MonitorData) => {
   const enableSwitch = Switch({
     heightRequest: 20,
     setup: (self) => {
-      self.set_cursor(Gdk.Cursor.new_from_name("pointer"));
+      self.set_cursor(Gdk.Cursor.new_from_name("pointer", null));
       self.set_active(!monitorData.disabled);
       self.set_visible(true);
       self.connect("state-set", (_self, state) => {
