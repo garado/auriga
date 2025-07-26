@@ -22,3 +22,42 @@ scale
 
     highlight
       background-color: $primary-500
+
+switch
+  // Switch track/background
+  // min-width: 50px
+  // min-height: 30px
+  border-radius: 15px
+  background: #ccc
+  transition: all 0.2s ease
+  
+  // The slider button
+  slider
+    min-width: 26px
+    min-height: 26px
+    border-radius: 50%
+    background: white
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2)
+    transition: all 0.15s
+    margin: 2px
+  
+  // Active/checked state
+  &:checked
+    background: $primary-500
+    
+  // Disabled state
+  &:disabled
+    opacity: 0.5
+    
+    slider
+      background: #f0f0f0
+  
+  // Focus state
+  &:focus
+    outline: 2px solid $primary-500
+    outline-offset: 2px
+  
+  // Hover states
+  &:hover:not(:disabled)
+    slider
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3)

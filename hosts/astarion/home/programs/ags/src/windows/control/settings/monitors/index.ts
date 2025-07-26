@@ -15,6 +15,7 @@ import { Variable } from "astal";
 
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 import { MonitorArrangement } from "./MonitorArrangement";
+import { PerMonitorSettings } from "./PerMonitorSettings";
 
 /*****************************************************************************
  * Constants
@@ -42,7 +43,10 @@ export const Monitors = (globalRevealerState: Variable<boolean>) => {
   return ExpansionPanel({
     icon: "monitor-symbolic",
     label: "Monitor control",
-    children: [new MonitorArrangement({ allowOverlap: false })],
+    children: [
+      new MonitorArrangement({ allowOverlap: false }),
+      PerMonitorSettings(),
+    ],
     cssClasses: [CSS_CLASSES.CONTAINER],
     vertical: true,
     globalRevealerState: globalRevealerState,
