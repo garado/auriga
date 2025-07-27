@@ -1,7 +1,7 @@
 
-@use 'theme/theme' as * 
-@use 'windows'
-@use 'components'
+@import 'windows'
+@import 'components'
+@import 'theme/theme'
 
 *
   all: unset // remove default gtk styling
@@ -22,3 +22,9 @@ scale
 
     highlight
       background-color: $primary-500
+
+label
+  color: $neutral-100
+
+image
+  color: $neutral-100
