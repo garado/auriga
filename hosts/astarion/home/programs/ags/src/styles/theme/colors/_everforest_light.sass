@@ -1,0 +1,70 @@
+
+@use 'sass:list'
+
+$img-notrofi: url('/home/alexis/Github/dotfiles/hosts/astarion/home/services/ags/assets/notrofi/yoru.jpg')
+
+$red-100: #FBA8A6
+$red-200: #FA7E7B
+$red-300: #F85552
+$red-400: #E63D3A
+$red-500: #C72C29
+
+$yellow-100: #F2CC66
+$yellow-200: #E9B633
+$yellow-300: #DFA000
+$yellow-400: #B8850D
+$yellow-500: #996F1A
+
+$green-100: #B8C766
+$green-200: #A3B433
+$green-300: #8DA101
+$green-400: #75850D
+$green-500: #5E6F1A
+
+
+$neutral-100: #3A342B
+$neutral-200: #5A523E
+$neutral-300: #7A7051
+$neutral-400: #9A8E64
+$neutral-500: #BAAC77
+$neutral-600: #CEC1AD
+$neutral-700: #D8D3BA
+$neutral-800: #E5DFC5
+$neutral-900: #F3EAD3
+
+// $neutral-100: #4A453D
+// $neutral-200: #6B6459
+// $neutral-300: #8C8375
+// $neutral-400: #ADA291
+// $neutral-500: #CEC1AD
+// $neutral-600: #D8D3BA
+// $neutral-700: #DDD8BE
+// $neutral-800: #E5DFC5
+// $neutral-900: #F3EAD3
+
+$primary-100: #6B7D20
+$primary-200: #758720
+$primary-300: #7F9120
+$primary-400: #899B20
+$primary-500: #8DA101
+$primary-600: #9BAF33
+$primary-700: #A8BD65
+$primary-800: #B6CB97
+$primary-900: #C4D8B8
+
+$accent-1: #F85552
+$accent-2: #F57D26
+$accent-3: #DFA000
+$accent-4: #8DA101
+$accent-5: #3A94C5
+$accent-6: #35A77C
+$accent-7: #DF69BA
+$accent-8: #93B259
+$accent-9: #708089
+$accent-10: #E66868
+
+$accents: #F85552 , #F57D26 , #DFA000 , #8DA101 , #3A94C5 , #35A77C , #DF69BA , #93B259 , #708089 , #E66868
+
+@for $index from 1 through list.length($accents)
+  .accent-#{$index}
+    background-color: list.nth($accents, $index)

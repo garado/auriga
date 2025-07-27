@@ -21,6 +21,12 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/mountain.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/mountain.png`,
       },
+      everforest_light: {
+        nvim: "everforest_light",
+        kitty: "Everforest Light Medium",
+        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/everforest_light.jpg`,
+        preview: `${SRC}/assets/defaults/theme/preview/everforest_light.png`,
+      },
       nord: {
         nvim: "onenord",
         kitty: "Nord",
