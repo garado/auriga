@@ -12,6 +12,7 @@
 
     # Import other pieces of config
     ./programs
+    ./services/kanshi.nix
   ];
 
   # Explicitly define allowed unfree packages
