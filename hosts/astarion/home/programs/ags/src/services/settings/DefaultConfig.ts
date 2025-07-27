@@ -29,7 +29,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
       },
       nord: {
         nvim: "onenord",
-        kitty: "Nord",
+        kitty: "Onenord",
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/nord.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/nord.png`,
       },
