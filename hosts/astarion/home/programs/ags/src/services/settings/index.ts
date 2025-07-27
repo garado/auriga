@@ -149,7 +149,6 @@ export default class SettingsManager extends GObject.Object {
 
     this._currentTheme = newTheme;
     this.applyTheme(newTheme);
-    this.notify("current-theme");
   }
 
   // Private functions -------------------------------------------------------
@@ -218,6 +217,7 @@ export default class SettingsManager extends GObject.Object {
     execAsync(`sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`)
       .then(() => {
         App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
+        this.notify("current-theme");
       })
       .catch(console.error);
 
