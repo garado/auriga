@@ -15,17 +15,17 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/kanagawa.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/kanagawa.png`,
       },
+      nostalgia: {
+        nvim: "nostalgia",
+        kitty: "Nostalgia",
+        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/nostalgia.jpg`,
+        preview: `${SRC}/assets/defaults/theme/preview/nostalgia.png`,
+      },
       mountain: {
         nvim: "mountain",
         kitty: "Mountain Fuji",
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/mountain.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/mountain.png`,
-      },
-      everforest_light: {
-        nvim: "everforest_light",
-        kitty: "Everforest Light Medium",
-        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/everforest_light.jpg`,
-        preview: `${SRC}/assets/defaults/theme/preview/everforest_light.png`,
       },
       nord: {
         nvim: "onenord",
