@@ -40,6 +40,7 @@
  * Imports
  *****************************************************************************/
 
+import SettingsManager from "@/services/settings";
 import { getCairoColorFromClass } from "@/utils/Helpers";
 import { Gtk, Widget, astalify } from "astal/gtk4";
 
@@ -152,9 +153,9 @@ export default (props: {
       // Cache pie colors to avoid having to fetch them each draw
       pieColorsMap.set(self, cachePieColors());
 
-      // globalThis.systemTheme.connect('changed', () => {
-      //   self.pieColors = cachePieColors()
-      // })
+      SettingsManager.get_default().connect("notify::current-theme", () => {
+        pieColorsMap.set(self, cachePieColors());
+      });
 
       // @TODO: Figure out how to set draw function using a property...
       self.set_draw_func((self, cr: any, w, h) => {

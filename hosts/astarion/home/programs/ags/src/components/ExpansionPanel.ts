@@ -159,6 +159,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
         self.set_propagate_natural_height(true);
         self.set_max_content_height(props.maxDropdownHeight);
         self.set_min_content_height(0);
+        self.hscrollbar_policy = Gtk.PolicyType.NEVER;
       },
     });
 

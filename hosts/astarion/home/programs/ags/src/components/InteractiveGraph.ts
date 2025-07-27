@@ -11,6 +11,7 @@
 
 import { getCairoColorFromClass } from "@/utils/Helpers";
 import { Gtk, Widget, astalify } from "astal/gtk4";
+import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
  * Module-level variables
@@ -109,7 +110,7 @@ const fit = (
 };
 
 // Cache graph colors so we don't have to do this every draw
-const cacheGraphColors = (graph: GraphData): void => {
+const cachIndividualGraphColors = (graph: GraphData): void => {
   if (!graph.cssClass) return;
 
   graph.colors = {};
@@ -119,6 +120,17 @@ const cacheGraphColors = (graph: GraphData): void => {
   );
   graph.colors.fit = getCairoColorFromClass(graph.cssClass, "fit");
   graph.colors.plot = getCairoColorFromClass(graph.cssClass, "plot");
+  graph.colors.grid = getCairoColorFromClass(graph.cssClass, "grid");
+};
+
+const cacheGlobalGraphColors = (graph: GraphWidget): void => {
+  graph.colors = {
+    grid: getCairoColorFromClass(...graph.cssClasses, "grid"),
+    vertical_intersect: getCairoColorFromClass(
+      ...graph.cssClasses,
+      "vertical-intersect",
+    ),
+  };
 };
 
 /*****************************************************************************
@@ -151,7 +163,7 @@ export default ({
   const setupData = (self: GraphWidget): void => {
     // Globals
     for (const graph of graphs) {
-      cacheGraphColors(graph);
+      cachIndividualGraphColors(graph);
 
       if (Array.isArray(graph.values)) {
         graph.realValues = graph.values;
@@ -195,13 +207,7 @@ export default ({
 
     setup: (self) => {
       const graphWidget = self as GraphWidget;
-      graphWidget.colors = {
-        grid: getCairoColorFromClass(...cssClasses, "grid"),
-        vertical_intersect: getCairoColorFromClass(
-          ...cssClasses,
-          "vertical-intersect",
-        ),
-      };
+      cacheGlobalGraphColors(graphWidget);
 
       graphWidget.valueMax = 0;
       graphWidget.valueMin = 0;
@@ -211,6 +217,15 @@ export default ({
       graphWidget.lastX = -1;
       graphWidget.lastY = -1;
       graphWidget.eventController = new Gtk.EventControllerMotion();
+
+      // Update Cairo colors on theme change
+      SettingsManager.get_default().connect("notify::current-theme", () => {
+        cacheGlobalGraphColors(graphWidget);
+
+        for (const graph of graphs) {
+          cachIndividualGraphColors(graph);
+        }
+      });
     },
   }) as GraphWidget;
 

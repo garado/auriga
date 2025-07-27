@@ -26,7 +26,7 @@
 
       # Some default env vars
       env = [
-        "XCURSOR_SIZE,16"
+        "XCURSOR_SIZE,32"
         "WLR_NO_HARDWARE_CURSORS,1"
       ];
 
