@@ -58,3 +58,13 @@ $accents: #b8a3a8, #a3b8a8, #c4b5a6, #a8b5c4, #b5a8c4, #a8c4b5, #6a6a6a, #998188
 @for $index from 1 through list.length($accents)
   .accent-#{$index}
     background-color: list.nth($accents, $index)
+
+// Overrides
+:root
+  --bar-workspace-empty-color: #{$neutral-100}
+  --bar-workspace-not-empty-color: #{$neutral-900}
+  --bar-workspace-focused-color: #{saturate($primary-100, 40%)}
+  --bar-battery-charging-color: #{$green-300}
+  --bar-battery-critical-color: #{$red-300}
+  --bar-battery-low-color: #{$yellow-300}
+  --bar-clock-color: #{$neutral-900}
