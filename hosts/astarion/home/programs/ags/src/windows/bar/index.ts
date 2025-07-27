@@ -72,7 +72,7 @@ const WorkspaceIndicator = (wsIdx: number) => {
   const cssClasses = Variable.derive(
     [isFocused, isEmpty],
     (isFocused: boolean, isEmpty: boolean) => {
-      return [isEmpty ? "empty" : "", isFocused ? "focused" : ""];
+      return [isEmpty ? "empty" : "not-empty", isFocused ? "focused" : ""];
     },
   );
 

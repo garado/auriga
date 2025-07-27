@@ -10,10 +10,13 @@
         padding: 0.25rem 0rem
 
       .empty
-        color: $neutral-500
+        color: var(--bar-workspace-empty-color)
+
+      .not-empty
+        color: var(--bar-workspace-not-empty-color)
 
       .focused
-        color: $primary-400
+        color: var(--bar-workspace-focused-color)
 
   .bottom
     .volume
@@ -28,15 +31,18 @@
           highlight
             background-color: $primary-500
 
+    .time
+      color: var(--bar-clock-color)
+
     .battery
       .charging
-        color: $green-300
+        color: var(--bar-battery-charging-color)
 
-      // .critical
-      //   color: $red-300
+      .critical
+        color: var(--bar-battery-critical-color)
 
-      // .low
-      //   color: $yellow-300
+      .low
+        color: var(--bar-battery-low-color)
 
     *:not(:last-child) 
       padding-bottom: 0.5rem

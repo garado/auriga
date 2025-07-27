@@ -1,1 +1,0 @@
-grep -rl . | xargs sed -i 's/fill-rule="evenodd"/fill="#ffffff"/'                                                                                                                    main
