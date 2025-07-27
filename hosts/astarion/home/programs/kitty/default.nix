@@ -16,17 +16,6 @@
     };
 
     extraConfig = ''
-<<<<<<< HEAD
-    cursor_blink_interval 0.5
-    cursor_stop_blinking_after 0
-    scrollback_lines 5000
-    enable_audio_bell no
-    include current-theme.conf
-    sync_to_monitor no
-    '';
-  };
-    
-=======
       cursor_blink_interval 0.5
       cursor_stop_blinking_after 0
       scrollback_lines 5000
@@ -36,7 +25,6 @@
       '';
   };
 
->>>>>>> develop
   # Symlink custom themes
   xdg.configFile."kitty/themes".source = ./themes;
   
