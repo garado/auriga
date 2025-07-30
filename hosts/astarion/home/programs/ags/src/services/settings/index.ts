@@ -96,8 +96,7 @@ export interface SystemConfig {
   };
 
   utility: {
-    /** List of available paint colors. Used in paint mixing widget. */
-    availablePaintColors: string[];
+    palettes: Record<string, string[]>;
   };
 
   misc: {
