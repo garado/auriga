@@ -13,7 +13,7 @@
       # Execute these programs at launch
       exec-once = [
         "swww-daemon"
-        "swww img /home/alexis/Github/dotfiles/hosts/astarion/assets/walls/samori.jpg"
+        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app.ts --gtk4"
       ];
 
       # Miscellaneous options
