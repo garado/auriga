@@ -9,11 +9,13 @@
  * Imports
  *****************************************************************************/
 
-import { App, Astal, Gtk, Widget, astalify } from "astal/gtk4";
+import { App, Astal, Gdk, Gtk, Widget, astalify } from "astal/gtk4";
 
 import { GeminiChat } from "@/windows/utility/GeminiChat";
 import { Tools } from "@/windows/utility/tools";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
+import { bind, Variable } from "astal";
 
 /*****************************************************************************
  * Module-level variables
@@ -27,30 +29,77 @@ const KEYBOARD_SHORTCUTS = {
   SHOW_GEMINI: "l",
 } as const;
 
+const activeTabIndex = Variable(0);
+
+const utilityTabData: any[] = [
+  {
+    name: "Tools",
+    icon: "wrench-symbolic",
+    ui: Tools,
+  },
+  {
+    name: "Gemini",
+    icon: "google-logo-symbolic",
+    ui: GeminiChat,
+  },
+];
+
 /*****************************************************************************
  * Widget definitions
  *****************************************************************************/
 
-const NotebookTabLabel = (label: string) =>
-  Widget.Label({
-    cssClasses: ["tab-label"],
-    label: label,
+const UtilityTabLabel = (tabData: any) =>
+  Widget.Button({
+    canFocus: false,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    cssClasses: bind(activeTabIndex).as((index) =>
+      index == utilityTabData.indexOf(tabData)
+        ? ["active", "tab-entry"]
+        : ["tab-entry"],
+    ),
+    child: Widget.Box({
+      children: [
+        Widget.Image({
+          cssClasses: ["icon"],
+          iconName: tabData.icon,
+        }),
+        Widget.Label({
+          label: tabData.name,
+        }),
+      ],
+    }),
+    onClicked: () => {
+      activeTabIndex.set(utilityTabData.indexOf(tabData));
+    },
   });
 
 const UtilityPanel = () =>
-  Notebook({
-    focusable: false,
-    halign: Gtk.Align.CENTER,
-    cssClasses: ["utility"],
-    setup: (self) => {
-      self.append_page(Tools(), NotebookTabLabel("Tools"));
-      self.append_page(GeminiChat(), NotebookTabLabel("Gemini"));
-    },
+  AnimatedStack({
+    name: "UtilityStack",
+    cssClasses: ["tab-stack"],
+    activePageIndex: activeTabIndex,
+    vertical: false,
+    children: utilityTabData.map((tabData) => {
+      return {
+        ui: tabData.ui,
+        name: tabData.name,
+      } as AnimatedStackChild;
+    }),
   });
 
 export default () => {
   const { TOP, LEFT, BOTTOM } = Astal.WindowAnchor;
+
   const utilityPanel = UtilityPanel();
+
+  const utilityTabBar = Widget.CenterBox({
+    orientation: Gtk.Orientation.HORIZONTAL,
+    cssClasses: ["tab-bar"],
+    centerWidget: Widget.Box({
+      vertical: false,
+      children: utilityTabData.map(UtilityTabLabel),
+    }),
+  });
 
   return Widget.Window({
     application: App,
@@ -62,7 +111,11 @@ export default () => {
       revealChild: false,
       transitionDuration: 250,
       transitionType: Gtk.RevealerTransitionType.SLIDE_LEFT,
-      child: utilityPanel,
+      child: Widget.Box({
+        vertical: true,
+        cssClasses: ["utility"],
+        children: [utilityTabBar, utilityPanel],
+      }),
     }),
     setup: (self) => {
       // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
@@ -77,10 +130,10 @@ export default () => {
             App.closeWindow("utility");
           },
           [KEYBOARD_SHORTCUTS.SHOW_TOOLS]: () => {
-            utilityPanel.set_current_page(0);
+            utilityPanel.iterTab(-1);
           },
           [KEYBOARD_SHORTCUTS.SHOW_GEMINI]: () => {
-            utilityPanel.set_current_page(1);
+            utilityPanel.iterTab(1);
           },
         },
       });
