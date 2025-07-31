@@ -248,8 +248,8 @@ export default class Calendar extends GObject.Object {
   #setNewweekDates(dateStr: string) {
     log("calService", `#setNewweekDates: Starting ${dateStr}`);
 
-    this.weekDates = [];
-    this.weekEvents = {};
+    const tmpWeekDates: string[] = [];
+    const tmpWeekEvents: Record<string, Event[]> = {};
 
     // Initialize the timestamp to the Sunday of the given week
     const date = new Date(dateStr);
@@ -260,12 +260,15 @@ export default class Calendar extends GObject.Object {
     for (let i = 0; i < DAYS_PER_WEEK; i++) {
       const localDate = new Date(ts);
       const dateStr = this.getDateStr(localDate);
-      this.weekDates.push(dateStr);
-      this.weekEvents[dateStr] = [];
+      tmpWeekDates.push(dateStr);
+      tmpWeekEvents[dateStr] = [];
       ts += MS_PER_DAY;
     }
 
-    this.#readCache(this.weekDates);
+    this.weekDates = tmpWeekDates;
+    this.weekEvents = tmpWeekEvents;
+
+    this.#readCache(tmpWeekDates);
   }
 
   /**
@@ -284,26 +287,6 @@ export default class Calendar extends GObject.Object {
       })
       .catch((err) => {
         console.log("calService", `#readCache error: ${err}`);
-      });
-  }
-
-  /**
-   * Make Google Calendar API call and save data to cachefile.
-   */
-  #updateCache() {
-    log("calService", "Updating cache");
-
-    const cmd =
-      "gcalcli agenda '8 months ago' 'in 8 months' --details calendar --details location --military --tsv";
-
-    execAsync(`bash -c "${cmd} | tee ${TMPFILE}"`)
-      .then(() => this.#initWeekData())
-      .catch((err) => {
-        if (err.includes("expired or revoked")) {
-          console.log("Gcalcli: updateCache: Authentication expired!");
-        } else {
-          log("calService", `updateCache: ${err}`);
-        }
       });
   }
 
@@ -349,5 +332,27 @@ export default class Calendar extends GObject.Object {
       if (a.endFH > b.endFH) return 1;
       return 0;
     });
+  }
+
+  // PUBLIC FUNCTIONS -------------------------------------------------------------------------------------
+
+  /**
+   * Make Google Calendar API call and save data to cachefile.
+   */
+  updateCache() {
+    log("calService", "Updating cache");
+
+    const cmd =
+      "gcalcli agenda '8 months ago' 'in 8 months' --details calendar --details location --military --tsv";
+
+    execAsync(`bash -c "${cmd} | tee ${TMPFILE}"`)
+      .then(() => this.#initWeekData())
+      .catch((err) => {
+        if (err.includes("expired or revoked")) {
+          console.log("Gcalcli: updateCache: Authentication expired!");
+        } else {
+          log("calService", `updateCache: ${err}`);
+        }
+      });
   }
 }
