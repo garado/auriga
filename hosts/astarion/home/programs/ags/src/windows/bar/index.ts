@@ -147,40 +147,40 @@ const Time = () =>
  * @TODO this is so confusingly written. however, i do not care
  */
 const VolumeSlider = () => {
-  // Toggle reveal
-  const timedReveal = Variable(false);
-  const muteReveal = bind(wp!.audio.default_speaker, "mute");
+  const sliderReveal = Variable(false);
+  const muteStatus = bind(wp!.audio.default_speaker, "mute");
 
-  const sliderReveal = Variable.derive(
-    [timedReveal, muteReveal],
-    (timedReveal: boolean, muteReveal: boolean) => {
-      return timedReveal || muteReveal;
-    },
-  );
-
-  // Show for 2 seconds after volume change
+  // Show slider for 2 seconds after any volume adjustment
   let timer: any = null;
   wp!.audio.default_speaker.connect("notify::volume", () => {
     if (timer) {
       timer.cancel();
     }
 
-    timedReveal.set(true);
+    sliderReveal.set(true);
 
     timer = timeout(2000, () => {
       timer.cancel();
       timer = null;
-      timedReveal.set(false);
+      sliderReveal.set(false);
     });
   });
 
-  // Toggle icon
+  // Show icon when muted or when slider is displayed
+  const iconReveal = Variable.derive(
+    [sliderReveal, muteStatus],
+    (sliderReveal: boolean, muteStatus: boolean) => {
+      return sliderReveal || muteStatus;
+    },
+  );
+
+  // Change icon based on mute/volume state
   const volume = bind(wp!.audio.default_speaker, "volume");
   const speakerIcon = Variable.derive(
-    [muteReveal, volume],
-    (muteReveal, volume) => {
+    [muteStatus, volume],
+    (muteStatus, volume) => {
       const percent = Math.cbrt(volume) * 100;
-      if (muteReveal) return "speaker-x-symbolic";
+      if (muteStatus) return "speaker-x-symbolic";
       if (percent < 40) return "speaker-none-symbolic";
       if (percent < 80) return "speaker-low-symbolic";
       return "speaker-high-symbolic";
@@ -188,7 +188,7 @@ const VolumeSlider = () => {
   );
 
   const sliderContainer = Widget.Revealer({
-    revealChild: bind(timedReveal),
+    revealChild: bind(sliderReveal),
     transitionType: Gtk.RevealerTransitionType.SLIDE_UP,
     cssClasses: ["volume"],
     vexpand: false,
@@ -197,7 +197,7 @@ const VolumeSlider = () => {
       max: 1.2,
       step: 0.1,
       heightRequest: 100,
-      visible: bind(timedReveal),
+      visible: bind(sliderReveal),
       orientation: Gtk.Orientation.VERTICAL,
       inverted: true,
       value: bind(wp!.audio.default_speaker, "volume"),
@@ -208,7 +208,7 @@ const VolumeSlider = () => {
   });
 
   const iconContainer = Widget.Revealer({
-    revealChild: bind(sliderReveal),
+    revealChild: bind(iconReveal),
     transitionType: Gtk.RevealerTransitionType.SLIDE_UP,
     vexpand: false,
     child: Widget.Box({
