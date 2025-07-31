@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 import { Gtk, Widget } from "astal/gtk4";
-import { bind, Variable } from "astal";
+import { bind, Binding, Variable } from "astal";
 import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
 import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
 
@@ -26,7 +26,7 @@ export type DashLayoutAction = {
 
 // Custom type for dash layouts
 export type DashLayout = {
-  name: string; // Name of tab
+  name: string | Binding<string>; // Name of tab
   pages: Array<AnimatedStackChild>; // Pages to switch between
   actions?: DashLayoutAction[]; // Global actions for the tab
   cssClasses?: Array<string>;

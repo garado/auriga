@@ -18,7 +18,7 @@
  * Calendar week view program flow:
  *  - constructor
  *    - initWeekData: Init weekDates for the current week
- *      - setNewweekDates(str: date): Find all dates for the week which
+ *      - setNewWeekDates(str: date): Find all dates for the week which
  *        includes `date`
  *        - readCache(array: dates): Read all event data starting or
  *          ending on the given dates
@@ -237,7 +237,7 @@ export default class Calendar extends GObject.Object {
   #initWeekData(startDate = new Date()) {
     log("calService", `#initWeekData: Called with d = ${startDate}`);
     this.today = this.getDateStr(startDate);
-    this.#setNewweekDates(this.today);
+    this.#setNewWeekDates(this.today);
   }
 
   /**
@@ -245,8 +245,8 @@ export default class Calendar extends GObject.Object {
    *
    * @param {string} dateStr The date to set the weekDates to.
    */
-  #setNewweekDates(dateStr: string) {
-    log("calService", `#setNewweekDates: Starting ${dateStr}`);
+  #setNewWeekDates(dateStr: string) {
+    log("calService", `#setNewWeekDates: Starting ${dateStr}`);
 
     const tmpWeekDates: string[] = [];
     const tmpWeekEvents: Record<string, Event[]> = {};
@@ -354,5 +354,30 @@ export default class Calendar extends GObject.Object {
           log("calService", `updateCache: ${err}`);
         }
       });
+  }
+
+  /**
+   * Navigate to the next or previous week
+   *
+   * @param {number} direction - Positive number for future weeks, negative for past weeks
+   * (e.g., 1 = next week, -1 = previous week, 2 = two weeks forward)
+   */
+  iterWeek(direction: number = 1) {
+    log("calService", `iterWeek: Moving ${direction} week(s)`);
+
+    const currentWeekStart = new Date(this.weekDates[0] + "T00:00:00");
+
+    const newWeekStart = new Date(currentWeekStart);
+    newWeekStart.setDate(newWeekStart.getDate() + direction * 7);
+
+    // Convert to date string
+    const year = newWeekStart.getFullYear();
+    const month = String(newWeekStart.getMonth() + 1).padStart(2, "0");
+    const day = String(newWeekStart.getDate()).padStart(2, "0");
+    const newDateStr = `${year}-${month}-${day}`;
+
+    log("calService", `iterWeek: New date string: ${newDateStr}`);
+
+    this.#setNewWeekDates(newDateStr);
   }
 }

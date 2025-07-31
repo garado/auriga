@@ -114,6 +114,9 @@ export class _WeekGrid extends Gtk.Fixed {
     this.vexpand = false;
     this.hexpand = false;
 
+    this.eventWidgets = [];
+    this.nextWidgetId = 0;
+
     // Update this widget when new data is available
     hook(this, cal, "weekdates-changed", () => {
       this.onNewDataAvailable();
@@ -143,13 +146,13 @@ export class _WeekGrid extends Gtk.Fixed {
    * Runs when new data is available.
    */
   private onNewDataAvailable = () => {
+    print("WEEE NEW DATA AVAILABLE");
     // Store new data
     this.weekEvents = cal.weekEvents;
     this.weekDates = cal.weekDates;
 
     // Reset widget state
-    this.eventWidgets = [];
-    this.nextWidgetId = 0;
+    this.clearAllEventWidgets();
 
     this.tryRender();
   };
@@ -163,7 +166,6 @@ export class _WeekGrid extends Gtk.Fixed {
     });
 
     this.eventWidgets = [];
-
     this.nextWidgetId = 0;
   };
 

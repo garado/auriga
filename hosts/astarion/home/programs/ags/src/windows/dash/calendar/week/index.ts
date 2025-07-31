@@ -15,6 +15,16 @@ import { WeekGrid } from "@/windows/dash/calendar/week/WeekGrid";
 import { astalify, Gtk, Widget } from "astal/gtk4";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 import { WeekDateHeaders } from "./WeekDateHeaders";
+import Calendar from "@/services/Calendar";
+
+/*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+const KEYBINDS = {
+  PREV_WEEK: "h",
+  NEXT_WEEK: "l",
+} as const;
 
 /*****************************************************************************
  * Widget definition
@@ -54,7 +64,14 @@ export const Week = () => {
       setupEventController({
         widget: self,
         forwardTarget: _WeekGridContent,
-        binds: {},
+        binds: {
+          [KEYBINDS.PREV_WEEK]: () => {
+            Calendar.get_default().iterWeek(-1);
+          },
+          [KEYBINDS.NEXT_WEEK]: () => {
+            Calendar.get_default().iterWeek(1);
+          },
+        },
       });
     },
   });
