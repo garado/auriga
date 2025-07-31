@@ -24,6 +24,7 @@ import Calendar from "@/services/Calendar";
 const KEYBINDS = {
   PREV_WEEK: "h",
   NEXT_WEEK: "l",
+  CURR_WEEK: "gg",
 } as const;
 
 /*****************************************************************************
@@ -70,6 +71,9 @@ export const Week = () => {
           },
           [KEYBINDS.NEXT_WEEK]: () => {
             Calendar.get_default().iterWeek(1);
+          },
+          [KEYBINDS.CURR_WEEK]: () => {
+            Calendar.get_default().jumpToToday();
           },
         },
       });

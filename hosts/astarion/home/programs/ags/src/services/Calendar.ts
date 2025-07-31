@@ -380,4 +380,9 @@ export default class Calendar extends GObject.Object {
 
     this.#setNewWeekDates(newDateStr);
   }
+
+  jumpToToday() {
+    const today = this.getDateStr(new Date());
+    this.#setNewWeekDates(today);
+  }
 }
