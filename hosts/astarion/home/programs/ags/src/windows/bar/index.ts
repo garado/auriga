@@ -44,7 +44,7 @@ const Workspaces = () => {
 
   return Widget.Box({
     cssClasses: ["workspaces"],
-    orientation: 1,
+    vertical: true,
     children: wsIndices.map(WorkspaceIndicator),
   });
 };
@@ -141,48 +141,91 @@ const Time = () =>
     label: bind(time),
   });
 
-// @TODO Slider does not show when oriented vertically
+/**
+ * Volume slider
+ * Note: wireplumber does cubic root volumes for some fucking reason
+ * @TODO this is so confusingly written. however, i do not care
+ */
 const VolumeSlider = () => {
-  const revealSlider = Variable(false);
-  let timer: any = null;
+  const sliderReveal = Variable(false);
+  const muteStatus = bind(wp!.audio.default_speaker, "mute");
 
+  // Show slider for 2 seconds after any volume adjustment
+  let timer: any = null;
   wp!.audio.default_speaker.connect("notify::volume", () => {
     if (timer) {
       timer.cancel();
     }
 
-    revealSlider.set(true);
+    sliderReveal.set(true);
 
     timer = timeout(2000, () => {
       timer.cancel();
       timer = null;
-      revealSlider.set(false);
+      sliderReveal.set(false);
     });
   });
 
-  return Widget.Revealer({
-    revealChild: bind(revealSlider),
+  // Show icon when muted or when slider is displayed
+  const iconReveal = Variable.derive(
+    [sliderReveal, muteStatus],
+    (sliderReveal: boolean, muteStatus: boolean) => {
+      return sliderReveal || muteStatus;
+    },
+  );
+
+  // Change icon based on mute/volume state
+  const volume = bind(wp!.audio.default_speaker, "volume");
+  const speakerIcon = Variable.derive(
+    [muteStatus, volume],
+    (muteStatus, volume) => {
+      const percent = Math.cbrt(volume) * 100;
+      if (muteStatus) return "speaker-x-symbolic";
+      if (percent < 40) return "speaker-none-symbolic";
+      if (percent < 80) return "speaker-low-symbolic";
+      return "speaker-high-symbolic";
+    },
+  );
+
+  const sliderContainer = Widget.Revealer({
+    revealChild: bind(sliderReveal),
     transitionType: Gtk.RevealerTransitionType.SLIDE_UP,
+    cssClasses: ["volume"],
+    vexpand: false,
+    child: Widget.Slider({
+      min: 0,
+      max: 1.2,
+      step: 0.1,
+      heightRequest: 100,
+      visible: bind(sliderReveal),
+      orientation: Gtk.Orientation.VERTICAL,
+      inverted: true,
+      value: bind(wp!.audio.default_speaker, "volume"),
+      onChangeValue: ({ value }) => {
+        wp!.audio.default_speaker.set_volume(value);
+      },
+    }),
+  });
+
+  const iconContainer = Widget.Revealer({
+    revealChild: bind(iconReveal),
+    transitionType: Gtk.RevealerTransitionType.SLIDE_UP,
+    vexpand: false,
     child: Widget.Box({
-      cssClasses: ["volume"],
       vertical: true,
       children: [
-        Widget.Slider({
-          min: 0,
-          max: 100,
-          orientation: Gtk.Orientation.VERTICAL,
-          value: bind(wp!.audio.default_speaker, "volume").as(
-            (volume) => volume * 100,
-          ),
-          onChangeValue: ({ value }) => {
-            wp!.audio.default_speaker.set_volume(value / 100.0);
-          },
-        }),
         Widget.Image({
-          iconName: "speaker-low-symbolic",
+          iconName: bind(speakerIcon),
+          vexpand: true,
+          valign: Gtk.Align.END,
         }),
       ],
     }),
+  });
+
+  return Widget.Box({
+    vertical: true,
+    children: [sliderContainer, iconContainer],
   });
 };
 
