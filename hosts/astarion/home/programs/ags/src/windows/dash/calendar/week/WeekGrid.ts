@@ -146,7 +146,6 @@ export class _WeekGrid extends Gtk.Fixed {
    * Runs when new data is available.
    */
   private onNewDataAvailable = () => {
-    print("WEEE NEW DATA AVAILABLE");
     // Store new data
     this.weekEvents = cal.weekEvents;
     this.weekDates = cal.weekDates;
