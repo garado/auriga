@@ -20,6 +20,7 @@ import { log } from "@/globals.js";
  */
 export interface EventControlledWidget extends Gtk.Widget {
   controller: Gtk.EventControllerKey;
+  _lastKey?: string; // Add this line
 }
 
 /**
@@ -91,24 +92,33 @@ export function setupEventController(
     const keyName = Gdk.keyval_name(keyval);
     const controllerName = name || "Unnamed controller";
 
+    if (!keyName) return false;
+
     log("eventControllerKey", `${controllerName}: ${keyName}`);
 
-    if (keyName === null) return;
-
-    // Check if we have a binding for this key
-    const handler = binds[keyName];
-    if (handler) {
-      handler();
+    // Check for double-key sequences (like "gg", "dd")
+    const doubleKey = keyName + keyName;
+    if (controlledWidget._lastKey === keyName && binds[doubleKey]) {
+      binds[doubleKey]();
+      controlledWidget._lastKey = undefined; // Reset after using
       return true;
     }
+
+    // Check for single key bindings
+    if (binds[keyName]) {
+      binds[keyName]();
+      controlledWidget._lastKey = undefined;
+      return true;
+    }
+
+    // Remember this key for potential double-key sequence
+    controlledWidget._lastKey = keyName;
 
     // Forward unhandled events if forwardTarget is specified
     if (forwardTarget !== undefined && forwardTarget !== null) {
       const targetWidget =
         typeof forwardTarget === "function" ? forwardTarget() : forwardTarget;
-
       if (targetWidget === null) return;
-
       controlledWidget.controller.forward(targetWidget);
     }
 
