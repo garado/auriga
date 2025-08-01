@@ -12,6 +12,7 @@
 import { Gridlines } from "@/windows/dash/calendar/week/Gridlines";
 import { MultiDayEvents } from "@/windows/dash/calendar/week/MultiDayEvents";
 import { WeekGrid } from "@/windows/dash/calendar/week/WeekGrid";
+import { Nowline } from "@/windows/dash/calendar/week/Nowline";
 import { astalify, Gtk, Widget } from "astal/gtk4";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 import { WeekDateHeaders } from "./WeekDateHeaders";
@@ -94,6 +95,7 @@ export const Week = () => {
   const _MultiDayEvents = MultiDayEvents();
   const _WeekGridContent = WeekGrid();
   const _Gridlines = Gridlines();
+  const _Nowline = Nowline();
 
   const weekGridContainer = Scrollable({
     vexpand: true,
@@ -105,6 +107,7 @@ export const Week = () => {
       child: _Gridlines,
       setup: (self) => {
         self.add_overlay(_WeekGridContent);
+        self.add_overlay(_Nowline);
       },
     }),
   });

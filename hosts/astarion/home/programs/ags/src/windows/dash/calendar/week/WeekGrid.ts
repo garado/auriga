@@ -8,7 +8,6 @@
  * and displayed within a weekly view. It handles the layout logic for placing events
  * in their appropriate time slots and day columns, similar to Google Calendar's week view.
  *
- * @TODO Add keyboard navigation support
  * @TODO Optimize rendering for large numbers of events
  */
 
