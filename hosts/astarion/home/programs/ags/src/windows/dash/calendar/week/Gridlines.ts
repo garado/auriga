@@ -66,6 +66,7 @@ export const Gridlines = () => {
 
   return DrawingArea({
     vexpand: true,
+    hexpand: true,
     visible: true,
     cssClasses: ["weekview-gridlines"],
     setup: (self) => {

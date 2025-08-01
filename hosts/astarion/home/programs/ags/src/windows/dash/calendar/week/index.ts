@@ -18,6 +18,7 @@ import { setupEventController } from "@/utils/EventControllerKeySetup";
 import { WeekDateHeaders } from "./WeekDateHeaders";
 import Calendar from "@/services/Calendar";
 import { GLib } from "astal";
+import { HourLabels } from "./HourLabels";
 
 /*****************************************************************************
  * Constants
@@ -96,6 +97,7 @@ export const Week = () => {
   const _WeekGridContent = WeekGrid();
   const _Gridlines = Gridlines();
   const _Nowline = Nowline();
+  const _HourLabels = HourLabels();
 
   const weekGridContainer = Scrollable({
     vexpand: true,
@@ -103,12 +105,20 @@ export const Week = () => {
     visible: true,
     hscrollbar_policy: Gtk.PolicyType.NEVER,
     vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
-    child: Widget.Overlay({
-      child: _Gridlines,
-      setup: (self) => {
-        self.add_overlay(_WeekGridContent);
-        self.add_overlay(_Nowline);
-      },
+    child: Widget.Box({
+      vertical: false,
+      hexpand: true,
+      vexpand: true,
+      children: [
+        _HourLabels,
+        Widget.Overlay({
+          child: _Gridlines,
+          setup: (self) => {
+            self.add_overlay(_WeekGridContent);
+            self.add_overlay(_Nowline);
+          },
+        }),
+      ],
     }),
   });
 
