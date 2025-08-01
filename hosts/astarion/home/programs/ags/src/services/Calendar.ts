@@ -248,27 +248,29 @@ export default class Calendar extends GObject.Object {
    */
   #setNewWeekDates(dateStr: string) {
     log("calService", `#setNewWeekDates: Starting ${dateStr}`);
-
     const tmpWeekDates: string[] = [];
     const tmpWeekEvents: Record<string, Event[]> = {};
+    const date = new Date(dateStr + "T12:00:00");
 
-    // Initialize the timestamp to the Sunday of the given week
-    const date = new Date(dateStr);
+    // Find the Sunday of this week
+    const dayOfWeek = date.getDay();
+    const daysToSubtract = dayOfWeek;
 
-    // Determine the days in that week
-    let ts = date.setDate(date.getUTCDate() - date.getUTCDay());
+    // Create a new date for the Sunday of this week
+    const sunday = new Date(date);
+    sunday.setDate(date.getDate() - daysToSubtract);
 
+    // Generate the week dates
     for (let i = 0; i < DAYS_PER_WEEK; i++) {
-      const localDate = new Date(ts);
-      const dateStr = this.getDateStr(localDate);
+      const weekDate = new Date(sunday);
+      weekDate.setDate(sunday.getDate() + i);
+      const dateStr = this.getDateStr(weekDate);
       tmpWeekDates.push(dateStr);
       tmpWeekEvents[dateStr] = [];
-      ts += MS_PER_DAY;
     }
 
     this.weekDates = tmpWeekDates;
     this.weekEvents = tmpWeekEvents;
-
     this.#readCache(tmpWeekDates);
   }
 
