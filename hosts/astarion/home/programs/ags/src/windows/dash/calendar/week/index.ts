@@ -16,6 +16,7 @@ import { astalify, Gtk, Widget } from "astal/gtk4";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 import { WeekDateHeaders } from "./WeekDateHeaders";
 import Calendar from "@/services/Calendar";
+import { GLib } from "astal";
 
 /*****************************************************************************
  * Constants
@@ -25,7 +26,61 @@ const KEYBINDS = {
   PREV_WEEK: "h",
   NEXT_WEEK: "l",
   CURR_WEEK: "gg",
+  SCROLL_UP: "k",
+  SCROLL_DOWN: "j",
 } as const;
+
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
+
+/**
+ * Smoothly scroll a ScrolledWindow up or down by a small amount
+ *
+ * @param scrolledWindow - The Gtk.ScrolledWindow to scroll
+ * @param direction - 1 for down, -1 for up
+ * @param amount - How much to scroll (default: 50 pixels)
+ * @param duration - Animation duration in milliseconds (default: 200ms)
+ */
+export function smoothScroll(
+  scrolledWindow: Gtk.ScrolledWindow,
+  direction: number,
+  amount: number = 50,
+  duration: number = 200,
+): void {
+  const vAdjustment = scrolledWindow.get_vadjustment();
+  const startValue = vAdjustment.get_value();
+  const targetValue = Math.max(
+    0,
+    Math.min(
+      startValue + direction * amount,
+      vAdjustment.get_upper() - vAdjustment.get_page_size(),
+    ),
+  );
+
+  // If no change needed, return early
+  if (Math.abs(targetValue - startValue) < 1) return;
+
+  const startTime = Date.now();
+  const totalDistance = targetValue - startValue;
+
+  const animate = (): boolean => {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Ease-out animation curve
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+    const currentValue = startValue + totalDistance * easedProgress;
+    vAdjustment.set_value(currentValue);
+
+    // Continue animation if not complete
+    return progress < 1;
+  };
+
+  // Start the animation loop
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 16, animate);
+}
 
 /*****************************************************************************
  * Widget definition
@@ -40,7 +95,7 @@ export const Week = () => {
   const _WeekGridContent = WeekGrid();
   const _Gridlines = Gridlines();
 
-  const WeekGridContainer = Scrollable({
+  const weekGridContainer = Scrollable({
     vexpand: true,
     hexpand: true,
     visible: true,
@@ -60,7 +115,7 @@ export const Week = () => {
     vertical: true,
     vexpand: true,
     hexpand: true,
-    children: [_WeekDateHeaders, _MultiDayEvents, WeekGridContainer],
+    children: [_WeekDateHeaders, _MultiDayEvents, weekGridContainer],
     setup: (self) => {
       setupEventController({
         widget: self,
@@ -74,6 +129,12 @@ export const Week = () => {
           },
           [KEYBINDS.CURR_WEEK]: () => {
             Calendar.get_default().jumpToToday();
+          },
+          [KEYBINDS.SCROLL_UP]: () => {
+            smoothScroll(weekGridContainer, -1, 200, 150);
+          },
+          [KEYBINDS.SCROLL_DOWN]: () => {
+            smoothScroll(weekGridContainer, 1, 200, 150);
           },
         },
       });
