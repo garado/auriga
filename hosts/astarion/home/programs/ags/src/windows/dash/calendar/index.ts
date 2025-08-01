@@ -22,6 +22,14 @@ import { setupEventController } from "@/utils/EventControllerKeySetup";
 import Calendar from "@/services/Calendar";
 
 /*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+const KEYBINDS = {
+  REFRESH_DATA: "r",
+} as const;
+
+/*****************************************************************************
  * Helper functions
  *****************************************************************************/
 
@@ -81,12 +89,13 @@ export default () => {
       { name: "Week", ui: Week },
       { name: "Schedule", ui: Schedule },
     ],
+    actions: [{ name: "hi", action: () => {} }],
   });
 
   setupEventController({
     widget: calendarTab,
     binds: {
-      r: () => {
+      [KEYBINDS.REFRESH_DATA]: () => {
         Calendar.get_default().updateCache();
       },
     },
