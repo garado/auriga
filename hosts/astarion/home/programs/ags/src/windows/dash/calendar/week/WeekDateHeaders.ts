@@ -14,7 +14,7 @@
 import { Widget } from "astal/gtk4";
 import { bind } from "astal";
 
-import Calendar, { DAY_NAMES, uiVars } from "@/services/Calendar";
+import Calendar, { DAY_NAMES } from "@/services/Calendar";
 
 /*****************************************************************************
  * Module-level variablse
@@ -35,7 +35,7 @@ const DAYS_PER_WEEK = 7;
 export const WeekDateHeaders = () => {
   const cal = Calendar.get_default();
 
-  const weekDateHeaders = Widget.Box({
+  return Widget.Box({
     homogeneous: true,
     hexpand: true,
     setup: (self) => {
@@ -66,17 +66,5 @@ export const WeekDateHeaders = () => {
         self.append(dateLabel);
       }
     },
-  });
-
-  return Widget.Box({
-    vertical: false,
-    vexpand: false,
-    hexpand: true,
-    children: [
-      Widget.Box({
-        widthRequest: uiVars.hourLabelWidthPx,
-      }),
-      weekDateHeaders,
-    ],
   });
 };

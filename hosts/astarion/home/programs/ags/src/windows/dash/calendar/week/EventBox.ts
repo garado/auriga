@@ -12,7 +12,8 @@
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { register, property, signal } from "astal/gobject";
 
-import Calendar, { Event, fhToTimeStr } from "@/services/Calendar";
+import Calendar, { Event, fhToTimeStr, uiVars } from "@/services/Calendar";
+import Pango from "gi://Pango?version=1.0";
 
 /*****************************************************************************
  * Module-level variables
@@ -78,6 +79,8 @@ export class _EventBox extends Gtk.Box {
   @property(Number) declare dayHeight: number;
   @property(Number) declare dayWidth: number;
   @property(Number) declare id: number;
+  @property(Number) declare originalWidthRequest: number;
+  @property(Boolean) declare isMultiDayEvent: boolean;
 
   // Child widgets
   @property(Gtk.Label) declare title: Gtk.Label;
@@ -100,6 +103,8 @@ export class _EventBox extends Gtk.Box {
   constructor(props: Partial<EventBoxProps>) {
     super(props as any);
 
+    this.isMultiDayEvent = props.event!.multiDay || props.event!.allDay;
+
     this.initializeWidget();
     this.createChildWidgets();
     this.setupDragHandler();
@@ -112,18 +117,31 @@ export class _EventBox extends Gtk.Box {
    */
   private initializeWidget = () => {
     this.orientation = Gtk.Orientation.VERTICAL;
-    this.cssClasses = ["eventbox", this.event.calendar];
+    this.cssClasses = [
+      "eventbox",
+      this.isMultiDayEvent ? "multiday" : "",
+      this.event.calendar,
+    ];
     this.cursor = Gdk.Cursor.new_from_name("pointer", null);
-    this.vexpand = true;
-    this.heightRequest =
-      (this.event.endFH - this.event.startFH) *
-      (this.dayHeight / HOURS_PER_DAY);
+    this.vexpand = false;
+
+    if (this.isMultiDayEvent) {
+      this.heightRequest = uiVars.multiDayEventHeight;
+      this.orientation = Gtk.Orientation.HORIZONTAL;
+      this.spacing = 8;
+    } else {
+      this.heightRequest =
+        (this.event.endFH - this.event.startFH) *
+        (this.dayHeight / HOURS_PER_DAY);
+      this.orientation = Gtk.Orientation.VERTICAL;
+    }
 
     if (this.event.endTS < Date.now()) {
       this.add_css_class("elapsed");
     }
 
     this.updatedEvent = this.event;
+    this.originalWidthRequest = this.widthRequest;
   };
 
   /**
@@ -135,6 +153,11 @@ export class _EventBox extends Gtk.Box {
       wrap: true,
       xalign: 0,
       label: this.event.description,
+      setup: (self) => {
+        if (this.isMultiDayEvent) {
+          self.ellipsize = Pango.EllipsizeMode.END;
+        }
+      },
     });
 
     this.times = Widget.Label({
@@ -149,6 +172,7 @@ export class _EventBox extends Gtk.Box {
       label: this.event.location,
       wrap: true,
       xalign: 0,
+      visible: !this.isMultiDayEvent,
     });
 
     this.append(this.title);
@@ -196,12 +220,29 @@ export class _EventBox extends Gtk.Box {
     this.dragState.dy = dy;
 
     // Along x-axis, snap to weekdays
-    // Along y-axis, snap to 15-min increments
     this.dragState.x = this.snapToWeekday() * this.dayWidth;
-    this.dragState.y = this.snapToTimeGrid() * (this.dayHeight / HOURS_PER_DAY);
 
-    // Draw within bounds
+    // For single-day events: Along y-axis, snap to 15-min increments
+    if (!this.isMultiDayEvent) {
+      this.dragState.y =
+        this.snapToTimeGrid() * (this.dayHeight / HOURS_PER_DAY);
+    }
+
+    // Ensure widget is is within bounds
     this.dragState.x < 0 ? (this.dragState.x = 0) : this.dragState.x;
+
+    // Change width to ensure entire widget remains in bounds, if needed
+    if (this.isMultiDayEvent) {
+      const widgetXPosEnd = this.dragState.x + this.originalWidthRequest;
+      const gridXPosEnd = this.dayWidth * DAYS_PER_WEEK;
+
+      if (widgetXPosEnd > gridXPosEnd) {
+        const startDayIndex = Math.round(this.dragState.x / this.dayWidth);
+        this.widthRequest = (DAYS_PER_WEEK - startDayIndex) * this.dayWidth;
+      } else {
+        this.widthRequest = this.originalWidthRequest;
+      }
+    }
 
     // Reposition
     (this.get_parent()! as Gtk.Fixed).move(
@@ -211,12 +252,14 @@ export class _EventBox extends Gtk.Box {
     );
 
     // Update data and UI based on new position
-    this.updatedEvent.startTime = `${fhToTimeStr(this.snapToTimeGrid())}`;
-    this.updatedEvent.endTime = `${fhToTimeStr(this.snapToTimeGrid() + this.event.durationFH)}`;
+    if (!this.isMultiDayEvent) {
+      this.updatedEvent.startTime = `${fhToTimeStr(this.snapToTimeGrid())}`;
+      this.updatedEvent.endTime = `${fhToTimeStr(this.snapToTimeGrid() + this.event.durationFH)}`;
+      this.times.label = `${this.updatedEvent.startTime} - ${this.updatedEvent.endTime}`;
+    }
+
     this.updatedEvent.startDate = `${cal.weekDates[this.snapToWeekday()]}`;
     this.updatedEvent.endDate = `${cal.weekDates[this.snapToWeekday()]}`;
-
-    this.times.label = `${this.updatedEvent.startTime} - ${this.updatedEvent.endTime}`;
   };
 
   private onDragEnd = () => {
@@ -253,11 +296,11 @@ export class _EventBox extends Gtk.Box {
   };
 
   private snapToWeekday = () => {
-    return Math.round(
-      ((this.dragState.x + this.dragState.dx) /
-        (this.dayWidth * DAYS_PER_WEEK)) *
-        DAYS_PER_WEEK,
-    );
+    const currentX = this.dragState.x + this.dragState.dx;
+    const dayIndex = Math.round(currentX / this.dayWidth);
+
+    // Clamp to valid day range (0-6)
+    return Math.max(0, Math.min(dayIndex, DAYS_PER_WEEK - 1));
   };
 
   // Public functions ----------------------------------------------------------

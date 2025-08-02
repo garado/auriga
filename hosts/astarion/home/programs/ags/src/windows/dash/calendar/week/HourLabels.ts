@@ -26,6 +26,31 @@ function formatHour(hour: number): string {
   return `${hour.toString().padStart(2, "0")}:00`;
 }
 
+/**
+ * Draw function for hour labels
+ */
+const drawHourLabels = (self: any, cr: any, _w: number, h: number) => {
+  const styles = self.get_style_context();
+  const fg = styles.get_color();
+  cr.setSourceRGBA(fg.red, fg.green, fg.blue, 0.7);
+  cr.selectFontFace("Sans", 0, 0);
+  cr.setFontSize(12);
+
+  const hourHeight = h / 24;
+
+  for (let hour = 0; hour < 24; hour++) {
+    const y = hour * hourHeight;
+    const timeString = formatHour(hour);
+
+    const textExtents = cr.textExtents(timeString);
+    const textX = 8;
+    const textY = y + textExtents.height; // Slightly below line
+
+    cr.moveTo(textX, textY);
+    cr.showText(timeString);
+  }
+};
+
 /*****************************************************************************
  * Widget definition
  *****************************************************************************/
@@ -39,29 +64,7 @@ export const HourLabels = () => {
     canTarget: false,
     cssClasses: ["hour-label"],
     setup: (self) => {
-      const drawFn = (self: any, cr: any, _w: number, h: number) => {
-        const styles = self.get_style_context();
-        const fg = styles.get_color();
-        cr.setSourceRGBA(fg.red, fg.green, fg.blue, 0.7);
-        cr.selectFontFace("Sans", 0, 0);
-        cr.setFontSize(12);
-
-        const hourHeight = h / 24;
-
-        for (let hour = 0; hour < 24; hour++) {
-          const y = hour * hourHeight;
-          const timeString = formatHour(hour);
-
-          const textExtents = cr.textExtents(timeString);
-          const textX = 8;
-          const textY = y + textExtents.height; // Slightly below line
-
-          cr.moveTo(textX, textY);
-          cr.showText(timeString);
-        }
-      };
-
-      self.set_draw_func(drawFn);
+      self.set_draw_func(drawHourLabels);
     },
   });
 };

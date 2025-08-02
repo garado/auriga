@@ -10,14 +10,8 @@
  * Imports
  *****************************************************************************/
 
-import { Gtk, Widget, astalify } from "astal/gtk4";
-import Calendar, { uiVars } from "@/services/Calendar";
-
-/*****************************************************************************
- * Module-level variables
- *****************************************************************************/
-
-const cal = Calendar.get_default();
+import { Gtk, astalify } from "astal/gtk4";
+import { uiVars } from "@/services/Calendar";
 
 /*****************************************************************************
  * Helper functions
@@ -49,7 +43,7 @@ const drawGridlines = (self: any, cr: any, w: number, h: number) => {
   // Draw vertical lines to separate days
   let x = 0;
   cr.moveTo(x, 0);
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 7; i++) {
     cr.lineTo(x, h);
     x += w / 7;
     cr.moveTo(x, 0);

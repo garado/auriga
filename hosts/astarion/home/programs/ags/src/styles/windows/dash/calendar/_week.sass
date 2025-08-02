@@ -46,6 +46,9 @@
     opacity: 0.5
     border-style: dashed
 
+  .multiday
+    font-size: 0.6rem
+
 /****************************************************
  * SCROLLBAR
  ****************************************************/
@@ -76,8 +79,6 @@
  ****************************************************/
 
 .calendar .week .date-label
-  margin-bottom: 1rem
-
   .number
     font-size: 2rem
 
@@ -100,19 +101,3 @@
 .calendar .week .day-view
   &:not(:last-child)
     border-right: 2px solid $neutral-700
-
-/****************************************************
- * MULTIDAY
- ****************************************************/
-
-.calendar .week .multiday
-  .multiday-event-widget
-    border-radius: $border-radius
-    font-size: 0.8rem
-    padding: 0.2rem 0.2rem 0.2rem 0.4rem
-    border: 2px solid rgba(0, 0, 0, 0)
-    border-radius: $border-radius
-    box-shadow: 4px 4px 4px 4px rgba(0 0 0 / 30%)
-
-    &:focus, &:hover
-      border: 2px solid $neutral-100

@@ -10,15 +10,15 @@
  *****************************************************************************/
 
 import { Gridlines } from "@/windows/dash/calendar/week/Gridlines";
-import { MultiDayEvents } from "@/windows/dash/calendar/week/MultiDayEvents";
-import { WeekGrid } from "@/windows/dash/calendar/week/WeekGrid";
+import { _WeekGrid, WeekGrid } from "@/windows/dash/calendar/week/WeekGrid";
 import { Nowline } from "@/windows/dash/calendar/week/Nowline";
 import { astalify, Gtk, Widget } from "astal/gtk4";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 import { WeekDateHeaders } from "./WeekDateHeaders";
-import Calendar from "@/services/Calendar";
+import Calendar, { uiVars } from "@/services/Calendar";
 import { GLib } from "astal";
 import { HourLabels } from "./HourLabels";
+import { AllDayGrid } from "./AllDayGrid";
 
 /*****************************************************************************
  * Constants
@@ -93,7 +93,7 @@ export const Week = () => {
 
   // Instantiate components
   const _WeekDateHeaders = WeekDateHeaders();
-  const _MultiDayEvents = MultiDayEvents();
+  const _AllDayGrid = AllDayGrid();
   const _WeekGridContent = WeekGrid();
   const _Gridlines = Gridlines();
   const _Nowline = Nowline();
@@ -128,7 +128,27 @@ export const Week = () => {
     vertical: true,
     vexpand: true,
     hexpand: true,
-    children: [_WeekDateHeaders, _MultiDayEvents, weekGridContainer],
+    children: [
+      Widget.Box({
+        vertical: false,
+        hexpand: true,
+        vexpand: false,
+        children: [
+          Widget.Box({ widthRequest: uiVars.hourLabelWidthPx }),
+          _WeekDateHeaders,
+        ],
+      }),
+      Widget.Box({
+        vertical: false,
+        hexpand: true,
+        vexpand: false,
+        children: [
+          Widget.Box({ widthRequest: uiVars.hourLabelWidthPx }),
+          _AllDayGrid,
+        ],
+      }),
+      weekGridContainer,
+    ],
     setup: (self) => {
       setupEventController({
         widget: self,
