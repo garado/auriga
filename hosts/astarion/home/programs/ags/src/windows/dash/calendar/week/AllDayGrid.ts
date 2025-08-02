@@ -107,6 +107,8 @@ export class _AllDayGrid extends Gtk.Fixed {
   @property(Boolean)
   declare isRealized: boolean;
 
+  private gridlines;
+
   // Private functions ---------------------------------------------------------
 
   constructor(props?: Partial<AllDayGridProps>) {
@@ -173,6 +175,10 @@ export class _AllDayGrid extends Gtk.Fixed {
    */
   private tryRender = () => {
     if (this.isRealized && cal.initComplete) {
+      if (this.gridlines) {
+        this.remove(this.gridlines);
+      }
+
       this.drawGridlines();
       this.renderAllDayEvents();
     }
@@ -270,8 +276,7 @@ export class _AllDayGrid extends Gtk.Fixed {
         event: currentEvent,
         dayWidth: dayWidth,
         id: this.nextWidgetId++,
-        heightRequest: uiVars.multiDayEventHeight,
-        widthRequest: width - 4, // Small margin
+        widthRequest: width,
       });
 
       eventBox.connect("dragged", this.handleDragEventComplete);
@@ -397,7 +402,7 @@ export class _AllDayGrid extends Gtk.Fixed {
       cr.stroke();
     };
 
-    const drawingArea = astalify(Gtk.DrawingArea)({
+    this.gridlines = astalify(Gtk.DrawingArea)({
       cssClasses: ["weekview-gridlines"],
       canFocus: false,
       vexpand: true,
@@ -409,8 +414,7 @@ export class _AllDayGrid extends Gtk.Fixed {
       },
     });
 
-    this.put(drawingArea, 0, 0);
-    return drawingArea;
+    this.put(this.gridlines, 0, 0);
   };
 }
 

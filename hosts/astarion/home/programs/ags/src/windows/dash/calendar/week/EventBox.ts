@@ -147,7 +147,6 @@ export class _EventBox extends Gtk.Box {
     this.vexpand = false;
 
     if (this.isMultiDayEvent) {
-      this.heightRequest = uiVars.multiDayEventHeight;
       this.orientation = Gtk.Orientation.HORIZONTAL;
       this.spacing = 8;
     } else {
