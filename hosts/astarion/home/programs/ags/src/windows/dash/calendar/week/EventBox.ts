@@ -66,14 +66,21 @@ interface EventBoxProps extends Gtk.Widget.ConstructorProps {
  * Helper functions
  *****************************************************************************/
 
-const daysDifference = (date1: string, date2: string): number => {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
+const eventDaySpan = (event: Event): number => {
+  const startDate = new Date(event.startDate);
+  const endDate = new Date(event.endDate);
 
-  const timeDiff = d2.getTime() - d1.getTime();
+  // Check if event has end time (inclusive) or just end date (exclusive)
+  const isEndInclusive = event.endTime && event.endTime.trim() !== "";
+
+  const timeDiff = endDate.getTime() - startDate.getTime();
   const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
-  return daysDiff;
+  if (daysDiff === 0) {
+    return 1;
+  } else {
+    return daysDiff + (isEndInclusive ? 1 : 0);
+  }
 };
 
 /*****************************************************************************
@@ -155,8 +162,7 @@ export class _EventBox extends Gtk.Box {
     }
 
     this.updatedEvent = this.event;
-    this.rawWidth =
-      this.dayWidth * daysDifference(this.event.startDate, this.event.endDate);
+    this.rawWidth = this.dayWidth * eventDaySpan(this.event);
   };
 
   /**
