@@ -63,6 +63,20 @@ interface EventBoxProps extends Gtk.Widget.ConstructorProps {
 }
 
 /*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
+
+const daysDifference = (date1: string, date2: string): number => {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+
+  const timeDiff = d2.getTime() - d1.getTime();
+  const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+  return daysDiff;
+};
+
+/*****************************************************************************
  * Widget definition
  *****************************************************************************/
 
@@ -79,7 +93,7 @@ export class _EventBox extends Gtk.Box {
   @property(Number) declare dayHeight: number;
   @property(Number) declare dayWidth: number;
   @property(Number) declare id: number;
-  @property(Number) declare originalWidthRequest: number;
+  @property(Number) declare rawWidth: number; // How wide event would be if positioning wasn't a concern
   @property(Boolean) declare isMultiDayEvent: boolean;
 
   // Child widgets
@@ -141,7 +155,8 @@ export class _EventBox extends Gtk.Box {
     }
 
     this.updatedEvent = this.event;
-    this.originalWidthRequest = this.widthRequest;
+    this.rawWidth =
+      this.dayWidth * daysDifference(this.event.startDate, this.event.endDate);
   };
 
   /**
@@ -233,14 +248,14 @@ export class _EventBox extends Gtk.Box {
 
     // Change width to ensure entire widget remains in bounds, if needed
     if (this.isMultiDayEvent) {
-      const widgetXPosEnd = this.dragState.x + this.originalWidthRequest;
+      const widgetXPosEnd = this.dragState.x + this.rawWidth;
       const gridXPosEnd = this.dayWidth * DAYS_PER_WEEK;
 
       if (widgetXPosEnd > gridXPosEnd) {
         const startDayIndex = Math.round(this.dragState.x / this.dayWidth);
         this.widthRequest = (DAYS_PER_WEEK - startDayIndex) * this.dayWidth;
       } else {
-        this.widthRequest = this.originalWidthRequest;
+        this.widthRequest = this.rawWidth;
       }
     }
 
