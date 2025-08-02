@@ -120,6 +120,24 @@ export const Week = () => {
         }),
       ],
     }),
+    setup: (self) => {
+      const vAdjustment = self.get_vadjustment();
+
+      const updateBlur = () => {
+        const scrollValue = vAdjustment.get_value();
+        const isAtTop = scrollValue <= 0;
+
+        if (isAtTop) {
+          _AllDayGrid.remove_css_class("blur");
+        } else {
+          _AllDayGrid.add_css_class("blur");
+        }
+      };
+
+      vAdjustment.connect("value-changed", updateBlur);
+
+      updateBlur();
+    },
   });
 
   return Widget.Box({

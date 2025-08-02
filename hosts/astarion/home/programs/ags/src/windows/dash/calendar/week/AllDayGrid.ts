@@ -114,6 +114,7 @@ export class _AllDayGrid extends Gtk.Fixed {
 
     this.vexpand = true;
     this.hexpand = true;
+    this.cssClasses = ["allday-container"];
 
     this.eventWidgets = [];
     this.nextWidgetId = 0;
