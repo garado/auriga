@@ -241,6 +241,8 @@ export class _EventBox extends Gtk.Box {
     if (!this.isMultiDayEvent) {
       this.dragState.y =
         this.snapToTimeGrid() * (this.dayHeight / HOURS_PER_DAY);
+    } else {
+      this.dragState.y = 0;
     }
 
     // Ensure widget is is within bounds
