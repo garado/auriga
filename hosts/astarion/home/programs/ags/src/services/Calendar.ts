@@ -200,13 +200,13 @@ export default class Calendar extends GObject.Object {
     event.startedBeforeThisWeek = !this.weekDates.includes(event.startDate);
     event.endsAfterThisWeek = !this.weekDates.includes(event.endDate);
 
-    if (event.multiDay || event.allDay) {
-      return event as Event; // No need to populate the rest
-    }
-
     // Get unix epoch timetamps
     event.startTS = new Date(`${event.startDate} ${event.startTime}`).getTime();
     event.endTS = new Date(`${event.endDate} ${event.endTime}`).getTime();
+
+    if (event.multiDay || event.allDay) {
+      return event as Event; // No need to populate the rest
+    }
 
     // Get fractional hours. 5:30PM -> 17.5; 9:15AM -> 9.25
     const startRe = /(\d\d):(\d\d)/.exec(event.startTime);
