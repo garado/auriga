@@ -107,7 +107,7 @@ export class _AllDayGrid extends Gtk.Fixed {
   @property(Boolean)
   declare isRealized: boolean;
 
-  private gridlines;
+  private gridlines: Gtk.Widget | undefined = undefined;
 
   // Private functions ---------------------------------------------------------
 
@@ -153,7 +153,6 @@ export class _AllDayGrid extends Gtk.Fixed {
 
     // Reset widget state
     this.clearAllEventWidgets();
-
     this.tryRender();
   };
 
@@ -175,11 +174,6 @@ export class _AllDayGrid extends Gtk.Fixed {
    */
   private tryRender = () => {
     if (this.isRealized && cal.initComplete) {
-      if (this.gridlines) {
-        this.remove(this.gridlines);
-      }
-
-      this.drawGridlines();
       this.renderAllDayEvents();
     }
   };
@@ -200,22 +194,12 @@ export class _AllDayGrid extends Gtk.Fixed {
       });
     });
 
-    // Remove duplicates (same event appearing on multiple days)
-    const uniqueEvents = allDayEvents.filter(
-      (event, index, arr) => arr.findIndex((e) => e.id === event.id) === index,
-    );
-
-    if (uniqueEvents.length === 0) {
-      return;
-    }
-
-    // Simple stacking for now - TODO: implement proper row assignment to prevent overlaps
-    this.renderEventGroup(uniqueEvents);
+    this.renderEventGroup(allDayEvents);
   };
 
   /**
-   * Render a group of all-day events.
-   * For now, events are simply stacked vertically - TODO: implement overlap detection and row assignment.
+   * Render a group of all-day events with overlap detection and row assignment.
+   * Events are positioned in rows to avoid overlapping, with longer events getting priority for lower rows.
    *
    * @param eventGroup - group of all-day events to render
    */
@@ -233,20 +217,55 @@ export class _AllDayGrid extends Gtk.Fixed {
       const firstDuration = new Date(firstEvent.endDate).getTime() - firstStart;
       const secondDuration =
         new Date(secondEvent.endDate).getTime() - secondStart;
+
       return secondDuration - firstDuration;
     });
 
     const dayWidth = this.containerWidth / DAYS_PER_WEEK;
 
+    // Track occupied time slots for each row to detect overlaps
+    const rowOccupancy: Array<Array<{ start: number; end: number }>> = [];
+
+    // Store widgets with their row assignments for positioning
+    const widgetPlacements: Array<{ widget: any; xPos: number; row: number }> =
+      [];
+
+    // Helper function to check if two time ranges overlap
+    const doRangesOverlap = (
+      range1: { start: number; end: number },
+      range2: { start: number; end: number },
+    ): boolean => {
+      return range1.start < range2.end && range2.start < range1.end;
+    };
+
+    // Helper function to find the first available row for an event
+    const findAvailableRow = (eventStart: number, eventEnd: number): number => {
+      for (let rowIndex = 0; rowIndex < rowOccupancy.length; rowIndex++) {
+        const row = rowOccupancy[rowIndex];
+        const hasOverlap = row.some((occupiedRange) =>
+          doRangesOverlap({ start: eventStart, end: eventEnd }, occupiedRange),
+        );
+
+        if (!hasOverlap) {
+          return rowIndex;
+        }
+      }
+      // No available row found, create a new one
+      rowOccupancy.push([]);
+      return rowOccupancy.length - 1;
+    };
+
+    // First pass: create widgets and assign rows
     for (let eventIndex = 0; eventIndex < sortedGroup.length; eventIndex++) {
       const currentEvent = sortedGroup[eventIndex];
 
       // Calculate position based on event's date span
       const startIndex = this.weekDates.indexOf(currentEvent.startDate);
       const endIndex = this.weekDates.indexOf(currentEvent.endDate);
-
       let xPos = 0;
       let width = dayWidth;
+      let eventStartDay = 0;
+      let eventEndDay = DAYS_PER_WEEK - 1;
 
       // Check if event has end time (inclusive) or just end date (exclusive)
       const isEndInclusive =
@@ -254,21 +273,28 @@ export class _AllDayGrid extends Gtk.Fixed {
 
       if (startIndex !== -1) {
         xPos = startIndex * dayWidth;
+        eventStartDay = startIndex;
 
         if (endIndex !== -1 && endIndex > startIndex) {
           // Event starts and ends within this week
+          eventEndDay = endIndex + (isEndInclusive ? 0 : -1);
           width = (endIndex - startIndex + (isEndInclusive ? 1 : 0)) * dayWidth;
         } else if (endIndex === -1) {
           // Event continues beyond this week
+          eventEndDay = DAYS_PER_WEEK - 1;
           width = (DAYS_PER_WEEK - startIndex) * dayWidth;
         }
       } else if (endIndex !== -1) {
         // Event started before this week
         xPos = 0;
+        eventStartDay = 0;
+        eventEndDay = endIndex + (isEndInclusive ? 0 : -1);
         width = (endIndex + (isEndInclusive ? 1 : 0)) * dayWidth;
       } else {
         // Event spans entire week
         xPos = 0;
+        eventStartDay = 0;
+        eventEndDay = DAYS_PER_WEEK - 1;
         width = DAYS_PER_WEEK * dayWidth;
       }
 
@@ -276,16 +302,69 @@ export class _AllDayGrid extends Gtk.Fixed {
         event: currentEvent,
         dayWidth: dayWidth,
         id: this.nextWidgetId++,
+        heightRequest: uiVars.allDayEventHeight,
         widthRequest: width,
       });
 
       eventBox.connect("dragged", this.handleDragEventComplete);
 
-      this.put(eventBox, xPos, 0);
+      // Find the appropriate row for this event to avoid overlaps
+      const assignedRow = findAvailableRow(eventStartDay, eventEndDay + 1);
+
+      // Mark this time range as occupied in the assigned row
+      if (!rowOccupancy[assignedRow]) {
+        rowOccupancy[assignedRow] = [];
+      }
+      rowOccupancy[assignedRow].push({
+        start: eventStartDay,
+        end: eventEndDay + 1,
+      });
+
+      // Store widget placement info for second pass
+      widgetPlacements.push({
+        widget: eventBox,
+        xPos: xPos,
+        row: assignedRow,
+      });
 
       // Store child reference since Gtk.Fixed doesn't store it automatically
       this.eventWidgets.push(eventBox);
     }
+
+    let currentY = 0;
+    let rowSpacing = 4;
+    const height =
+      rowOccupancy.length * (uiVars.allDayEventHeight + rowSpacing);
+
+    // Draw gridlines
+    if (this.gridlines !== undefined) {
+      this.remove(this.gridlines);
+      this.gridlines = undefined;
+    }
+
+    this.heightRequest = height;
+    this.queue_resize();
+    this.drawGridlines(height);
+
+    // Place widgets
+    for (let rowIndex = 0; rowIndex < rowOccupancy.length; rowIndex++) {
+      // Find all widgets assigned to this row
+      const widgetsInRow = widgetPlacements.filter(
+        (placement) => placement.row === rowIndex,
+      );
+
+      if (widgetsInRow.length > 0) {
+        // Place all widgets in this row at the current Y position
+        for (const placement of widgetsInRow) {
+          this.put(placement.widget, placement.xPos, currentY);
+        }
+
+        currentY += uiVars.allDayEventHeight + rowSpacing;
+      }
+    }
+
+    this.queue_draw();
+    this.queue_resize();
   };
 
   /**
@@ -294,13 +373,8 @@ export class _AllDayGrid extends Gtk.Fixed {
    * @param draggedEvent - The event widget that was moved.
    */
   handleDragEventComplete = (draggedEvent: any) => {
-    // For all-day events, we mainly need to update the event data
-    // and potentially reposition overlapping events
-
-    // Update stored event data to new position
     draggedEvent.event = draggedEvent.updatedEvent;
 
-    // Find events that might need repositioning due to the drag
     const affectedEvents = this.eventWidgets.filter((event: any) => {
       return doEventsOverlap(event.event, draggedEvent.event);
     });
@@ -380,7 +454,7 @@ export class _AllDayGrid extends Gtk.Fixed {
    * Draw underlying gridlines for all-day event
    * Unlike the full Gridlines
    */
-  private drawGridlines = () => {
+  private drawGridlines = (height: number) => {
     const drawFn = (self: any, cr: any, width: number, height: number) => {
       // Get gridline color from CSS
       const styles = self.get_style_context();
@@ -405,10 +479,11 @@ export class _AllDayGrid extends Gtk.Fixed {
     this.gridlines = astalify(Gtk.DrawingArea)({
       cssClasses: ["weekview-gridlines"],
       canFocus: false,
-      vexpand: true,
-      hexpand: true,
-      heightRequest: this.get_allocated_height(),
+      vexpand: false,
+      hexpand: false,
+      visible: true,
       widthRequest: this.get_allocated_width(),
+      heightRequest: height,
       setup: (self) => {
         self.set_draw_func(drawFn);
       },

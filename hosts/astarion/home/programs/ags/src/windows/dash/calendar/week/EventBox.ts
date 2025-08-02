@@ -185,6 +185,7 @@ export class _EventBox extends Gtk.Box {
       wrap: true,
       xalign: 0,
       label: `${this.event.startTime} - ${this.event.endTime}`,
+      visible: this.event.startTime !== "" && this.event.endTime !== "",
     });
 
     this.location = Widget.Label({

@@ -79,6 +79,7 @@ enum GcalcliCSVEnum {
 export const uiVars = {
   heightScale: 1.75,
   hourLabelWidthPx: 60,
+  allDayEventHeight: 30,
 };
 
 export const DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
