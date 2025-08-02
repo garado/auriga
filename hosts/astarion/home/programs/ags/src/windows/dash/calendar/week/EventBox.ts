@@ -116,12 +116,12 @@ export class _EventBox extends Gtk.Box {
    * Initialize widget state.
    */
   private initializeWidget = () => {
-    this.orientation = Gtk.Orientation.VERTICAL;
     this.cssClasses = [
       "eventbox",
       this.isMultiDayEvent ? "multiday" : "",
       this.event.calendar,
     ];
+
     this.cursor = Gdk.Cursor.new_from_name("pointer", null);
     this.vexpand = false;
 
