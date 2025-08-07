@@ -53,6 +53,10 @@ interface DragState {
 
   /** Whether currently dragging */
   isDragging: boolean;
+
+  /** Original coordinates */
+  originalX: number;
+  originalY: number;
 }
 
 interface EventBoxProps extends Gtk.Widget.ConstructorProps {
@@ -66,12 +70,18 @@ interface EventBoxProps extends Gtk.Widget.ConstructorProps {
  * Helper functions
  *****************************************************************************/
 
+/**
+ * Calculate how many days an event spans
+ */
 const eventDaySpan = (event: Event): number => {
   const startDate = new Date(event.startDate);
   const endDate = new Date(event.endDate);
 
-  // Check if event has end time (inclusive) or just end date (exclusive)
-  const isEndInclusive = event.endTime && event.endTime.trim() !== "";
+  // For multi-day/all-day events, treat as inclusive unless explicitly exclusive
+  const isEndInclusive =
+    event.allDay ||
+    event.multiDay ||
+    (event.endTime && event.endTime.trim() !== "");
 
   const timeDiff = endDate.getTime() - startDate.getTime();
   const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
@@ -118,6 +128,8 @@ export class _EventBox extends Gtk.Box {
     dx: 0,
     dy: 0,
     isDragging: false,
+    originalX: 0,
+    originalY: 0,
   };
 
   // Private functions ---------------------------------------------------------
@@ -160,7 +172,7 @@ export class _EventBox extends Gtk.Box {
       this.add_css_class("elapsed");
     }
 
-    this.updatedEvent = this.event;
+    this.updatedEvent = { ...this.event };
     this.rawWidth = this.dayWidth * eventDaySpan(this.event);
   };
 
@@ -216,6 +228,8 @@ export class _EventBox extends Gtk.Box {
       dx: 0,
       dy: 0,
       isDragging: false,
+      originalX: 0,
+      originalY: 0,
     };
 
     this.dragController.connect("drag-begin", this.onDragBegin.bind(this));
@@ -223,17 +237,30 @@ export class _EventBox extends Gtk.Box {
     this.dragController.connect("drag-end", this.onDragEnd.bind(this));
   };
 
+  /**
+   * Handle the beginning of a drag operation.
+   */
   private onDragBegin = () => {
     this.add_css_class("dragging");
     this.remove_css_class("elapsed");
 
     this.dragState.isDragging = true;
 
-    [this.dragState.x, this.dragState.y] = (
-      this.get_parent()! as Gtk.Fixed
-    ).get_child_position(this);
+    // Get the actual visual position relative to the parent
+    const allocation = this.get_allocation();
+    const parentAllocation = this.get_parent()!.get_allocation();
+
+    // Get the actual rendered position
+    this.dragState.originalX = allocation.x - parentAllocation.x;
+    this.dragState.originalY = allocation.y - parentAllocation.y;
+
+    this.dragState.x = this.dragState.originalX;
+    this.dragState.y = this.dragState.originalY;
   };
 
+  /**
+   * Handle change in position while a drag operation is in progress.
+   */
   private onDragUpdate = (_unused: any, dx: number, dy: number) => {
     if (!this.dragState.isDragging) return;
 
@@ -248,10 +275,10 @@ export class _EventBox extends Gtk.Box {
       this.dragState.y =
         this.snapToTimeGrid() * (this.dayHeight / HOURS_PER_DAY);
     } else {
-      this.dragState.y = 0;
+      this.dragState.y = this.dragState.originalY;
     }
 
-    // Ensure widget is is within bounds
+    // Ensure widget is within bounds
     this.dragState.x < 0 ? (this.dragState.x = 0) : this.dragState.x;
 
     // Change width to ensure entire widget remains in bounds, if needed
@@ -281,10 +308,26 @@ export class _EventBox extends Gtk.Box {
       this.times.label = `${this.updatedEvent.startTime} - ${this.updatedEvent.endTime}`;
     }
 
-    this.updatedEvent.startDate = `${cal.weekDates[this.snapToWeekday()]}`;
-    this.updatedEvent.endDate = `${cal.weekDates[this.snapToWeekday()]}`;
+    if (this.isMultiDayEvent) {
+      const newStartDayIndex = this.snapToWeekday();
+      const originalDuration = eventDaySpan(this.event);
+
+      const newEndDayIndex = Math.min(
+        newStartDayIndex + originalDuration - 1,
+        DAYS_PER_WEEK - 1,
+      );
+
+      this.updatedEvent.startDate = `${cal.weekDates[newStartDayIndex]}`;
+      this.updatedEvent.endDate = `${cal.weekDates[newEndDayIndex]}`;
+    } else {
+      this.updatedEvent.startDate = `${cal.weekDates[this.snapToWeekday()]}`;
+      this.updatedEvent.endDate = `${cal.weekDates[this.snapToWeekday()]}`;
+    }
   };
 
+  /**
+   * Handle the completion of a drag operation.
+   */
   private onDragEnd = () => {
     this.remove_css_class("dragging");
     this.dragState.isDragging = false;

@@ -269,7 +269,9 @@ export class _AllDayGrid extends Gtk.Fixed {
 
       // Check if event has end time (inclusive) or just end date (exclusive)
       const isEndInclusive =
-        currentEvent.endTime && currentEvent.endTime.trim() !== "";
+        currentEvent.allDay ||
+        currentEvent.multiDay ||
+        (currentEvent.endTime && currentEvent.endTime.trim() !== "");
 
       if (startIndex !== -1) {
         xPos = startIndex * dayWidth;
@@ -306,7 +308,7 @@ export class _AllDayGrid extends Gtk.Fixed {
         widthRequest: width,
       });
 
-      eventBox.connect("dragged", this.handleDragEventComplete);
+      eventBox.connect("dragged", this.onDragEnd);
 
       // Find the appropriate row for this event to avoid overlaps
       const assignedRow = findAvailableRow(eventStartDay, eventEndDay + 1);
@@ -371,19 +373,14 @@ export class _AllDayGrid extends Gtk.Fixed {
    * Handle repositioning after an all-day event is dragged.
    *
    * @param draggedEvent - The event widget that was moved.
+   *
+   * @TODO Reposition affected rather than redrawing all events
    */
-  handleDragEventComplete = (draggedEvent: any) => {
+  onDragEnd = (draggedEvent: any) => {
     draggedEvent.event = draggedEvent.updatedEvent;
-
-    const affectedEvents = this.eventWidgets.filter((event: any) => {
-      return doEventsOverlap(event.event, draggedEvent.event);
-    });
-
-    if (affectedEvents.length > 1) {
-      this.repositionEventGroup(affectedEvents);
-    }
-
-    draggedEvent.updateUI();
+    const events = this.eventWidgets.map((eventWidget) => eventWidget.event);
+    this.clearAllEventWidgets();
+    this.renderEventGroup(events);
   };
 
   /**
