@@ -6,6 +6,7 @@
 *
   all: unset // remove default gtk styling
   font-family: 'Karla'
+  font-size: '14px'
 
 image
   -gtk-icon-style: symbolic
@@ -25,21 +26,19 @@ scale
 
 switch
   // Switch track/background
-  // min-width: 50px
-  // min-height: 30px
-  border-radius: 15px
+  border-radius: 1rem
   background: #ccc
   transition: all 0.2s ease
   
   // The slider button
   slider
-    min-width: 26px
-    min-height: 26px
+    min-width: 2rem
+    min-height: 2rem
     border-radius: 50%
     background: white
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2)
+    box-shadow: 0 0.15rem 0.3rem rgba(0, 0, 0, 0.2)
     transition: all 0.15s
-    margin: 2px
+    margin: 0.15rem
   
   // Active/checked state
   &:checked
@@ -54,10 +53,10 @@ switch
   
   // Focus state
   &:focus
-    outline: 2px solid $primary-500
-    outline-offset: 2px
+    outline: 0.15rem solid $primary-500
+    outline-offset: 0.15rem
   
   // Hover states
   &:hover:not(:disabled)
     slider
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3)
+      box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.3)
