@@ -25,6 +25,12 @@ in {
   networking = {
     hostName = "astarion";
     networkmanager.enable = true;
+
+    hosts = {
+      # Temp fix for upstream librespot issues causing ncspot to stop working
+      # https://github.com/hrkfdn/ncspot/issues/1676#issuecomment-3168197941
+      "0.0.0.0" = ["apresolve.spotify.com"];
+    };
   };
 
   # Hardware
@@ -155,7 +161,7 @@ in {
       support32Bit = true;
     };
     pulse.enable = true;
-    wireplumber.enable = false;
+    wireplumber.enable = true;
   };
     
   musnix.enable = true;
