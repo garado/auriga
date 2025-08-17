@@ -46,7 +46,7 @@ export const Scaling = (globalRevealerState: Variable<boolean>) => {
   const uiScaler = Widget.Slider({
     value: gtkSettings?.gtkXftDpi! / GTK_DPI_SCALE_FACTOR || 1,
     min: 0.5,
-    max: 2,
+    max: 1.3,
     step: 0.1,
     digits: 1, // number of decimal places
     roundDigits: 1,
