@@ -18,7 +18,7 @@
  * Calendar week view program flow:
  *  - constructor
  *    - initWeekData: Init weekDates for the current week
- *      - setNewweekDates(str: date): Find all dates for the week which
+ *      - setNewWeekDates(str: date): Find all dates for the week which
  *        includes `date`
  *        - readCache(array: dates): Read all event data starting or
  *          ending on the given dates
@@ -78,6 +78,7 @@ enum GcalcliCSVEnum {
  */
 export const uiVars = {
   heightScale: 1.75,
+  hourLabelWidthPx: 60,
 };
 
 export const DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -237,7 +238,7 @@ export default class Calendar extends GObject.Object {
   #initWeekData(startDate = new Date()) {
     log("calService", `#initWeekData: Called with d = ${startDate}`);
     this.today = this.getDateStr(startDate);
-    this.#setNewweekDates(this.today);
+    this.#setNewWeekDates(this.today);
   }
 
   /**
@@ -245,27 +246,32 @@ export default class Calendar extends GObject.Object {
    *
    * @param {string} dateStr The date to set the weekDates to.
    */
-  #setNewweekDates(dateStr: string) {
-    log("calService", `#setNewweekDates: Starting ${dateStr}`);
+  #setNewWeekDates(dateStr: string) {
+    log("calService", `#setNewWeekDates: Starting ${dateStr}`);
+    const tmpWeekDates: string[] = [];
+    const tmpWeekEvents: Record<string, Event[]> = {};
+    const date = new Date(dateStr + "T12:00:00");
 
-    this.weekDates = [];
-    this.weekEvents = {};
+    // Find the Sunday of this week
+    const dayOfWeek = date.getDay();
+    const daysToSubtract = dayOfWeek;
 
-    // Initialize the timestamp to the Sunday of the given week
-    const date = new Date(dateStr);
+    // Create a new date for the Sunday of this week
+    const sunday = new Date(date);
+    sunday.setDate(date.getDate() - daysToSubtract);
 
-    // Determine the days in that week
-    let ts = date.setDate(date.getUTCDate() - date.getUTCDay());
-
+    // Generate the week dates
     for (let i = 0; i < DAYS_PER_WEEK; i++) {
-      const localDate = new Date(ts);
-      const dateStr = this.getDateStr(localDate);
-      this.weekDates.push(dateStr);
-      this.weekEvents[dateStr] = [];
-      ts += MS_PER_DAY;
+      const weekDate = new Date(sunday);
+      weekDate.setDate(sunday.getDate() + i);
+      const dateStr = this.getDateStr(weekDate);
+      tmpWeekDates.push(dateStr);
+      tmpWeekEvents[dateStr] = [];
     }
 
-    this.#readCache(this.weekDates);
+    this.weekDates = tmpWeekDates;
+    this.weekEvents = tmpWeekEvents;
+    this.#readCache(tmpWeekDates);
   }
 
   /**
@@ -284,26 +290,6 @@ export default class Calendar extends GObject.Object {
       })
       .catch((err) => {
         console.log("calService", `#readCache error: ${err}`);
-      });
-  }
-
-  /**
-   * Make Google Calendar API call and save data to cachefile.
-   */
-  #updateCache() {
-    log("calService", "Updating cache");
-
-    const cmd =
-      "gcalcli agenda '8 months ago' 'in 8 months' --details calendar --details location --military --tsv";
-
-    execAsync(`bash -c "${cmd} | tee ${TMPFILE}"`)
-      .then(() => this.#initWeekData())
-      .catch((err) => {
-        if (err.includes("expired or revoked")) {
-          console.log("Gcalcli: updateCache: Authentication expired!");
-        } else {
-          log("calService", `updateCache: ${err}`);
-        }
       });
   }
 
@@ -349,5 +335,57 @@ export default class Calendar extends GObject.Object {
       if (a.endFH > b.endFH) return 1;
       return 0;
     });
+  }
+
+  // PUBLIC FUNCTIONS -------------------------------------------------------------------------------------
+
+  /**
+   * Make Google Calendar API call and save data to cachefile.
+   */
+  updateCache() {
+    log("calService", "Updating cache");
+
+    const cmd =
+      "gcalcli agenda '8 months ago' 'in 8 months' --details calendar --details location --military --tsv";
+
+    execAsync(`bash -c "${cmd} | tee ${TMPFILE}"`)
+      .then(() => this.#initWeekData())
+      .catch((err) => {
+        if (err.includes("expired or revoked")) {
+          console.log("Gcalcli: updateCache: Authentication expired!");
+        } else {
+          log("calService", `updateCache: ${err}`);
+        }
+      });
+  }
+
+  /**
+   * Navigate to the next or previous week
+   *
+   * @param {number} direction - Positive number for future weeks, negative for past weeks
+   * (e.g., 1 = next week, -1 = previous week, 2 = two weeks forward)
+   */
+  iterWeek(direction: number = 1) {
+    log("calService", `iterWeek: Moving ${direction} week(s)`);
+
+    const currentWeekStart = new Date(this.weekDates[0] + "T00:00:00");
+
+    const newWeekStart = new Date(currentWeekStart);
+    newWeekStart.setDate(newWeekStart.getDate() + direction * 7);
+
+    // Convert to date string
+    const year = newWeekStart.getFullYear();
+    const month = String(newWeekStart.getMonth() + 1).padStart(2, "0");
+    const day = String(newWeekStart.getDate()).padStart(2, "0");
+    const newDateStr = `${year}-${month}-${day}`;
+
+    log("calService", `iterWeek: New date string: ${newDateStr}`);
+
+    this.#setNewWeekDates(newDateStr);
+  }
+
+  jumpToToday() {
+    const today = this.getDateStr(new Date());
+    this.#setNewWeekDates(today);
   }
 }

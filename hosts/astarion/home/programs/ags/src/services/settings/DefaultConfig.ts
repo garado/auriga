@@ -15,6 +15,12 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/kanagawa.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/kanagawa.png`,
       },
+      nostalgia: {
+        nvim: "nostalgia",
+        kitty: "Nostalgia",
+        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/nostalgia.jpg`,
+        preview: `${SRC}/assets/defaults/theme/preview/nostalgia.png`,
+      },
       mountain: {
         nvim: "mountain",
         kitty: "Mountain Fuji",
@@ -23,7 +29,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
       },
       nord: {
         nvim: "onenord",
-        kitty: "Nord",
+        kitty: "Onenord",
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/nord.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/nord.png`,
       },
@@ -90,8 +96,29 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   },
 
   utility: {
-    /** List of available paint colors. Used in paint mixing widget. */
-    availablePaintColors: ["cyan", "magenta", "yellow", "black", "white"],
+    palettes: {
+      "Holbein Acrylic Gouache": [
+        "cyan",
+        "magenta",
+        "yellow",
+        "black",
+        "white",
+      ],
+      "Watercolor Travel Set": [
+        "Lemon Yellow",
+        "Cadmium Yellow",
+        "Cadmium Red",
+        "Alizarin Crimson",
+        "Dioxazine Purple",
+        "Ultramarine",
+        "Cerulean Blue",
+        "Sap Green",
+        "Burnt Sienna",
+        "Burnt Umber",
+        "Payne's Gray",
+        "Chinese White",
+      ],
+    },
   },
 
   misc: {

@@ -130,6 +130,7 @@ in {
 
     # python
     python3
+    poetry
 
     guitarix        # Amp sim
     qjackctl        # Alllll for the amp sim
@@ -156,6 +157,8 @@ in {
     pulse.enable = true;
     wireplumber.enable = false;
   };
+    
+  musnix.enable = true;
 
   services.tumbler.enable = true;
 

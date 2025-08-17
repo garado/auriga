@@ -14,24 +14,29 @@
 import { Gtk, Widget, astalify, hook } from "astal/gtk4";
 import { Variable, bind } from "astal";
 import { exec, execAsync } from "astal/process";
+import SettingsManager from "@/services/settings";
+import { getCairoColorFromClass } from "@/utils/Helpers";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
 const DrawingArea = astalify(Gtk.DrawingArea);
-const Grid = astalify(Gtk.Grid);
 
 const contribData = Variable({});
 const contribCount = Variable(0);
 
+const MAX_INTENSITY = 5;
 const MAX_CONTRIB_BOXES = 180;
 const NUM_ROWS = 7;
 const SQUARE_WIDTH = 10;
-const SQUARE_SPACING = 6;
+const SQUARE_SPACING = 8;
+
+let intensityColors = {};
 
 // Populate the contribData and contribCount variables
-const url = "/tmp/ags/github/2025-02-08";
+// @TODO This is hardcoded
+const url = "/tmp/ags/github/2025-07-27";
 
 execAsync(`bash -c 'cat ${url}'`)
   .then((x) => {
@@ -44,10 +49,16 @@ execAsync(`bash -c 'cat ${url}'`)
 
     // Count total contribs
     let _contribCount = 0;
-    out.years.forEach((y: number) => (_contribCount += y.total));
+    out.years.forEach((y) => (_contribCount += y.total));
     contribCount.set(_contribCount);
   })
   .catch((err) => print(err));
+
+const cacheIntensityColors = () => {
+  intensityColors = Array.from({ length: MAX_INTENSITY }, (_, i) =>
+    getCairoColorFromClass(`intensity-${i}`),
+  );
+};
 
 /*****************************************************************************
  * Widget definitions
@@ -74,48 +85,51 @@ const ContribBox = (intensity = 0) =>
     },
   });
 
-/* Squares representing contribution amounts for each day */
 const ContribGrid = () =>
-  Grid({
-    hexpand: true,
-    vexpand: false,
+  DrawingArea({
+    cssClasses: ["contrib-container"],
     halign: Gtk.Align.CENTER,
     valign: Gtk.Align.CENTER,
-    cssClasses: ["contrib-container"],
     setup: (self) => {
-      self.rowSpacing = SQUARE_SPACING;
-      self.columnSpacing = SQUARE_SPACING;
+      cacheIntensityColors();
 
-      hook(self, contribData, (self) => {
-        for (let i = 0; i < NUM_ROWS; i++) {
-          self.insert_row(i);
-        }
+      const totalWidth =
+        Math.ceil(MAX_CONTRIB_BOXES / NUM_ROWS) *
+          (SQUARE_WIDTH + SQUARE_SPACING) -
+        SQUARE_SPACING;
 
-        const numCols = Math.ceil(MAX_CONTRIB_BOXES / NUM_ROWS);
-        for (let i = 0; i < numCols; i++) {
-          self.insert_column(i);
-        }
+      const totalHeight =
+        NUM_ROWS * (SQUARE_WIDTH + SQUARE_SPACING) - SQUARE_SPACING;
 
-        const span = 1;
+      self.set_size_request(totalWidth, totalHeight);
 
-        for (let i = 0; i < MAX_CONTRIB_BOXES; i++) {
-          const intensity = contribData.get()[i].intensity;
-          self.attach(
-            ContribBox(intensity),
-            Math.floor(i / NUM_ROWS),
-            i % NUM_ROWS,
-            span,
-            span,
+      self.set_draw_func((_, cr: any) => {
+        const data = contribData.get();
+
+        for (let i = 0; i < Math.min(MAX_CONTRIB_BOXES, data.length); i++) {
+          const col = Math.floor(i / NUM_ROWS);
+          const row = i % NUM_ROWS;
+          const x = col * (SQUARE_WIDTH + SQUARE_SPACING);
+          const y = row * (SQUARE_WIDTH + SQUARE_SPACING);
+
+          const intensity = Math.min(
+            data[i]?.intensity || 0,
+            intensityColors.length - 1,
           );
+          const color = intensityColors[intensity];
+
+          cr.setSourceRGBA(color.red, color.green, color.blue, color.alpha);
+          cr.rectangle(x, y, SQUARE_WIDTH, SQUARE_WIDTH);
+          cr.fill();
         }
       });
-    },
-  });
 
-const TotalContribs = () =>
-  Widget.Label({
-    cssClasses: ["header"],
-    label: bind(contribCount).as((value) => value.toString()),
+      hook(self, contribData, () => self.queue_draw());
+
+      SettingsManager.get_default().connect("notify::current-theme", () => {
+        cacheIntensityColors();
+      });
+    },
   });
 
 /*****************************************************************************
@@ -129,7 +143,10 @@ export const Github = () =>
     vertical: true,
     spacing: 2,
     children: [
-      TotalContribs(),
+      Widget.Label({
+        cssClasses: ["header"],
+        label: bind(contribCount).as((value) => value.toString()),
+      }),
       Widget.Label({
         cssClasses: ["subheader"],
         label: "total lifetime contributions",

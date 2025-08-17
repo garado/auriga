@@ -18,7 +18,7 @@
       # Execute these programs at launch
       exec-once = [
         "swww-daemon"
-        "swww img /home/alexis/Github/dotfiles/hosts/astarion/assets/walls/samori.jpg"
+        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app.ts --gtk4"
       ];
 
       # Plugin options
@@ -46,7 +46,7 @@
 
       # Some default env vars
       env = [
-        "XCURSOR_SIZE,16"
+        "XCURSOR_SIZE,32"
         "WLR_NO_HARDWARE_CURSORS,1"
       ];
 
@@ -117,8 +117,8 @@
       binde = [
         ", XF86MonBrightnessUp, exec, brightnessctl set 10+"
         ", XF86MonBrightnessDown, exec, brightnessctl set 10-"
-        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%-"
-        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%+"
+        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%- --limit 1.2"
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%+ --limit 1.2"
       ];
 
       # Keybinds: Press

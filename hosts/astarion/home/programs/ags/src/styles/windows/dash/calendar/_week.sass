@@ -64,8 +64,12 @@
  * GRIDLINES
  ****************************************************/
 
-.calendar .week .weekview-gridlines
-  color: $neutral-700
+.calendar .week
+  .weekview-gridlines
+    color: $neutral-700
+
+  .nowline
+    color: $red-500
 
 /****************************************************
  * DATE LABELS
@@ -77,7 +81,7 @@
   .number
     font-size: 2rem
 
-  &.active
+  &.active *
     color: $primary-400
 
 /****************************************************
@@ -88,7 +92,6 @@
   color: $neutral-400
   font-size: 0.8rem
   font-weight: 500
-  background-color: $neutral-900
 
 /****************************************************
  * DAY VIEW

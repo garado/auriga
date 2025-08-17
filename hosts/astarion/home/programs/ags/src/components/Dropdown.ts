@@ -17,7 +17,17 @@ import { astalify, Gtk } from "astal/gtk4";
  *****************************************************************************/
 
 export type DropDownProps = {
-  exclusive: boolean;
+  exclusive?: boolean;
+  cssClasses?: string[];
+
+  /** Gtk List Model used to set the dropdown options */
+  model?: Gtk.StringList;
+
+  /** Index of the currently selected item in the list model */
+  selected?: number;
+
+  /** */
+  onSelectionChanged?: () => void;
 };
 
 /*****************************************************************************
@@ -27,7 +37,21 @@ export type DropDownProps = {
 export const Dropdown = (props: DropDownProps) => {
   const dd = astalify(Gtk.DropDown);
 
-  const CustomDropdown = dd({});
+  const customDropdown = dd({
+    cssClasses: props.cssClasses,
+  });
 
-  return CustomDropdown;
+  if (props.model) {
+    customDropdown.set_model(props.model);
+  }
+
+  if (props.selected) {
+    customDropdown.set_selected(props.selected);
+  }
+
+  if (props.onSelectionChanged) {
+    customDropdown.connect("notify::selected", props.onSelectionChanged);
+  }
+
+  return customDropdown;
 };

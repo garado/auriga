@@ -18,11 +18,18 @@
   min-width: 28rem
   padding: 1.6rem
 
-.utility .tab-label
-  padding: 0.6rem 1rem
+  .tab-entry
+    padding: 0.6rem 1rem
+    margin-bottom: 1rem
 
-  &.active
-    border-bottom: 3px solid $primary-500
+    &.active
+      border-bottom: 3px solid $primary-500
+
+    &:not(.active)
+      border-bottom: 3px solid transparent
+
+    .icon
+      padding-right: 0.5rem
 
 /****************************************
  * GEMINI

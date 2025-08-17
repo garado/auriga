@@ -1,0 +1,70 @@
+
+// █▄░█ █▀█ █▀ ▀█▀ ▄▀█ █░░ █▀▀ █ ▄▀█
+// █░▀█ █▄█ ▄█ ░█░ █▀█ █▄▄ █▄█ █ █▀█
+
+@use 'sass:list'
+
+$red-100: #b8a3a8
+$red-200: #a89298
+$red-300: #998188
+$red-400: #896f78
+$red-500: #795e68
+
+$yellow-100: #c4b8a3
+$yellow-200: #b5a894
+$yellow-300: #a69785
+$yellow-400: #978676
+$yellow-500: #887567
+
+$green-100: #a3b8a8
+$green-200: #94a899
+$green-300: #85988a
+$green-400: #76887b
+$green-500: #67786c
+
+$neutral-100: #2a2a2a
+$neutral-200: #333333
+$neutral-300: #444444
+$neutral-400: #535353
+$neutral-500: #626262
+$neutral-600: #a5a294
+$neutral-700: #b7b49f
+$neutral-800: #c7c3ae
+$neutral-900: #d9d5ba
+
+$primary-100: #b2c7b7
+$primary-200: #a3b8a8
+$primary-300: #94a899
+$primary-400: #85988a
+$primary-500: #76887b
+$primary-600: #67786c
+$primary-700: #58685d
+$primary-800: #49584e
+$primary-900: #3a483f
+
+$accent-1:  #b8a3a8
+$accent-2:  #a3b8a8
+$accent-3:  #c4b5a6
+$accent-4:  #a8b5c4
+$accent-5:  #b5a8c4
+$accent-6:  #a8c4b5
+$accent-7:  #d9d5ba
+$accent-8:  #998188
+$accent-9:  #85988a
+$accent-10: #886d6a
+
+$accents: #b8a3a8, #a3b8a8, #c4b5a6, #a8b5c4, #b5a8c4, #a8c4b5, #d9d5ba, #998188, #85988a, #886d6a
+
+@for $index from 1 through list.length($accents)
+  .accent-#{$index}
+    background-color: list.nth($accents, $index)
+
+// Overrides
+:root
+  --bar-workspace-empty-color: #{$neutral-100}
+  --bar-workspace-not-empty-color: #{$neutral-900}
+  --bar-workspace-focused-color: #{saturate($primary-100, 40%)}
+  --bar-battery-charging-color: #{$green-300}
+  --bar-battery-critical-color: #{$red-300}
+  --bar-battery-low-color: #{$yellow-300}
+  --bar-clock-color: #{$neutral-900}

@@ -11,9 +11,10 @@
 
 import { Gtk, Widget, astalify, hook } from "astal/gtk4";
 import { bind } from "astal";
-import { Visualizer } from "@/components/Visualizer";
+import { Visualizer, VisualizerStyle } from "@/components/Visualizer";
 import Mpris from "gi://AstalMpris";
 import Gio from "gi://Gio?version=2.0";
+import Pango from "gi://Pango?version=1.0";
 
 /*****************************************************************************
  * Module-level variables
@@ -21,6 +22,11 @@ import Gio from "gi://Gio?version=2.0";
 
 const mpris = Mpris.get_default();
 const Picture = astalify(Gtk.Picture);
+
+const DEFAULT_COVER_ART_PATH = `${SRC}/assets/defaults/player-idle.jpg`;
+
+const DEFAULT_BAR_HEIGHT = 1.5;
+const DEFAULT_BAR_COUNT = 60;
 
 /*****************************************************************************
  * Helper functions
@@ -34,7 +40,9 @@ const Picture = astalify(Gtk.Picture);
  */
 const lengthStr = (length: number): string => {
   const min = Math.floor(length / 60);
-  const sec = Math.floor(length % 60).toFixed(2);
+  const sec = Math.floor(length % 60)
+    .toString()
+    .padStart(2, "0");
   return `${min}:${sec}`;
 };
 
@@ -43,10 +51,7 @@ const lengthStr = (length: number): string => {
  * @returns Gio.File for the cover art image
  */
 const getFileForCoverArt = (coverArt: string | null): Gio.File => {
-  const path =
-    coverArt ||
-    "/home/alexis/github/dotfiles/hosts/astarion/home/programs/ags/src/assets/default-player-bg.jpg";
-
+  const path = coverArt || DEFAULT_COVER_ART_PATH;
   return Gio.File.new_for_path(path);
 };
 
@@ -61,6 +66,8 @@ const MediaPlayer = (player: Mpris.Player) => {
   const Title = Widget.Label({
     cssClasses: ["title"],
     xalign: 0,
+    ellipsize: Pango.EllipsizeMode.END,
+    maxWidthChars: 30,
     label: player
       ? bind(player, "title").as((t) => t || "Unknown Track")
       : "Nothing playing.",
@@ -69,6 +76,7 @@ const MediaPlayer = (player: Mpris.Player) => {
   const Artist = Widget.Label({
     cssClasses: ["artist"],
     xalign: 0,
+    ellipsize: Pango.EllipsizeMode.END,
     label: player
       ? bind(player, "artist").as((a) => a || "Unknown Artist")
       : "It's quiet in here...",
@@ -93,7 +101,7 @@ const MediaPlayer = (player: Mpris.Player) => {
         self.set_file(getFileForCoverArt(player.coverArt));
 
         // Update reactively
-        hook(self, player, "notify::coverArt", () => {
+        hook(self, player, "notify::cover-art", () => {
           self.set_file(getFileForCoverArt(player.coverArt));
         });
       } else {
@@ -108,14 +116,27 @@ const MediaPlayer = (player: Mpris.Player) => {
     vexpand: true,
     hexpand: true,
     setup: (self) => {
+      const visualizer = Visualizer({
+        bars: DEFAULT_BAR_COUNT,
+        barHeight: DEFAULT_BAR_HEIGHT,
+        smooth: true,
+        style: VisualizerStyle.SYMMETRIC_BARS,
+      });
+
+      if (!player || player.playback_status !== Mpris.PlaybackStatus.PLAYING) {
+        visualizer.set_visible(false);
+      }
+
+      if (player) {
+        hook(visualizer, player, "notify::playback-status", () => {
+          visualizer.set_visible(
+            player.playback_status === Mpris.PlaybackStatus.PLAYING,
+          );
+        });
+      }
+
       self.add_overlay(Info);
-      // self.add_overlay(
-      //   Visualizer({
-      //     bars: 20,
-      //     barHeight: 1.5,
-      //     smooth: true,
-      //   }),
-      // );
+      self.add_overlay(visualizer);
     },
   });
 };
@@ -124,6 +145,10 @@ export const Music = () =>
   Widget.Box({
     cssClasses: ["player-container"],
     vertical: true,
+    vexpand: true,
+    hexpand: true,
+    heightRequest: 600,
+    widthRequest: 600,
     valign: Gtk.Align.CENTER,
     halign: Gtk.Align.CENTER,
     children: bind(mpris, "players").as((arr) => {
