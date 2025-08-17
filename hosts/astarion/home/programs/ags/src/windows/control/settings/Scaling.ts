@@ -12,7 +12,6 @@
 import { ExpansionPanel } from "@/components/ExpansionPanel";
 import { Variable } from "astal";
 import { Gtk, Widget } from "astal/gtk4";
-import Pango from "gi://Pango?version=1.0";
 
 /*****************************************************************************
  * Module-level variables and helper functions
@@ -27,15 +26,7 @@ const gtkSettings = Gtk.Settings.get_default();
 
 const updateUiScale = (newScale: number) => {
   if (gtkSettings === null) return;
-
-  // Application scaling
   gtkSettings.set_property("gtk-xft-dpi", GTK_DPI_SCALE_FACTOR * newScale);
-
-  // Font scaling, for CSS rem sizing
-  const fontDesc = Pango.FontDescription.from_string(gtkSettings.gtk_font_name);
-  const currentSize = fontDesc.get_size() / Pango.SCALE;
-  fontDesc.set_size(currentSize * Pango.SCALE * newScale);
-  gtkSettings.set_property("gtk-font-name", fontDesc.to_string());
 };
 
 /*****************************************************************************
