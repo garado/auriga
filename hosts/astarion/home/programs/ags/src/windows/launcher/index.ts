@@ -13,8 +13,13 @@
  *****************************************************************************/
 
 import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
-import { Binding, Variable, bind } from "astal";
+import { Variable, bind } from "astal";
 import { appResultWidgets, updateAppSearch, getFirstApp } from "./App";
+import {
+  getFirstSession,
+  sessionResultWidgets,
+  updateSessionSearch,
+} from "./Kitty";
 
 /*****************************************************************************
  * Module-level variables
@@ -42,9 +47,9 @@ const tabList: TabConfig[] = [
   {
     // Kitty session launcher
     icon: "terminal-symbolic",
-    resultWidgets: [],
-    updateSearch: () => {},
-    getFirstItem: () => {},
+    resultWidgets: sessionResultWidgets,
+    getFirstItem: getFirstSession,
+    updateSearch: updateSessionSearch,
   },
   {
     // Window select
@@ -58,9 +63,10 @@ const tabList: TabConfig[] = [
 const currentTabIndex = Variable(0);
 
 const searchResults = Variable.derive(
-  [currentTabIndex, appResultWidgets],
-  (index, app) => {
+  [currentTabIndex, appResultWidgets, sessionResultWidgets],
+  (index, app, session) => {
     if (index == 0) return app;
+    if (index == 1) return session;
     return [];
   },
 );

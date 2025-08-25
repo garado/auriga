@@ -3,6 +3,8 @@ import { Gdk, Gtk, Widget } from "astal/gtk4";
 import Apps from "gi://AstalApps";
 import Pango from "gi://Pango?version=1.0";
 
+const MAX_RESULTS_SHOWN = 7;
+
 // App search instance
 const appSearch = new Apps.Apps({
   nameMultiplier: 2,
@@ -38,7 +40,7 @@ export const appResults = Variable(appSearch.fuzzy_query(""));
 // Reactive widget list
 // To this:
 export const appResultWidgets = Variable.derive([appResults], (apps) =>
-  apps.map(AppEntry),
+  apps.slice(0, MAX_RESULTS_SHOWN).map(AppEntry),
 );
 
 // Update search results
