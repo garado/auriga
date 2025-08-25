@@ -48,9 +48,13 @@ export const updateSessionSearch = (query: string) => {
 
 const launchKittySession = (sessionName: string) => {
   App.toggle_window("launcher");
-  execAsync(["kitty", "--session", `sessions/${sessionName}`]).catch((error) =>
-    console.error("Failed to launch kitty session:", error),
-  );
+  execAsync([
+    "kitty",
+    "--session",
+    `sessions/${sessionName}`,
+    `--title`,
+    sessionName,
+  ]).catch((error) => console.error("Failed to launch kitty session:", error));
 };
 
 export const launchFirstSession = () =>
