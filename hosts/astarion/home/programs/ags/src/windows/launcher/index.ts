@@ -21,6 +21,11 @@ import {
   updateSessionSearch,
 } from "./Kitty";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
+import {
+  focusFirstWindow,
+  updateWindowSearch,
+  windowResultWidgets,
+} from "./Window";
 
 /*****************************************************************************
  * Module-level variables
@@ -60,9 +65,9 @@ const tabList: TabConfig[] = [
   {
     // Window select
     icon: "app-window-symbolic",
-    resultWidgets: [],
-    updateSearch: () => {},
-    launchFirstItem: () => {},
+    resultWidgets: windowResultWidgets,
+    launchFirstItem: focusFirstWindow,
+    updateSearch: updateWindowSearch,
   },
 ];
 
@@ -79,10 +84,16 @@ const iterTab = (dir: number) => {
 };
 
 const searchResults = Variable.derive(
-  [currentTabIndex, appResultWidgets, sessionResultWidgets],
-  (index, app, session) => {
+  [
+    currentTabIndex,
+    appResultWidgets,
+    sessionResultWidgets,
+    windowResultWidgets,
+  ],
+  (index, app, session, window) => {
     if (index == 0) return app;
     if (index == 1) return session;
+    if (index == 2) return window;
     return [];
   },
 );
@@ -245,6 +256,7 @@ export default () => {
       Object.assign(self, {
         onClose: () => {
           prompt.children[1].text = "";
+          currentTabIndex.set(0);
         },
       });
     },

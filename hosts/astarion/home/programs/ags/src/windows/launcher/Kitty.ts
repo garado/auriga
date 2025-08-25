@@ -1,4 +1,4 @@
-import { listAllFilesFromDir, readAllFilesFromDir } from "@/utils/File";
+import { listAllFilesFromDir } from "@/utils/File";
 import { execAsync, GLib, Variable } from "astal";
 import { App, Gdk, Gtk, Widget } from "astal/gtk4";
 import Pango from "gi://Pango?version=1.0";
