@@ -14,14 +14,15 @@
   // Select between app launcher/session launcher/window selector
   .tab-select
     .tab
-      padding: 0.2rem 1rem
+      padding: 0.6rem 1rem
       border-radius: $border-radius
+      background-color: $neutral-700
 
       &:hover
         background-color: $primary-500
 
-      &:not(:hover)
-        background-color: $neutral-700
+      &.selected
+        background-color: $primary-600
 
     :not(:first-child), :not(:last-child)
       margin-left: 0.25rem

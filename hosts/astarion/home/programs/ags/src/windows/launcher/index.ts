@@ -84,17 +84,23 @@ const AppEntry = (app: Apps.Application) => {
   return Final;
 };
 
-const Tab = (tabConfig: TabConfig) =>
+const Tab = (tabListIndex: number) =>
   Widget.Button({
-    cssClasses: ["tab"],
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    cssClasses: bind(currentTabIndex).as((i) =>
+      i == tabListIndex ? ["selected", "tab"] : ["tab"],
+    ),
     hexpand: true,
     halign: Gtk.Align.FILL,
     valign: Gtk.Align.CENTER,
     child: Widget.Image({
       halign: Gtk.Align.CENTER,
       hexpand: true,
-      iconName: tabConfig.icon,
+      iconName: tabList[tabListIndex].icon,
     }),
+    onButtonPressed: () => {
+      currentTabIndex.set(tabListIndex);
+    },
   });
 
 const TabContainer = () =>
@@ -105,7 +111,7 @@ const TabContainer = () =>
     halign: Gtk.Align.FILL,
     valign: Gtk.Align.CENTER,
     cssClasses: ["tab-select"],
-    children: tabList.map(Tab),
+    children: tabList.map((_tab, index) => Tab(index)),
   });
 
 /**
@@ -179,7 +185,7 @@ export default () => {
       vertical: true,
       spacing: 20,
       cssClasses: ["launcher"],
-      children: [prompt, SearchResultContainer()],
+      children: [prompt, SearchResultContainer(), TabContainer()],
     });
   };
 
