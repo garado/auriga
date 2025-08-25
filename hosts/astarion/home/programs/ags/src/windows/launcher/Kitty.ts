@@ -1,6 +1,6 @@
 import { listAllFilesFromDir, readAllFilesFromDir } from "@/utils/File";
 import { execAsync, GLib, Variable } from "astal";
-import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { App, Gdk, Gtk, Widget } from "astal/gtk4";
 import Pango from "gi://Pango?version=1.0";
 
 const KITTY_SESSION_DIR = `${GLib.getenv("HOME")}/.config/kitty/sessions/`;
@@ -47,6 +47,7 @@ export const updateSessionSearch = (query: string) => {
 };
 
 const launchKittySession = (sessionName: string) => {
+  App.toggle_window("launcher");
   execAsync(["kitty", "--session", `sessions/${sessionName}`]).catch((error) =>
     console.error("Failed to launch kitty session:", error),
   );

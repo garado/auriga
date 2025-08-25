@@ -1,5 +1,5 @@
 import { Variable } from "astal";
-import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { App, Gdk, Gtk, Widget } from "astal/gtk4";
 import Apps from "gi://AstalApps";
 import Pango from "gi://Pango?version=1.0";
 
@@ -25,9 +25,13 @@ const AppEntry = (app: Apps.Application) => {
       hexpand: true,
       ellipsize: Pango.EllipsizeMode.END,
     }),
-    onClicked: () => app.launch(),
+    onClicked: () => {
+      App.toggle_window("launcher");
+      app.launch();
+    },
     onKeyPressed: (_self, keyval) => {
       if (keyval === Gdk.KEY_Return) {
+        App.toggle_window("launcher");
         app.launch();
       }
     },

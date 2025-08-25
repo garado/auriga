@@ -140,7 +140,6 @@ const SearchResultContainer = () => {
           children: bind(searchResults),
         }),
       );
-
       self.hscrollbarPolicy = Gtk.PolicyType.NEVER;
     },
   });
@@ -158,7 +157,6 @@ const Prompt = () => {
     canFocus: true,
     cssClasses: ["text-entry"],
     onActivate: (self) => {
-      // On pressing enter
       tabList[currentTabIndex.get()].launchFirstItem();
       App.toggle_window("launcher");
       self.text = "";
@@ -241,6 +239,12 @@ export default () => {
           [KB_SHORTCUTS.PREV_TAB]: () => {
             iterTab(-1);
           },
+        },
+      });
+
+      Object.assign(self, {
+        onClose: () => {
+          prompt.children[1].text = "";
         },
       });
     },
