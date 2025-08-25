@@ -1,8 +1,11 @@
 /**
- * ▄▀█ █▀█ █▀█   █░░ ▄▀█ █░█ █▄░█ █▀▀ █░█ █▀▀ █▀█
- * █▀█ █▀▀ █▀▀   █▄▄ █▀█ █▄█ █░▀█ █▄▄ █▀█ ██▄ █▀▄
+ * █░░ ▄▀█ █░█ █▄░█ █▀▀ █░█ █▀▀ █▀█
+ * █▄▄ █▀█ █▄█ █░▀█ █▄▄ █▀█ ██▄ █▀▄
  *
- * Simple app launcher widget.
+ * Launcher for:
+ * - starting applications
+ * - starting kitty sessions
+ * - viewing and navigating to windows
  */
 
 /*****************************************************************************
@@ -10,8 +13,8 @@
  *****************************************************************************/
 
 import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
-import { Variable, bind } from "astal";
-import Apps from "gi://AstalApps";
+import { Binding, Variable, bind } from "astal";
+import { appResultWidgets, updateAppSearch, getFirstApp } from "./App";
 
 /*****************************************************************************
  * Module-level variables
@@ -21,68 +24,50 @@ const Scrollable = astalify(Gtk.ScrolledWindow);
 
 const globalRevealerState = Variable(false);
 
-const appSearch = new Apps.Apps({
-  nameMultiplier: 2,
-  entryMultiplier: 0,
-  executableMultiplier: 2,
-});
-
-const searchResults = Variable(appSearch.fuzzy_query(""));
-
 interface TabConfig {
   icon: string;
-  resultsFactory?: () => (typeof Widget.Box)[];
+  resultWidgets: Variable<Gtk.Widget[]>;
+  updateSearch: (query: string) => void;
+  getFirstItem: () => any;
 }
 
 const tabList: TabConfig[] = [
   {
     // App launcher
     icon: "squares-four-symbolic",
+    resultWidgets: appResultWidgets,
+    getFirstItem: getFirstApp,
+    updateSearch: updateAppSearch,
   },
   {
     // Kitty session launcher
     icon: "terminal-symbolic",
+    resultWidgets: [],
+    updateSearch: () => {},
+    getFirstItem: () => {},
   },
   {
     // Window select
     icon: "app-window-symbolic",
+    resultWidgets: [],
+    updateSearch: () => {},
+    getFirstItem: () => {},
   },
 ];
 
 const currentTabIndex = Variable(0);
 
+const searchResults = Variable.derive(
+  [currentTabIndex, appResultWidgets],
+  (index, app) => {
+    if (index == 0) return app;
+    return [];
+  },
+);
+
 /*****************************************************************************
  * Widget definition
  *****************************************************************************/
-
-/**
- * Widget representing a single application in the launcher.
- */
-const AppEntry = (app: Apps.Application) => {
-  const Final = Widget.Button({
-    cssClasses: ["result"],
-    vexpand: false,
-    hexpand: true,
-    canFocus: true,
-    canTarget: true,
-    cursor: Gdk.Cursor.new_from_name("pointer", null),
-    child: Widget.Label({
-      label: app.name,
-      justify: Gtk.Justification.LEFT,
-      hexpand: true,
-    }),
-    onButtonPressed: () => {
-      app.launch();
-    },
-    onKeyPressed: (_self, keyval, _keycode, _state) => {
-      if (keyval == Gdk.KEY_Return) {
-        app.launch();
-      }
-    },
-  });
-
-  return Final;
-};
 
 const Tab = (tabListIndex: number) =>
   Widget.Button({
@@ -114,9 +99,6 @@ const TabContainer = () =>
     children: tabList.map((_tab, index) => Tab(index)),
   });
 
-/**
- * Contains all search results.
- */
 const SearchResultContainer = () => {
   return Scrollable({
     vexpand: true,
@@ -128,7 +110,7 @@ const SearchResultContainer = () => {
         Widget.Box({
           cssClasses: ["search-result-container"],
           vertical: true,
-          children: bind(searchResults).as((x) => x.map(AppEntry)),
+          children: bind(searchResults),
         }),
       );
 
@@ -137,9 +119,6 @@ const SearchResultContainer = () => {
   });
 };
 
-/**
- * Text entry box for user to search for applications.
- */
 const Prompt = () => {
   const SearchIcon = Widget.Image({
     cssClasses: ["search-icon"],
@@ -151,12 +130,12 @@ const Prompt = () => {
     canFocus: true,
     cssClasses: ["text-entry"],
     onActivate: (self) => {
-      searchResults.get()[0].launch();
+      tabList[currentTabIndex.get()].getFirstItem().launch();
       App.toggle_window("launcher");
       self.text = "";
     },
     onKeyReleased: (self) => {
-      searchResults.set(appSearch.fuzzy_query(self.text));
+      tabList[currentTabIndex.get()].updateSearch(self.text);
     },
   });
 

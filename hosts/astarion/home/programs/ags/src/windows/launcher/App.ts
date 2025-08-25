@@ -1,1 +1,49 @@
+import { Variable } from "astal";
+import { Gdk, Gtk, Widget } from "astal/gtk4";
+import Apps from "gi://AstalApps";
+import Pango from "gi://Pango?version=1.0";
 
+// App search instance
+const appSearch = new Apps.Apps({
+  nameMultiplier: 2,
+  entryMultiplier: 0,
+  executableMultiplier: 2,
+});
+
+// Single app entry widget
+const AppEntry = (app: Apps.Application) => {
+  return Widget.Button({
+    cssClasses: ["result"],
+    hexpand: true,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    child: Widget.Label({
+      label: app.name,
+      justify: Gtk.Justification.LEFT,
+      halign: Gtk.Align.FILL,
+      hexpand: true,
+      ellipsize: Pango.EllipsizeMode.END,
+    }),
+    onClicked: () => app.launch(),
+    onKeyPressed: (_self, keyval) => {
+      if (keyval === Gdk.KEY_Return) {
+        app.launch();
+      }
+    },
+  });
+};
+
+// Reactive search results
+export const appResults = Variable(appSearch.fuzzy_query(""));
+
+// Reactive widget list
+// To this:
+export const appResultWidgets = Variable.derive([appResults], (apps) =>
+  apps.map(AppEntry),
+);
+
+// Update search results
+export const updateAppSearch = (query: string) => {
+  appResults.set(appSearch.fuzzy_query(query));
+};
+
+export const getFirstApp = () => appResults.get()[0];
