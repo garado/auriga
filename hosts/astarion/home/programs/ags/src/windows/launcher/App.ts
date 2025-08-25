@@ -48,4 +48,4 @@ export const updateAppSearch = (query: string) => {
   appResults.set(appSearch.fuzzy_query(query));
 };
 
-export const getFirstApp = () => appResults.get()[0];
+export const launchFirstApp = () => appResults.get()[0].launch();

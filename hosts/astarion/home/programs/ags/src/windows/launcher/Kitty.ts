@@ -5,7 +5,7 @@ import Pango from "gi://Pango?version=1.0";
 
 const KITTY_SESSION_DIR = `${GLib.getenv("HOME")}/.config/kitty/sessions/`;
 
-const allSessions = listAllFilesFromDir(KITTY_SESSION_DIR) || [];
+const allSessions = listAllFilesFromDir(KITTY_SESSION_DIR).sort() || [];
 
 // Single entry widget
 const SessionEntry = (sessionName: string) => {
@@ -46,10 +46,11 @@ export const updateSessionSearch = (query: string) => {
   sessionResults.set(filtered);
 };
 
-export const getFirstSession = () => sessionResults.get()[0];
-
 const launchKittySession = (sessionName: string) => {
   execAsync(["kitty", "--session", `sessions/${sessionName}`]).catch((error) =>
     console.error("Failed to launch kitty session:", error),
   );
 };
+
+export const launchFirstSession = () =>
+  launchKittySession(sessionResults.get()[0]);

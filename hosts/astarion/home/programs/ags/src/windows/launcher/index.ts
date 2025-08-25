@@ -14,16 +14,22 @@
 
 import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
-import { appResultWidgets, updateAppSearch, getFirstApp } from "./App";
+import { appResultWidgets, updateAppSearch, launchFirstApp } from "./App";
 import {
-  getFirstSession,
+  launchFirstSession,
   sessionResultWidgets,
   updateSessionSearch,
 } from "./Kitty";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
+
+const KB_SHORTCUTS = {
+  PREV_TAB: "H",
+  NEXT_TAB: "L",
+} as const;
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
 
@@ -33,7 +39,7 @@ interface TabConfig {
   icon: string;
   resultWidgets: Variable<Gtk.Widget[]>;
   updateSearch: (query: string) => void;
-  getFirstItem: () => any;
+  launchFirstItem: () => any;
 }
 
 const tabList: TabConfig[] = [
@@ -41,14 +47,14 @@ const tabList: TabConfig[] = [
     // App launcher
     icon: "squares-four-symbolic",
     resultWidgets: appResultWidgets,
-    getFirstItem: getFirstApp,
+    launchFirstItem: launchFirstApp,
     updateSearch: updateAppSearch,
   },
   {
     // Kitty session launcher
     icon: "terminal-symbolic",
     resultWidgets: sessionResultWidgets,
-    getFirstItem: getFirstSession,
+    launchFirstItem: launchFirstSession,
     updateSearch: updateSessionSearch,
   },
   {
@@ -56,11 +62,21 @@ const tabList: TabConfig[] = [
     icon: "app-window-symbolic",
     resultWidgets: [],
     updateSearch: () => {},
-    getFirstItem: () => {},
+    launchFirstItem: () => {},
   },
 ];
 
 const currentTabIndex = Variable(0);
+
+const iterTab = (dir: number) => {
+  if (dir == -1) {
+    const cti = currentTabIndex.get();
+    currentTabIndex.set((cti - 1 + tabList.length) % tabList.length);
+  } else if (dir == 1) {
+    const cti = currentTabIndex.get();
+    currentTabIndex.set((cti + 1) % tabList.length);
+  }
+};
 
 const searchResults = Variable.derive(
   [currentTabIndex, appResultWidgets, sessionResultWidgets],
@@ -126,28 +142,42 @@ const SearchResultContainer = () => {
 };
 
 const Prompt = () => {
-  const SearchIcon = Widget.Image({
+  const searchIcon = Widget.Image({
     cssClasses: ["search-icon"],
     iconName: "magnifying-glass-symbolic",
   });
 
-  const TextEntryBox = Widget.Entry({
+  const textEntryBox = Widget.Entry({
+    placeholderText: "Search",
     hexpand: true,
     canFocus: true,
     cssClasses: ["text-entry"],
     onActivate: (self) => {
-      tabList[currentTabIndex.get()].getFirstItem().launch();
+      tabList[currentTabIndex.get()].launchFirstItem();
       App.toggle_window("launcher");
       self.text = "";
     },
-    onKeyReleased: (self) => {
+    onKeyReleased: (self, keyval) => {
+      if (KB_SHORTCUTS.PREV_TAB == Gdk.keyval_name(keyval)) {
+        self.set_text(self.text.slice(0, self.text.length - 1));
+        iterTab(-1);
+      } else if (KB_SHORTCUTS.NEXT_TAB == Gdk.keyval_name(keyval)) {
+        self.set_text(self.text.slice(0, self.text.length - 1));
+        iterTab(1);
+      }
+
       tabList[currentTabIndex.get()].updateSearch(self.text);
+    },
+    setup: (self) => {
+      currentTabIndex.subscribe(() => {
+        self.text = "";
+      });
     },
   });
 
   return Widget.Box({
     cssClasses: ["text-entry-container"],
-    children: [SearchIcon, TextEntryBox],
+    children: [searchIcon, textEntryBox],
     onFocusEnter: (self) => {
       self.add_css_class("focus");
     },
