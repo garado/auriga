@@ -29,6 +29,28 @@ const appSearch = new Apps.Apps({
 
 const searchResults = Variable(appSearch.fuzzy_query(""));
 
+interface TabConfig {
+  icon: string;
+  resultsFactory?: () => (typeof Widget.Box)[];
+}
+
+const tabList: TabConfig[] = [
+  {
+    // App launcher
+    icon: "squares-four-symbolic",
+  },
+  {
+    // Kitty session launcher
+    icon: "terminal-symbolic",
+  },
+  {
+    // Window select
+    icon: "app-window-symbolic",
+  },
+];
+
+const currentTabIndex = Variable(0);
+
 /*****************************************************************************
  * Widget definition
  *****************************************************************************/
@@ -37,26 +59,54 @@ const searchResults = Variable(appSearch.fuzzy_query(""));
  * Widget representing a single application in the launcher.
  */
 const AppEntry = (app: Apps.Application) => {
-  const Final = Widget.Box({
+  const Final = Widget.Button({
     cssClasses: ["result"],
     vexpand: false,
     hexpand: true,
+    canFocus: true,
+    canTarget: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    children: [
-      Widget.Label({
-        label: app.name,
-      }),
-    ],
-    onButtonPressed: app.launch,
-  });
-
-  /* Assign helper function */
-  Object.assign(Final, {
-    launch: app.launch,
+    child: Widget.Label({
+      label: app.name,
+      justify: Gtk.Justification.LEFT,
+      hexpand: true,
+    }),
+    onButtonPressed: () => {
+      app.launch();
+    },
+    onKeyPressed: (_self, keyval, _keycode, _state) => {
+      if (keyval == Gdk.KEY_Return) {
+        app.launch();
+      }
+    },
   });
 
   return Final;
 };
+
+const Tab = (tabConfig: TabConfig) =>
+  Widget.Button({
+    cssClasses: ["tab"],
+    hexpand: true,
+    halign: Gtk.Align.FILL,
+    valign: Gtk.Align.CENTER,
+    child: Widget.Image({
+      halign: Gtk.Align.CENTER,
+      hexpand: true,
+      iconName: tabConfig.icon,
+    }),
+  });
+
+const TabContainer = () =>
+  Widget.Box({
+    homogeneous: true,
+    hexpand: true,
+    canFocus: true,
+    halign: Gtk.Align.FILL,
+    valign: Gtk.Align.CENTER,
+    cssClasses: ["tab-select"],
+    children: tabList.map(Tab),
+  });
 
 /**
  * Contains all search results.
@@ -65,13 +115,18 @@ const SearchResultContainer = () => {
   return Scrollable({
     vexpand: true,
     visible: true,
+    canFocus: true,
+    canTarget: true,
     setup: (self) => {
       self.set_child(
         Widget.Box({
+          cssClasses: ["search-result-container"],
           vertical: true,
           children: bind(searchResults).as((x) => x.map(AppEntry)),
         }),
       );
+
+      self.hscrollbarPolicy = Gtk.PolicyType.NEVER;
     },
   });
 };
@@ -79,13 +134,13 @@ const SearchResultContainer = () => {
 /**
  * Text entry box for user to search for applications.
  */
-const PromptBox = () => {
+const Prompt = () => {
   const SearchIcon = Widget.Image({
     cssClasses: ["search-icon"],
     iconName: "magnifying-glass-symbolic",
   });
 
-  const PromptEntryBox = Widget.Entry({
+  const TextEntryBox = Widget.Entry({
     hexpand: true,
     canFocus: true,
     cssClasses: ["text-entry"],
@@ -100,9 +155,8 @@ const PromptBox = () => {
   });
 
   return Widget.Box({
-    canFocus: true,
-    cssClasses: ["promptbox"],
-    children: [SearchIcon, PromptEntryBox],
+    cssClasses: ["text-entry-container"],
+    children: [SearchIcon, TextEntryBox],
     onFocusEnter: (self) => {
       self.add_css_class("focus");
     },
@@ -113,7 +167,7 @@ const PromptBox = () => {
 };
 
 export default () => {
-  const Prompt = PromptBox();
+  const prompt = Prompt();
 
   /**
    * Container widget
@@ -125,7 +179,7 @@ export default () => {
       vertical: true,
       spacing: 20,
       cssClasses: ["launcher"],
-      children: [Prompt, SearchResultContainer()],
+      children: [prompt, SearchResultContainer()],
     });
   };
 
@@ -145,7 +199,7 @@ export default () => {
       self.set_default_size(1, 1);
     },
     onNotifyVisible: (self) => {
-      Prompt.children[1].grab_focus();
+      prompt.children[1].grab_focus();
 
       if (!self.visible) {
         globalRevealerState.set(!globalRevealerState.get());

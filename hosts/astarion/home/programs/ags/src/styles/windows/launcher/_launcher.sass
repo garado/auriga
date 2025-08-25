@@ -1,4 +1,7 @@
 
+// █░░ ▄▀█ █░█ █▄░█ █▀▀ █░█ █▀▀ █▀█
+// █▄▄ █▀█ █▄█ █░▀█ █▄▄ █▀█ ██▄ █▀▄
+
 @use '../../theme/theme' as *
 
 .launcher
@@ -6,24 +9,42 @@
   min-width:  20rem
   background-color: $neutral-800
   padding: 1rem
+  border-radius: $border-radius
 
-  .promptbox
+  // Select between app launcher/session launcher/window selector
+  .tab-select
+    .tab
+      padding: 0.2rem 1rem
+      border-radius: $border-radius
+
+      &:hover
+        background-color: $primary-500
+
+      &:not(:hover)
+        background-color: $neutral-700
+
+    :not(:first-child), :not(:last-child)
+      margin-left: 0.25rem
+      margin-right: 0.25rem
+
+  // Text entry box
+  .text-entry-container
+    border-radius: $border-radius
     padding: 0.6rem 1rem
+    border: 0.2rem solid $neutral-700
 
-    &.focus
+    &.focus, &:hover // 'focus' class is manually applied here
       border: 0.2rem solid $primary-500
-
-    &:not(.focus)
-      border: 0.2rem solid $neutral-700
 
     .search-icon
       margin-right: 0.7rem
 
-  .result
-    padding: 0.6rem 1rem
-
-    &.focus
-      background-color: $primary-500
-
-    &:not(.focus)
+  .search-result-container
+    // A single result entry
+    .result
+      border-radius: $border-radius
+      padding: 0.6rem 1rem
       background-color: $neutral-800
+
+      &:focus, &:hover
+        background-color: $primary-500
