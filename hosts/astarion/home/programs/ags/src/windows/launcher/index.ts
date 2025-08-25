@@ -108,6 +108,11 @@ const Tab = (tabListIndex: number) =>
     onButtonPressed: () => {
       currentTabIndex.set(tabListIndex);
     },
+    onKeyPressed: (_self, keyval) => {
+      if (keyval === Gdk.KEY_Return) {
+        currentTabIndex.set(tabListIndex);
+      }
+    },
   });
 
 const TabContainer = () =>
@@ -153,17 +158,24 @@ const Prompt = () => {
     canFocus: true,
     cssClasses: ["text-entry"],
     onActivate: (self) => {
+      // On pressing enter
       tabList[currentTabIndex.get()].launchFirstItem();
       App.toggle_window("launcher");
       self.text = "";
     },
-    onKeyReleased: (self, keyval) => {
-      if (KB_SHORTCUTS.PREV_TAB == Gdk.keyval_name(keyval)) {
-        self.set_text(self.text.slice(0, self.text.length - 1));
-        iterTab(-1);
-      } else if (KB_SHORTCUTS.NEXT_TAB == Gdk.keyval_name(keyval)) {
-        self.set_text(self.text.slice(0, self.text.length - 1));
-        iterTab(1);
+    onKeyPressed: (self, keyval) => {
+      if (Gdk.KEY_Shift_L == keyval || Gdk.KEY_Shift_R == keyval) {
+        self.editable = false;
+      }
+    },
+    onKeyReleased: (self, keyval, _keycode, state) => {
+      if (
+        self.editable === false &&
+        state === Gdk.ModifierType.NO_MODIFIER_MASK
+      ) {
+        self.editable = true;
+        self.text += Gdk.keyval_name(keyval);
+        self.set_position(self.text.length);
       }
 
       tabList[currentTabIndex.get()].updateSearch(self.text);
@@ -218,6 +230,19 @@ export default () => {
     setup: (self) => {
       // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);
+
+      setupEventController({
+        name: "launcher",
+        widget: self,
+        binds: {
+          [KB_SHORTCUTS.NEXT_TAB]: () => {
+            iterTab(1);
+          },
+          [KB_SHORTCUTS.PREV_TAB]: () => {
+            iterTab(-1);
+          },
+        },
+      });
     },
     onNotifyVisible: (self) => {
       prompt.children[1].grab_focus();
