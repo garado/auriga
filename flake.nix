@@ -27,6 +27,8 @@
 
     hardware.url = "github:nixos/nixos-hardware";
 
+    zen-browser.url = "github:MarceColl/zen-browser-flake";
+
     # Widgets
     ags.url = "github:Aylur/ags/v2.3.0";
 

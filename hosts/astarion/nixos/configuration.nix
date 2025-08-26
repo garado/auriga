@@ -83,7 +83,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     inputs.swww.packages.${pkgs.system}.swww
-
+    inputs.zen-browser.packages."${system}".default
     unstable.legacyPackages."${pkgs.system}".gcalcli
     unstable.legacyPackages."${pkgs.system}".hyprpicker # v0.4.2
 
