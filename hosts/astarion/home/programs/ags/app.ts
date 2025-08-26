@@ -59,6 +59,7 @@ const closeWindow = (windowName: string) => {
   const win = App.get_window(windowName);
   (win!.child as Gtk.Revealer).revealChild = false;
   timeout(260, () => win!.hide());
+  if (win.onClose) win.onClose();
 };
 
 /**
@@ -73,6 +74,7 @@ const openWindow = (windowName: string) => {
   /* Open window */
   App.get_window(windowName)!.show();
   (win!.child as Gtk.Revealer).revealChild = true;
+  if (win.onOpen) win.onOpen();
 };
 
 const compileSASS = () => {

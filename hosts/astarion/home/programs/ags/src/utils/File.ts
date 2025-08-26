@@ -135,6 +135,52 @@ export function readFile(filePath: string): string {
 }
 
 /**
+ * List all files from a directory
+ * @param dirPath - Directory to read from
+ * @returns string[] content of files from directory
+ */
+export function listAllFilesFromDir(dirPath: string): string[] {
+  try {
+    const dir = Gio.File.new_for_path(dirPath);
+
+    if (!dir.query_exists(null)) {
+      throw new Error(`Directory does not exist: ${dirPath}`);
+    }
+
+    const fileInfo = dir.query_info(
+      "standard::type",
+      Gio.FileQueryInfoFlags.NONE,
+      null,
+    );
+    if (fileInfo.get_file_type() !== Gio.FileType.DIRECTORY) {
+      throw new Error(`Path is not a directory: ${dirPath}`);
+    }
+
+    const enumerator = dir.enumerate_children(
+      "standard::name,standard::type",
+      Gio.FileQueryInfoFlags.NONE,
+      null,
+    );
+
+    const files: string[] = [];
+
+    let info;
+    while ((info = enumerator.next_file(null)) !== null) {
+      if (info.get_file_type() === Gio.FileType.REGULAR) {
+        files.push(info.get_name());
+      }
+    }
+
+    enumerator.close(null);
+
+    return files;
+  } catch (error) {
+    console.error("Error reading directory:", error);
+    throw error;
+  }
+}
+
+/**
  * Read all files from a directory
  * @param dirPath - Directory to read from
  * @returns Record<string, string> content of files from directory
