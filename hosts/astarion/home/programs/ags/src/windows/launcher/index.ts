@@ -14,31 +14,24 @@
 
 import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
+
 import { appResultWidgets, updateAppSearch, launchFirstApp } from "./App";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 import {
   launchFirstSession,
   sessionResultWidgets,
   updateSessionSearch,
 } from "./Kitty";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
 import {
   focusFirstWindow,
+  updateWindowList,
   updateWindowSearch,
   windowResultWidgets,
 } from "./Window";
 
 /*****************************************************************************
- * Module-level variables
+ * Interfaces
  *****************************************************************************/
-
-const KB_SHORTCUTS = {
-  PREV_TAB: "H",
-  NEXT_TAB: "L",
-} as const;
-
-const Scrollable = astalify(Gtk.ScrolledWindow);
-
-const globalRevealerState = Variable(false);
 
 interface TabConfig {
   icon: string;
@@ -46,6 +39,19 @@ interface TabConfig {
   updateSearch: (query: string) => void;
   launchFirstItem: () => any;
 }
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
+const globalRevealerState = Variable(false);
+
+const currentTabIndex = Variable(0);
+
+const KB_SHORTCUTS = {
+  PREV_TAB: "H",
+  NEXT_TAB: "L",
+} as const;
 
 const tabList: TabConfig[] = [
   {
@@ -71,18 +77,6 @@ const tabList: TabConfig[] = [
   },
 ];
 
-const currentTabIndex = Variable(0);
-
-const iterTab = (dir: number) => {
-  if (dir == -1) {
-    const cti = currentTabIndex.get();
-    currentTabIndex.set((cti - 1 + tabList.length) % tabList.length);
-  } else if (dir == 1) {
-    const cti = currentTabIndex.get();
-    currentTabIndex.set((cti + 1) % tabList.length);
-  }
-};
-
 const searchResults = Variable.derive(
   [
     currentTabIndex,
@@ -99,35 +93,52 @@ const searchResults = Variable.derive(
 );
 
 /*****************************************************************************
+ * Helpers
+ *****************************************************************************/
+
+/** Iterate between launcher tabs */
+const iterTab = (dir: number) => {
+  if (dir == -1) {
+    const cti = currentTabIndex.get();
+    currentTabIndex.set((cti - 1 + tabList.length) % tabList.length);
+  } else if (dir == 1) {
+    const cti = currentTabIndex.get();
+    currentTabIndex.set((cti + 1) % tabList.length);
+  }
+};
+
+/*****************************************************************************
  * Widget definition
  *****************************************************************************/
 
-const Tab = (tabListIndex: number) =>
-  Widget.Button({
-    cursor: Gdk.Cursor.new_from_name("pointer", null),
-    cssClasses: bind(currentTabIndex).as((i) =>
-      i == tabListIndex ? ["selected", "tab"] : ["tab"],
-    ),
-    hexpand: true,
-    halign: Gtk.Align.FILL,
-    valign: Gtk.Align.CENTER,
-    child: Widget.Image({
-      halign: Gtk.Align.CENTER,
+/** Displays available launcher tabs */
+const TabContainer = () => {
+  /** Widget representing a single launcher tab */
+  const Tab = (tabListIndex: number) =>
+    Widget.Button({
+      cursor: Gdk.Cursor.new_from_name("pointer", null),
+      cssClasses: bind(currentTabIndex).as((i) =>
+        i == tabListIndex ? ["selected", "tab"] : ["tab"],
+      ),
       hexpand: true,
-      iconName: tabList[tabListIndex].icon,
-    }),
-    onButtonPressed: () => {
-      currentTabIndex.set(tabListIndex);
-    },
-    onKeyPressed: (_self, keyval) => {
-      if (keyval === Gdk.KEY_Return) {
+      halign: Gtk.Align.FILL,
+      valign: Gtk.Align.CENTER,
+      child: Widget.Image({
+        halign: Gtk.Align.CENTER,
+        hexpand: true,
+        iconName: tabList[tabListIndex].icon,
+      }),
+      onButtonPressed: () => {
         currentTabIndex.set(tabListIndex);
-      }
-    },
-  });
+      },
+      onKeyPressed: (_self, keyval) => {
+        if (keyval === Gdk.KEY_Return) {
+          currentTabIndex.set(tabListIndex);
+        }
+      },
+    });
 
-const TabContainer = () =>
-  Widget.Box({
+  return Widget.Box({
     homogeneous: true,
     hexpand: true,
     canFocus: true,
@@ -136,8 +147,12 @@ const TabContainer = () =>
     cssClasses: ["tab-select"],
     children: tabList.map((_tab, index) => Tab(index)),
   });
+};
 
+/** Display search results */
 const SearchResultContainer = () => {
+  const Scrollable = astalify(Gtk.ScrolledWindow);
+
   return Scrollable({
     vexpand: true,
     visible: true,
@@ -156,6 +171,7 @@ const SearchResultContainer = () => {
   });
 };
 
+/** Text entry where user types in search query */
 const Prompt = () => {
   const searchIcon = Widget.Image({
     cssClasses: ["search-icon"],
@@ -211,9 +227,7 @@ const Prompt = () => {
 export default () => {
   const prompt = Prompt();
 
-  /**
-   * Container widget
-   */
+  /** Container widget */
   const Launcher = () => {
     return Widget.Box({
       vexpand: false,
@@ -261,6 +275,8 @@ export default () => {
       });
     },
     onNotifyVisible: (self) => {
+      updateWindowList();
+
       prompt.children[1].grab_focus();
 
       if (!self.visible) {

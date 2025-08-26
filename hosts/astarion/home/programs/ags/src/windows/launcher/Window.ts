@@ -1,11 +1,74 @@
+/**
+ * █░█░█ █ █▄░█ █▀▄ █▀█ █░█░█   █▀ █░█░█ █ ▀█▀ █▀▀ █░█ █▀▀ █▀█
+ * ▀▄▀▄▀ █ █░▀█ █▄▀ █▄█ ▀▄▀▄▀   ▄█ ▀▄▀▄▀ █ ░█░ █▄▄ █▀█ ██▄ █▀▄
+ *
+ * Can switch to and kill windows
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { bind, execAsync, Variable } from "astal";
 import { App, Gdk, Gtk, Widget } from "astal/gtk4";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
 import Pango from "gi://Pango?version=1.0";
 
+/*****************************************************************************
+ * Module vars
+ *****************************************************************************/
+
 const hyprland = AstalHyprland.get_default();
 
 const windowKillTarget = Variable<AstalHyprland.Client | null>(null);
+
+/*****************************************************************************
+ * Helpers
+ *****************************************************************************/
+
+// Get all visible windows from Hyprland
+// Get all visible windows from Hyprland
+const getAllWindows = (): AstalHyprland.Client[] => {
+  return hyprland.clients
+    .filter((window) => window.mapped && !window.hidden)
+    .sort((a, b) => {
+      // First sort by monitor
+      if (a.monitor !== b.monitor) {
+        return a.monitor - b.monitor;
+      }
+
+      // Then sort by workspace ID
+      const aWorkspace = a.workspace?.id || 0;
+      const bWorkspace = b.workspace?.id || 0;
+      if (aWorkspace !== bWorkspace) {
+        return aWorkspace - bWorkspace;
+      }
+
+      // Finally sort by class then title (your original sorting)
+      if (a.class !== b.class) {
+        return a.class.localeCompare(b.class);
+      }
+      return a.title.localeCompare(b.title);
+    });
+};
+
+// Initialize with current windows
+const allWindows = Variable(getAllWindows());
+
+const focusWindow = (window: AstalHyprland.Client) => {
+  App.toggle_window("launcher");
+  window.focus();
+};
+
+export const updateWindowList = () => {
+  const windows = getAllWindows();
+  allWindows.set(windows);
+  windowResults.set(windows);
+};
+
+/*****************************************************************************
+ * Widget
+ *****************************************************************************/
 
 const WindowEntry = (window: AstalHyprland.Client) => {
   const displayTitle = window.title || window.class || "Untitled";
@@ -113,35 +176,6 @@ const WindowEntry = (window: AstalHyprland.Client) => {
   });
 };
 
-// Get all visible windows from Hyprland
-// Get all visible windows from Hyprland
-const getAllWindows = (): AstalHyprland.Client[] => {
-  return hyprland.clients
-    .filter((window) => window.mapped && !window.hidden)
-    .sort((a, b) => {
-      // First sort by monitor
-      if (a.monitor !== b.monitor) {
-        return a.monitor - b.monitor;
-      }
-
-      // Then sort by workspace ID
-      const aWorkspace = a.workspace?.id || 0;
-      const bWorkspace = b.workspace?.id || 0;
-      if (aWorkspace !== bWorkspace) {
-        return aWorkspace - bWorkspace;
-      }
-
-      // Finally sort by class then title (your original sorting)
-      if (a.class !== b.class) {
-        return a.class.localeCompare(b.class);
-      }
-      return a.title.localeCompare(b.title);
-    });
-};
-
-// Initialize with current windows
-const allWindows = Variable(getAllWindows());
-
 // Reactive window results
 export const windowResults = Variable(getAllWindows());
 
@@ -159,11 +193,6 @@ export const updateWindowSearch = (query: string) => {
   windowResults.set(filtered);
 };
 
-const focusWindow = (window: AstalHyprland.Client) => {
-  App.toggle_window("launcher");
-  window.focus();
-};
-
 export const focusFirstWindow = () => {
   const windows = windowResults.get();
   if (windows.length > 0) {
@@ -171,30 +200,19 @@ export const focusFirstWindow = () => {
   }
 };
 
-const updateWindowList = () => {
-  const windows = getAllWindows();
-  allWindows.set(windows);
-  windowResults.set(windows);
-};
-
 // Connect to Hyprland events to keep the list updated
-hyprland.connect("client-added", updateWindowList);
-hyprland.connect("client-removed", updateWindowList);
-hyprland.connect("workspace-added", updateWindowList);
-hyprland.connect("workspace-removed", updateWindowList);
-
-// Also listen for window property changes
-hyprland.clients.forEach((client) => {
-  client.connect("notify::title", updateWindowList);
-  client.connect("notify::class", updateWindowList);
-  client.connect("notify::workspace", updateWindowList);
-  client.connect("notify::mapped", updateWindowList);
-  client.connect("notify::hidden", updateWindowList);
-  client.connect("notify::floating", updateWindowList);
-  client.connect("notify::fullscreen", updateWindowList);
-});
-
-// Refresh function (mainly for manual refresh if needed)
-export const refreshWindows = () => {
-  updateWindowList();
-};
+// hyprland.connect("client-added", updateWindowList);
+// hyprland.connect("client-removed", updateWindowList);
+// hyprland.connect("workspace-added", updateWindowList);
+// hyprland.connect("workspace-removed", updateWindowList);
+//
+// // Also listen for window property changes
+// hyprland.clients.forEach((client) => {
+//   client.connect("notify::title", updateWindowList);
+//   client.connect("notify::class", updateWindowList);
+//   client.connect("notify::workspace", updateWindowList);
+//   client.connect("notify::mapped", updateWindowList);
+//   client.connect("notify::hidden", updateWindowList);
+//   client.connect("notify::floating", updateWindowList);
+//   client.connect("notify::fullscreen", updateWindowList);
+// });

@@ -1,13 +1,29 @@
+/**
+ * ▀█▀ █▀▀ █▀█ █▀▄▀█ █ █▄░█ ▄▀█ █░░   █▀ █▀▀ █▀ █▀ █ █▀█ █▄░█   █░░ ▄▀█ █░█ █▄░█ █▀▀ █░█ █▀▀ █▀█
+ * ░█░ ██▄ █▀▄ █░▀░█ █ █░▀█ █▀█ █▄▄   ▄█ ██▄ ▄█ ▄█ █ █▄█ █░▀█   █▄▄ █▀█ █▄█ █░▀█ █▄▄ █▀█ ██▄ █▀▄
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { listAllFilesFromDir } from "@/utils/File";
 import { execAsync, GLib, Variable } from "astal";
 import { App, Gdk, Gtk, Widget } from "astal/gtk4";
 import Pango from "gi://Pango?version=1.0";
 
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
 const KITTY_SESSION_DIR = `${GLib.getenv("HOME")}/.config/kitty/sessions/`;
 
 const allSessions = listAllFilesFromDir(KITTY_SESSION_DIR).sort() || [];
 
-// Single entry widget
+/*****************************************************************************
+ * Widgets
+ *****************************************************************************/
+
 const SessionEntry = (sessionName: string) => {
   return Widget.Button({
     cssClasses: ["result"],
@@ -29,6 +45,21 @@ const SessionEntry = (sessionName: string) => {
   });
 };
 
+/*****************************************************************************
+ * Whatever
+ *****************************************************************************/
+
+const launchKittySession = (sessionName: string) => {
+  App.toggle_window("launcher");
+  execAsync([
+    "kitty",
+    "--session",
+    `sessions/${sessionName}`,
+    `--title`,
+    sessionName,
+  ]).catch((error) => console.error("Failed to launch kitty session:", error));
+};
+
 // Reactive search results
 export const sessionResults = Variable(allSessions);
 
@@ -44,17 +75,6 @@ export const updateSessionSearch = (query: string) => {
     session.toLowerCase().includes(query.toLowerCase()),
   );
   sessionResults.set(filtered);
-};
-
-const launchKittySession = (sessionName: string) => {
-  App.toggle_window("launcher");
-  execAsync([
-    "kitty",
-    "--session",
-    `sessions/${sessionName}`,
-    `--title`,
-    sessionName,
-  ]).catch((error) => console.error("Failed to launch kitty session:", error));
 };
 
 export const launchFirstSession = () =>
