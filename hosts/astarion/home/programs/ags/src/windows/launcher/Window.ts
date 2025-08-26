@@ -3,6 +3,13 @@
  * ▀▄▀▄▀ █ █░▀█ █▄▀ █▄█ ▀▄▀▄▀   ▄█ ▀▄▀▄▀ █ ░█░ █▄▄ █▀█ ██▄ █▀▄
  *
  * Can switch to and kill windows
+ *
+ * Press <Ctrl+C><Enter> while keyboard focus is on a window entry to kill that entry
+ *
+ * this is probably the laziest and most disorganized code i've ever written
+ * (but it works!)
+ *
+ * TODO (during my lifetime, hopefully): make this less shitty
  */
 
 /*****************************************************************************
@@ -20,13 +27,13 @@ import Pango from "gi://Pango?version=1.0";
 
 const hyprland = AstalHyprland.get_default();
 
+// The window to kill after <Ctrl+C><Enter> sequence is pressed
 const windowKillTarget = Variable<AstalHyprland.Client | null>(null);
 
 /*****************************************************************************
  * Helpers
  *****************************************************************************/
 
-// Get all visible windows from Hyprland
 // Get all visible windows from Hyprland
 const getAllWindows = (): AstalHyprland.Client[] => {
   return hyprland.clients
@@ -44,16 +51,13 @@ const getAllWindows = (): AstalHyprland.Client[] => {
         return aWorkspace - bWorkspace;
       }
 
-      // Finally sort by class then title (your original sorting)
+      // Finally sort by class then title
       if (a.class !== b.class) {
         return a.class.localeCompare(b.class);
       }
       return a.title.localeCompare(b.title);
     });
 };
-
-// Initialize with current windows
-const allWindows = Variable(getAllWindows());
 
 const focusWindow = (window: AstalHyprland.Client) => {
   App.toggle_window("launcher");
@@ -65,6 +69,9 @@ export const updateWindowList = () => {
   allWindows.set(windows);
   windowResults.set(windows);
 };
+
+// Initialize with current windows
+const allWindows = Variable(getAllWindows());
 
 /*****************************************************************************
  * Widget
@@ -199,6 +206,10 @@ export const focusFirstWindow = () => {
     focusWindow(windows[0]);
   }
 };
+
+// Feels unnecessary to ALWAYS be updating the launcher
+// So I made the call to `updateWindowList` only happen when the launcher is open
+// Still some flaws in that approach but probably more performant
 
 // Connect to Hyprland events to keep the list updated
 // hyprland.connect("client-added", updateWindowList);
