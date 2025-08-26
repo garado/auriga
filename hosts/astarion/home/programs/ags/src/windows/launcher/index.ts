@@ -51,6 +51,7 @@ const currentTabIndex = Variable(0);
 const KB_SHORTCUTS = {
   PREV_TAB: "H",
   NEXT_TAB: "L",
+  CLOSE_LAUNCHER: "Escape",
 } as const;
 
 const tabList: TabConfig[] = [
@@ -185,7 +186,7 @@ const Prompt = () => {
     cssClasses: ["text-entry"],
     onActivate: (self) => {
       tabList[currentTabIndex.get()].launchFirstItem();
-      App.toggle_window("launcher");
+      App.toggleWindow("launcher");
       self.text = "";
     },
     onKeyPressed: (self, keyval) => {
@@ -263,6 +264,9 @@ export default () => {
           },
           [KB_SHORTCUTS.PREV_TAB]: () => {
             iterTab(-1);
+          },
+          [KB_SHORTCUTS.CLOSE_LAUNCHER]: () => {
+            App.toggleWindow("launcher");
           },
         },
       });

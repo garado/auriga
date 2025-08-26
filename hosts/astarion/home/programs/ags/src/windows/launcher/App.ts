@@ -49,12 +49,12 @@ const AppEntry = (app: Apps.Application) => {
       ellipsize: Pango.EllipsizeMode.END,
     }),
     onClicked: () => {
-      App.toggle_window("launcher");
+      App.toggleWindow("launcher");
       app.launch();
     },
     onKeyPressed: (_self, keyval) => {
       if (keyval === Gdk.KEY_Return) {
-        App.toggle_window("launcher");
+        App.toggleWindow("launcher");
         app.launch();
       }
     },

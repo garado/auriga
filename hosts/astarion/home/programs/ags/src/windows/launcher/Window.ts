@@ -60,7 +60,7 @@ const getAllWindows = (): AstalHyprland.Client[] => {
 };
 
 const focusWindow = (window: AstalHyprland.Client) => {
-  App.toggle_window("launcher");
+  App.toggleWindow("launcher");
   window.focus();
 };
 

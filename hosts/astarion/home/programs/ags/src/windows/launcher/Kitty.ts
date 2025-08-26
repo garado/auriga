@@ -50,7 +50,7 @@ const SessionEntry = (sessionName: string) => {
  *****************************************************************************/
 
 const launchKittySession = (sessionName: string) => {
-  App.toggle_window("launcher");
+  App.toggleWindow("launcher");
   execAsync([
     "kitty",
     "--session",
