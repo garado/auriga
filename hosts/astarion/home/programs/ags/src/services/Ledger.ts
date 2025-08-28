@@ -313,10 +313,10 @@ export default class Ledger extends GObject.Object {
   /**
    * Initialize the service's data.
    */
-  initAll() {
-    if (!this.#testIncludeFilesExist()) {
+  async initAll() {
+    if (!(await this.#testIncludeFilesExist())) {
       console.warn(
-        "Could not find hledger files do not exist; aborting hledger service init",
+        "Could not find hledger files; aborting hledger service init",
       );
 
       return;
@@ -332,15 +332,15 @@ export default class Ledger extends GObject.Object {
     this.#initSpendingAnalysis();
   }
 
-  #testIncludeFilesExist(): boolean {
+  async #testIncludeFilesExist(): Promise<boolean> {
     const cmd = `hledger files ${INCLUDES}`;
-    execAsync(cmd)
-      .then(() => {
-        return true;
-      })
-      .catch(() => {
-        return false;
-      });
+
+    try {
+      await execAsync(cmd);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /**
