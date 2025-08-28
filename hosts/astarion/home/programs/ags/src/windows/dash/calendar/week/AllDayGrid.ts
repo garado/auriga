@@ -33,26 +33,6 @@ const DAYS_PER_WEEK = 7;
 const REALIZATION_TIMEOUT_MS = 50;
 
 /*****************************************************************************
- * Helper functions
- *****************************************************************************/
-
-/**
- * Returns true if the two given events overlap in their date ranges.
- *
- * @param firstEvent - The first event to check for overlap
- * @param secondEvent - The second event to check for overlap
- * @returns True if the events overlap in dates, false otherwise
- **/
-const doEventsOverlap = (firstEvent: Event, secondEvent: Event): boolean => {
-  const firstStart = new Date(firstEvent.startDate).getTime();
-  const firstEnd = new Date(firstEvent.endDate).getTime();
-  const secondStart = new Date(secondEvent.startDate).getTime();
-  const secondEnd = new Date(secondEvent.endDate).getTime();
-
-  return !(firstEnd <= secondStart || secondEnd <= firstStart);
-};
-
-/*****************************************************************************
  * Class definition
  *****************************************************************************/
 
@@ -440,7 +420,6 @@ export class _AllDayGrid extends Gtk.Fixed {
 
   /**
    * Draw underlying gridlines for all-day event
-   * Unlike the full Gridlines
    */
   private drawGridlines = (height: number) => {
     const drawFn = (self: any, cr: any, width: number, height: number) => {
