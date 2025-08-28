@@ -208,22 +208,41 @@ export default class SettingsManager extends GObject.Object {
   /**
    * Apply astal CSS theme.
    */
-  private applyCSSTheme = (themeName: string) => {
+  private applyCSSTheme = async (themeName: string) => {
     // Create/update colors.sass file
     const colorsContent = `@forward "${themeName}"`;
     fileWrite(APP_PATHS.SASS_COLORS_PATH, colorsContent);
 
     // Compile SASS and apply CSS
-    execAsync(`sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`)
-      .then(() => {
-        App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
-        this.notify("current-theme");
-      })
-      .catch(console.error);
+    try {
+      await execAsync(
+        `sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`,
+      );
+      App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
+      this.notify("current-theme");
+    } catch (error) {
+      console.error("Failed to compile SASS:", error);
+      return;
+    }
 
-    // UserConfig: currentTheme: 'kanagawa' => currentTheme: 'newTheme'
-    const configCmd = `sed -i \"s#currentTheme.*#currentTheme: \\"${themeName}\\",#g\" ${APP_PATHS.USER_CONFIG_PATH}`;
-    execAsync(`bash -c '${configCmd}'`).catch(console.log);
+    // Update config preserving symlinks
+    try {
+      // Read content (follows symlinks)
+      const configContent = await execAsync(
+        `cat ${APP_PATHS.USER_CONFIG_PATH}`,
+      );
+      const updatedContent = configContent.replace(
+        /currentTheme:.*/,
+        `currentTheme: "${themeName}",`,
+      );
+
+      // Write back using echo (preserves symlinks)
+      await execAsync(
+        `bash -c 'echo ${JSON.stringify(updatedContent).slice(1, -1)} > ${APP_PATHS.USER_CONFIG_PATH}'`,
+      );
+    } catch (error) {
+      console.error("Failed to update config file:", error);
+    }
   };
 
   /**
