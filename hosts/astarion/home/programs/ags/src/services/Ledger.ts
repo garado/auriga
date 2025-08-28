@@ -304,6 +304,9 @@ export default class Ledger extends GObject.Object {
       subtotal: [0],
     };
 
+    // Check if hledger files are even there
+    // If not, skip all of init
+
     this.initAll();
   }
 
@@ -311,6 +314,14 @@ export default class Ledger extends GObject.Object {
    * Initialize the service's data.
    */
   initAll() {
+    if (!this.#testIncludeFilesExist()) {
+      console.warn(
+        "Could not find hledger files do not exist; aborting hledger service init",
+      );
+
+      return;
+    }
+
     this.#initAccountData();
     this.#initNetWorth();
     this.#initMonthlyTotals();
@@ -319,6 +330,17 @@ export default class Ledger extends GObject.Object {
     this.#initRecentTransactions();
     this.#initBalanceTrends();
     this.#initSpendingAnalysis();
+  }
+
+  #testIncludeFilesExist(): boolean {
+    const cmd = `hledger files ${INCLUDES}`;
+    execAsync(cmd)
+      .then(() => {
+        return true;
+      })
+      .catch(() => {
+        return false;
+      });
   }
 
   /**
@@ -534,6 +556,8 @@ export default class Ledger extends GObject.Object {
 
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
+        if (!out) return;
+
         try {
           const balanceRows = this.parseBalanceCSV(out);
 
@@ -762,6 +786,8 @@ export default class Ledger extends GObject.Object {
 
     execAsync(`bash -c '${cmd} | tail -n 20'`)
       .then((out) => {
+        if (!out) return;
+
         try {
           this.transactions = this.#parseRegisterTransactionsCSV(out);
           log(

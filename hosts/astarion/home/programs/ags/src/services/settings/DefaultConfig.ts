@@ -94,7 +94,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   },
 
   dashLedger: {
-    includes: [""],
+    includes: [],
     monitorDir: "",
     accountList: [],
   },
