@@ -9,11 +9,11 @@
  * Imports
  *****************************************************************************/
 
+import Pango from "gi://Pango?version=1.0";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { register, property, signal } from "astal/gobject";
 
-import Calendar, { Event, fhToTimeStr, uiVars } from "@/services/Calendar";
-import Pango from "gi://Pango?version=1.0";
+import Calendar, { Event, fhToTimeStr } from "@/services/Calendar";
 
 /*****************************************************************************
  * Module-level variables
@@ -65,33 +65,6 @@ interface EventBoxProps extends Gtk.Widget.ConstructorProps {
   dayWidth: number;
   id: number;
 }
-
-/*****************************************************************************
- * Helper functions
- *****************************************************************************/
-
-/**
- * Calculate how many days an event spans
- */
-const eventDaySpan = (event: Event): number => {
-  const startDate = new Date(event.startDate);
-  const endDate = new Date(event.endDate);
-
-  // For multi-day/all-day events, treat as inclusive unless explicitly exclusive
-  const isEndInclusive =
-    event.allDay ||
-    event.multiDay ||
-    (event.endTime && event.endTime.trim() !== "");
-
-  const timeDiff = endDate.getTime() - startDate.getTime();
-  const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-
-  if (daysDiff === 0) {
-    return 1;
-  } else {
-    return daysDiff + (isEndInclusive ? 1 : 0);
-  }
-};
 
 /*****************************************************************************
  * Widget definition
@@ -173,7 +146,7 @@ export class _EventBox extends Gtk.Box {
     }
 
     this.updatedEvent = { ...this.event };
-    this.rawWidth = this.dayWidth * eventDaySpan(this.event);
+    this.rawWidth = this.dayWidth * cal.displayDaySpan(this.event);
   };
 
   /**
@@ -310,7 +283,7 @@ export class _EventBox extends Gtk.Box {
 
     if (this.isMultiDayEvent) {
       const newStartDayIndex = this.snapToWeekday();
-      const originalDuration = eventDaySpan(this.event);
+      const originalDuration = cal.displayDaySpan(this.event);
 
       const newEndDayIndex = Math.min(
         newStartDayIndex + originalDuration - 1,

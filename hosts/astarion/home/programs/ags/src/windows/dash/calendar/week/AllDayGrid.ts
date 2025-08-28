@@ -266,32 +266,23 @@ export class _AllDayGrid extends Gtk.Fixed {
       let width = dayWidth;
       let eventStartDay = 0;
       let eventEndDay = DAYS_PER_WEEK - 1;
-
-      // Check if event has end time (inclusive) or just end date (exclusive)
-      const isEndInclusive =
-        currentEvent.allDay ||
-        currentEvent.multiDay ||
-        (currentEvent.endTime && currentEvent.endTime.trim() !== "");
+      const displayDaySpan = cal.displayDaySpan(currentEvent);
 
       if (startIndex !== -1) {
+        // Event starts within this week
         xPos = startIndex * dayWidth;
         eventStartDay = startIndex;
-
-        if (endIndex !== -1 && endIndex > startIndex) {
-          // Event starts and ends within this week
-          eventEndDay = endIndex + (isEndInclusive ? 0 : -1);
-          width = (endIndex - startIndex + (isEndInclusive ? 1 : 0)) * dayWidth;
-        } else if (endIndex === -1) {
-          // Event continues beyond this week
-          eventEndDay = DAYS_PER_WEEK - 1;
-          width = (DAYS_PER_WEEK - startIndex) * dayWidth;
-        }
+        eventEndDay = Math.min(
+          startIndex + displayDaySpan - 1,
+          DAYS_PER_WEEK - 1,
+        );
+        width = Math.min(displayDaySpan, DAYS_PER_WEEK - startIndex) * dayWidth;
       } else if (endIndex !== -1) {
         // Event started before this week
         xPos = 0;
         eventStartDay = 0;
-        eventEndDay = endIndex + (isEndInclusive ? 0 : -1);
-        width = (endIndex + (isEndInclusive ? 1 : 0)) * dayWidth;
+        eventEndDay = endIndex;
+        width = (endIndex + 1) * dayWidth;
       } else {
         // Event spans entire week
         xPos = 0;
@@ -305,7 +296,7 @@ export class _AllDayGrid extends Gtk.Fixed {
         dayWidth: dayWidth,
         id: this.nextWidgetId++,
         heightRequest: uiVars.allDayEventHeight,
-        widthRequest: width,
+        widthRequest: displayDaySpan * dayWidth,
       });
 
       eventBox.connect("dragged", this.onDragEnd);

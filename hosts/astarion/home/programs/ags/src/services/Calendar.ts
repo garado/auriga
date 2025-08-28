@@ -389,4 +389,40 @@ export default class Calendar extends GObject.Object {
     const today = this.getDateStr(new Date());
     this.#setNewWeekDates(today);
   }
+
+  /**
+   * Calculate how many days an event should span in the UI. This value is relative to
+   * the currently focused week.
+   *
+   * An event from Friday last week to Friday in 2 weeks has 14-day span, but the
+   * displayDaySpan should be 7.
+   *
+   * An event from Wednesday last week to Wednesday this week has a 7-day span, but
+   * the displayDaySpan should be 4. (Sun - Wed of current week)
+   */
+  displayDaySpan = (event: Event): number => {
+    const eventStartTs = new Date(event.startDate).getTime();
+    const eventEndTs = new Date(event.endDate).getTime();
+    const weekStartTs = new Date(this.weekDates[0]).getTime();
+    const weekEndTs = new Date(this.weekDates[6] + "T23:59:59").getTime();
+
+    const displayStartTs =
+      eventStartTs < weekStartTs ? weekStartTs : eventStartTs;
+
+    const displayEndTs = eventEndTs > weekEndTs ? weekEndTs : eventEndTs;
+
+    const clampedDaysDiff = Math.floor(
+      (displayEndTs - displayStartTs) / MS_PER_DAY,
+    );
+
+    let displayDaySpan;
+
+    if (event.allDay) {
+      displayDaySpan = Math.max(1, clampedDaysDiff);
+    } else {
+      displayDaySpan = Math.max(1, clampedDaysDiff + 1);
+    }
+
+    return displayDaySpan;
+  };
 }
