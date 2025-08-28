@@ -283,9 +283,9 @@ export default class Calendar extends GObject.Object {
   #readCache(dates: Array<string>) {
     log("calService", `#readCache: ${dates}`);
 
-    const cmd = `grep -E '(${dates.join("|")})' ${TMPFILE}`;
+    const cmd = `awk -F'\\t' '$1 <= "${dates[6]}" && $3 >= "${dates[0]}"' ${TMPFILE}`;
 
-    execAsync(`bash -c "${cmd}"`)
+    execAsync(cmd)
       .then((out) => {
         this.#parseData(out);
       })
@@ -306,7 +306,9 @@ export default class Calendar extends GObject.Object {
       const event = this.#parseEventFromTSV(eventLine);
       if (event === null) return;
 
-      if (event.startedBeforeThisWeek) {
+      if (event.startedBeforeThisWeek && event.endsAfterThisWeek) {
+        this.weekEvents[this.weekDates[0]].push(event);
+      } else if (event.startedBeforeThisWeek) {
         this.weekEvents[event.endDate].push(event);
       } else {
         this.weekEvents[event.startDate].push(event);
