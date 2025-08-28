@@ -16,7 +16,7 @@
   border-radius: $border-radius
   margin-right: 0.75rem
   transition: 0.1s all
-  
+
   &:focus, &:hover
     border-color: $neutral-100
 
@@ -45,6 +45,23 @@
   &.dragging
     opacity: 0.5
     border-style: dashed
+
+  &.multiday
+    padding: 0.2rem
+    font-size: 0.8rem
+
+    .times, .location
+      font-size: 0.6rem
+
+/****************************************************
+ * ALLDAY
+ ****************************************************/
+
+.calendar .week .allday-container
+  transition: 0.15s all
+
+  &.blur
+    box-shadow: 0 6px 6px -6px rgba(0, 0, 0, 0.2)
 
 /****************************************************
  * SCROLLBAR
@@ -76,8 +93,6 @@
  ****************************************************/
 
 .calendar .week .date-label
-  margin-bottom: 1rem
-
   .number
     font-size: 2rem
 

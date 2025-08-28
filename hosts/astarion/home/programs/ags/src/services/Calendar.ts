@@ -79,6 +79,7 @@ enum GcalcliCSVEnum {
 export const uiVars = {
   heightScale: 1.75,
   hourLabelWidthPx: 60,
+  allDayEventHeight: 30,
 };
 
 export const DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -199,13 +200,13 @@ export default class Calendar extends GObject.Object {
     event.startedBeforeThisWeek = !this.weekDates.includes(event.startDate);
     event.endsAfterThisWeek = !this.weekDates.includes(event.endDate);
 
-    if (event.multiDay || event.allDay) {
-      return event as Event; // No need to populate the rest
-    }
-
     // Get unix epoch timetamps
     event.startTS = new Date(`${event.startDate} ${event.startTime}`).getTime();
     event.endTS = new Date(`${event.endDate} ${event.endTime}`).getTime();
+
+    if (event.multiDay || event.allDay) {
+      return event as Event; // No need to populate the rest
+    }
 
     // Get fractional hours. 5:30PM -> 17.5; 9:15AM -> 9.25
     const startRe = /(\d\d):(\d\d)/.exec(event.startTime);
@@ -282,9 +283,9 @@ export default class Calendar extends GObject.Object {
   #readCache(dates: Array<string>) {
     log("calService", `#readCache: ${dates}`);
 
-    const cmd = `grep -E '(${dates.join("|")})' ${TMPFILE}`;
+    const cmd = `awk -F'\\t' '$1 <= "${dates[6]}" && $3 >= "${dates[0]}"' ${TMPFILE}`;
 
-    execAsync(`bash -c "${cmd}"`)
+    execAsync(cmd)
       .then((out) => {
         this.#parseData(out);
       })
@@ -305,7 +306,9 @@ export default class Calendar extends GObject.Object {
       const event = this.#parseEventFromTSV(eventLine);
       if (event === null) return;
 
-      if (event.startedBeforeThisWeek) {
+      if (event.startedBeforeThisWeek && event.endsAfterThisWeek) {
+        this.weekEvents[this.weekDates[0]].push(event);
+      } else if (event.startedBeforeThisWeek) {
         this.weekEvents[event.endDate].push(event);
       } else {
         this.weekEvents[event.startDate].push(event);
@@ -388,4 +391,40 @@ export default class Calendar extends GObject.Object {
     const today = this.getDateStr(new Date());
     this.#setNewWeekDates(today);
   }
+
+  /**
+   * Calculate how many days an event should span in the UI. This value is relative to
+   * the currently focused week.
+   *
+   * An event from Friday last week to Friday in 2 weeks has 14-day span, but the
+   * displayDaySpan should be 7.
+   *
+   * An event from Wednesday last week to Wednesday this week has a 7-day span, but
+   * the displayDaySpan should be 4. (Sun - Wed of current week)
+   */
+  displayDaySpan = (event: Event): number => {
+    const eventStartTs = new Date(event.startDate).getTime();
+    const eventEndTs = new Date(event.endDate).getTime();
+    const weekStartTs = new Date(this.weekDates[0]).getTime();
+    const weekEndTs = new Date(this.weekDates[6] + "T23:59:59").getTime();
+
+    const displayStartTs =
+      eventStartTs < weekStartTs ? weekStartTs : eventStartTs;
+
+    const displayEndTs = eventEndTs > weekEndTs ? weekEndTs : eventEndTs;
+
+    const clampedDaysDiff = Math.floor(
+      (displayEndTs - displayStartTs) / MS_PER_DAY,
+    );
+
+    let displayDaySpan;
+
+    if (event.allDay) {
+      displayDaySpan = Math.max(1, clampedDaysDiff);
+    } else {
+      displayDaySpan = Math.max(1, clampedDaysDiff + 1);
+    }
+
+    return displayDaySpan;
+  };
 }
