@@ -20,7 +20,8 @@ import { PowerProfiles } from "@/windows/control/settings/PowerProfiles.ts";
 import { Network } from "@/windows/control/settings/Network.ts";
 import { Bluetooth } from "@/windows/control/settings/Bluetooth.ts";
 import { Speaker } from "@/windows/control/settings/Speaker.ts";
-import { Monitors } from "@/windows/control//settings/Monitors.ts";
+import { Monitors } from "@/windows/control/settings/monitors";
+import { Scaling } from "./settings/Scaling";
 
 /*****************************************************************************
  * Module-level variables
@@ -39,6 +40,7 @@ export const QuickSettings = () =>
     cssClasses: ["settings"],
     children: [
       Theme(globalRevealerState),
+      Scaling(globalRevealerState),
       PowerProfiles(globalRevealerState),
       Network(globalRevealerState),
       Bluetooth(globalRevealerState),

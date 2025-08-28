@@ -38,6 +38,7 @@ export const APP_PATHS = {
  *****************************************************************************/
 
 export interface ThemeConfig {
+  displayName?: string;
   nvim: string;
   kitty: string;
   wallpaper: string;

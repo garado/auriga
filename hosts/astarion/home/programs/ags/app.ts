@@ -2,7 +2,7 @@
  * ▄▀█ █▀█ █▀█
  * █▀█ █▀▀ █▀▀
  *
- * Entry point for agsv2 desktop config.
+ * Entry point for Auriga desktop config.
  */
 
 /*****************************************************************************
@@ -59,6 +59,7 @@ const closeWindow = (windowName: string) => {
   const win = App.get_window(windowName);
   (win!.child as Gtk.Revealer).revealChild = false;
   timeout(260, () => win!.hide());
+  if (win.onClose) win.onClose();
 };
 
 /**
@@ -73,6 +74,7 @@ const openWindow = (windowName: string) => {
   /* Open window */
   App.get_window(windowName)!.show();
   (win!.child as Gtk.Revealer).revealChild = true;
+  if (win.onOpen) win.onOpen();
 };
 
 const compileSASS = () => {
@@ -98,12 +100,15 @@ App.start({
     res("Unhandled command");
   },
   main() {
+    // One instance per monitor
     App.get_monitors().map(Bar);
-    App.get_monitors().map(Dash);
-    App.get_monitors().map(Utility);
-    App.get_monitors().map(Control);
-    App.get_monitors().map(Launcher);
     App.get_monitors().map(Notifications);
+
+    // These pop up on the same monitor as the cursor
+    Dash();
+    Utility();
+    Control();
+    Launcher();
   },
 });
 

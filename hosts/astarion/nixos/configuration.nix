@@ -25,6 +25,12 @@ in {
   networking = {
     hostName = "astarion";
     networkmanager.enable = true;
+
+    hosts = {
+      # Temp fix for upstream librespot issues causing ncspot to stop working
+      # https://github.com/hrkfdn/ncspot/issues/1676#issuecomment-3168197941
+      "0.0.0.0" = ["apresolve.spotify.com"];
+    };
   };
 
   # Hardware
@@ -77,7 +83,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     inputs.swww.packages.${pkgs.system}.swww
-
+    inputs.zen-browser.packages."${system}".default
     unstable.legacyPackages."${pkgs.system}".gcalcli
     unstable.legacyPackages."${pkgs.system}".hyprpicker # v0.4.2
 
@@ -85,9 +91,6 @@ in {
     gnomeExtensions.bluetooth-battery-meter
 
     hledger
-
-    signal-desktop
-    signald
 
     cava
     vim
@@ -130,6 +133,7 @@ in {
 
     # python
     python3
+    poetry
 
     guitarix        # Amp sim
     qjackctl        # Alllll for the amp sim
@@ -156,6 +160,8 @@ in {
     pulse.enable = true;
     wireplumber.enable = false;
   };
+    
+  musnix.enable = true;
 
   services.tumbler.enable = true;
 

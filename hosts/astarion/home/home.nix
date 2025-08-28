@@ -12,6 +12,7 @@
 
     # Import other pieces of config
     ./programs
+    ./services/kanshi.nix
   ];
 
   # Explicitly define allowed unfree packages
@@ -67,14 +68,18 @@
     pointerCursor = {
       gtk.enable = true;
       x11.enable = true;
-      name = "Vimix-cursors";
-      package = pkgs.vimix-cursors;
-      size = 32;
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Classic";
+      size = 24;
     };
-  }; /* end home */
+  };
 
   gtk = {
     enable = true;
+    cursorTheme = {
+      name = "Bibata-Modern-Classic";
+      package = pkgs.bibata-cursors;
+    };
     font.name = "Karla";
     font.size = 14;
   };

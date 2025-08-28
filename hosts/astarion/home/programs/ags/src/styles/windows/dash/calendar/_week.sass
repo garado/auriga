@@ -9,8 +9,8 @@
 .calendar .week .eventbox
   padding: 0.5rem
   background-color: $primary-500
-  box-shadow: 2px 2px 2px 2px rgba(0 0 0 / 20%)
-  border-width: 2px 
+  box-shadow: 0.15rem 0.15rem 0.15rem 0.15rem rgba(0 0 0 / 20%)
+  border-width: 0.15rem 
   border-style: solid 
   border-color: transparent
   border-radius: $border-radius
@@ -114,4 +114,20 @@
 
 .calendar .week .day-view
   &:not(:last-child)
-    border-right: 2px solid $neutral-700
+    border-right: 0.15rem solid $neutral-700
+
+/****************************************************
+ * MULTIDAY
+ ****************************************************/
+
+.calendar .week .multiday
+  .multiday-event-widget
+    border-radius: $border-radius
+    font-size: 0.8rem
+    padding: 0.2rem 0.2rem 0.2rem 0.4rem
+    border: 0.15rem solid rgba(0, 0, 0, 0)
+    border-radius: $border-radius
+    box-shadow: 0.3rem 0.3rem 0.3rem 0.3rem rgba(0 0 0 / 30%)
+
+    &:focus, &:hover
+      border: 0.15rem solid $neutral-100

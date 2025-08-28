@@ -7,25 +7,22 @@
   # The `inputs` attribute lists other flakes you would like to use.
   inputs = {
 
-  nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+  nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     swww.url = "github:LGFae/swww";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     hyprland.url = "github:hyprwm/Hyprland";
 
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins";
-      inputs.hyprland.follows = "hyprland";
-    };
-
     hardware.url = "github:nixos/nixos-hardware";
+
+    zen-browser.url = "github:MarceColl/zen-browser-flake";
 
     # Widgets
     ags.url = "github:Aylur/ags/v2.3.0";
@@ -38,7 +35,12 @@
   # Nix will fetch all the inputs (flakes) above, load *their* flake.nix files, and
   # then call the `outputs` function below with the results from loading all the
   # flakes above.
-  outputs = { home-manager, nixpkgs, ... } @ inputs: {
+  outputs = { 
+    home-manager,
+    nixpkgs,
+    nixpkgs-unstable,
+    ... 
+  } @ inputs: {
 
     nixosConfigurations = {
 
@@ -48,7 +50,7 @@
 
         # Set all inputs parameters as special arguments for all submodules,
         # so you can directly use all dependencies in inputs in submodules
-        specialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs nixpkgs-unstable;};
 
         modules = [
           ./hosts/astarion/nixos/configuration.nix
@@ -59,7 +61,7 @@
 
           {
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = {inherit inputs;};
+            home-manager.extraSpecialArgs = {inherit inputs nixpkgs-unstable;};
             home-manager.backupFileExtension = "hm-backup";
             home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
           }

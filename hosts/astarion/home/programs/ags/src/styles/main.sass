@@ -5,7 +5,7 @@
 
 *
   all: unset // remove default gtk styling
-  font-family: 'Karla'
+  font-family: $font-stack
 
 image
   -gtk-icon-style: symbolic
@@ -23,69 +23,39 @@ scale
     highlight
       background-color: $primary-500
 
-label
-  color: $neutral-100
-
-image
-  color: $neutral-100
-
-dropdown
-  background: $neutral-900
-  border-radius: $border-radius
-  color: $neutral-100
-
-  > button
-    background: transparent
-    border: none
-    padding: 0.2rem 0.4rem
-    color: inherit
-    border-radius: $border-radius
+switch
+  // Switch track/background
+  border-radius: 1rem
+  background: #ccc
+  transition: all 0.2s ease
   
-  > button:hover
-    background: $neutral-800
+  // The slider button
+  slider
+    min-width: 2rem
+    min-height: 2rem
+    border-radius: 50%
+    background: white
+    box-shadow: 0 0.15rem 0.3rem rgba(0, 0, 0, 0.2)
+    transition: all 0.15s
+    margin: 0.15rem
   
-  > button:active
-    background: $neutral-800
+  // Active/checked state
+  &:checked
+    background: $primary-500
+    
+  // Disabled state
+  &:disabled
+    opacity: 0.5
+    
+    slider
+      background: #f0f0f0
   
-  // Arrow icon in the button
-  > button > box > image
-    color: $neutral-200
-    margin-left: 4rem
+  // Focus state
+  &:focus
+    outline: 0.15rem solid $primary-500
+    outline-offset: 0.15rem
   
-  // The dropdown arrow
-  arrow
-    color: $neutral-100
-    min-width:  0.8rem 
-    min-height: 0.8rem 
-  
-  // The popover that contains the dropdown items
-  > popover
-    background: $neutral-800
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4)
-    margin-top: 4px
-  
-  // The scrolled window inside the popover
-  > popover > contents > scrolledwindow
-    background: transparent
-    border: none
-  
-  // The list view containing the items
-  > popover > contents > scrolledwindow > viewport > list
-    background: transparent
-    border: none
-  
-  // Individual dropdown items
-  > popover > contents > scrolledwindow > viewport > list > row
-    background: transparent
-    border: none
-    padding: 8px 12px
-    color: white
-    border-radius: 4px
-    margin: 2px
-  
-  > popover > contents > scrolledwindow > viewport > list > row:hover
-    background: $neutral-700
-  
-  > popover > contents > scrolledwindow > viewport > list > row:selected
-    background: rgba(100, 150, 255, 0.3)
-    color: white
+  // Hover states
+  &:hover:not(:disabled)
+    slider
+      box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.3)

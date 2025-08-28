@@ -61,7 +61,8 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
       cssClasses: ["info-bar"],
       orientation: 0,
       startWidget: Widget.Label({
-        label: themeName,
+        label:
+          settings.config.theme.themeConfig[themeName].displayName ?? themeName,
       }),
       endWidget: Widget.Image({
         iconName: "check-symbolic",
@@ -73,7 +74,11 @@ export const Theme = (globalRevealerState: Variable<boolean>) => {
 
   return ExpansionPanel({
     icon: "palette-symbolic",
-    label: bind(settings, "currentTheme"),
+    label: bind(settings, "currentTheme").as((themeName) => {
+      return (
+        settings.config.theme.themeConfig[themeName].displayName ?? themeName
+      );
+    }),
     children: settings.availableThemes.map(ThemeSelectButton),
     vertical: true,
     globalRevealerState: globalRevealerState,

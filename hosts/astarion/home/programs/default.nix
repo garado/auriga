@@ -12,7 +12,6 @@
     ./nvim
     # ./qutebrowser.nix
     ./taskwarrior.nix
-    ./wpaperd.nix
     ./zsh
   ];
 }
