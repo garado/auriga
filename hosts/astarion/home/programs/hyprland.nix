@@ -46,8 +46,10 @@
 
       # Some default env vars
       env = [
-        "XCURSOR_SIZE,32"
-        "WLR_NO_HARDWARE_CURSORS,1"
+        "XCURSOR_THEME,Bibata-Modern-Classic"
+        "XCURSOR_SIZE,24"
+        "HYPRCURSOR_THEME,Bibata-Modern-Classic"
+        "HYPRCURSOR_SIZE,24"
       ];
 
       # Input settings
