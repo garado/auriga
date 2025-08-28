@@ -2,7 +2,7 @@
 # █░█ █▄█ █▀█ █▀█ █░░ ▄▀█ █▄░█ █▀▄
 # █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
 
-{ inputs, lib, config, pkgs, ... }: {
+{ inputs, lib, config, pkgs, nixpkgs-unstable, ... }: {
   wayland.windowManager.hyprland = {
     enable = true;
 
@@ -17,7 +17,7 @@
     settings = {
       # Execute these programs at launch
       exec-once = [
-        "swww-daemon"
+        "sleep 1 && swww-daemon &"
         "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app.ts --gtk4"
       ];
 
@@ -46,8 +46,10 @@
 
       # Some default env vars
       env = [
-        "XCURSOR_SIZE,32"
-        "WLR_NO_HARDWARE_CURSORS,1"
+        "XCURSOR_THEME,Bibata-Modern-Classic"
+        "XCURSOR_SIZE,24"
+        "HYPRCURSOR_THEME,Bibata-Modern-Classic"
+        "HYPRCURSOR_SIZE,24"
       ];
 
       # Input settings

@@ -92,9 +92,6 @@ in {
 
     hledger
 
-    signal-desktop
-    signald
-
     cava
     vim
     brightnessctl
