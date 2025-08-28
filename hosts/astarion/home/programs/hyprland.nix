@@ -17,7 +17,7 @@
     settings = {
       # Execute these programs at launch
       exec-once = [
-        "swww-daemon"
+        "sleep 1 && swww-daemon &"
         "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app.ts --gtk4"
       ];
 
