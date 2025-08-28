@@ -2,7 +2,7 @@
 # █░█ █▄█ █▀█ █▀█ █░░ ▄▀█ █▄░█ █▀▄
 # █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
 
-{ inputs, lib, config, pkgs, ... }: {
+{ inputs, lib, config, pkgs, nixpkgs-unstable, ... }: {
   wayland.windowManager.hyprland = {
     enable = true;
 
