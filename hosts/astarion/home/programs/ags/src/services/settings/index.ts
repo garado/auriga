@@ -175,6 +175,20 @@ export default class SettingsManager extends GObject.Object {
   }
 
   /**
+   * Write to `userconfig.ts` with new config.
+   */
+  private updateConfig = async (themeName: string) => {
+    try {
+      const escapedTheme = themeName.replace(/[\/&]/g, "\\$&");
+      await execAsync(
+        `sed -i --follow-symlinks 's/currentTheme:.*/currentTheme: "${escapedTheme}",/' ${APP_PATHS.USER_CONFIG_PATH}`,
+      );
+    } catch (error) {
+      console.error("Failed to update config file:", error);
+    }
+  };
+
+  /**
    * Apply Neovim NvChad theme.
    * WARNING: This is very specific to my setup.
    */
@@ -224,27 +238,6 @@ export default class SettingsManager extends GObject.Object {
       console.error("Failed to compile SASS:", error);
       return;
     }
-
-    // Update config preserving symlinks
-    try {
-      // Read content (follows symlinks)
-      const configContent = await execAsync(
-        `cat ${APP_PATHS.USER_CONFIG_PATH}`,
-      );
-      const updatedContent = configContent.replace(
-        /currentTheme:.*/,
-        `currentTheme: "${themeName}",`,
-      );
-
-      // Write back using echo (preserves symlinks)
-      await execAsync([
-        "bash",
-        "-c",
-        `echo ${JSON.stringify(updatedContent)} > ${APP_PATHS.USER_CONFIG_PATH}`,
-      ]);
-    } catch (error) {
-      console.error("Failed to update config file:", error);
-    }
   };
 
   /**
@@ -264,6 +257,7 @@ export default class SettingsManager extends GObject.Object {
 
   // Public functions --------------------------------------------------------
   applyTheme(themeName: string) {
+    this.updateConfig(themeName);
     this.applyKittyTheme(themeName);
     this.applyNeovimTheme(themeName);
     this.applyWallpaper(themeName);
