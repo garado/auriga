@@ -237,9 +237,11 @@ export default class SettingsManager extends GObject.Object {
       );
 
       // Write back using echo (preserves symlinks)
-      await execAsync(
-        `bash -c 'echo ${JSON.stringify(updatedContent).slice(1, -1)} > ${APP_PATHS.USER_CONFIG_PATH}'`,
-      );
+      await execAsync([
+        "bash",
+        "-c",
+        `echo ${JSON.stringify(updatedContent)} > ${APP_PATHS.USER_CONFIG_PATH}`,
+      ]);
     } catch (error) {
       console.error("Failed to update config file:", error);
     }
