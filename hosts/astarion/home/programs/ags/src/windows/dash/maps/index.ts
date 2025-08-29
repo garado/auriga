@@ -4,6 +4,7 @@
 
 import { Widget } from "astal/gtk4";
 import MapWidget from "./CustomMap";
+import Sidebar from "./Sidebar";
 
 /*****************************************************************************
  * Widget
@@ -15,13 +16,13 @@ export default () => {
     style: "dark",
   });
 
-  const mapContainer = Widget.Box({
-    cssClasses: ["map-container"],
-    children: [map],
-  });
-
-  return Widget.Box({
+  return Widget.Overlay({
     cssClasses: ["maps"],
-    children: [mapContainer],
+    canTarget: true,
+    hexpand: true,
+    child: map,
+    setup: (self) => {
+      self.add_overlay(Sidebar());
+    },
   });
 };
