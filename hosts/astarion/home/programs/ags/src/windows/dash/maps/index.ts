@@ -5,6 +5,16 @@
 import { Widget } from "astal/gtk4";
 import MapWidget from "./CustomMap";
 import Sidebar from "./Sidebar";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
+
+/*****************************************************************************
+ * Shortcuts
+ *****************************************************************************/
+
+const KB_SHORTCUTS = {
+  CLOSE_SIDEBAR: "Escape",
+  OPEN_SIDEBAR: "L",
+} as const;
 
 /*****************************************************************************
  * Widget
@@ -15,6 +25,8 @@ export default () => {
     zoom: 10,
     style: "dark",
   });
+
+  const sidebar = Sidebar();
 
   const route231Coordinates = [
     { lat: 37.557355, lng: -121.97663 }, // Fremont BART
@@ -33,6 +45,21 @@ export default () => {
     cssClasses: ["maps"],
     hexpand: true,
     vexpand: true,
-    children: [map, Sidebar()],
+    children: [map, sidebar],
+    setup: (self) => {
+      setupEventController({
+        name: "Map",
+        widget: self,
+        forwardTarget: sidebar,
+        binds: {
+          [KB_SHORTCUTS.OPEN_SIDEBAR]: () => {
+            sidebar.revealer.set(true);
+          },
+          [KB_SHORTCUTS.CLOSE_SIDEBAR]: () => {
+            sidebar.revealer.set(false);
+          },
+        },
+      });
+    },
   });
 };

@@ -57,11 +57,15 @@ export default () => {
 
   const sidebarHandle = Widget.Box({
     cssClasses: ["handle"],
-    vexpand: true,
     children: [
       Widget.Button({
+        canFocus: false,
         cursor: Gdk.Cursor.new_from_name("pointer", null),
-        child: Widget.Label({ label: "!!!" }),
+        child: Widget.Image({
+          iconName: bind(sidebarRevealState).as((revealed) =>
+            revealed ? "caret-left-symbolic" : "caret-right-symbolic",
+          ),
+        }),
         onButtonPressed: () => {
           sidebarRevealState.set(!sidebarRevealState.get());
         },
@@ -76,10 +80,22 @@ export default () => {
     revealChild: bind(sidebarRevealState),
   });
 
-  return Widget.Box({
+  const ret = Widget.Box({
     halign: Gtk.Align.END,
     vertical: false,
     hexpand: false,
     children: [sidebarHandle, sidebarRevealer],
   });
+
+  Object.assign(ret, {
+    revealer: sidebarRevealState,
+  });
+
+  sidebarRevealState.subscribe((revealed) => {
+    if (revealed) {
+      startingPoint.grab_focus();
+    }
+  });
+
+  return ret;
 };
