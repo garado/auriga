@@ -2,10 +2,25 @@
 @use '../../../theme/theme' as *
 
 .maps
-  padding: 1rem
-
+  // Sidebar that pops out with options for the user
   .sidebar
+    padding: 1rem
     background-color: $neutral-800
-    min-width: 20rem
 
+    &.expanded
+      min-width: 24rem
+
+    // Little slidey-out thing
+    .handle >
+      background-color: $neutral-800
+
+    // "Where to?"
+    .header
+      font-size: 1.4rem
+      margin-bottom: 0.5rem
+
+    // Where the user enters start/end destination
     .search
+
+  // Contains the map widget
+  .map-container

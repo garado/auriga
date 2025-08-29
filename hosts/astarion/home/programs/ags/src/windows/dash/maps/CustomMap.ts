@@ -87,6 +87,7 @@ export const MapWidget = GObject.registerClass(
     private referenceSource: Shumate.MapSource;
     private mapView: Shumate.SimpleMap;
     private viewport: Shumate.Viewport;
+    private pathLayer: Shumate.PathLayer;
     private _latitude: number = DEFAULT_LATITUDE;
     private _longitude: number = DEFAULT_LONGITUDE;
     private _zoom: number = 12;
@@ -111,6 +112,11 @@ export const MapWidget = GObject.registerClass(
 
       this.viewport = this.mapView.get_viewport();
       this.viewport.set_reference_map_source(this.referenceSource);
+
+      this.pathLayer = new Shumate.PathLayer({
+        viewport: this.viewport,
+      });
+      this.mapView.add_overlay_layer(this.pathLayer);
 
       this.append(this.mapView);
 
@@ -220,6 +226,46 @@ export const MapWidget = GObject.registerClass(
     getViewport(): Shumate.Viewport {
       return this.viewport;
     }
+
+    addRoute(
+      coordinates: Array<{ lat: number; lng: number }>,
+      color: string = "#BF616A",
+    ): void {
+      // Add coordinates directly to the path layer
+      coordinates.forEach((coord) => {
+        const location = new Shumate.Coordinate({
+          latitude: coord.lat,
+          longitude: coord.lng,
+        });
+        this.pathLayer.add_node(location);
+      });
+
+      // Set path styling
+      // this.pathLayer.set_stroke_color(1.0, 0.42, 0.21);
+      this.pathLayer.set_stroke_width(4.0);
+    }
+
+    // Clear all routes
+    clearRoutes(): void {
+      // this.pathLayer.remove_all_nodes();
+    }
+
+    // Add stop markers
+    // addStop(latitude: number, longitude: number, label?: string): void {
+    //   const marker = new Shumate.Marker({
+    //     latitude: latitude,
+    //     longitude: longitude,
+    //   });
+    //
+    //   // Create a simple stop icon (you can customize this)
+    //   const icon = new Gtk.Image({
+    //     iconName: "mark-location-symbolic",
+    //     iconSize: Gtk.IconSize.LARGE,
+    //   });
+    //   marker.set_child(icon);
+    //
+    //   this.mapView.add_marker(marker);
+    // }
   },
 );
 

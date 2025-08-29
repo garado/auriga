@@ -1,9 +1,16 @@
+/**
+ * █▀ █ █▀▄ █▀▀ █▄▄ ▄▀█ █▀█
+ * ▄█ █ █▄▀ ██▄ █▄█ █▀█ █▀▄
+ *
+ */
+
 /*****************************************************************************
  * Imports
  *****************************************************************************/
 
+import Astalified from "@/components/astalified";
 import { bind, Variable } from "astal";
-import { Gtk, Widget } from "astal/gtk4";
+import { Gdk, Gtk, Widget } from "astal/gtk4";
 
 /*****************************************************************************
  * Widget
@@ -12,8 +19,22 @@ import { Gtk, Widget } from "astal/gtk4";
 const sidebarRevealState = Variable(false);
 
 export default () => {
-  const searchBar = Widget.Entry({
+  const startingPoint = Widget.Entry({
     cssClasses: ["search"],
+  });
+
+  const startingPointContainer = Astalified.Frame({
+    label: "Starting point",
+    child: startingPoint,
+  });
+
+  const endingPoint = Widget.Entry({
+    cssClasses: ["search"],
+  });
+
+  const endingPointContainer = Astalified.Frame({
+    label: "Destination",
+    child: endingPoint,
   });
 
   const sidebarContent = Widget.Box({
@@ -23,14 +44,23 @@ export default () => {
     ]),
     vexpand: true,
     vertical: true,
-    children: [searchBar, Widget.Label({ label: "SIDEBAR!" })],
+    spacing: 8,
+    children: [
+      Widget.Label({
+        cssClasses: ["header"],
+        label: "Where to?",
+      }),
+      startingPointContainer,
+      endingPointContainer,
+    ],
   });
 
   const sidebarHandle = Widget.Box({
-    cssClasses: ["sidebar-handle"],
+    cssClasses: ["handle"],
     vexpand: true,
     children: [
       Widget.Button({
+        cursor: Gdk.Cursor.new_from_name("pointer", null),
         child: Widget.Label({ label: "!!!" }),
         onButtonPressed: () => {
           sidebarRevealState.set(!sidebarRevealState.get());
@@ -49,7 +79,7 @@ export default () => {
   return Widget.Box({
     halign: Gtk.Align.END,
     vertical: false,
-    hexpand: true,
+    hexpand: false,
     children: [sidebarHandle, sidebarRevealer],
   });
 };
