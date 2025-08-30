@@ -182,6 +182,8 @@ export const MapWidget = GObject.registerClass(
     }
 
     private updateStyle(): void {
+      if (this.mapView === undefined) return;
+
       if (this._style === "osm") {
         this.mapView.set_map_source(this.referenceSource);
         return;

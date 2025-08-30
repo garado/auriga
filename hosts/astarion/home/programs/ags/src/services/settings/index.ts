@@ -108,6 +108,7 @@ export interface SystemConfig {
 
   transit: {
     apiKey: string;
+    autocompleteApiKey: string;
     defaultLocation: Location;
     searchRadius: number;
   };

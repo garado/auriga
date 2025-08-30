@@ -4,7 +4,7 @@
 
 import { Widget } from "astal/gtk4";
 import MapWidget from "./CustomMap";
-import Sidebar from "./Sidebar";
+import Sidebar from "./sidebar";
 import Transit from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 

@@ -1,7 +1,6 @@
 /**
  * █▀ █ █▀▄ █▀▀ █▄▄ ▄▀█ █▀█
  * ▄█ █ █▄▀ ██▄ █▄█ █▀█ █▀▄
- *
  */
 
 /*****************************************************************************
@@ -11,6 +10,8 @@
 import Astalified from "@/components/astalified";
 import { bind, Variable } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
+
+import LocationAutocomplete from "@/services/LocationAutocomplete";
 
 /*****************************************************************************
  * Widget
@@ -22,11 +23,32 @@ const CSS_CLASSES = {
 
 const sidebarRevealState = Variable(false);
 
+const autocomplete = LocationAutocomplete.get_default();
+
 /** Top portion of the sidebar where user selects origin/destination */
 const SidebarTop = () => {
   const startingPoint = Widget.Entry({
     cssClasses: ["search"],
     placeholderText: "Origin",
+    onActivate: async (self) => {
+      print(`searching for ${self.text}`);
+      try {
+        const responses = await autocomplete.searchNear(self.text);
+        for (let index = 0; index < responses.length; index++) {
+          const element = responses[index];
+          print(JSON.stringify(element));
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    setup: (self) => {
+      sidebarRevealState.subscribe((revealed) => {
+        if (revealed) {
+          self.grab_focus();
+        }
+      });
+    },
   });
 
   const startingPointContainer = Astalified.Frame({
@@ -125,12 +147,6 @@ export default () => {
 
   Object.assign(ret, {
     revealer: sidebarRevealState,
-  });
-
-  sidebarRevealState.subscribe((revealed) => {
-    if (revealed) {
-      startingPoint.grab_focus();
-    }
   });
 
   return ret;

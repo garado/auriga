@@ -35,6 +35,7 @@ const logFlags: { [key: string]: boolean } = {
   lifeService: false,
   ledgerService: false,
   transitService: true,
+  locationService: true,
 
   eventControllerKey: false,
 };

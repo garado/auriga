@@ -207,7 +207,6 @@ async function makeApiCall(
     throw new Error("Transit API key not configured");
   }
 
-  // Build query string manually since URLSearchParams isn't available in GJS
   const queryParts: string[] = [];
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
@@ -322,10 +321,9 @@ export default class Transit extends GObject.Object {
    */
   #getCurrentLocation = async () => {
     try {
-      // This is a simplified example - you might want to use a proper geolocation service
       log("transitService", "Getting current location...");
       // For now, use a default location (you can implement proper geolocation)
-      this.currentLocation = { lat: 45.5017, lon: -73.5673 }; // Montreal as default
+      this.currentLocation = { lat: 45.5017, lon: -73.5673 };
       this.#fetchNearbyData();
     } catch (error) {
       log("transitService", `Failed to get location: ${error}`);

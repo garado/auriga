@@ -140,8 +140,9 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
 
   transit: {
     apiKey: "",
+    autocompleteApiKey: "",
     defaultLocation: {
-      lat: 37.7749,
+      lat: 37.7749, // SF
       lon: -122.4194,
     },
     searchRadius: 50,
