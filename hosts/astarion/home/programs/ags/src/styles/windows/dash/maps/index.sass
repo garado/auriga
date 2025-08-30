@@ -4,23 +4,32 @@
 .maps
   // Sidebar that pops out with options for the user
   .sidebar
-    padding: 1rem
     background-color: $neutral-800
 
     &.expanded
       min-width: 24rem
 
-    // Little slidey-out thing
-    .handle
-      background-color: $neutral-800
+    > *
+      padding: 1rem
 
-    // "Where to?"
-    .header
-      font-size: 1.4rem
-      margin-bottom: 0.5rem
+    .top-section
+      background-color: $primary-500
 
-    // Where the user enters start/end destination
-    .search
+      // Little slidey-out thing
+      .handle
+        background-color: $neutral-800
+
+      // "Where to?"
+      .header
+        font-size: 1.4rem
+        margin-bottom: 0.5rem
+
+      // Where the user enters start/end destination
+      .search
+
+      // Button to swap origin/destination text
+      .origin-dest-swap
+        margin-left: 0.4rem
 
   .map
     map-view
