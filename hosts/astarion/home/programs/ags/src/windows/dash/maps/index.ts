@@ -5,7 +5,10 @@
 import { Widget } from "astal/gtk4";
 import MapWidget from "./CustomMap";
 import Sidebar from "./Sidebar";
+import Transit from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
+
+Transit.get_default();
 
 /*****************************************************************************
  * Shortcuts

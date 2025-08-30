@@ -19,6 +19,7 @@ import { exec, execAsync } from "astal/process";
 import { AccountConfig } from "../Ledger.ts";
 import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
 import { fileWrite } from "@/utils/File.ts";
+import { Location } from "../Transit.ts";
 
 /*****************************************************************************
  * Constants
@@ -103,6 +104,12 @@ export interface SystemConfig {
   misc: {
     /** @TODO use sops instead */
     geminiAPI: string;
+  };
+
+  transit: {
+    apiKey: string;
+    defaultLocation: Location;
+    searchRadius: number;
   };
 }
 
