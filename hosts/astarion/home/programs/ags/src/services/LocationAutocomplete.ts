@@ -6,7 +6,7 @@
  * https://docs.locationiq.com/docs/autocomplete#brief-overview-of-request--response-parameters
  */
 
-import { GObject, register, property } from "astal/gobject";
+import { GObject, register, property, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
@@ -79,6 +79,16 @@ export interface PlaceDetails {
   boundingBox: BoundingBox;
   class: string;
   type: string;
+}
+
+interface CacheEntry {
+  data: PlacePrediction[];
+  timestamp: number;
+  options: SearchOptions;
+}
+
+interface SearchCache {
+  [key: string]: CacheEntry;
 }
 
 /**********************************************
@@ -208,6 +218,10 @@ export default class LocationAutocomplete extends GObject.Object {
    * PROPERTIES
    **************************************************/
 
+  private searchCache: SearchCache = {};
+  private cacheTimeout: number = 30 * 24 * 60 * 60 * 1000; // 30 days
+  private cacheFilePath: string;
+
   @property(Object)
   declare recentPredictions: PlacePrediction[];
 
@@ -239,7 +253,120 @@ export default class LocationAutocomplete extends GObject.Object {
     this.currentQuery = "";
     this.isSearching = false;
     this.currentLocation = locationConfig.defaultLocation;
+    this.cacheFilePath = `${GLib.get_user_cache_dir()}/locationiq-cache.json`;
+    this.#loadCacheFromFile();
   }
+
+  /**
+   * @function generateCacheKey
+   * @brief Generate a cache key from search options.
+   */
+  #generateCacheKey = (options: SearchOptions): string => {
+    const keyParts = [
+      options.query.toLowerCase(),
+      options.limit || 10,
+      options.bounded ? 1 : 0,
+      options.normalizeCity ? 1 : 0,
+      options.viewbox
+        ? `${options.viewbox.minLat},${options.viewbox.minLon},${options.viewbox.maxLat},${options.viewbox.maxLon}`
+        : "",
+      options.countryCodes?.join(",") || "",
+      options.acceptLanguage || "",
+      options.tag || "",
+    ];
+
+    return keyParts.join("|");
+  };
+
+  /**
+   * @function loadCacheFromFile
+   * @brief Load cache from disk.
+   */
+  #loadCacheFromFile = () => {
+    try {
+      execAsync(`cat "${this.cacheFilePath}"`)
+        .then((content) => {
+          this.searchCache = JSON.parse(content);
+          log("locationService", "Cache loaded from file");
+        })
+        .catch(() => {
+          this.searchCache = {};
+        });
+    } catch (error) {
+      log("locationService", `Failed to load cache: ${error}`);
+      this.searchCache = {};
+    }
+  };
+
+  /**
+   * @function saveCacheToFile
+   * @brief Save cache to disk.
+   */
+  #saveCacheToFile = () => {
+    try {
+      const data = JSON.stringify(this.searchCache);
+      const cmd = `bash -c 'cat > "${this.cacheFilePath}" << "EOF"
+${data}
+EOF'`;
+
+      execAsync(cmd).catch((error) => {
+        log("locationService", `Failed to save cache: ${error}`);
+      });
+    } catch (error) {
+      log("locationService", `Failed to save cache: ${error}`);
+    }
+  };
+
+  /**
+   * @function getCachedResult
+   * @brief Get cached result if available and not expired.
+   */
+  #getCachedResult = (options: SearchOptions): PlacePrediction[] | null => {
+    const key = this.#generateCacheKey(options);
+    const cached = this.searchCache[key];
+
+    if (!cached) {
+      return null;
+    }
+
+    const now = Date.now();
+    if (now - cached.timestamp > this.cacheTimeout) {
+      delete this.searchCache[key];
+      return null;
+    }
+
+    log("locationService", `Cache hit for: ${options.query}`);
+    return cached.data;
+  };
+
+  /**
+   * @function setCachedResult
+   * @brief Store result in cache and save to disk.
+   */
+  #setCachedResult = (options: SearchOptions, data: PlacePrediction[]) => {
+    const key = this.#generateCacheKey(options);
+    this.searchCache[key] = {
+      data,
+      timestamp: Date.now(),
+      options,
+    };
+
+    this.#saveCacheToFile();
+    log("locationService", `Cached result for: ${options.query}`);
+  };
+
+  /**
+   * @function cleanExpiredCache
+   * @brief Remove expired entries from cache.
+   */
+  #cleanExpiredCache = () => {
+    const now = Date.now();
+    Object.keys(this.searchCache).forEach((key) => {
+      if (now - this.searchCache[key].timestamp > this.cacheTimeout) {
+        delete this.searchCache[key];
+      }
+    });
+  };
 
   /**
    * @function addToHistory
@@ -343,10 +470,26 @@ export default class LocationAutocomplete extends GObject.Object {
     };
 
     try {
+      // Check cache first
+      const cachedResult = this.#getCachedResult(searchOptions);
+      if (cachedResult) {
+        this.recentPredictions = cachedResult;
+        return cachedResult;
+      }
+
+      // If not cached, perform the search
       const predictions = await this.#performAutocomplete(searchOptions);
+
+      // Cache the result
+      this.#setCachedResult(searchOptions, predictions);
 
       this.recentPredictions = predictions;
       this.#addToHistory(searchOptions);
+
+      // Clean expired cache entries periodically
+      if (Object.keys(this.searchCache).length > 50) {
+        this.#cleanExpiredCache();
+      }
 
       return predictions;
     } finally {
@@ -430,6 +573,44 @@ export default class LocationAutocomplete extends GObject.Object {
       },
       class: place.class,
       type: place.type,
+    };
+  };
+
+  /**
+   * @function clearCache
+   * @brief Clear all cached search results.
+   */
+  clearCache = () => {
+    this.searchCache = {};
+    this.#saveCacheToFile();
+    log("locationService", "Search cache cleared");
+  };
+
+  /**
+   * @function setCacheTimeout
+   * @brief Update cache timeout duration.
+   */
+  setCacheTimeout = (timeoutMs: number) => {
+    this.cacheTimeout = timeoutMs;
+    log("locationService", `Cache timeout set to ${timeoutMs}ms`);
+  };
+
+  /**
+   * @function getCacheStats
+   * @brief Get cache statistics.
+   */
+  getCacheStats = () => {
+    const now = Date.now();
+    const entries = Object.values(this.searchCache);
+    const expiredCount = entries.filter(
+      (entry) => now - entry.timestamp > this.cacheTimeout,
+    ).length;
+
+    return {
+      totalEntries: entries.length,
+      expiredEntries: expiredCount,
+      validEntries: entries.length - expiredCount,
+      cacheTimeout: this.cacheTimeout,
     };
   };
 
