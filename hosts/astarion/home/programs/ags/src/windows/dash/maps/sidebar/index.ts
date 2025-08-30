@@ -8,10 +8,12 @@
  *****************************************************************************/
 
 import Astalified from "@/components/astalified";
-import { bind, Variable } from "astal";
+import { bind } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 
 import LocationAutocomplete from "@/services/LocationAutocomplete";
+import { sidebarRevealState } from "./StateManagement";
+import { Prediction } from "./Location";
 
 /*****************************************************************************
  * Widget
@@ -21,9 +23,13 @@ const CSS_CLASSES = {
   ORIGIN_DEST_SWAP: "origin-dest-swap",
 } as const;
 
-const sidebarRevealState = Variable(false);
-
 const autocomplete = LocationAutocomplete.get_default();
+
+const ughContent = Widget.Box({
+  cssClasses: ["section-content"],
+  spacing: 8,
+  vertical: true,
+});
 
 /** Top portion of the sidebar where user selects origin/destination */
 const SidebarTop = () => {
@@ -31,13 +37,9 @@ const SidebarTop = () => {
     cssClasses: ["search"],
     placeholderText: "Origin",
     onActivate: async (self) => {
-      print(`searching for ${self.text}`);
       try {
         const responses = await autocomplete.searchNear(self.text);
-        for (let index = 0; index < responses.length; index++) {
-          const element = responses[index];
-          print(JSON.stringify(element));
-        }
+        ughContent.children = responses.map(Prediction);
       } catch (error) {
         console.log(error);
       }
@@ -111,7 +113,7 @@ export default () => {
     vexpand: true,
     vertical: true,
     spacing: 8,
-    children: [SidebarTop()],
+    children: [SidebarTop(), ughContent],
   });
 
   const sidebarHandle = Widget.CenterBox({
@@ -134,6 +136,7 @@ export default () => {
   const sidebarRevealer = Widget.Revealer({
     canTarget: true,
     child: sidebarContent,
+    hexpand: false,
     transitionType: Gtk.RevealerTransitionType.SLIDE_RIGHT,
     revealChild: bind(sidebarRevealState),
   });
