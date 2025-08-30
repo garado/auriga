@@ -1,6 +1,6 @@
 import { PlacePrediction } from "@/services/LocationAutocomplete";
-import { Gtk, Widget } from "astal/gtk4";
-import Pango from "gi://Pango?version=1.0";
+import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { origin } from "./StateManagement";
 
 export const Prediction = (prediction: PlacePrediction) => {
   const icon = Widget.Image({
@@ -9,29 +9,40 @@ export const Prediction = (prediction: PlacePrediction) => {
 
   const info = Widget.Box({
     vertical: true,
+    hexpand: false,
     children: [
       Widget.Label({
-        label: prediction.displayName || "No name",
-        hexpand: false,
+        label: prediction.displayPlace || "No name",
         cssClasses: ["name"],
-        ellipsize: Pango.EllipsizeMode.END,
+        halign: Gtk.Align.START,
+        hexpand: false,
         justify: Gtk.Justification.LEFT,
       }),
       Widget.Label({
         label: prediction.displayAddress || "No address",
         cssClasses: ["address"],
+        halign: Gtk.Align.START,
         hexpand: false,
-        ellipsize: Pango.EllipsizeMode.END,
         justify: Gtk.Justification.LEFT,
+        wrap: true,
       }),
     ],
   });
 
-  return Widget.Box({
-    cssClasses: ["place-prediction"],
+  const predictionWidget = Widget.Box({
     vertical: false,
     hexpand: false,
     spacing: 8,
     children: [icon, info],
+  });
+
+  return Widget.Button({
+    cssClasses: ["place-prediction"],
+    child: predictionWidget,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    hexpand: false,
+    onButtonPressed: () => {
+      origin.set(prediction);
+    },
   });
 };

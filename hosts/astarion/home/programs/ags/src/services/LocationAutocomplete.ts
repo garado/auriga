@@ -504,7 +504,7 @@ EOF'`;
   searchNear = async (
     query: string,
     location: Location = this.currentLocation,
-    radiusKm: number = 10,
+    radiusKm: number = 70,
     options: Partial<SearchOptions> = {},
   ): Promise<PlacePrediction[]> => {
     // Create viewbox around the location (approximate)

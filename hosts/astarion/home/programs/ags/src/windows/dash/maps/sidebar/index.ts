@@ -11,9 +11,11 @@ import Astalified from "@/components/astalified";
 import { bind } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 
-import LocationAutocomplete from "@/services/LocationAutocomplete";
-import { sidebarRevealState } from "./StateManagement";
-import { Prediction } from "./Location";
+import LocationAutocomplete, {
+  PlacePrediction,
+} from "@/services/LocationAutocomplete";
+import { origin, sidebarRevealState } from "./StateManagement";
+import { Prediction } from "./Prediction";
 
 /*****************************************************************************
  * Widget
@@ -25,8 +27,9 @@ const CSS_CLASSES = {
 
 const autocomplete = LocationAutocomplete.get_default();
 
-const ughContent = Widget.Box({
+const sidebarContent = Widget.Box({
   cssClasses: ["section-content"],
+  hexpand: false,
   spacing: 8,
   vertical: true,
 });
@@ -39,7 +42,7 @@ const SidebarTop = () => {
     onActivate: async (self) => {
       try {
         const responses = await autocomplete.searchNear(self.text);
-        ughContent.children = responses.map(Prediction);
+        sidebarContent.children = responses.map(Prediction);
       } catch (error) {
         console.log(error);
       }
@@ -49,6 +52,10 @@ const SidebarTop = () => {
         if (revealed) {
           self.grab_focus();
         }
+      });
+
+      origin.subscribe((originPrediction: PlacePrediction) => {
+        self.text = originPrediction.displayPlace || "";
       });
     },
   });
@@ -105,15 +112,16 @@ const SidebarTop = () => {
 };
 
 export default () => {
-  const sidebarContent = Widget.Box({
+  const sidebar = Widget.Box({
     cssClasses: bind(sidebarRevealState).as((state) => [
       "sidebar",
       ...(state ? ["expanded"] : []),
     ]),
     vexpand: true,
+    hexpand: false,
     vertical: true,
     spacing: 8,
-    children: [SidebarTop(), ughContent],
+    children: [SidebarTop(), sidebarContent],
   });
 
   const sidebarHandle = Widget.CenterBox({
@@ -135,22 +143,16 @@ export default () => {
 
   const sidebarRevealer = Widget.Revealer({
     canTarget: true,
-    child: sidebarContent,
+    child: sidebar,
     hexpand: false,
     transitionType: Gtk.RevealerTransitionType.SLIDE_RIGHT,
     revealChild: bind(sidebarRevealState),
   });
 
-  const ret = Widget.Box({
+  return Widget.Box({
     halign: Gtk.Align.END,
     vertical: false,
     hexpand: false,
     children: [sidebarHandle, sidebarRevealer],
   });
-
-  Object.assign(ret, {
-    revealer: sidebarRevealState,
-  });
-
-  return ret;
 };

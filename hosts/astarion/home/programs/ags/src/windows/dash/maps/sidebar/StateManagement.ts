@@ -1,10 +1,13 @@
-import LocationAutocomplete, {
-  PlacePrediction,
-} from "@/services/LocationAutocomplete";
+import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Variable } from "astal";
 
 // Is sidebar expanded or not
 export const sidebarRevealState = Variable(false);
 
-export const origin = Variable(undefined);
-export const destination = Variable(undefined);
+// Selected origin for trip
+export const origin: Variable<PlacePrediction> = Variable(undefined as any);
+
+// Selected destination for trip
+export const destination: Variable<PlacePrediction> = Variable(
+  undefined as any,
+);

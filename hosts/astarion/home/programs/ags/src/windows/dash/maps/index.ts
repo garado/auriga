@@ -7,6 +7,7 @@ import MapWidget from "./CustomMap";
 import Sidebar from "./sidebar";
 import Transit from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { sidebarRevealState } from "./sidebar/StateManagement";
 
 Transit.get_default();
 
@@ -46,8 +47,6 @@ export default () => {
 
   return Widget.Box({
     cssClasses: ["maps"],
-    hexpand: true,
-    vexpand: true,
     children: [map, sidebar],
     setup: (self) => {
       setupEventController({
@@ -56,10 +55,10 @@ export default () => {
         forwardTarget: sidebar,
         binds: {
           [KB_SHORTCUTS.OPEN_SIDEBAR]: () => {
-            sidebar.revealer.set(true);
+            sidebarRevealState.set(true);
           },
           [KB_SHORTCUTS.CLOSE_SIDEBAR]: () => {
-            sidebar.revealer.set(false);
+            sidebarRevealState.set(true);
           },
         },
       });
