@@ -8,14 +8,11 @@
  *****************************************************************************/
 
 import Astalified from "@/components/astalified";
-import { bind } from "astal";
+import { bind, Variable } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 
-import LocationAutocomplete, {
-  PlacePrediction,
-} from "@/services/LocationAutocomplete";
-import { origin, sidebarRevealState } from "./StateManagement";
-import { Prediction } from "./Prediction";
+import { destination, origin, sidebarRevealState } from "./StateManagement";
+import { SearchBox } from "./components/SearchBox";
 
 /*****************************************************************************
  * Widget
@@ -24,8 +21,6 @@ import { Prediction } from "./Prediction";
 const CSS_CLASSES = {
   ORIGIN_DEST_SWAP: "origin-dest-swap",
 } as const;
-
-const autocomplete = LocationAutocomplete.get_default();
 
 const sidebarContent = Widget.Box({
   cssClasses: ["section-content"],
@@ -36,41 +31,29 @@ const sidebarContent = Widget.Box({
 
 /** Top portion of the sidebar where user selects origin/destination */
 const SidebarTop = () => {
-  const startingPoint = Widget.Entry({
+  const startingPointContainer = Astalified.Frame({
     cssClasses: ["search"],
-    placeholderText: "Origin",
-    onActivate: async (self) => {
-      try {
-        const responses = await autocomplete.searchNear(self.text);
-        sidebarContent.children = responses.map(Prediction);
-      } catch (error) {
-        console.log(error);
-      }
-    },
+    child: SearchBox({
+      placeholder: "Origin",
+      contentTarget: sidebarContent,
+      selectionTarget: origin,
+    }),
     setup: (self) => {
       sidebarRevealState.subscribe((revealed) => {
         if (revealed) {
-          self.grab_focus();
+          self.child.grab_focus();
         }
-      });
-
-      origin.subscribe((originPrediction: PlacePrediction) => {
-        self.text = originPrediction.displayPlace || "";
       });
     },
   });
 
-  const startingPointContainer = Astalified.Frame({
-    child: startingPoint,
-  });
-
-  const endingPoint = Widget.Entry({
-    cssClasses: ["search"],
-    placeholderText: "Destination",
-  });
-
   const endingPointContainer = Astalified.Frame({
-    child: endingPoint,
+    cssClasses: ["search"],
+    child: SearchBox({
+      placeholder: "Destination",
+      contentTarget: sidebarContent,
+      selectionTarget: destination,
+    }),
   });
 
   const swapOriginAndDestination = Widget.Button({
@@ -78,6 +61,26 @@ const SidebarTop = () => {
     valign: Gtk.Align.CENTER,
     cssClasses: [CSS_CLASSES.ORIGIN_DEST_SWAP],
     iconName: "arrow-down-up-symbolic",
+    onButtonPressed: () => {
+      const newOrigin = destination.get();
+      const newDestination = origin.get();
+      origin.set(newOrigin);
+      destination.set(newDestination);
+    },
+  });
+
+  const startTrip = Widget.Button({
+    cssClasses: ["start-trip-btn"],
+    hexpand: true,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    child: Widget.Label({
+      label: "Start trip",
+    }),
+    setup: (self) => {
+      Variable.derive([origin, destination], (x, y) => {
+        self.visible = x !== undefined && y !== undefined;
+      });
+    },
   });
 
   const content = Widget.Box({
@@ -101,12 +104,14 @@ const SidebarTop = () => {
     vexpand: false,
     hexpand: true,
     vertical: true,
+    spacing: 8,
     children: [
       Widget.Label({
         cssClasses: ["header"],
         label: "Where to?",
       }),
       content,
+      startTrip,
     ],
   });
 };

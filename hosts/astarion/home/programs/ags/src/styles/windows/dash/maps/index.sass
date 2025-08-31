@@ -2,6 +2,10 @@
 @use '../../../theme/theme' as *
 
 .maps
+  
+  .map-overlay
+    background-color: rgba($primary-500, 0.3)
+
   // Sidebar that pops out with options for the user
   .sidebar
     background-color: $neutral-800
@@ -26,10 +30,29 @@
 
       // Where the user enters start/end destination
       .search
+        border-color: transparent
+        background-color: $primary-300
+
+        placeholder
+          color: $primary-700
+
+        &:focus-within
+          background-color: $primary-700
+
+          placeholder
+            color: $neutral-100
 
       // Button to swap origin/destination text
       .origin-dest-swap
         margin-left: 0.4rem
+
+      .start-trip-btn
+        padding: 0.4rem 0.2rem
+        border-radius: $border-radius
+        background-color: $primary-300
+
+        &:hover
+          background-color: $primary-700
 
     .section-content
       // Autocompleted
@@ -38,7 +61,7 @@
         background-color: $neutral-800
         border-radius: $border-radius
 
-        &:hover
+        &:hover, &:focus
           background-color: $neutral-600
 
         .name

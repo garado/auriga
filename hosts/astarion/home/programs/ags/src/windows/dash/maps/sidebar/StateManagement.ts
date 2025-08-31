@@ -5,9 +5,9 @@ import { Variable } from "astal";
 export const sidebarRevealState = Variable(false);
 
 // Selected origin for trip
-export const origin: Variable<PlacePrediction> = Variable(undefined as any);
+export const origin: Variable<PlacePrediction | undefined> =
+  Variable(undefined);
 
 // Selected destination for trip
-export const destination: Variable<PlacePrediction> = Variable(
-  undefined as any,
-);
+export const destination: Variable<PlacePrediction | undefined> =
+  Variable(undefined);

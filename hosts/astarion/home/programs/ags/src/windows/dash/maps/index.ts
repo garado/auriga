@@ -32,22 +32,27 @@ export default () => {
 
   const sidebar = Sidebar();
 
-  const route231Coordinates = [
-    { lat: 37.557355, lng: -121.97663 }, // Fremont BART
-    { lat: 37.54847, lng: -121.988891 }, // Walnut Ave & Fremont Blvd
-    { lat: 37.534563, lng: -121.995827 }, // Fremont Blvd & Auto Mall Pkwy
-    { lat: 37.487644, lng: -121.916904 }, // Auto Mall Pkwy & Osgood Rd
-    { lat: 37.486753, lng: -121.913607 }, // Warm Springs/South Fremont BART
-    { lat: 37.432741, lng: -121.890221 }, // Warm Springs Blvd & Dixon Landing
-    { lat: 37.410178, lng: -121.890542 }, // Milpitas Blvd & Great Mall Pkwy
-    { lat: 37.409467, lng: -121.890859 }, // Milpitas BART
-  ];
+  const mapContainer = Widget.Overlay({
+    hexpand: true,
+    vexpand: true,
+    child: map,
+    setup: (self) => {
+      // Overlay a semi-transparent box on top of the map to apply a theme-based tint
+      const overlay = Widget.Box({
+        hexpand: true,
+        vexpand: true,
+        cssClasses: ["map-overlay"],
+        canFocus: false,
+        canTarget: false,
+      });
 
-  map.addRoute(route231Coordinates, "#D282BE"); // Purple route color
+      self.add_overlay(overlay);
+    },
+  });
 
   return Widget.Box({
     cssClasses: ["maps"],
-    children: [map, sidebar],
+    children: [mapContainer, sidebar],
     setup: (self) => {
       setupEventController({
         name: "Map",
@@ -58,7 +63,7 @@ export default () => {
             sidebarRevealState.set(true);
           },
           [KB_SHORTCUTS.CLOSE_SIDEBAR]: () => {
-            sidebarRevealState.set(true);
+            sidebarRevealState.set(false);
           },
         },
       });

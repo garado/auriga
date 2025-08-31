@@ -1,8 +1,11 @@
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
-import { origin } from "./StateManagement";
+import { Variable } from "astal";
 
-export const Prediction = (prediction: PlacePrediction) => {
+export const Prediction = (
+  prediction: PlacePrediction,
+  selectionTarget: Variable<PlacePrediction | undefined>,
+) => {
   const icon = Widget.Image({
     iconName: "map-pin-symbolic",
   });
@@ -32,6 +35,7 @@ export const Prediction = (prediction: PlacePrediction) => {
   const predictionWidget = Widget.Box({
     vertical: false,
     hexpand: false,
+    halign: Gtk.Align.START,
     spacing: 8,
     children: [icon, info],
   });
@@ -41,8 +45,9 @@ export const Prediction = (prediction: PlacePrediction) => {
     child: predictionWidget,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     hexpand: false,
+    halign: Gtk.Align.START,
     onButtonPressed: () => {
-      origin.set(prediction);
+      selectionTarget.set(prediction);
     },
   });
 };
