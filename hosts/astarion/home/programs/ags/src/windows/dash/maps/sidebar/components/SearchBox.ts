@@ -1,11 +1,10 @@
-import { Gtk, Widget } from "astal/gtk4";
+import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
 
 import { Prediction } from "./Prediction";
 import LocationAutocomplete, {
   PlacePrediction,
 } from "@/services/LocationAutocomplete";
-import Transit from "@/services/Transit";
 
 const autocomplete = LocationAutocomplete.get_default();
 
@@ -16,8 +15,13 @@ export const SearchBox = (props: {
 }) => {
   return Widget.Entry({
     placeholderText: props.placeholder,
-    onKeyReleased: () => {
-      props.selectionTarget.set(undefined);
+    onKeyPressed: (_self, keyval, _keycode, state) => {
+      if (
+        state === Gdk.ModifierType.NO_MODIFIER_MASK &&
+        keyval !== Gdk.KEY_Escape
+      ) {
+        props.selectionTarget.set(undefined);
+      }
     },
     onActivate: async (self) => {
       try {
