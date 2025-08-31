@@ -4,13 +4,21 @@ import { Gtk, Widget } from "astal/gtk4";
 import { TripItinerary, TripPlanResponse } from "@/services/Transit";
 
 // States for map widget
-export enum MapState {
+export enum NavigationState {
   Idle,
   SelectOrigin,
   SelectDestination,
   SelectTrip,
   TripSelected,
 }
+
+// Events that can adjust the navigation state
+export enum NavigationEvents {}
+
+// Current navigation state
+export const navigationState: Variable<NavigationState> = Variable(
+  NavigationState.Idle,
+);
 
 // Is sidebar expanded or not
 export const sidebarRevealState = Variable(false);
@@ -22,6 +30,9 @@ export const origin: Variable<PlacePrediction | undefined> =
 // Selected destination for trip
 export const destination: Variable<PlacePrediction | undefined> =
   Variable(undefined);
+
+// Whether the "Plan Trip" button is visible.
+export const planTripVisible: Variable<boolean> = Variable(false);
 
 // Trip plan
 export const tripPlanUpdated: Variable<TripPlanResponse | undefined> =

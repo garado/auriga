@@ -14,6 +14,7 @@ import { Gdk, Gtk, Widget } from "astal/gtk4";
 import {
   destination,
   origin,
+  planTripVisible,
   sidebarContent,
   sidebarRevealState,
   tripPlanUpdated,
@@ -75,8 +76,8 @@ const SidebarTop = () => {
   });
 
   // Button to start routing
-  const startRouting = Widget.Button({
-    cssClasses: ["start-trip-btn"],
+  const planTripBtn = Widget.Button({
+    cssClasses: ["plan-trip-btn"],
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     child: Widget.Label({
@@ -98,9 +99,9 @@ const SidebarTop = () => {
         console.error(error);
       }
     },
-    setup: (self) => {
+    setup: () => {
       Variable.derive([origin, destination], (x, y) => {
-        self.visible = x !== undefined && y !== undefined;
+        planTripVisible.set(x !== undefined && y !== undefined);
       });
     },
   });
@@ -128,14 +129,12 @@ const SidebarTop = () => {
     vexpand: false,
     hexpand: true,
     vertical: true,
-    spacing: 8,
     children: [
-      Widget.Label({
-        cssClasses: ["header"],
-        label: "Where to?",
-      }),
       content,
-      startRouting,
+      Widget.Revealer({
+        child: planTripBtn,
+        revealChild: bind(planTripVisible),
+      }),
     ],
   });
 };

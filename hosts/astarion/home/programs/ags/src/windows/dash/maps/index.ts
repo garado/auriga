@@ -129,7 +129,5 @@ export default () => {
     map.animateTo(startPoint.lat, startPoint.lon, 15.5); // TODO dynamically calculate zoom value
   });
 
-  debug();
-
   return ret;
 };
