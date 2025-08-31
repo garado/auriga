@@ -9,12 +9,16 @@ import {
 import { epochToHHMM, epochToRelativeTime } from "@/utils/Time";
 import { ExpansionPanel } from "@/components/ExpansionPanel";
 import Astalified from "@/components/astalified";
+import { destination } from "../../StateManagement";
 
 const durationInMinutes = (planLeg: PlanLeg) =>
   `${Math.round(planLeg.duration / 60)}m`;
 
-const PlanLeg_Walk = (planLeg: PlanLeg): Gtk.Widget =>
-  Widget.Box({
+const PlanLeg_Legs = (planLeg: PlanLeg): Gtk.Widget => {
+  let icon = "person-simple-walk-symbolic";
+  if (Mode.BICYCLE === planLeg.mode) icon = "bike-symbolic";
+
+  return Widget.Box({
     cssClasses: ["plan-leg", "walk"],
     vertical: false,
     vexpand: false,
@@ -23,14 +27,11 @@ const PlanLeg_Walk = (planLeg: PlanLeg): Gtk.Widget =>
     halign: Gtk.Align.START,
     spacing: 4,
     children: [
-      Widget.Image({
-        iconName: "person-simple-walk-symbolic",
-      }),
-      Widget.Label({
-        label: durationInMinutes(planLeg),
-      }),
+      Widget.Image({ iconName: icon }),
+      Widget.Label({ label: durationInMinutes(planLeg) }),
     ],
   });
+};
 
 const PlanLeg_Transit = (planLeg: PlanLeg_Transit): Gtk.Widget => {
   let icon = "train-symbolic";
@@ -109,7 +110,9 @@ const PlanLeg_Transit = (planLeg: PlanLeg_Transit): Gtk.Widget => {
       label: `${planLeg.intermediateStops.length} stops before...`,
       vertical: true,
       children: planLeg.intermediateStops.map(IntermediateStop),
-      maxDropdownHeight: 200,
+      showExpanderIcon: true,
+      expanderIconPosition: Gtk.PositionType.LEFT,
+      maxDropdownHeight: 2000,
     });
 
     container.insert_child_after(stops, startStop);
@@ -124,7 +127,7 @@ const PlanLeg_Default = (_planLeg: PlanLeg): Gtk.Widget =>
   });
 
 const modeHandlers: Record<Mode, (planLeg: PlanLeg) => Gtk.Widget> = {
-  [Mode.WALK]: PlanLeg_Walk,
+  [Mode.WALK]: PlanLeg_Legs,
   [Mode.AIRPLANE]: PlanLeg_Default,
   [Mode.BICYCLE]: PlanLeg_Default,
   [Mode.BUS]: PlanLeg_Transit,
@@ -180,7 +183,7 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
         justify: Gtk.Justification.LEFT,
         halign: Gtk.Align.START,
         cssClasses: ["leave-at"],
-        label: `Leave at ${leaveTime} (in ${timeUntilDeparture})`,
+        label: `Leave at ${leaveTime} (${timeUntilDeparture})`,
       }),
       Widget.Label({
         hexpand: true,
@@ -192,11 +195,44 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
     ],
   });
 
+  const destinationName = destination.get()?.displayPlace;
+  const destinationAddress = destination.get()?.displayAddress;
+
+  const destinationSummary = Astalified.CenterBox({
+    vertical: false,
+    cssClasses: ["destination"],
+    hexpand: true,
+    startWidget: Widget.Image({
+      cssClasses: ["icon"],
+      iconName: "map-pin-symbolic",
+    }),
+    centerWidget: Widget.Box({
+      vertical: true,
+      children: [
+        Widget.Label({
+          cssClasses: ["name"],
+          label: destinationName,
+          halign: Gtk.Align.START,
+          justify: Gtk.Justification.LEFT,
+        }),
+        Widget.Label({
+          cssClasses: ["address"],
+          label: destinationAddress,
+          halign: Gtk.Align.START,
+          justify: Gtk.Justification.LEFT,
+        }),
+      ],
+    }),
+    endWidget: Widget.Label({
+      label: arriveTime,
+    }),
+  });
+
   return Widget.Box({
     cssClasses: ["trip-details"],
     hexpand: false,
     vertical: true,
     spacing: 12,
-    children: [timeSummary, legs],
+    children: [timeSummary, legs, destinationSummary],
   });
 };

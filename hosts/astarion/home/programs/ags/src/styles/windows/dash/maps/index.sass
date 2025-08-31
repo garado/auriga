@@ -2,10 +2,6 @@
 @use '../../../theme/theme' as *
 
 .maps
-  
-  .map-overlay
-    background-color: rgba($primary-500, 0.3)
-
   // Sidebar that pops out with options for the user
   .sidebar
     background-color: $neutral-800
@@ -15,7 +11,6 @@
 
     // Little slidey-out thing
     .handle
-      background-color: $neutral-800
 
     .top-section
       background-color: $primary-500
@@ -117,12 +112,19 @@
           padding: 0.1rem 0.3rem
           border-radius: $border-radius / 2
 
+// Semi-transparent overlay to tint the entire map widget according to the theme
+.maps .map-overlay
+  background-color: rgba($primary-500, 0.3)
+
+// Detailed itinerary view
 .maps .trip-details
+  // Box showing icon and name of transit leg
   .route-summary
     -gtk-icon-size: 2rem
     font-size: 2rem
     font-weight: bold
 
+  // Box showing when user will depart and arrive
   .time-summary
     .leave-at
       font-size: 1.4rem
@@ -130,6 +132,18 @@
     .arrive-at
       color: $neutral-300
 
+  // Box showing the destination
+  .destination
+    .icon
+      -gtk-icon-size: 2rem
+
+    .name
+      font-size: 1.4rem
+
+    .address
+      color: $neutral-200
+
+  // Box showing overview for transit leg (bus, train, etc)
   .transit-leg
     border-radius: $border-radius
     padding: 0.8rem

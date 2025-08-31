@@ -148,13 +148,24 @@ export default () => {
     hexpand: false,
     vertical: true,
     spacing: 8,
-    children: [SidebarTop(), sidebarContent],
+    children: [
+      SidebarTop(),
+      Astalified.ScrolledWindow({
+        hscrollbarPolicy: Gtk.PolicyType.NEVER,
+        vscrollbarPolicy: Gtk.PolicyType.AUTOMATIC,
+        vexpand: true,
+        propagateNaturalHeight: true,
+        child: sidebarContent,
+      }),
+    ],
   });
 
   const sidebarHandle = Widget.CenterBox({
     cssClasses: ["handle"],
+    vexpand: true,
     valign: Gtk.Align.CENTER,
     centerWidget: Widget.Button({
+      cssClasses: ["handle-btn"],
       canFocus: false,
       cursor: Gdk.Cursor.new_from_name("pointer", null),
       child: Widget.Image({
@@ -170,13 +181,15 @@ export default () => {
 
   const sidebarRevealer = Widget.Revealer({
     canTarget: true,
-    child: sidebar,
+    vexpand: true,
     hexpand: false,
+    child: sidebar,
     transitionType: Gtk.RevealerTransitionType.SLIDE_RIGHT,
     revealChild: bind(sidebarRevealState),
   });
 
   return Widget.Box({
+    cssClasses: ["sidebar-container"],
     halign: Gtk.Align.END,
     vertical: false,
     hexpand: false,

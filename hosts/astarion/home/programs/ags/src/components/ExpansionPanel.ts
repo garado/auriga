@@ -26,6 +26,11 @@ interface ExpansionPanelInterace {
    */
   expandTabContent?: Gtk.Widget;
 
+  showExpanderIcon?: boolean;
+
+  /** "left" or "right" */
+  expanderIconPosition?: Gtk.PositionType;
+
   /** Icon to display in default expander tab content. */
   icon?: string;
 
@@ -61,6 +66,11 @@ interface ExpansionPanelInterace {
 
 export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const contentRevealerState = Variable(false);
+
+  // Defaults
+  props.showExpanderIcon = props.showExpanderIcon ?? true;
+  props.expanderIconPosition =
+    props.expanderIconPosition ?? Gtk.PositionType.RIGHT;
 
   /********************************************************
    * TOP TAB
@@ -104,7 +114,20 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
       cssClasses: ["tab"],
       vertical: false,
       spacing: 10,
-      children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
+      children: [ExpanderLabel()],
+      setup: (self) => {
+        if (props.icon) {
+          self.prepend(ExpanderContentIcon());
+        }
+
+        if (props.showExpanderIcon) {
+          if (props.expanderIconPosition === Gtk.PositionType.LEFT) {
+            self.prepend(ExpanderStateIcon());
+          } else {
+            self.append(ExpanderStateIcon());
+          }
+        }
+      },
     });
 
   /* User can optionally define expansion tab content. */

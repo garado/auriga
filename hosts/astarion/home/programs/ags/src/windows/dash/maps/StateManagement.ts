@@ -38,7 +38,11 @@ export const selectedItinerary: Variable<TripItinerary | undefined> =
 // Contents of this change depending on the mode that the user is currently in
 export const sidebarContent = Widget.Box({
   cssClasses: ["section-content"],
+  vertical: true,
+  vexpand: true,
   hexpand: false,
   spacing: 8,
-  vertical: true,
+  setup: (self) => {
+    self.set_size_request(-1, 1000);
+  },
 });
