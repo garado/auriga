@@ -180,6 +180,38 @@ export interface Network {
   networkInBeta: boolean;
 }
 
+/** Modes for legs of itinerary */
+export enum Mode {
+  AIRPLANE = "AIRPLANE",
+  BICYCLE = "BICYCLE",
+  BUS = "BUS",
+  CABLE_CAR = "CABLE_CAR",
+  CAR = "CAR",
+  CARPOOL = "CARPOOL",
+  COACH = "COACH",
+  FERRY = "FERRY",
+  FLEX = "FLEX",
+  /**
+   * @deprecated use FLEX instead — enabled flexible transit
+   */
+  FLEXIBLE = "FLEXIBLE",
+  FUNICULAR = "FUNICULAR",
+  GONDOLA = "GONDOLA",
+  /**
+   * @deprecated internal use only — no longer supported for API users
+   */
+  LEG_SWITCH = "LEG_SWITCH",
+  MONORAIL = "MONORAIL",
+  RAIL = "RAIL",
+  SCOOTER = "SCOOTER",
+  SUBWAY = "SUBWAY",
+  TAXI = "TAXI",
+  TRAM = "TRAM",
+  TRANSIT = "TRANSIT", // A special transport mode; includes all public transport
+  TROLLEYBUS = "TROLLEYBUS",
+  WALK = "WALK",
+}
+
 /**********************************************
  * MODULE LEVEL VARIABLES
  **********************************************/
