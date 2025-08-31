@@ -57,8 +57,10 @@ export default () => {
   });
 
   // Set up connections
-  transit.connect("notify::current-trip-plan-response", () => {
-    const plan = transit.currentTripPlanResponse.plan;
+  tripPlanUpdated.subscribe(() => {
+    const plan = tripPlanUpdated.get()?.plan;
+    if (plan === undefined) return;
+
     map.clearRoutes();
 
     sidebarContent.children = plan.itineraries.map(TripResult);

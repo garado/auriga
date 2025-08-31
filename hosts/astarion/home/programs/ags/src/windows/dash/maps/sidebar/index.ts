@@ -16,6 +16,7 @@ import {
   origin,
   sidebarContent,
   sidebarRevealState,
+  tripPlanUpdated,
 } from "../StateManagement";
 import { SearchBox } from "./components/SearchBox";
 import Transit from "@/services/Transit";
@@ -100,12 +101,14 @@ const SidebarTop = () => {
       if (origin.get() === undefined || destination.get() === undefined) return;
 
       try {
-        transit.planTrip(
+        const tripPlan = await transit.planTrip(
           origin.get()!.lat,
           origin.get()!.lon,
           destination.get()!.lat,
           destination.get()!.lon,
         );
+
+        tripPlanUpdated.set(tripPlan);
       } catch (error) {
         console.error(error);
       }

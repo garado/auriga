@@ -316,9 +316,6 @@ export default class Transit extends GObject.Object {
   @property(Object)
   declare currentLocation: Location;
 
-  @property(Object)
-  declare currentTripPlanResponse: TripPlanResponse;
-
   /**************************************************
    * PRIVATE FUNCTIONS
    **************************************************/
@@ -519,8 +516,6 @@ export default class Transit extends GObject.Object {
         "transitService",
         `Trip planned with ${response.plan?.itineraries?.length || 0} options`,
       );
-
-      this.currentTripPlanResponse = response;
 
       return response;
     } catch (error) {
