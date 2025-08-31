@@ -11,7 +11,7 @@ import Astalified from "@/components/astalified";
 import { bind, Variable } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 
-import { destination, origin, sidebarRevealState } from "./StateManagement";
+import { destination, origin, sidebarRevealState } from "../StateManagement";
 import { SearchBox } from "./components/SearchBox";
 
 /*****************************************************************************
@@ -56,6 +56,24 @@ const SidebarTop = () => {
     }),
   });
 
+  const decoration = Widget.Box({
+    cssClasses: ["decoration"],
+    vertical: true,
+    spacing: 30,
+    vexpand: true,
+    valign: Gtk.Align.CENTER,
+    children: [
+      Widget.Image({
+        cssClasses: ["circle"],
+        iconName: "circle-symbolic",
+      }),
+      Widget.Image({
+        cssClasses: ["circle"],
+        iconName: "circle-symbolic",
+      }),
+    ],
+  });
+
   const swapOriginAndDestination = Widget.Button({
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     valign: Gtk.Align.CENTER,
@@ -88,7 +106,9 @@ const SidebarTop = () => {
     vexpand: false,
     hexpand: true,
     vertical: false,
+    spacing: 16,
     children: [
+      decoration,
       Widget.Box({
         vertical: true,
         hexpand: true,

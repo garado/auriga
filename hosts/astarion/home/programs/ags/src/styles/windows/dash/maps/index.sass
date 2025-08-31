@@ -15,13 +15,21 @@
 
     > *
       padding: 1rem
+      
+    // Little slidey-out thing
+    .handle
+      background-color: $neutral-800
 
     .top-section
       background-color: $primary-500
 
-      // Little slidey-out thing
-      .handle
-        background-color: $neutral-800
+      .decoration
+        background-color: $primary-700
+        border-radius: $border-radius
+
+        .circle
+          padding: 0.2rem
+          -gtk-icon-size: 0.8rem
 
       // "Where to?"
       .header
@@ -44,7 +52,6 @@
 
       // Button to swap origin/destination text
       .origin-dest-swap
-        margin-left: 0.4rem
 
       .start-trip-btn
         padding: 0.4rem 0.2rem

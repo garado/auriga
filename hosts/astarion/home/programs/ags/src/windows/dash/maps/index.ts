@@ -7,7 +7,7 @@ import MapWidget from "./CustomMap";
 import Sidebar from "./sidebar";
 import Transit from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
-import { sidebarRevealState } from "./sidebar/StateManagement";
+import { sidebarRevealState } from "./StateManagement";
 
 Transit.get_default();
 
