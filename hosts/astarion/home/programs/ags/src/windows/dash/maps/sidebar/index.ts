@@ -158,13 +158,9 @@ export default () => {
         vscrollbarPolicy: Gtk.PolicyType.AUTOMATIC,
         vexpand: true,
         hexpand: true,
-        propagateNaturalHeight: true,
-        child: Widget.Box({
-          vertical: false,
-          hexpand: false,
-          widthRequest: -1,
-          halign: Gtk.Align.START,
-          children: [sidebarContent],
+        child: new Gtk.Viewport({
+          vscrollPolicy: Gtk.ScrollablePolicy.NATURAL,
+          child: sidebarContent,
         }),
       }),
     ],

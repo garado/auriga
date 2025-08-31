@@ -41,10 +41,9 @@ export const selectedItinerary: Variable<TripItinerary | undefined> =
 export const sidebarContent = Widget.Box({
   cssClasses: ["section-content"],
   vertical: true,
-  vexpand: true,
+  vexpand: false,
   hexpand: false,
   spacing: 8,
-  halign: Gtk.Align.START,
+  halign: Gtk.Align.FILL,
   widthRequest: 500,
-  heightRequest: 1000,
 });
