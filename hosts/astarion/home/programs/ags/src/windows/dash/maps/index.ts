@@ -5,16 +5,14 @@
 import { Widget } from "astal/gtk4";
 import MapWidget from "./CustomMap";
 import Sidebar from "./sidebar";
-import Transit, { PlanLeg, TripPlanResponse } from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 import {
   tripPlanUpdated,
   sidebarContent,
   sidebarRevealState,
+  previewedItinerary,
 } from "./StateManagement";
 import { TripResult } from "./sidebar/components/TripResults";
-
-const transit = Transit.get_default();
 
 /*****************************************************************************
  * Shortcuts
@@ -56,35 +54,7 @@ export default () => {
     },
   });
 
-  // Set up connections
-  tripPlanUpdated.subscribe(() => {
-    const plan = tripPlanUpdated.get()?.plan;
-    if (plan === undefined) return;
-
-    map.clearRoutes();
-
-    sidebarContent.children = plan.itineraries.map(TripResult);
-
-    map.centerOnRoute([
-      { lat: plan.from.lat, lon: plan.from.lon },
-      { lat: plan.to.lat, lon: plan.to.lon },
-    ]);
-
-    // Draw each leg of the first itinerary
-    for (let index = 0; index < plan.itineraries[0].legs.length; index++) {
-      const leg = plan.itineraries[0].legs[index];
-
-      const coordinates = [
-        { lat: leg.from.lat, lon: leg.from.lon },
-        { lat: leg.to.lat, lon: leg.to.lon },
-      ];
-
-      const color = leg.routeColor ? `#${leg.routeColor}` : undefined;
-      map.addRoute(coordinates, color);
-    }
-  });
-
-  return Widget.Box({
+  const ret = Widget.Box({
     cssClasses: ["maps"],
     children: [mapContainer, sidebar],
     setup: (self) => {
@@ -103,4 +73,41 @@ export default () => {
       });
     },
   });
+
+  // Set up connections
+  tripPlanUpdated.subscribe(() => {
+    const plan = tripPlanUpdated.get()?.plan;
+    if (plan === undefined) return;
+
+    map.clearRoutes();
+
+    sidebarContent.children = plan.itineraries.map(TripResult);
+
+    map.centerOnRoute([
+      { lat: plan.from.lat, lon: plan.from.lon },
+      { lat: plan.to.lat, lon: plan.to.lon },
+    ]);
+
+    previewedItinerary.set(plan.itineraries[0]);
+  });
+
+  previewedItinerary.subscribe((itinerary) => {
+    if (itinerary === undefined) return;
+
+    map.clearRoutes();
+
+    for (let index = 0; index < itinerary.legs.length; index++) {
+      const leg = itinerary.legs[index];
+
+      const coordinates = [
+        { lat: leg.from.lat, lon: leg.from.lon },
+        { lat: leg.to.lat, lon: leg.to.lon },
+      ];
+
+      const color = leg.routeColor ? `#${leg.routeColor}` : undefined;
+      map.addRoute(coordinates, color);
+    }
+  });
+
+  return ret;
 };

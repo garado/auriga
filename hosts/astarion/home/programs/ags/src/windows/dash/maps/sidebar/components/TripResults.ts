@@ -2,7 +2,7 @@ import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Mode, PlanLeg, TripItinerary } from "@/services/Transit";
 import Astalified from "@/components/astalified";
 import { epochToDuration, epochToHHMM } from "@/utils/Time";
-import { selectedTrip } from "../../StateManagement";
+import { previewedItinerary, selectedItinerary } from "../../StateManagement";
 
 const durationInMinutes = (planLeg: PlanLeg) =>
   `${Math.round(planLeg.duration / 60)}m`;
@@ -170,8 +170,15 @@ export const TripResult = (itinerary: TripItinerary) => {
     }),
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     hexpand: true,
-    // onButtonPressed: () => {
-    //   selectedTrip.set(itinerary);
-    // },
+    onHoverEnter: () => {
+      if (previewedItinerary.get() !== itinerary) {
+        previewedItinerary.set(itinerary);
+      }
+    },
+    onButtonPressed: () => {
+      if (previewedItinerary.get() !== itinerary) {
+        selectedItinerary.set(itinerary);
+      }
+    },
   });
 };

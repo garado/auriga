@@ -13,15 +13,13 @@
     &.expanded
       min-width: 24rem
 
-    > *
-      padding: 1rem
-      
     // Little slidey-out thing
     .handle
       background-color: $neutral-800
 
     .top-section
       background-color: $primary-500
+      padding: 0.6rem
 
       .decoration
         background-color: $primary-700
@@ -63,6 +61,8 @@
           background-color: $primary-700
 
     .section-content
+      padding: 1rem
+
       // Autocompleted
       .place-prediction
         padding: 0.2rem
@@ -85,6 +85,12 @@
       color: transparent
 
 .maps .trip-result
+  border-radius: $border-radius
+  padding: 0.8rem
+
+  &:hover, &:focus
+    background-color: $neutral-700
+
   .trip-duration
     margin-right: 1rem
     padding: 0.3rem 0.6rem
