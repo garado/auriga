@@ -15,7 +15,7 @@ import {
 } from "./StateManagement";
 import { TripResult } from "./sidebar/components/TripResultOption";
 import { TripResultDetails } from "./sidebar/components/TripResultDetails";
-import Transit from "@/services/Transit";
+import Transit, { Stop } from "@/services/Transit";
 
 /*****************************************************************************
  * Shortcuts
@@ -109,13 +109,22 @@ export default () => {
 
     for (let index = 0; index < itinerary.legs.length; index++) {
       const leg = itinerary.legs[index];
-
-      const coordinates = [
-        { lat: leg.from.lat, lon: leg.from.lon },
-        { lat: leg.to.lat, lon: leg.to.lon },
-      ];
-
       const color = leg.routeColor ? `#${leg.routeColor}` : undefined;
+
+      // Starting point of leg
+      const coordinates = [{ lat: leg.from.lat, lon: leg.from.lon }];
+
+      // Intermediate stops, if any
+      if ("intermediateStops" in leg) {
+        const intermediateCoords = (leg.intermediateStops as Stop[]).flatMap(
+          (stop) => [{ lat: stop.lat, lon: stop.lon }],
+        );
+        coordinates.push(...intermediateCoords);
+      }
+
+      // Ending point of leg
+      coordinates.push({ lat: leg.to.lat, lon: leg.to.lon });
+
       map.addRoute(coordinates, color);
     }
   });
