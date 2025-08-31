@@ -35,6 +35,14 @@ const CSS_CLASSES = {
 
 /** Top portion of the sidebar where user selects origin/destination */
 const SidebarTop = () => {
+  const tripPlanningHeader = Widget.Revealer({
+    revealChild: bind(planTripVisible).as((x) => !x),
+    child: Widget.Label({
+      cssClasses: ["trip-planning-header"],
+      label: "Where to?",
+    }),
+  });
+
   const startingPointContainer = Astalified.Frame({
     cssClasses: ["search"],
     hexpand: true,
@@ -75,7 +83,7 @@ const SidebarTop = () => {
     },
   });
 
-  // Button to start routing
+  // Button to trigger API call to start trip planning
   const planTripBtn = Widget.Button({
     cssClasses: ["plan-trip-btn"],
     hexpand: true,
@@ -130,6 +138,7 @@ const SidebarTop = () => {
     hexpand: true,
     vertical: true,
     children: [
+      tripPlanningHeader,
       content,
       Widget.Revealer({
         child: planTripBtn,
