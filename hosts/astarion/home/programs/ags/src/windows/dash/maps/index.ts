@@ -8,7 +8,7 @@ import Sidebar from "./sidebar";
 import Transit from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 import { sidebarContent, sidebarRevealState } from "./StateManagement";
-import { ItineraryWidget } from "./sidebar/components/ItinerarySelect";
+import { TripResult } from "./sidebar/components/TripResults";
 
 const transit = Transit.get_default();
 
@@ -29,7 +29,7 @@ export default () => {
   // Set up connections
   transit.connect("notify::current-trip-plan-response", () => {
     sidebarContent.children =
-      transit.currentTripPlanResponse.plan.itineraries.map(ItineraryWidget);
+      transit.currentTripPlanResponse.plan.itineraries.map(TripResult);
   });
 
   // Set up widgets for tab

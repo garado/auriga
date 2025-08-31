@@ -1,6 +1,7 @@
 import { Variable } from "astal";
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Widget } from "astal/gtk4";
+import { TripItinerary } from "@/services/Transit";
 
 export enum MapState {
   Idle,
@@ -18,6 +19,10 @@ export const origin: Variable<PlacePrediction | undefined> =
 
 // Selected destination for trip
 export const destination: Variable<PlacePrediction | undefined> =
+  Variable(undefined);
+
+// The currently selected trip
+export const selectedTrip: Variable<TripItinerary | undefined> =
   Variable(undefined);
 
 // Contents of this change depending on the mode that the user is currently in

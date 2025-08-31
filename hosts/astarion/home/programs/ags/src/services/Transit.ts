@@ -115,43 +115,43 @@ export interface NearbyStopsResponse {
 export interface PlanLeg {
   distance: number;
   duration: number;
-  endtime: number;
-  starttime: number;
+  endTime: number;
+  startTime: number;
   mode: string;
   from: {
     lat: number;
     lon: number;
     name: string;
-    vertextype: string;
+    vertexType: string;
   };
   to: {
     lat: number;
     lon: number;
     name: string;
-    vertextype: string;
+    vertexType: string;
   };
-  leggeometry?: {
+  legGeometry?: {
     length: number;
     points: string;
   };
   route?: string;
-  routecolor?: string;
+  routeColor?: string;
   routeid?: string;
-  routelongname?: string;
-  routeshortname?: string;
-  transitleg?: boolean;
+  routeLongName?: string;
+  routeShortName?: string;
+  transitLeg?: boolean;
 }
 
 export interface TripItinerary {
   accessibility: string;
   duration: number;
-  endtime: number;
+  endTime: number;
   legs: PlanLeg[];
-  starttime: number;
+  startTime: number;
   transfers: number;
-  transittime: number;
-  walktime: number;
-  wheelchairneed: string;
+  transitTime: number;
+  walkTime: number;
+  wheelchairNeed: string;
 }
 
 export interface TripPlanResponse {
@@ -161,14 +161,14 @@ export interface TripPlanResponse {
       lat: number;
       lon: number;
       name: string;
-      vertextype: string;
+      vertexType: string;
     };
     itineraries: TripItinerary[];
     to: {
       lat: number;
       lon: number;
       name: string;
-      vertextype: string;
+      vertexType: string;
     };
   };
 }
