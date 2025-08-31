@@ -1,7 +1,7 @@
 import { Variable } from "astal";
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Widget } from "astal/gtk4";
-import { TripItinerary, TripPlanResponse } from "@/services/Transit";
+import { TripPlanResponse } from "@/services/Transit";
 
 export enum MapState {
   Idle,

@@ -5,6 +5,7 @@
 import Shumate from "gi://Shumate?version=1.0";
 import { GLib, GObject } from "astal";
 import Gtk from "gi://Gtk?version=4.0";
+import { Gdk } from "astal/gtk4";
 
 /*****************************************************************************
  * Constants
@@ -87,7 +88,7 @@ export const MapWidget = GObject.registerClass(
     private referenceSource: Shumate.MapSource;
     private mapView: Shumate.SimpleMap;
     private viewport: Shumate.Viewport;
-    private pathLayer: Shumate.PathLayer;
+    private pathLayers: Shumate.PathLayer[] = [];
     private _latitude: number = DEFAULT_LATITUDE;
     private _longitude: number = DEFAULT_LONGITUDE;
     private _zoom: number = 12;
@@ -112,11 +113,6 @@ export const MapWidget = GObject.registerClass(
 
       this.viewport = this.mapView.get_viewport();
       this.viewport.set_reference_map_source(this.referenceSource);
-
-      this.pathLayer = new Shumate.PathLayer({
-        viewport: this.viewport,
-      });
-      this.mapView.add_overlay_layer(this.pathLayer);
 
       this.append(this.mapView);
 
@@ -307,44 +303,41 @@ export const MapWidget = GObject.registerClass(
     }
 
     addRoute(
-      coordinates: Array<{ lat: number; lng: number }>,
-      color: string = "#BF616A",
+      coordinates: Array<{ lat: number; lon: number }>,
+      color: string = "#ffffff",
     ): void {
-      // Add coordinates directly to the path layer
+      const pathLayer = new Shumate.PathLayer({
+        viewport: this.viewport,
+      });
+
       coordinates.forEach((coord) => {
         const location = new Shumate.Coordinate({
           latitude: coord.lat,
-          longitude: coord.lng,
+          longitude: coord.lon,
         });
-        this.pathLayer.add_node(location);
+
+        pathLayer.add_node(location);
       });
 
       // Set path styling
-      // this.pathLayer.set_stroke_color(1.0, 0.42, 0.21);
-      this.pathLayer.set_stroke_width(4.0);
+      const rgba = new Gdk.RGBA();
+      rgba.parse(color);
+
+      pathLayer.set_stroke_color(rgba);
+      pathLayer.set_stroke_width(4.0);
+
+      this.mapView.add_overlay_layer(pathLayer);
+      this.pathLayers.push(pathLayer);
     }
 
     // Clear all routes
     clearRoutes(): void {
-      // this.pathLayer.remove_all_nodes();
+      for (let index = 0; index < this.pathLayers.length; index++) {
+        const layer = this.pathLayers[index];
+        layer.remove_all();
+        this.mapView.remove_overlay_layer(layer);
+      }
     }
-
-    // Add stop markers
-    // addStop(latitude: number, longitude: number, label?: string): void {
-    //   const marker = new Shumate.Marker({
-    //     latitude: latitude,
-    //     longitude: longitude,
-    //   });
-    //
-    //   // Create a simple stop icon (you can customize this)
-    //   const icon = new Gtk.Image({
-    //     iconName: "mark-location-symbolic",
-    //     iconSize: Gtk.IconSize.LARGE,
-    //   });
-    //   marker.set_child(icon);
-    //
-    //   this.mapView.add_marker(marker);
-    // }
   },
 );
 
