@@ -1,6 +1,6 @@
 import { Variable } from "astal";
 import { PlacePrediction } from "@/services/LocationAutocomplete";
-import { Widget } from "astal/gtk4";
+import { Gtk, Widget } from "astal/gtk4";
 import { TripItinerary, TripPlanResponse } from "@/services/Transit";
 
 export enum MapState {
@@ -42,7 +42,7 @@ export const sidebarContent = Widget.Box({
   vexpand: true,
   hexpand: false,
   spacing: 8,
-  setup: (self) => {
-    self.set_size_request(-1, 1000);
-  },
+  halign: Gtk.Align.START,
+  widthRequest: 500,
+  heightRequest: 1000,
 });

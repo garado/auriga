@@ -90,7 +90,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
    */
   const ExpanderLabel = () =>
     Widget.Label({
-      hexpand: true,
+      // hexpand: true,
       label: props.label ?? "None",
       xalign: 0,
       ellipsize: Pango.EllipsizeMode.END,
@@ -110,7 +110,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const DefaultExpanderTab = () =>
     Widget.Box({
       cursor: Gdk.Cursor.new_from_name("pointer", null),
-      hexpand: true,
+      // hexpand: true,
       cssClasses: ["tab"],
       vertical: false,
       spacing: 10,
@@ -170,6 +170,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
    */
   const ContentRevealer = () =>
     Widget.Revealer({
+      hexpand: false,
       cssClasses: ["content-revealer"],
       revealChild: bind(contentRevealerState),
       transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
@@ -182,6 +183,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const ContentScrollableContainer = () =>
     Scrollable({
       vexpand: false,
+      hexpand: false,
       setup: (self) => {
         self.set_child(ContentContainer());
         self.set_propagate_natural_height(true);
@@ -210,6 +212,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
     cssClasses: ["expander", ...(props.cssClasses || [])],
     vertical: true,
     children: [expanderTabWidget, ContentRevealer()],
+    hexpand: false,
     setup: () => {
       /* Closing the global revealer closes this revealer too */
       props.globalRevealerState?.subscribe(() => {

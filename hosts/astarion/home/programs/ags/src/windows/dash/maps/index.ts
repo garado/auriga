@@ -30,6 +30,7 @@ const KB_SHORTCUTS = {
  * Widget
  *****************************************************************************/
 
+// For development purposes
 export const debug = async () => {
   const transit = Transit.get_default();
   const tripPlan = await transit.planTrip(0, 0, 0, 0);
@@ -91,6 +92,7 @@ export default () => {
     map.clearRoutes();
 
     sidebarContent.children = plan.itineraries.map(TripResult);
+    sidebarContent.queue_resize();
 
     map.centerOnRoute([
       { lat: plan.from.lat, lon: plan.from.lon },
@@ -121,6 +123,7 @@ export default () => {
   selectedItinerary.subscribe((itinerary) => {
     if (itinerary === undefined) return;
     sidebarContent.children = [TripResultDetails(itinerary)];
+    sidebarContent.queue_resize();
 
     const startPoint = selectedItinerary.get()!.legs[0].from;
     map.animateTo(startPoint.lat, startPoint.lon, 15.5); // TODO dynamically calculate zoom value

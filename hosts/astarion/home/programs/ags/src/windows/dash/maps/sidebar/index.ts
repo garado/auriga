@@ -36,6 +36,7 @@ const CSS_CLASSES = {
 const SidebarTop = () => {
   const startingPointContainer = Astalified.Frame({
     cssClasses: ["search"],
+    hexpand: true,
     child: SearchBox({
       placeholder: "Origin",
       contentTarget: sidebarContent,
@@ -52,6 +53,7 @@ const SidebarTop = () => {
 
   const endingPointContainer = Astalified.Frame({
     cssClasses: ["search"],
+    hexpand: true,
     child: SearchBox({
       placeholder: "Destination",
       contentTarget: sidebarContent,
@@ -146,6 +148,7 @@ export default () => {
     ]),
     vexpand: true,
     hexpand: false,
+    halign: Gtk.Align.START,
     vertical: true,
     spacing: 8,
     children: [
@@ -154,8 +157,15 @@ export default () => {
         hscrollbarPolicy: Gtk.PolicyType.NEVER,
         vscrollbarPolicy: Gtk.PolicyType.AUTOMATIC,
         vexpand: true,
+        hexpand: true,
         propagateNaturalHeight: true,
-        child: sidebarContent,
+        child: Widget.Box({
+          vertical: false,
+          hexpand: false,
+          widthRequest: -1,
+          halign: Gtk.Align.START,
+          children: [sidebarContent],
+        }),
       }),
     ],
   });
@@ -184,6 +194,7 @@ export default () => {
     vexpand: true,
     hexpand: false,
     child: sidebar,
+    halign: Gtk.Align.START,
     transitionType: Gtk.RevealerTransitionType.SLIDE_RIGHT,
     revealChild: bind(sidebarRevealState),
   });

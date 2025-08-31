@@ -16,17 +16,18 @@ export const Prediction = (
     children: [
       Widget.Label({
         label: prediction.displayPlace || "No name",
+        wrap: true,
         cssClasses: ["name"],
         halign: Gtk.Align.START,
         hexpand: false,
-        justify: Gtk.Justification.LEFT,
+        maxWidthChars: -1,
       }),
       Widget.Label({
         label: prediction.displayAddress || "No address",
         cssClasses: ["address"],
         halign: Gtk.Align.START,
         hexpand: false,
-        justify: Gtk.Justification.LEFT,
+        maxWidthChars: -1,
         wrap: true,
       }),
     ],
