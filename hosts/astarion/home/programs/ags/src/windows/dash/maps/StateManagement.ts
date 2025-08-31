@@ -3,11 +3,13 @@ import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Gtk, Widget } from "astal/gtk4";
 import { TripItinerary, TripPlanResponse } from "@/services/Transit";
 
+// States for map widget
 export enum MapState {
   Idle,
-  RoutesLoaded,
-  RouteSelected,
-  Navigating,
+  SelectOrigin,
+  SelectDestination,
+  SelectTrip,
+  TripSelected,
 }
 
 // Is sidebar expanded or not

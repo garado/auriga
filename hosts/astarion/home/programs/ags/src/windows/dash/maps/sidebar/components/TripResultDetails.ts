@@ -213,12 +213,15 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
       children: [
         Widget.Label({
           cssClasses: ["name"],
+          hexpand: true,
           label: destinationName,
           halign: Gtk.Align.START,
           justify: Gtk.Justification.LEFT,
           wrap: true,
         }),
         Widget.Label({
+          naturalWrapMode: Gtk.NaturalWrapMode.NONE,
+          hexpand: true,
           cssClasses: ["address"],
           label: destinationAddress,
           halign: Gtk.Align.START,
