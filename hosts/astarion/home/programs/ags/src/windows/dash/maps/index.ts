@@ -5,9 +5,13 @@
 import { Widget } from "astal/gtk4";
 import MapWidget from "./CustomMap";
 import Sidebar from "./sidebar";
-import Transit from "@/services/Transit";
+import Transit, { TripPlanResponse } from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
-import { sidebarContent, sidebarRevealState } from "./StateManagement";
+import {
+  tripPlanUpdated,
+  sidebarContent,
+  sidebarRevealState,
+} from "./StateManagement";
 import { TripResult } from "./sidebar/components/TripResults";
 
 const transit = Transit.get_default();
@@ -26,12 +30,6 @@ const KB_SHORTCUTS = {
  *****************************************************************************/
 
 export default () => {
-  // Set up connections
-  transit.connect("notify::current-trip-plan-response", () => {
-    sidebarContent.children =
-      transit.currentTripPlanResponse.plan.itineraries.map(TripResult);
-  });
-
   // Set up widgets for tab
   const map = MapWidget({
     zoom: 10,
@@ -58,7 +56,17 @@ export default () => {
     },
   });
 
-  transit.planTrip(0, 0, 0, 0);
+  // Set up connections
+  transit.connect("notify::current-trip-plan-response", () => {
+    const plan = transit.currentTripPlanResponse.plan;
+
+    sidebarContent.children = plan.itineraries.map(TripResult);
+
+    map.centerOnRoute([
+      { lat: plan.from.lat, lon: plan.to.lon },
+      { lat: plan.to.lat, lon: plan.to.lon },
+    ]);
+  });
 
   return Widget.Box({
     cssClasses: ["maps"],

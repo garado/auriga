@@ -229,6 +229,83 @@ export const MapWidget = GObject.registerClass(
       return this.viewport;
     }
 
+    centerOnRoute(coordinates: Array<{ lat: number; lon: number }>): void {
+      if (coordinates.length === 0) return;
+
+      let minLat = coordinates[0].lat;
+      let maxLat = coordinates[0].lat;
+      let minLon = coordinates[0].lon;
+      let maxLon = coordinates[0].lon;
+
+      coordinates.forEach((coord) => {
+        minLat = Math.min(minLat, coord.lat);
+        maxLat = Math.max(maxLat, coord.lat);
+        minLon = Math.min(minLon, coord.lon);
+        maxLon = Math.max(maxLon, coord.lon);
+      });
+
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLon = (minLon + maxLon) / 2;
+
+      const latDiff = maxLat - minLat;
+      const lonDiff = maxLon - minLon;
+      const maxDiff = Math.max(latDiff, lonDiff);
+
+      let zoom = 18;
+      if (maxDiff > 0.01) zoom = 15;
+      if (maxDiff > 0.05) zoom = 13;
+      if (maxDiff > 0.1) zoom = 11;
+      if (maxDiff > 0.5) zoom = 9;
+      if (maxDiff > 1.0) zoom = 7;
+      if (maxDiff > 5.0) zoom = 5;
+
+      this.animateTo(centerLat, centerLon, zoom, 1000);
+    }
+
+    animateTo(
+      latitude: number,
+      longitude: number,
+      zoom?: number,
+      duration: number = 1000,
+    ): void {
+      const startLat = this._latitude;
+      const startLng = this._longitude;
+      const startZoom = this._zoom;
+      const targetZoom = zoom ?? this._zoom;
+
+      const startTime = Date.now();
+
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function (ease-out)
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        // Interpolate values
+        const currentLat = startLat + (latitude - startLat) * eased;
+        const currentLng = startLng + (longitude - startLng) * eased;
+        const currentZoom = startZoom + (targetZoom - startZoom) * eased;
+
+        // Update without triggering the timeout in updateLocation
+        this._latitude = currentLat;
+        this._longitude = currentLng;
+        this._zoom = currentZoom;
+
+        this.viewport.set_location(currentLat, currentLng);
+        this.viewport.set_zoom_level(currentZoom);
+
+        if (progress < 1) {
+          GLib.timeout_add(GLib.PRIORITY_DEFAULT, 16, () => {
+            animate();
+            return false;
+          });
+        }
+      };
+
+      animate();
+    }
+
     addRoute(
       coordinates: Array<{ lat: number; lng: number }>,
       color: string = "#BF616A",
