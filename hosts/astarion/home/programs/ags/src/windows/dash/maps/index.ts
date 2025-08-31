@@ -7,9 +7,10 @@ import MapWidget from "./CustomMap";
 import Sidebar from "./sidebar";
 import Transit from "@/services/Transit";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
-import { sidebarRevealState } from "./StateManagement";
+import { sidebarContent, sidebarRevealState } from "./StateManagement";
+import { ItineraryWidget } from "./sidebar/components/ItinerarySelect";
 
-Transit.get_default();
+const transit = Transit.get_default();
 
 /*****************************************************************************
  * Shortcuts
@@ -25,6 +26,13 @@ const KB_SHORTCUTS = {
  *****************************************************************************/
 
 export default () => {
+  // Set up connections
+  transit.connect("notify::current-trip-plan-response", () => {
+    sidebarContent.children =
+      transit.currentTripPlanResponse.plan.itineraries.map(ItineraryWidget);
+  });
+
+  // Set up widgets for tab
   const map = MapWidget({
     zoom: 10,
     style: "dark",
@@ -49,6 +57,8 @@ export default () => {
       self.add_overlay(overlay);
     },
   });
+
+  transit.planTrip(0, 0, 0, 0);
 
   return Widget.Box({
     cssClasses: ["maps"],

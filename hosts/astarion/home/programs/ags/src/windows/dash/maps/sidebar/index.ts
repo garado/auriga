@@ -11,23 +11,24 @@ import Astalified from "@/components/astalified";
 import { bind, Variable } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 
-import { destination, origin, sidebarRevealState } from "../StateManagement";
+import {
+  destination,
+  origin,
+  sidebarContent,
+  sidebarRevealState,
+} from "../StateManagement";
 import { SearchBox } from "./components/SearchBox";
+import Transit from "@/services/Transit";
 
 /*****************************************************************************
  * Widget
  *****************************************************************************/
 
+const transit = Transit.get_default();
+
 const CSS_CLASSES = {
   ORIGIN_DEST_SWAP: "origin-dest-swap",
 } as const;
-
-const sidebarContent = Widget.Box({
-  cssClasses: ["section-content"],
-  hexpand: false,
-  spacing: 8,
-  vertical: true,
-});
 
 /** Top portion of the sidebar where user selects origin/destination */
 const SidebarTop = () => {
@@ -87,13 +88,28 @@ const SidebarTop = () => {
     },
   });
 
-  const startTrip = Widget.Button({
+  // Button to start routing
+  const startRouting = Widget.Button({
     cssClasses: ["start-trip-btn"],
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     child: Widget.Label({
-      label: "Start trip",
+      label: "Plan trip",
     }),
+    onButtonPressed: async () => {
+      if (origin.get() === undefined || destination.get() === undefined) return;
+
+      try {
+        transit.planTrip(
+          origin.get()!.lat,
+          origin.get()!.lon,
+          destination.get()!.lat,
+          destination.get()!.lon,
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    },
     setup: (self) => {
       Variable.derive([origin, destination], (x, y) => {
         self.visible = x !== undefined && y !== undefined;
@@ -131,7 +147,7 @@ const SidebarTop = () => {
         label: "Where to?",
       }),
       content,
-      startTrip,
+      startRouting,
     ],
   });
 };

@@ -230,7 +230,7 @@ async function makeApiCall(
       throw error;
     }
   } else {
-    const cachefile = endpoint.replace("/public/", "");
+    const cachefile = endpoint.replace("/public/", "").replace("/otp/", "");
     const file = `/tmp/ags/transit/${cachefile}`;
     try {
       const response = await execAsync(`cat ${file}`);
@@ -284,6 +284,9 @@ export default class Transit extends GObject.Object {
   @property(Object)
   declare currentLocation: Location;
 
+  @property(Object)
+  declare currentTripPlanResponse: TripPlanResponse;
+
   /**************************************************
    * PRIVATE FUNCTIONS
    **************************************************/
@@ -309,9 +312,9 @@ export default class Transit extends GObject.Object {
     // Use configured default location or attempt to get current location
     if (transitConfig.defaultLocation) {
       this.currentLocation = transitConfig.defaultLocation;
-      this.#fetchNearbyData();
+      // this.#fetchNearbyData();
     } else {
-      this.#getCurrentLocation();
+      // this.#getCurrentLocation();
     }
   };
 
@@ -322,7 +325,7 @@ export default class Transit extends GObject.Object {
   #getCurrentLocation = async () => {
     try {
       log("transitService", "Getting current location...");
-      // For now, use a default location (you can implement proper geolocation)
+      // For now, use a default location
       this.currentLocation = { lat: 45.5017, lon: -73.5673 };
       this.#fetchNearbyData();
     } catch (error) {
@@ -449,10 +452,10 @@ export default class Transit extends GObject.Object {
    * @brief Plan a trip between two locations.
    */
   planTrip = async (
-    fromLat: number,
-    fromLon: number,
-    toLat: number,
-    toLon: number,
+    fromLat: number | string,
+    fromLon: number | string,
+    toLat: number | string,
+    toLon: number | string,
     options: {
       mode?: string;
       wheelchair?: boolean;
@@ -466,9 +469,9 @@ export default class Transit extends GObject.Object {
       log("transitService", "Planning trip...");
 
       const params = {
-        fromplace: `${fromLat},${fromLon}`,
-        toplace: `${toLat},${toLon}`,
-        mode: options.mode || "transit,walk",
+        fromPlace: `${fromLat},${fromLon}`,
+        toPlace: `${toLat},${toLon}`,
+        mode: options.mode || "TRANSIT,WALK",
         wheelchair: options.wheelchair || false,
         walkreluctance: options.walkReluctance || 2,
         arriveby: options.arriveBy || false,
@@ -484,6 +487,8 @@ export default class Transit extends GObject.Object {
         "transitService",
         `Trip planned with ${response.plan?.itineraries?.length || 0} options`,
       );
+
+      this.currentTripPlanResponse = response;
 
       return response;
     } catch (error) {

@@ -15,6 +15,9 @@ export const SearchBox = (props: {
 }) => {
   return Widget.Entry({
     placeholderText: props.placeholder,
+    onKeyReleased: () => {
+      props.selectionTarget.set(undefined);
+    },
     onActivate: async (self) => {
       try {
         const responses = await autocomplete.searchNear(self.text);
@@ -27,8 +30,10 @@ export const SearchBox = (props: {
     },
     setup: (self) => {
       props.selectionTarget.subscribe(
-        (originPrediction: PlacePrediction | undefined) => {
-          self.text = originPrediction?.displayPlace || "";
+        (selectionPrediction: PlacePrediction | undefined) => {
+          if (selectionPrediction !== undefined) {
+            self.text = selectionPrediction!.displayPlace;
+          }
         },
       );
     },
