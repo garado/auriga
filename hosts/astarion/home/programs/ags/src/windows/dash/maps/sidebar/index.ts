@@ -20,6 +20,7 @@ import {
 } from "../StateManagement";
 import { SearchBox } from "./components/SearchBox";
 import Transit from "@/services/Transit";
+import { Decoration } from "./components/Decoration";
 
 /*****************************************************************************
  * Widget
@@ -56,24 +57,6 @@ const SidebarTop = () => {
       contentTarget: sidebarContent,
       selectionTarget: destination,
     }),
-  });
-
-  const decoration = Widget.Box({
-    cssClasses: ["decoration"],
-    vertical: true,
-    spacing: 30,
-    vexpand: true,
-    valign: Gtk.Align.CENTER,
-    children: [
-      Widget.Image({
-        cssClasses: ["circle"],
-        iconName: "circle-symbolic",
-      }),
-      Widget.Image({
-        cssClasses: ["circle"],
-        iconName: "circle-symbolic",
-      }),
-    ],
   });
 
   const swapOriginAndDestination = Widget.Button({
@@ -127,7 +110,7 @@ const SidebarTop = () => {
     vertical: false,
     spacing: 16,
     children: [
-      decoration,
+      Decoration(),
       Widget.Box({
         vertical: true,
         hexpand: true,

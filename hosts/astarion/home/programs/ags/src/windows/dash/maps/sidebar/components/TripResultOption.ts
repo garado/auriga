@@ -151,14 +151,17 @@ export const TripResult = (itinerary: TripItinerary) => {
     hexpand: true,
     halign: Gtk.Align.START,
     justify: Gtk.Justification.LEFT,
-    label: `${epochToHHMM(
-      itinerary.startTime,
-    )} - ${epochToHHMM(itinerary.endTime)}`,
+    setup: (self) => {
+      const start = epochToHHMM(itinerary.startTime);
+      const end = epochToHHMM(itinerary.endTime);
+      self.set_text(`${start} - ${end}`);
+    },
   });
 
   return Widget.Button({
     cssClasses: ["trip-result"],
     child: Widget.Box({
+      hexpand: true,
       vertical: false,
       children: [
         tripDuration,
@@ -176,7 +179,7 @@ export const TripResult = (itinerary: TripItinerary) => {
       }
     },
     onButtonPressed: () => {
-      if (previewedItinerary.get() !== itinerary) {
+      if (selectedItinerary.get() !== itinerary) {
         selectedItinerary.set(itinerary);
       }
     },

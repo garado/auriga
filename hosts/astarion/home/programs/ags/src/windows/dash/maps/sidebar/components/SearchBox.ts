@@ -5,6 +5,7 @@ import { Prediction } from "./Prediction";
 import LocationAutocomplete, {
   PlacePrediction,
 } from "@/services/LocationAutocomplete";
+import Transit from "@/services/Transit";
 
 const autocomplete = LocationAutocomplete.get_default();
 

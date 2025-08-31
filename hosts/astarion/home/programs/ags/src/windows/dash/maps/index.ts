@@ -11,8 +11,11 @@ import {
   sidebarContent,
   sidebarRevealState,
   previewedItinerary,
+  selectedItinerary,
 } from "./StateManagement";
-import { TripResult } from "./sidebar/components/TripResults";
+import { TripResult } from "./sidebar/components/TripResultOption";
+import { TripResultDetails } from "./sidebar/components/TripResultDetails";
+import Transit from "@/services/Transit";
 
 /*****************************************************************************
  * Shortcuts
@@ -26,6 +29,12 @@ const KB_SHORTCUTS = {
 /*****************************************************************************
  * Widget
  *****************************************************************************/
+
+export const debug = async () => {
+  const transit = Transit.get_default();
+  const tripPlan = await transit.planTrip(0, 0, 0, 0);
+  tripPlanUpdated.set(tripPlan);
+};
 
 export default () => {
   // Set up widgets for tab
@@ -108,6 +117,16 @@ export default () => {
       map.addRoute(coordinates, color);
     }
   });
+
+  selectedItinerary.subscribe((itinerary) => {
+    if (itinerary === undefined) return;
+    sidebarContent.children = [TripResultDetails(itinerary)];
+
+    const startPoint = selectedItinerary.get()!.legs[0].from;
+    map.animateTo(startPoint.lat, startPoint.lon, 15.5); // TODO dynamically calculate zoom value
+  });
+
+  debug();
 
   return ret;
 };

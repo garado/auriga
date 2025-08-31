@@ -190,18 +190,15 @@ export const MapWidget = GObject.registerClass(
 
       const tileDownloader = new Shumate.TileDownloader({
         urlTemplate: url,
-        maxZoomLevel: 12,
         minZoomLevel: 0,
       });
 
       const renderer = new Shumate.RasterRenderer({
-        // id: this._style,
-        // name: this._style.charAt(0).toUpperCase() + this._style.slice(1),
         id: "positron",
         name: "Positron",
         license: "CartoDB",
         dataSource: tileDownloader,
-        maxZoomLevel: 19,
+        maxZoomLevel: 16,
       });
 
       this.mapView.set_map_source(renderer);
@@ -337,6 +334,7 @@ export const MapWidget = GObject.registerClass(
         layer.remove_all();
         this.mapView.remove_overlay_layer(layer);
       }
+      this.pathLayers = [];
     }
   },
 );

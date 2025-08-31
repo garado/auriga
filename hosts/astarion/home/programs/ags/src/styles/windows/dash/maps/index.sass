@@ -116,3 +116,39 @@
         .route-id
           padding: 0.1rem 0.3rem
           border-radius: $border-radius / 2
+
+.maps .trip-details
+  .route-summary
+    -gtk-icon-size: 2rem
+    font-size: 2rem
+    font-weight: bold
+
+  .time-summary
+    .leave-at
+      font-size: 1.4rem
+
+    .arrive-at
+      color: $neutral-300
+
+  .transit-leg
+    border-radius: $border-radius
+    padding: 0.8rem
+
+    .stop-endpoint
+      font-weight: bold
+      .location
+        font-size: 1.4rem
+
+      .time
+
+    // Expansion panel showing intermediate tabs
+    .stop-intermediate, .expander
+      background-color: transparent
+      font-size: 0.8rem
+
+      .tab
+        background-color: transparent
+
+      .content-revealer
+        .content
+          background-color: transparent

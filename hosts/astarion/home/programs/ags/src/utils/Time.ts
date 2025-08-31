@@ -16,3 +16,32 @@ export const epochToDuration = (
 
   return { hours, minutes };
 };
+
+export const epochToRelativeTime = (epoch: number): string => {
+  // Normalize epoch (handle both seconds and milliseconds)
+  if (epoch < 1e12) {
+    epoch *= 1000;
+  }
+
+  const now = Date.now();
+  const diff = epoch - now;
+  const absDiff = Math.abs(diff);
+
+  const seconds = Math.floor(absDiff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  let result: string;
+  if (seconds < 60) {
+    result = `${seconds} second${seconds !== 1 ? "s" : ""}`;
+  } else if (minutes < 60) {
+    result = `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+  } else if (hours < 24) {
+    result = `${hours} hour${hours !== 1 ? "s" : ""}`;
+  } else {
+    result = `${days} day${days !== 1 ? "s" : ""}`;
+  }
+
+  return diff >= 0 ? `in ${result}` : `${result} ago`;
+};

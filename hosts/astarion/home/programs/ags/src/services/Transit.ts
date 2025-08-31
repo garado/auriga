@@ -29,16 +29,13 @@ export interface Location {
 
 export interface Stop {
   globalStopId: string;
-  locationType: number;
-  parentStationGlobalStopId?: string;
-  routeType: number;
-  rtStopId: string;
+  lat: number;
+  lon: number;
+  name: string;
   stopCode: string;
-  stopLat: number;
-  stopLon: number;
-  stopName: string;
-  wheelchairBoarding: number;
-  distance?: number;
+  stopId: string;
+  stopIndex: number;
+  vertexType: string;
 }
 
 export interface Price {
@@ -136,10 +133,18 @@ export interface PlanLeg {
   };
   route?: string;
   routeColor?: string;
+  routeTextColor?: string;
   routeid?: string;
   routeLongName?: string;
   routeShortName?: string;
   transitLeg?: boolean;
+}
+
+export interface PlanLeg_Transit extends PlanLeg {
+  globalRouteId: string;
+  headsign: string;
+  interlineWithPreviousLeg: boolean;
+  intermediateStops: Stop[];
 }
 
 export interface TripItinerary {
