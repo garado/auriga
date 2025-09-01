@@ -8,6 +8,7 @@
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
+import { previewedLocation } from "../../StateManagement";
 
 export const Prediction = (
   prediction: PlacePrediction,
@@ -50,6 +51,12 @@ export const Prediction = (
     children: [icon, info],
   });
 
+  const setPreviewedLocation = () => {
+    if (prediction !== previewedLocation.get()) {
+      previewedLocation.set(prediction);
+    }
+  };
+
   return Widget.Button({
     child: predictionWidget,
     cssClasses: ["place-prediction"],
@@ -59,5 +66,7 @@ export const Prediction = (
     onButtonPressed: () => {
       selectionTarget.set(prediction);
     },
+    onFocusEnter: setPreviewedLocation,
+    onHoverEnter: setPreviewedLocation,
   });
 };

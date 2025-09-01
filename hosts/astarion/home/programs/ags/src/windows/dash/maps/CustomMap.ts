@@ -348,7 +348,7 @@ export const MapWidget = GObject.registerClass(
       latitude: number,
       longitude: number,
       icon: string,
-      size: number = 24,
+      size: number = 40,
     ): void {
       const markerLayer = new Shumate.MarkerLayer({
         viewport: this.viewport,

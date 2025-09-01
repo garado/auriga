@@ -36,6 +36,14 @@ Variable.derive([origin, destination], (x, y) => {
   endpointsSelected.set(x !== undefined && y !== undefined);
 });
 
+/**
+ * PlacePrediction to preview
+ * When hovering over a place prediction in search results, the map will zoom to that
+ * location
+ */
+export const previewedLocation: Variable<PlacePrediction | undefined> =
+  Variable(undefined);
+
 /** Trip plan */
 export const tripPlan: Variable<TripPlanResponse | undefined> =
   Variable(undefined);

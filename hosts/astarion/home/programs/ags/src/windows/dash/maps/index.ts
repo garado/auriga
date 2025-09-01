@@ -28,7 +28,9 @@ import {
   sidebarRevealState,
   previewedItinerary,
   selectedItinerary,
+  previewedLocation,
 } from "./StateManagement";
+import { PlacePrediction } from "@/services/LocationAutocomplete";
 
 /*****************************************************************************
  * Shortcuts
@@ -112,8 +114,8 @@ export default () => {
 
     map.centerOnRoute(coords);
 
-    map.addMarker(coords[0].lat, coords[0].lon, "map-pin-symbolic", 40);
-    map.addMarker(coords[1].lat, coords[1].lon, "map-pin-symbolic", 40);
+    map.addMarker(coords[0].lat, coords[0].lon, "map-pin-symbolic");
+    map.addMarker(coords[1].lat, coords[1].lon, "map-pin-symbolic");
 
     previewedItinerary.set(plan.itineraries[0]);
   });
@@ -154,6 +156,18 @@ export default () => {
     // Focus map on starting point of trip
     const startPoint = selectedItinerary.get()!.legs[0].from;
     map.animateTo(startPoint.lat, startPoint.lon, 15.5);
+  });
+
+  // When place prediction is focused, map should zoom there and show a marker
+  previewedLocation.subscribe((location) => {
+    if (location === undefined) return;
+    map.clearMarkers();
+    map.animateTo(Number(location.lat), Number(location.lon), 13);
+    map.addMarker(
+      Number(location.lat),
+      Number(location.lon),
+      "map-pin-symbolic",
+    );
   });
 
   return ret;
