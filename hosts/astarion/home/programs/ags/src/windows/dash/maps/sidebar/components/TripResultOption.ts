@@ -35,7 +35,7 @@ const durationInMinutes = (planLeg: PlanLeg) =>
  */
 const PlanLegWidget_Legs = (planLeg: PlanLeg): Gtk.Widget =>
   Widget.Box({
-    cssClasses: ["plan-leg", "walk"],
+    cssClasses: ["plan-leg", "use-your-legs"],
     spacing: 4,
     canFocus: false,
     halign: Gtk.Align.CENTER,
@@ -160,7 +160,7 @@ export const TripResult = (itinerary: TripItinerary) => {
   });
 
   const tripDetails = Astalified.FlowBox({
-    cssClasses: ["trip-details"],
+    cssClasses: ["trip-itinerary-overview"],
     canFocus: false,
     vexpand: false,
     hexpand: true,

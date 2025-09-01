@@ -42,7 +42,7 @@ const PlanLegWidget_Legs = (planLeg: PlanLeg): Gtk.Widget => {
   if (Mode.BICYCLE === planLeg.mode) icon = "bike-symbolic";
 
   return Widget.Box({
-    cssClasses: ["plan-leg", "walk"],
+    cssClasses: ["plan-leg", "use-your-legs"],
     vertical: false,
     spacing: 4,
     children: [
@@ -92,7 +92,7 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
     endWidget: Widget.Label({
       cssClasses: ["time"],
       label: `${epochToHHMM(planLeg.startTime)}`,
-      wrap: true,
+      wrap: false,
     }),
   });
 
@@ -112,7 +112,7 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
     endWidget: Widget.Label({
       label: `${epochToHHMM(planLeg.endTime)}`,
       cssClasses: ["time"],
-      wrap: true,
+      wrap: false,
     }),
   });
 
