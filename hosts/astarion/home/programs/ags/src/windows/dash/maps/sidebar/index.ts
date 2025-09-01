@@ -166,6 +166,7 @@ export default () => {
     vexpand: true,
     hexpand: false,
     halign: Gtk.Align.START,
+    overflow: Gtk.Overflow.HIDDEN,
     vertical: true,
     spacing: 8,
     children: [
