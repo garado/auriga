@@ -87,10 +87,12 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
     startWidget: Widget.Label({
       cssClasses: ["location"],
       label: `${planLeg.from.name}`,
+      wrap: true,
     }),
     endWidget: Widget.Label({
       cssClasses: ["time"],
       label: `${epochToHHMM(planLeg.startTime)}`,
+      wrap: true,
     }),
   });
 
@@ -105,10 +107,12 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
     startWidget: Widget.Label({
       label: `${planLeg.to.name}`,
       cssClasses: ["location"],
+      wrap: true,
     }),
     endWidget: Widget.Label({
       label: `${epochToHHMM(planLeg.endTime)}`,
       cssClasses: ["time"],
+      wrap: true,
     }),
   });
 
