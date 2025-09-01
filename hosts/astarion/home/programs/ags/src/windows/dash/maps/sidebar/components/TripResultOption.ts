@@ -14,9 +14,9 @@
 
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Mode, PlanLeg, TripItinerary } from "@/services/Transit";
-import Astalified from "@/components/astalified";
 import { epochToDuration, epochToHHMM } from "@/utils/Time";
 import { previewedItinerary, selectedItinerary } from "../../StateManagement";
+import BetterFlowBox from "@/components/BetterFlowBox";
 
 /*****************************************************************************
  * Helpers
@@ -159,18 +159,15 @@ export const TripResult = (itinerary: TripItinerary) => {
     }
   });
 
-  const tripDetails = Astalified.FlowBox({
+  const tripDetails = BetterFlowBox({
     cssClasses: ["trip-itinerary-overview"],
     canFocus: false,
     vexpand: false,
-    hexpand: true,
+    hexpand: false,
     halign: Gtk.Align.START,
     valign: Gtk.Align.START,
-    homogeneous: false,
-    rowSpacing: 4,
-    overflow: Gtk.Overflow.HIDDEN,
-    maxChildrenPerLine: 10,
-    minChildrenPerLine: 6,
+    rowSpacing: 8,
+    columnSpacing: 10,
     children: childrenWithSeparators,
   });
 
@@ -215,14 +212,7 @@ export const TripResult = (itinerary: TripItinerary) => {
         Widget.Box({
           vertical: true,
           hexpand: true,
-          children: [
-            tripTimes,
-            Widget.Box({
-              hexpand: true,
-              vertical: false,
-              children: [tripDetails],
-            }),
-          ],
+          children: [tripTimes, tripDetails],
         }),
       ],
     }),
