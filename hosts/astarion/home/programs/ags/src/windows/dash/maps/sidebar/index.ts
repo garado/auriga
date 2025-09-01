@@ -14,7 +14,7 @@
 
 import Astalified from "@/components/astalified";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
-import { bind } from "astal";
+import { bind, Variable } from "astal";
 
 import {
   destination,
@@ -44,7 +44,7 @@ const CSS_CLASSES = {
 
 const SidebarTop = () => {
   const tripPlanningHeader = Widget.Revealer({
-    revealChild: bind(endpointsSelected).as((x) => !x),
+    revealChild: bind(endpointsSelected).as((x) => x === false),
     child: Widget.Label({
       cssClasses: ["trip-planning-header"],
       label: "Where to?",
@@ -123,6 +123,13 @@ const SidebarTop = () => {
     },
   });
 
+  const revealTripPlanBtn = Variable.derive(
+    [endpointsSelected, tripPlan],
+    (_endpointsSelected, _tripPlan) => {
+      return _endpointsSelected && _tripPlan === undefined;
+    },
+  );
+
   return Widget.Box({
     cssClasses: ["top-section"],
     vexpand: false,
@@ -147,7 +154,7 @@ const SidebarTop = () => {
       }),
       Widget.Revealer({
         child: fetchTripPlanBtn,
-        revealChild: bind(endpointsSelected),
+        revealChild: bind(revealTripPlanBtn),
       }),
     ],
   });

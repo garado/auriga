@@ -12,7 +12,7 @@ import { Prediction } from "./Prediction";
 import LocationAutocomplete, {
   PlacePrediction,
 } from "@/services/LocationAutocomplete";
-import { sidebarContent } from "../../StateManagement";
+import { sidebarContent, tripPlan } from "../../StateManagement";
 
 const autocomplete = LocationAutocomplete.get_default();
 
@@ -39,6 +39,7 @@ export const SearchBox = (props: {
       try {
         const responses = await autocomplete.searchNear(self.text);
         sidebarContent.children = responses.map((resp) => {
+          tripPlan.set(undefined);
           return Prediction(resp, props.selectionTarget);
         });
       } catch (error) {
