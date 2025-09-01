@@ -224,7 +224,7 @@ export enum Mode {
 const transitConfig = SettingsManager.get_default().config.transit;
 
 /** Use cached fake data for development or make real API requests */
-const USE_REAL_API_CALL = false;
+const USE_REAL_API_CALL = true;
 
 /** Maximum API calls per calendar month on Transit API free tier */
 const TRANSIT_API_MONTHLY_LIMIT_MAX = 1500;
