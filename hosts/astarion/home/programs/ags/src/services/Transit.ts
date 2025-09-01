@@ -233,10 +233,10 @@ const USE_REAL_API_CALL = false;
  * @function makeApiCall
  * @brief Make a call to the Transit API with proper authentication.
  */
-async function makeApiCall(
+const makeApiCall = async (
   endpoint: string,
   params: Record<string, any> = {},
-): Promise<any> {
+): Promise<any> => {
   const baseUrl = "https://external.transitapp.com/v3";
   const apiKey = transitConfig.apiKey;
 
@@ -277,7 +277,7 @@ async function makeApiCall(
       throw error;
     }
   }
-}
+};
 
 /**********************************************
  * CLASS DEFINITION

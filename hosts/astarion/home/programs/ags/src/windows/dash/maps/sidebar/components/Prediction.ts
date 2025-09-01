@@ -1,3 +1,10 @@
+/**
+ * █▀█ █░░ ▄▀█ █▀▀ █▀▀   █▀█ █▀█ █▀▀ █▀▄ █ █▀▀ ▀█▀ █ █▀█ █▄░█
+ * █▀▀ █▄▄ █▀█ █▄▄ ██▄   █▀▀ █▀▄ ██▄ █▄▀ █ █▄▄ ░█░ █ █▄█ █░▀█
+ *
+ * Widget displaying a location autocomplete result
+ */
+
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
@@ -17,20 +24,20 @@ export const Prediction = (
     children: [
       Widget.Label({
         label: prediction.displayPlace || "No name",
-        wrap: true,
         cssClasses: ["name"],
         halign: Gtk.Align.START,
         hexpand: true,
         maxWidthChars: -1,
+        wrap: true,
       }),
       Widget.Label({
         label: prediction.displayAddress || "No address",
         cssClasses: ["address"],
         halign: Gtk.Align.FILL,
-        xalign: 0,
         hexpand: true,
-        wrap: true,
         maxWidthChars: 1000,
+        wrap: true,
+        xalign: 0,
       }),
     ],
   });
@@ -44,10 +51,10 @@ export const Prediction = (
   });
 
   return Widget.Button({
+    child: predictionWidget,
     cssClasses: ["place-prediction"],
     hexpand: true,
     halign: Gtk.Align.FILL,
-    child: predictionWidget,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     onButtonPressed: () => {
       selectionTarget.set(prediction);

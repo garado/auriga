@@ -1,10 +1,17 @@
+/**
+ * █▀▄▀█ ▄▀█ █▀█
+ * █░▀░█ █▀█ █▀▀
+ *
+ * Custom map widget made with libshumate.
+ */
+
 /*****************************************************************************
  * Imports
  *****************************************************************************/
 
+import Gtk from "gi://Gtk?version=4.0";
 import Shumate from "gi://Shumate?version=1.0";
 import { GLib, GObject } from "astal";
-import Gtk from "gi://Gtk?version=4.0";
 import { Gdk } from "astal/gtk4";
 
 /*****************************************************************************

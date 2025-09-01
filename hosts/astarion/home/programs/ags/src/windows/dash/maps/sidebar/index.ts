@@ -1,6 +1,11 @@
 /**
  * █▀ █ █▀▄ █▀▀ █▄▄ ▄▀█ █▀█
  * ▄█ █ █▄▀ ██▄ █▄█ █▀█ █▀▄
+ *
+ * Allows user to:
+ * - select origin/destination for trips
+ * - preview different trip itineraries
+ * - select a trip itinerary and view its details
  */
 
 /*****************************************************************************
@@ -8,23 +13,23 @@
  *****************************************************************************/
 
 import Astalified from "@/components/astalified";
-import { bind, Variable } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { bind } from "astal";
 
 import {
   destination,
   origin,
-  planTripVisible,
+  endpointsSelected,
   sidebarContent,
   sidebarRevealState,
-  tripPlanUpdated,
+  tripPlan,
 } from "../StateManagement";
-import { SearchBox } from "./components/SearchBox";
 import Transit from "@/services/Transit";
 import { Decoration } from "./components/Decoration";
+import { SearchBox } from "./components/SearchBox";
 
 /*****************************************************************************
- * Widget
+ * Module vars
  *****************************************************************************/
 
 const transit = Transit.get_default();
@@ -33,10 +38,13 @@ const CSS_CLASSES = {
   ORIGIN_DEST_SWAP: "origin-dest-swap",
 } as const;
 
-/** Top portion of the sidebar where user selects origin/destination */
+/*****************************************************************************
+ * Widget
+ *****************************************************************************/
+
 const SidebarTop = () => {
   const tripPlanningHeader = Widget.Revealer({
-    revealChild: bind(planTripVisible).as((x) => !x),
+    revealChild: bind(endpointsSelected).as((x) => !x),
     child: Widget.Label({
       cssClasses: ["trip-planning-header"],
       label: "Where to?",
@@ -68,6 +76,13 @@ const SidebarTop = () => {
       contentTarget: sidebarContent,
       selectionTarget: destination,
     }),
+    setup: (self) => {
+      origin.subscribe((origin) => {
+        if (origin !== undefined) {
+          self.child.grab_focus();
+        }
+      });
+    },
   });
 
   const swapOriginAndDestination = Widget.Button({
@@ -83,8 +98,7 @@ const SidebarTop = () => {
     },
   });
 
-  // Button to trigger API call to start trip planning
-  const planTripBtn = Widget.Button({
+  const fetchTripPlanBtn = Widget.Button({
     cssClasses: ["plan-trip-btn"],
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
@@ -95,41 +109,18 @@ const SidebarTop = () => {
       if (origin.get() === undefined || destination.get() === undefined) return;
 
       try {
-        const tripPlan = await transit.planTrip(
+        const _tripPlan = await transit.planTrip(
           origin.get()!.lat,
           origin.get()!.lon,
           destination.get()!.lat,
           destination.get()!.lon,
         );
 
-        tripPlanUpdated.set(tripPlan);
+        tripPlan.set(_tripPlan);
       } catch (error) {
         console.error(error);
       }
     },
-    setup: () => {
-      Variable.derive([origin, destination], (x, y) => {
-        planTripVisible.set(x !== undefined && y !== undefined);
-      });
-    },
-  });
-
-  const content = Widget.Box({
-    cssClasses: ["top-section"],
-    vexpand: false,
-    hexpand: true,
-    vertical: false,
-    spacing: 16,
-    children: [
-      Decoration(),
-      Widget.Box({
-        vertical: true,
-        hexpand: true,
-        spacing: 8,
-        children: [startingPointContainer, endingPointContainer],
-      }),
-      swapOriginAndDestination,
-    ],
   });
 
   return Widget.Box({
@@ -139,10 +130,24 @@ const SidebarTop = () => {
     vertical: true,
     children: [
       tripPlanningHeader,
-      content,
+      Widget.Box({
+        cssClasses: ["top-section"],
+        vertical: false,
+        spacing: 16,
+        children: [
+          Decoration(),
+          Widget.Box({
+            vertical: true,
+            hexpand: true,
+            spacing: 8,
+            children: [startingPointContainer, endingPointContainer],
+          }),
+          swapOriginAndDestination,
+        ],
+      }),
       Widget.Revealer({
-        child: planTripBtn,
-        revealChild: bind(planTripVisible),
+        child: fetchTripPlanBtn,
+        revealChild: bind(endpointsSelected),
       }),
     ],
   });
@@ -150,10 +155,7 @@ const SidebarTop = () => {
 
 export default () => {
   const sidebar = Widget.Box({
-    cssClasses: bind(sidebarRevealState).as((state) => [
-      "sidebar",
-      ...(state ? ["expanded"] : []),
-    ]),
+    cssClasses: ["sidebar"],
     vexpand: true,
     hexpand: false,
     halign: Gtk.Align.START,
@@ -174,6 +176,17 @@ export default () => {
     ],
   });
 
+  const sidebarRevealer = Widget.Revealer({
+    canTarget: true,
+    vexpand: true,
+    hexpand: false,
+    child: sidebar,
+    halign: Gtk.Align.START,
+    transitionType: Gtk.RevealerTransitionType.SLIDE_RIGHT,
+    revealChild: bind(sidebarRevealState),
+  });
+
+  /** Button to toggle sidebar revealer */
   const sidebarHandle = Widget.CenterBox({
     cssClasses: ["handle"],
     vexpand: true,
@@ -191,16 +204,6 @@ export default () => {
         sidebarRevealState.set(!sidebarRevealState.get());
       },
     }),
-  });
-
-  const sidebarRevealer = Widget.Revealer({
-    canTarget: true,
-    vexpand: true,
-    hexpand: false,
-    child: sidebar,
-    halign: Gtk.Align.START,
-    transitionType: Gtk.RevealerTransitionType.SLIDE_RIGHT,
-    revealChild: bind(sidebarRevealState),
   });
 
   return Widget.Box({

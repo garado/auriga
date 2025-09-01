@@ -1,3 +1,10 @@
+/**
+ * █▀▄ █▀▀ █▀▀ █▀█ █▀█ ▄▀█ ▀█▀ █ █▀█ █▄░█
+ * █▄▀ ██▄ █▄▄ █▄█ █▀▄ █▀█ ░█░ █ █▄█ █░▀█
+ *
+ * Little decoration for origin/destination selection
+ */
+
 import { Gtk, Widget } from "astal/gtk4";
 
 export const Decoration = () =>

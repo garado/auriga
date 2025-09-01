@@ -1,3 +1,14 @@
+/**
+ * ▀█▀ █▀█ █ █▀█   █▀▄ █▀▀ ▀█▀ ▄▀█ █ █░░ █▀
+ * ░█░ █▀▄ █ █▀▀   █▄▀ ██▄ ░█░ █▀█ █ █▄▄ ▄█
+ *
+ * Shows detailed trip itinerary.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gtk, Widget } from "astal/gtk4";
 import {
   Mode,
@@ -11,20 +22,28 @@ import { ExpansionPanel } from "@/components/ExpansionPanel";
 import Astalified from "@/components/astalified";
 import { destination } from "../../StateManagement";
 
+/*****************************************************************************
+ * Helpers
+ *****************************************************************************/
+
 const durationInMinutes = (planLeg: PlanLeg) =>
   `${Math.round(planLeg.duration / 60)}m`;
 
-const PlanLeg_Legs = (planLeg: PlanLeg): Gtk.Widget => {
+/*****************************************************************************
+ * Widgets
+ *****************************************************************************/
+
+/**
+ * Show detailed information about a certain leg of a trip.
+ * This is for legs of the trip where you use your... legs. (bike, walk, etc.)
+ */
+const PlanLegWidget_Legs = (planLeg: PlanLeg): Gtk.Widget => {
   let icon = "person-simple-walk-symbolic";
   if (Mode.BICYCLE === planLeg.mode) icon = "bike-symbolic";
 
   return Widget.Box({
     cssClasses: ["plan-leg", "walk"],
     vertical: false,
-    vexpand: false,
-    hexpand: false,
-    valign: Gtk.Align.CENTER,
-    halign: Gtk.Align.START,
     spacing: 4,
     children: [
       Widget.Image({ iconName: icon }),
@@ -33,11 +52,16 @@ const PlanLeg_Legs = (planLeg: PlanLeg): Gtk.Widget => {
   });
 };
 
-const PlanLeg_Transit = (planLeg: PlanLeg_Transit): Gtk.Widget => {
+/**
+ * Show detailed information about a certain leg of a trip.
+ * This is for legs of the trip which involve some type of transit.
+ */
+const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
   let icon = "train-symbolic";
   if (Mode.BUS == planLeg.mode) icon = "bus-symbolic";
   if (Mode.SUBWAY == planLeg.mode) icon = "train-symbolic";
 
+  // Show transit line icon, name
   const routeSummary = Widget.Box({
     cssClasses: ["route-summary"],
     vertical: false,
@@ -52,6 +76,10 @@ const PlanLeg_Transit = (planLeg: PlanLeg_Transit): Gtk.Widget => {
     ],
   });
 
+  /**
+   * Display the starting point of the transit trip
+   * "Get on at this stop"
+   */
   const startStop = Astalified.CenterBox({
     cssClasses: ["stop-endpoint"],
     vertical: false,
@@ -66,52 +94,68 @@ const PlanLeg_Transit = (planLeg: PlanLeg_Transit): Gtk.Widget => {
     }),
   });
 
+  /**
+   * Display the ending point of the transit trip
+   * "Get off at this stop"
+   */
   const endStop = Astalified.CenterBox({
     cssClasses: ["stop-endpoint"],
     vertical: false,
     hexpand: false,
     startWidget: Widget.Label({
       label: `${planLeg.to.name}`,
+      cssClasses: ["location"],
     }),
     endWidget: Widget.Label({
       label: `${epochToHHMM(planLeg.endTime)}`,
+      cssClasses: ["time"],
     }),
   });
 
+  /**
+   * Container holding all information for the transit trip.
+   * The container text and background are recolored to match the color scheme of
+   * the selected transit line. (The Transit API provides this information. Cool!)
+   */
   const container = Widget.Box({
     cssClasses: [`route-${planLeg.routeShortName}` || "", "transit-leg"],
     vertical: true,
     halign: Gtk.Align.FILL,
     children: [routeSummary, startStop, endStop],
     setup: (self) => {
+      // Custom CSS provider needed to modify styles at runtime
       const cssProvider = new Gtk.CssProvider();
+      const styleContext = self.get_style_context();
+      styleContext.add_provider(cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+
       cssProvider.load_from_string(`
         .route-${planLeg.routeShortName} {
           background-color: #${planLeg.routeColor};
           color: #${planLeg.routeTextColor};
         }
       `);
-      const styleContext = self.get_style_context();
-      styleContext.add_provider(cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
     },
   });
 
-  if (planLeg.intermediateStops.length > 0) {
+  // Display intermediate stops, if any
+  if ((planLeg as PlanLeg_Transit).intermediateStops.length > 0) {
+    const intermediateStops = (planLeg as PlanLeg_Transit).intermediateStops;
+
     const IntermediateStop = (stop: Stop) => {
       return Widget.Label({
-        hexpand: false,
-        halign: Gtk.Align.START,
-        cssClasses: ["stop-intermediate"],
         label: stop.name,
+        cssClasses: ["stop-intermediate"],
+        halign: Gtk.Align.START,
+        hexpand: false,
         wrap: true,
       });
     };
 
     const stops = ExpansionPanel({
       cssClasses: ["stop-dropdown"],
-      label: `${planLeg.intermediateStops.length} stops before...`,
+      label: `${intermediateStops.length} stops before...`,
       vertical: true,
-      children: planLeg.intermediateStops.map(IntermediateStop),
+      children: intermediateStops.map(IntermediateStop),
       showExpanderIcon: true,
       expanderIconPosition: Gtk.PositionType.LEFT,
       maxDropdownHeight: 1000,
@@ -123,58 +167,52 @@ const PlanLeg_Transit = (planLeg: PlanLeg_Transit): Gtk.Widget => {
   return container;
 };
 
-const PlanLeg_Default = (_planLeg: PlanLeg): Gtk.Widget =>
+/**
+ * Show detailed information about a certain leg of a trip.
+ * This is the default widget.
+ */
+const PlanLegWidget_Default = (_planLeg: PlanLeg): Gtk.Widget =>
   Widget.Label({
     label: "?",
   });
 
+/** Map all possible travel modes to a respective PlanLeg widget */
 const modeHandlers: Record<Mode, (planLeg: PlanLeg) => Gtk.Widget> = {
-  [Mode.WALK]: PlanLeg_Legs,
-  [Mode.AIRPLANE]: PlanLeg_Default,
-  [Mode.BICYCLE]: PlanLeg_Default,
-  [Mode.BUS]: PlanLeg_Transit,
-  [Mode.CABLE_CAR]: PlanLeg_Default,
-  [Mode.CAR]: PlanLeg_Default,
-  [Mode.CARPOOL]: PlanLeg_Default,
-  [Mode.COACH]: PlanLeg_Default,
-  [Mode.FERRY]: PlanLeg_Default,
-  [Mode.FLEX]: PlanLeg_Default,
-  [Mode.FLEXIBLE]: PlanLeg_Default,
-  [Mode.FUNICULAR]: PlanLeg_Default,
-  [Mode.GONDOLA]: PlanLeg_Default,
-  [Mode.LEG_SWITCH]: PlanLeg_Default,
-  [Mode.MONORAIL]: PlanLeg_Default,
-  [Mode.RAIL]: PlanLeg_Default,
-  [Mode.SCOOTER]: PlanLeg_Default,
-  [Mode.SUBWAY]: PlanLeg_Transit,
-  [Mode.TAXI]: PlanLeg_Default,
-  [Mode.TRAM]: PlanLeg_Default,
-  [Mode.TRANSIT]: PlanLeg_Default,
-  [Mode.TROLLEYBUS]: PlanLeg_Default,
+  [Mode.WALK]: PlanLegWidget_Legs,
+  [Mode.AIRPLANE]: PlanLegWidget_Default,
+  [Mode.BICYCLE]: PlanLegWidget_Default,
+  [Mode.BUS]: PlanLegWidget_Transit,
+  [Mode.CABLE_CAR]: PlanLegWidget_Default,
+  [Mode.CAR]: PlanLegWidget_Default,
+  [Mode.CARPOOL]: PlanLegWidget_Default,
+  [Mode.COACH]: PlanLegWidget_Default,
+  [Mode.FERRY]: PlanLegWidget_Default,
+  [Mode.FLEX]: PlanLegWidget_Default,
+  [Mode.FLEXIBLE]: PlanLegWidget_Default,
+  [Mode.FUNICULAR]: PlanLegWidget_Default,
+  [Mode.GONDOLA]: PlanLegWidget_Default,
+  [Mode.LEG_SWITCH]: PlanLegWidget_Default,
+  [Mode.MONORAIL]: PlanLegWidget_Default,
+  [Mode.RAIL]: PlanLegWidget_Default,
+  [Mode.SCOOTER]: PlanLegWidget_Default,
+  [Mode.SUBWAY]: PlanLegWidget_Transit,
+  [Mode.TAXI]: PlanLegWidget_Default,
+  [Mode.TRAM]: PlanLegWidget_Default,
+  [Mode.TRANSIT]: PlanLegWidget_Default,
+  [Mode.TROLLEYBUS]: PlanLegWidget_Default,
 };
 
 export const TripResultDetails = (selectedItinerary: TripItinerary) => {
-  const childrenWithSeparators: Gtk.Widget[] = [];
-  selectedItinerary.legs.forEach((leg, index) => {
-    childrenWithSeparators.push(modeHandlers[leg.mode as Mode](leg));
-    if (index < selectedItinerary.legs.length - 1) {
-      // childrenWithSeparators.push(Separator());
-    }
-  });
-
-  const legs = Widget.Box({
-    vertical: true,
-    spacing: 8,
-    children: childrenWithSeparators,
-  });
-
   const leaveTime = epochToHHMM(selectedItinerary.startTime);
   const arriveTime = epochToHHMM(selectedItinerary.endTime);
   const now = new Date().getTime();
   const timeUntilDeparture = epochToRelativeTime(
     selectedItinerary.startTime - now,
   );
+  const destinationName = destination.get()?.displayPlace;
+  const destinationAddress = destination.get()?.displayAddress;
 
+  /** Departure and arrival time */
   const timeSummary = Widget.Box({
     cssClasses: ["time-summary"],
     hexpand: false,
@@ -197,9 +235,16 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
     ],
   });
 
-  const destinationName = destination.get()?.displayPlace;
-  const destinationAddress = destination.get()?.displayAddress;
+  /** All legs of the currently selected itinerary */
+  const legs = Widget.Box({
+    vertical: true,
+    spacing: 8,
+    children: selectedItinerary.legs.map((leg) =>
+      modeHandlers[leg.mode as Mode](leg),
+    ),
+  });
 
+  /** Destination name/address */
   const destinationSummary = Astalified.CenterBox({
     vertical: false,
     cssClasses: ["destination"],

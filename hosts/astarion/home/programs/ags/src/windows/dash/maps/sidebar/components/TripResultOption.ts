@@ -1,21 +1,43 @@
+/**
+ * ▀█▀ █▀█ █ █▀█   █ ▀█▀ █ █▄░█ █▀▀ █▀█ ▄▀█ █▀█ █▄█   █▀ █▀▀ █░░ █▀▀ █▀▀ ▀█▀ █ █▀█ █▄░█
+ * ░█░ █▀▄ █ █▀▀   █ ░█░ █ █░▀█ ██▄ █▀▄ █▀█ █▀▄ ░█░   ▄█ ██▄ █▄▄ ██▄ █▄▄ ░█░ █ █▄█ █░▀█
+ *
+ * After selecting an origin/destination, the Maps tab will provide the user with different
+ * itineraries to select from.
+ *
+ * This file implements the trip itinerary overview.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Mode, PlanLeg, TripItinerary } from "@/services/Transit";
 import Astalified from "@/components/astalified";
 import { epochToDuration, epochToHHMM } from "@/utils/Time";
 import { previewedItinerary, selectedItinerary } from "../../StateManagement";
 
+/*****************************************************************************
+ * Helpers
+ *****************************************************************************/
+
 const durationInMinutes = (planLeg: PlanLeg) =>
   `${Math.round(planLeg.duration / 60)}m`;
 
-const PlanLeg_Walk = (planLeg: PlanLeg): Gtk.Widget =>
+/*****************************************************************************
+ * Widgets
+ *****************************************************************************/
+
+/**
+ * Show minimal information about a certain leg of a trip.
+ * This is for legs of the trip where you use your... legs. (bike, walk, etc.)
+ */
+const PlanLegWidget_Legs = (planLeg: PlanLeg): Gtk.Widget =>
   Widget.Box({
     cssClasses: ["plan-leg", "walk"],
-    vertical: false,
-    vexpand: false,
-    hexpand: false,
-    valign: Gtk.Align.CENTER,
-    halign: Gtk.Align.CENTER,
     spacing: 4,
+    halign: Gtk.Align.CENTER,
     children: [
       Widget.Image({
         iconName: "person-simple-walk-symbolic",
@@ -26,14 +48,11 @@ const PlanLeg_Walk = (planLeg: PlanLeg): Gtk.Widget =>
     ],
   });
 
-const PlanLeg_Transit = (planLeg: PlanLeg): Gtk.Widget => {
-  const cssProvider = new Gtk.CssProvider();
-  cssProvider.load_from_string(`
-    .route-${planLeg.routeShortName} {
-      background-color: #${planLeg.routeColor};
-    }
-  `);
-
+/**
+ * Show minimal information about a certain leg of a trip.
+ * This is for legs of the trip which use some type of public transit.
+ */
+const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
   let icon = "train-symbolic";
   if (Mode.BUS == planLeg.mode) icon = "bus-symbolic";
   if (Mode.SUBWAY == planLeg.mode) icon = "train-symbolic";
@@ -41,68 +60,88 @@ const PlanLeg_Transit = (planLeg: PlanLeg): Gtk.Widget => {
   return Widget.Box({
     cssClasses: ["plan-leg", "transit"],
     vertical: false,
-    vexpand: false,
+    valign: Gtk.Align.START,
+    halign: Gtk.Align.START,
     hexpand: false,
-    valign: Gtk.Align.CENTER,
-    halign: Gtk.Align.CENTER,
+    vexpand: false,
     spacing: 4,
     children: [
       Widget.Image({
         iconName: icon,
+        halign: Gtk.Align.START,
+        hexpand: false,
+        vexpand: false,
       }),
       Widget.Box({
+        halign: Gtk.Align.START,
+        hexpand: false,
+        vexpand: false,
         cssClasses: [`route-${planLeg.routeShortName}` || "", "route-id"],
-        children: [
-          Widget.Label({
-            label: planLeg.routeShortName,
-          }),
-        ],
+        children: [Widget.Label({ label: planLeg.routeShortName })],
         setup: (self) => {
+          const cssProvider = new Gtk.CssProvider();
           const styleContext = self.get_style_context();
           styleContext.add_provider(
             cssProvider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER,
           );
+
+          cssProvider.load_from_string(`
+            .route-${planLeg.routeShortName} {
+              background-color: #${planLeg.routeColor};
+              color: #${planLeg.routeTextColor};
+            }
+          `);
         },
       }),
     ],
   });
 };
 
-const PlanLeg_Default = (_planLeg: PlanLeg): Gtk.Widget =>
+/**
+ * Show minimal information about a certain leg of a trip.
+ * This is the default widget.
+ */
+const PlanLegWidget_Default = (_planLeg: PlanLeg): Gtk.Widget =>
   Widget.Label({
+    hexpand: false,
+    vexpand: false,
+    halign: Gtk.Align.START,
     label: "?",
   });
 
+/** Map all possible travel modes to a respective PlanLeg widget */
 const modeHandlers: Record<Mode, (planLeg: PlanLeg) => Gtk.Widget> = {
-  [Mode.WALK]: PlanLeg_Walk,
-  [Mode.AIRPLANE]: PlanLeg_Default,
-  [Mode.BICYCLE]: PlanLeg_Default,
-  [Mode.BUS]: PlanLeg_Transit,
-  [Mode.CABLE_CAR]: PlanLeg_Default,
-  [Mode.CAR]: PlanLeg_Default,
-  [Mode.CARPOOL]: PlanLeg_Default,
-  [Mode.COACH]: PlanLeg_Default,
-  [Mode.FERRY]: PlanLeg_Default,
-  [Mode.FLEX]: PlanLeg_Default,
-  [Mode.FLEXIBLE]: PlanLeg_Default,
-  [Mode.FUNICULAR]: PlanLeg_Default,
-  [Mode.GONDOLA]: PlanLeg_Default,
-  [Mode.LEG_SWITCH]: PlanLeg_Default,
-  [Mode.MONORAIL]: PlanLeg_Default,
-  [Mode.RAIL]: PlanLeg_Default,
-  [Mode.SCOOTER]: PlanLeg_Default,
-  [Mode.SUBWAY]: PlanLeg_Transit,
-  [Mode.TAXI]: PlanLeg_Default,
-  [Mode.TRAM]: PlanLeg_Default,
-  [Mode.TRANSIT]: PlanLeg_Default,
-  [Mode.TROLLEYBUS]: PlanLeg_Default,
+  [Mode.WALK]: PlanLegWidget_Legs,
+  [Mode.AIRPLANE]: PlanLegWidget_Default,
+  [Mode.BICYCLE]: PlanLegWidget_Default,
+  [Mode.BUS]: PlanLegWidget_Transit,
+  [Mode.CABLE_CAR]: PlanLegWidget_Default,
+  [Mode.CAR]: PlanLegWidget_Default,
+  [Mode.CARPOOL]: PlanLegWidget_Default,
+  [Mode.COACH]: PlanLegWidget_Default,
+  [Mode.FERRY]: PlanLegWidget_Default,
+  [Mode.FLEX]: PlanLegWidget_Default,
+  [Mode.FLEXIBLE]: PlanLegWidget_Default,
+  [Mode.FUNICULAR]: PlanLegWidget_Default,
+  [Mode.GONDOLA]: PlanLegWidget_Default,
+  [Mode.LEG_SWITCH]: PlanLegWidget_Default,
+  [Mode.MONORAIL]: PlanLegWidget_Default,
+  [Mode.RAIL]: PlanLegWidget_Default,
+  [Mode.SCOOTER]: PlanLegWidget_Default,
+  [Mode.SUBWAY]: PlanLegWidget_Transit,
+  [Mode.TAXI]: PlanLegWidget_Default,
+  [Mode.TRAM]: PlanLegWidget_Default,
+  [Mode.TRANSIT]: PlanLegWidget_Default,
+  [Mode.TROLLEYBUS]: PlanLegWidget_Default,
 };
 
+/** Separator between PlanLeg widgets. */
 const Separator = () =>
   Widget.Label({
     hexpand: false,
-    halign: Gtk.Align.CENTER,
+    vexpand: false,
+    halign: Gtk.Align.START,
     cssClasses: ["separator"],
     label: ">",
   });
@@ -118,13 +157,15 @@ export const TripResult = (itinerary: TripItinerary) => {
 
   const tripDetails = Astalified.FlowBox({
     cssClasses: ["trip-details"],
-    hexpand: false,
     vexpand: false,
+    hexpand: true,
+    halign: Gtk.Align.START,
     valign: Gtk.Align.START,
     homogeneous: false,
-    minChildrenPerLine: 1,
-    maxChildrenPerLine: 10,
     rowSpacing: 4,
+    overflow: Gtk.Overflow.HIDDEN,
+    maxChildrenPerLine: 10,
+    minChildrenPerLine: 6,
     children: childrenWithSeparators,
   });
 
@@ -133,6 +174,7 @@ export const TripResult = (itinerary: TripItinerary) => {
   const tripDuration = Widget.Box({
     cssClasses: ["trip-duration"],
     vertical: true,
+    hexpand: false,
     valign: Gtk.Align.START,
     children: [
       Widget.Label({
@@ -167,7 +209,15 @@ export const TripResult = (itinerary: TripItinerary) => {
         tripDuration,
         Widget.Box({
           vertical: true,
-          children: [tripTimes, tripDetails],
+          hexpand: true,
+          children: [
+            tripTimes,
+            Widget.Box({
+              hexpand: true,
+              vertical: false,
+              children: [tripDetails],
+            }),
+          ],
         }),
       ],
     }),
