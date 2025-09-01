@@ -209,9 +209,8 @@ const modeHandlers: Record<Mode, (planLeg: PlanLeg) => Gtk.Widget> = {
 export const TripResultDetails = (selectedItinerary: TripItinerary) => {
   const leaveTime = epochToHHMM(selectedItinerary.startTime);
   const arriveTime = epochToHHMM(selectedItinerary.endTime);
-  const now = new Date().getTime();
   const timeUntilDeparture = epochToRelativeTime(
-    selectedItinerary.startTime - now,
+    selectedItinerary.startTime / 1000,
   );
   const destinationName = destination.get()?.displayPlace;
   const destinationAddress = destination.get()?.displayAddress;

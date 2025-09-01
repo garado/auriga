@@ -1,10 +1,25 @@
+/**
+ * @function epochToHHMM
+ * @param epoch - Unix epoch timestamp (seconds since 1970)
+ */
 export const epochToHHMM = (epoch: number): string => {
-  const date = new Date(epoch * 1000);
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
+  const date = new Date(epoch);
+  const hours24 = date.getHours();
+  const minutes = date.getMinutes();
+
+  const hours12 = hours24 % 12 || 12;
+  const ampm = hours24 >= 12 ? "PM" : "AM";
+
+  const hoursStr = hours12.toString().padStart(2, "0");
+  const minutesStr = minutes.toString().padStart(2, "0");
+
+  return `${hoursStr}:${minutesStr} ${ampm}`;
 };
 
+/**
+ * @function epochToHHMM
+ * @param epoch - Unix epoch timestamp (seconds since 1970)
+ */
 export const epochToDuration = (
   epochSeconds: number,
 ): { hours: string; minutes: string } => {
@@ -17,17 +32,18 @@ export const epochToDuration = (
   return { hours, minutes };
 };
 
+/**
+ * @function epochToRelativeTime
+ * @param epoch - Unix epoch timestamp (seconds since 1970)
+ */
 export const epochToRelativeTime = (epoch: number): string => {
-  // Normalize epoch (handle both seconds and milliseconds)
-  if (epoch < 1e12) {
-    epoch *= 1000;
-  }
-
   const now = Date.now();
-  const diff = epoch - now;
+  const diff = epoch * 1000 - now;
   const absDiff = Math.abs(diff);
-
   const seconds = Math.floor(absDiff / 1000);
+
+  if (seconds < 1) return "now";
+
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);

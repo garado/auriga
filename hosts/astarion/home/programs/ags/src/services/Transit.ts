@@ -150,9 +150,9 @@ export interface PlanLeg_Transit extends PlanLeg {
 export interface TripItinerary {
   accessibility: string;
   duration: number;
-  endTime: number;
+  endTime: number /** milliseconds */;
   legs: PlanLeg[];
-  startTime: number;
+  startTime: number /** milliseconds */;
   transfers: number;
   transitTime: number;
   walkTime: number;
