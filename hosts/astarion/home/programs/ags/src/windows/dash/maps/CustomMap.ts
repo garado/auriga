@@ -117,6 +117,7 @@ export const MapWidget = GObject.registerClass(
         cssClasses: ["map"],
         showZoomButtons: props.showZoomButtons ?? false,
         mapSource: this.referenceSource,
+        canFocus: false,
       });
 
       this.viewport = this.mapView.get_viewport();

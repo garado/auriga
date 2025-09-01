@@ -30,7 +30,6 @@ import {
   selectedItinerary,
   previewedLocation,
 } from "./StateManagement";
-import { PlacePrediction } from "@/services/LocationAutocomplete";
 
 /*****************************************************************************
  * Shortcuts

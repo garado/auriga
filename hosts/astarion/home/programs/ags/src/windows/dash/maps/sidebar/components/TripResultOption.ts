@@ -37,6 +37,7 @@ const PlanLegWidget_Legs = (planLeg: PlanLeg): Gtk.Widget =>
   Widget.Box({
     cssClasses: ["plan-leg", "walk"],
     spacing: 4,
+    canFocus: false,
     halign: Gtk.Align.CENTER,
     children: [
       Widget.Image({
@@ -60,6 +61,7 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
   return Widget.Box({
     cssClasses: ["plan-leg", "transit"],
     vertical: false,
+    canFocus: false,
     valign: Gtk.Align.START,
     halign: Gtk.Align.START,
     hexpand: false,
@@ -105,6 +107,7 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
 const PlanLegWidget_Default = (_planLeg: PlanLeg): Gtk.Widget =>
   Widget.Label({
     hexpand: false,
+    canFocus: false,
     vexpand: false,
     halign: Gtk.Align.START,
     label: "?",
@@ -141,6 +144,7 @@ const Separator = () =>
   Widget.Label({
     hexpand: false,
     vexpand: false,
+    canFocus: false,
     halign: Gtk.Align.START,
     cssClasses: ["separator"],
     label: ">",
@@ -157,6 +161,7 @@ export const TripResult = (itinerary: TripItinerary) => {
 
   const tripDetails = Astalified.FlowBox({
     cssClasses: ["trip-details"],
+    canFocus: false,
     vexpand: false,
     hexpand: true,
     halign: Gtk.Align.START,
