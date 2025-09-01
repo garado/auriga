@@ -224,18 +224,18 @@ export enum Mode {
 const transitConfig = SettingsManager.get_default().config.transit;
 
 /** Use cached fake data for development or make real API requests */
-const USE_REAL_API_CALL = true;
+const USE_REAL_API_CALL = false;
 
 /** Maximum API calls per calendar month on Transit API free tier */
 const TRANSIT_API_MONTHLY_LIMIT_MAX = 1500;
 
 /** Limit at which to warn user of Transit API usage */
-// const TRANSIT_API_MONTHLY_WARN = 1000;
-const TRANSIT_API_MONTHLY_WARN = 13;
+const TRANSIT_API_MONTHLY_WARN = 1000;
+// const TRANSIT_API_MONTHLY_WARN = 13;
 
 /** Limit at which to abort all API calls, so they don't flag my account for reaching the usage limit */
-// const TRANSIT_API_MONTHLY_HARD_STOP = 1400;
-const TRANSIT_API_MONTHLY_HARD_STOP = 15;
+const TRANSIT_API_MONTHLY_HARD_STOP = 1400;
+// const TRANSIT_API_MONTHLY_HARD_STOP = 15;
 
 /**********************************************
  * UTILITY

@@ -20,7 +20,13 @@ import {
 import { epochToHHMM, epochToRelativeTime } from "@/utils/Time";
 import { ExpansionPanel } from "@/components/ExpansionPanel";
 import Astalified from "@/components/astalified";
-import { destination, returnToTripSelectPressed } from "../../StateManagement";
+import {
+  destination,
+  origin,
+  returnToTripSelectPressed,
+  tripPlan,
+} from "../../StateManagement";
+import Pushover from "@/services/Pushover";
 
 /*****************************************************************************
  * Helpers
@@ -234,6 +240,41 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
     },
   });
 
+  const sendToPhoneText = Widget.Revealer({
+    revealChild: false,
+    transitionType: Gtk.RevealerTransitionType.SLIDE_LEFT,
+    child: Widget.Label({
+      label: "Send to phone",
+    }),
+  });
+
+  const sendToPhoneButton = Widget.Button({
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    child: Widget.Image({
+      iconName: "share-fat-symbolic",
+    }),
+    onHoverEnter: () => {
+      sendToPhoneText.revealChild = true;
+    },
+    onHoverLeave: () => {
+      sendToPhoneText.revealChild = false;
+    },
+    onClicked: () => {
+      const _origin = origin.get();
+      const _dest = destination.get();
+      if (_origin === undefined || _dest === undefined) return;
+
+      const from = `${_origin.displayPlace}, ${_origin.displayAddress}`;
+      const to = `${_dest.displayPlace}, ${_dest.displayAddress}`;
+
+      Pushover.get_default().sendWithUrl(
+        `Transit: ${_origin.displayPlace} -> ${_dest.displayPlace}`,
+        `transit://directions?from=${from}&to=${to}?utm_campaign=trip-planner`,
+        "Transit",
+      );
+    },
+  });
+
   /** Departure and arrival time */
   const timeSummary = Widget.Box({
     cssClasses: ["time-summary"],
@@ -311,6 +352,19 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
     hexpand: false,
     vertical: true,
     spacing: 12,
-    children: [returnToTripSelect, timeSummary, legs, destinationSummary],
+    children: [
+      Widget.CenterBox({
+        orientation: Gtk.Orientation.HORIZONTAL,
+        startWidget: returnToTripSelect,
+        endWidget: Widget.Box({
+          vertical: false,
+          spacing: 8,
+          children: [sendToPhoneText, sendToPhoneButton],
+        }),
+      }),
+      timeSummary,
+      legs,
+      destinationSummary,
+    ],
   });
 };

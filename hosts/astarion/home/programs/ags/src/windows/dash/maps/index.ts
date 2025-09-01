@@ -183,7 +183,7 @@ export default () => {
     selectedItinerary.set(undefined);
   });
 
-  debug();
+  // debug();
 
   return ret;
 };
