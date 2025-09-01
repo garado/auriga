@@ -39,6 +39,7 @@ import {
 const KB_SHORTCUTS = {
   CLOSE_SIDEBAR: "Escape",
   OPEN_SIDEBAR: "L",
+  RETURN_TO_TRIP_SELECT: "BackSpace",
 } as const;
 
 /*****************************************************************************
@@ -92,6 +93,9 @@ export default () => {
           },
           [KB_SHORTCUTS.CLOSE_SIDEBAR]: () => {
             sidebarRevealState.set(false);
+          },
+          [KB_SHORTCUTS.RETURN_TO_TRIP_SELECT]: () => {
+            returnToTripSelectPressed.set(!returnToTripSelectPressed.get());
           },
         },
       });
@@ -176,9 +180,10 @@ export default () => {
 
   returnToTripSelectPressed.subscribe(() => {
     showTripPlan();
+    selectedItinerary.set(undefined);
   });
 
-  // debug();
+  debug();
 
   return ret;
 };
