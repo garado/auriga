@@ -62,6 +62,8 @@ export const previewedItinerary: Variable<TripItinerary | undefined> =
 export const selectedItinerary: Variable<TripItinerary | undefined> =
   Variable(undefined);
 
+export const returnToTripSelectPressed: Variable<boolean> = Variable(false);
+
 /*****************************************************************************
  * Global widgets
  *****************************************************************************/

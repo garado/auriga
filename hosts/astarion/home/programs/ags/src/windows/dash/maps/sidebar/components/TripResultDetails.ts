@@ -9,7 +9,7 @@
  * Imports
  *****************************************************************************/
 
-import { Gtk, Widget } from "astal/gtk4";
+import { Gdk, Gtk, Widget } from "astal/gtk4";
 import {
   Mode,
   PlanLeg,
@@ -20,7 +20,7 @@ import {
 import { epochToHHMM, epochToRelativeTime } from "@/utils/Time";
 import { ExpansionPanel } from "@/components/ExpansionPanel";
 import Astalified from "@/components/astalified";
-import { destination } from "../../StateManagement";
+import { destination, returnToTripSelectPressed } from "../../StateManagement";
 
 /*****************************************************************************
  * Helpers
@@ -215,6 +215,25 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
   const destinationName = destination.get()?.displayPlace;
   const destinationAddress = destination.get()?.displayAddress;
 
+  const returnToTripSelect = Widget.Button({
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    cssClasses: ["back-btn"],
+    child: Widget.Box({
+      vertical: false,
+      children: [
+        Widget.Image({
+          iconName: "caret-left-symbolic",
+        }),
+        Widget.Label({
+          label: "Back to trip results",
+        }),
+      ],
+    }),
+    onClicked: () => {
+      returnToTripSelectPressed.set(!returnToTripSelectPressed.get());
+    },
+  });
+
   /** Departure and arrival time */
   const timeSummary = Widget.Box({
     cssClasses: ["time-summary"],
@@ -292,6 +311,6 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
     hexpand: false,
     vertical: true,
     spacing: 12,
-    children: [timeSummary, legs, destinationSummary],
+    children: [returnToTripSelect, timeSummary, legs, destinationSummary],
   });
 };

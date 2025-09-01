@@ -29,6 +29,7 @@ import {
   previewedItinerary,
   selectedItinerary,
   previewedLocation,
+  returnToTripSelectPressed,
 } from "./StateManagement";
 
 /*****************************************************************************
@@ -97,7 +98,7 @@ export default () => {
     },
   });
 
-  tripPlan.subscribe(() => {
+  const showTripPlan = () => {
     const plan = tripPlan.get()?.plan;
     if (plan === undefined) return;
 
@@ -117,6 +118,10 @@ export default () => {
     map.addMarker(coords[1].lat, coords[1].lon, "map-pin-symbolic");
 
     previewedItinerary.set(plan.itineraries[0]);
+  };
+
+  tripPlan.subscribe(() => {
+    showTripPlan();
   });
 
   // Show itinerary preview on map when user hovers over different itinerary options
@@ -167,6 +172,10 @@ export default () => {
       Number(location.lon),
       "map-pin-symbolic",
     );
+  });
+
+  returnToTripSelectPressed.subscribe(() => {
+    showTripPlan();
   });
 
   // debug();
