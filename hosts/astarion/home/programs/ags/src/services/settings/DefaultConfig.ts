@@ -147,4 +147,9 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
     },
     searchRadius: 50,
   },
+
+  pushover: {
+    apiToken: "",
+    userKey: "",
+  },
 };

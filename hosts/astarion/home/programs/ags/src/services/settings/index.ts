@@ -112,6 +112,11 @@ export interface SystemConfig {
     defaultLocation: Location;
     searchRadius: number;
   };
+
+  pushover: {
+    apiToken: string;
+    userKey: string;
+  };
 }
 
 /*****************************************************************************
