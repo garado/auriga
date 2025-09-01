@@ -26,6 +26,11 @@ interface ExpansionPanelInterace {
    */
   expandTabContent?: Gtk.Widget;
 
+  showExpanderIcon?: boolean;
+
+  /** "left" or "right" */
+  expanderIconPosition?: Gtk.PositionType;
+
   /** Icon to display in default expander tab content. */
   icon?: string;
 
@@ -62,6 +67,11 @@ interface ExpansionPanelInterace {
 export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const contentRevealerState = Variable(false);
 
+  // Defaults
+  props.showExpanderIcon = props.showExpanderIcon ?? true;
+  props.expanderIconPosition =
+    props.expanderIconPosition ?? Gtk.PositionType.RIGHT;
+
   /********************************************************
    * TOP TAB
    ********************************************************/
@@ -80,7 +90,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
    */
   const ExpanderLabel = () =>
     Widget.Label({
-      hexpand: true,
+      // hexpand: true,
       label: props.label ?? "None",
       xalign: 0,
       ellipsize: Pango.EllipsizeMode.END,
@@ -100,11 +110,24 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const DefaultExpanderTab = () =>
     Widget.Box({
       cursor: Gdk.Cursor.new_from_name("pointer", null),
-      hexpand: true,
+      // hexpand: true,
       cssClasses: ["tab"],
       vertical: false,
       spacing: 10,
-      children: [ExpanderContentIcon(), ExpanderLabel(), ExpanderStateIcon()],
+      children: [ExpanderLabel()],
+      setup: (self) => {
+        if (props.icon) {
+          self.prepend(ExpanderContentIcon());
+        }
+
+        if (props.showExpanderIcon) {
+          if (props.expanderIconPosition === Gtk.PositionType.LEFT) {
+            self.prepend(ExpanderStateIcon());
+          } else {
+            self.append(ExpanderStateIcon());
+          }
+        }
+      },
     });
 
   /* User can optionally define expansion tab content. */
@@ -147,6 +170,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
    */
   const ContentRevealer = () =>
     Widget.Revealer({
+      hexpand: false,
       cssClasses: ["content-revealer"],
       revealChild: bind(contentRevealerState),
       transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
@@ -159,6 +183,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
   const ContentScrollableContainer = () =>
     Scrollable({
       vexpand: false,
+      hexpand: false,
       setup: (self) => {
         self.set_child(ContentContainer());
         self.set_propagate_natural_height(true);
@@ -187,6 +212,7 @@ export const ExpansionPanel = (props: ExpansionPanelInterace) => {
     cssClasses: ["expander", ...(props.cssClasses || [])],
     vertical: true,
     children: [expanderTabWidget, ContentRevealer()],
+    hexpand: false,
     setup: () => {
       /* Closing the global revealer closes this revealer too */
       props.globalRevealerState?.subscribe(() => {

@@ -137,4 +137,19 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   misc: {
     geminiAPI: "",
   },
+
+  transit: {
+    apiKey: "",
+    autocompleteApiKey: "",
+    defaultLocation: {
+      lat: 37.7749, // SF
+      lon: -122.4194,
+    },
+    searchRadius: 50,
+  },
+
+  pushover: {
+    apiToken: "",
+    userKey: "",
+  },
 };

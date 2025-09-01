@@ -1,0 +1,23 @@
+
+@use '../../theme/theme' as *
+
+frame
+  border-width: 0.2rem 
+  border-style: solid
+  border-color: $neutral-200
+  border-radius: $border-radius
+  background: $neutral-800
+  transition: $transition
+  padding: 0.4rem
+  
+  label
+    font-weight: bold
+    color: $neutral-100
+    margin-bottom: 0.2rem
+
+  &:focus-within
+    border-color: $primary-500
+    background-color: rgba($primary-500, 0.1)
+
+    label
+      color: $primary-500

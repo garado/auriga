@@ -1,0 +1,184 @@
+
+@use '../../../theme/theme' as *
+
+.maps
+  // Sidebar that pops out with options for the user
+  .sidebar
+    background-color: $neutral-800
+    border-top-right-radius: $border-radius
+    border-bottom-right-radius: $border-radius
+
+    // Little slidey-out thing
+    .handle
+
+    .top-section
+      background-color: $primary-500
+      padding: 0.6rem
+
+      .separator
+        font-size: 0.8rem
+
+      .decoration
+        background-color: $primary-700
+        border-radius: $border-radius
+
+        .circle
+          padding: 0.2rem
+          -gtk-icon-size: 0.8rem
+
+      // "Where to?"
+      .trip-planning-header
+        font-size: 1.4rem
+
+      // Where the user enters start/end destination
+      .search
+        border-color: transparent
+        background-color: $primary-300
+
+        placeholder
+          color: $primary-700
+
+        &:focus-within
+          background-color: $primary-700
+
+          placeholder
+            color: $neutral-100
+
+      // Button to swap origin/destination text
+      .origin-dest-swap
+        transition: all 0.15s ease 
+        border-radius: $border-radius
+        padding: 0.5rem
+
+        &:focus, &:hover
+          background-color: $primary-700
+
+      .plan-trip-btn
+        padding: 0.4rem 0.2rem
+        border-radius: $border-radius
+        background-color: $primary-300
+
+        &:hover
+          background-color: $primary-700
+
+    .section-content
+      padding: 1rem
+
+      // Autocompleted
+      .place-prediction
+        padding: 0.2rem
+        background-color: $neutral-800
+        border-radius: $border-radius
+
+        &:hover, &:focus
+          background-color: $neutral-600
+
+        .name
+          font-weight: 500
+          font-size: 1.2rem
+
+        .address
+
+  .map
+    map-view
+
+    map-scale, map-license
+      color: transparent
+
+// Semi-transparent overlay to tint the entire map widget according to the theme
+.maps .map-overlay
+  background-color: rgba($primary-500, 0.3)
+
+// Widget showing a possible itinerary option
+// Shows a short summary of itinerary; not the detailed view
+.maps .trip-result
+  border-radius: $border-radius
+  padding: 0.8rem
+
+  &:hover, &:focus
+    background-color: $neutral-700
+
+  .trip-duration
+    margin-right: 1rem
+    padding: 0.3rem 0.6rem
+
+    .big-text
+      font-weight: 500
+      font-size: 1.8rem
+
+    .little-text
+
+  .trip-times
+    margin-bottom: 0.4rem
+
+  .trip-itinerary-overview
+    .plan-leg
+      padding: 0.2rem 0.4rem
+
+      &.use-your-legs
+        background-color: $neutral-700
+        border-radius: $border-radius
+
+      &.transit
+        .route-id
+          padding: 0.1rem 0.3rem
+          border-radius: $border-radius / 2
+
+
+// Detailed itinerary view
+.maps .trip-details
+  // Return to itinerary selection
+  .back-btn
+    -gtk-icon-size: 0.8rem
+
+  // Box showing icon and name of transit leg
+  .route-summary
+    -gtk-icon-size: 2rem
+    font-size: 2rem
+    font-weight: bold
+
+  // Box showing when user will depart and arrive
+  .time-summary
+    .leave-at
+      font-size: 1.4rem
+
+    .arrive-at
+      color: $neutral-300
+
+  // Box showing the destination
+  .destination
+    .icon
+      -gtk-icon-size: 2rem
+
+    .info
+      .destination-name
+        padding-left: 0.8rem
+        font-size: 1.4rem
+
+      .destination-address
+        padding-left: 0.8rem
+        color: $neutral-200
+
+  // Box showing overview for transit leg (bus, train, etc)
+  .transit-leg
+    border-radius: $border-radius
+    padding: 0.8rem
+
+    .stop-endpoint
+      font-weight: bold
+      .location
+        font-size: 1.4rem
+
+      .time
+
+    // Expansion panel showing intermediate tabs
+    .stop-intermediate, .expander
+      background-color: transparent
+      font-size: 0.8rem
+
+      .tab
+        background-color: transparent
+
+      .content-revealer
+        .content
+          background-color: transparent

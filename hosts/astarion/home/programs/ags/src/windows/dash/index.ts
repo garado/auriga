@@ -17,6 +17,7 @@ import Ledger from "@/windows/dash/ledger";
 import Calendar from "@/windows/dash/calendar";
 import Goals from "@/windows/dash/goals";
 import Tasks from "@/windows/dash/tasks";
+import Maps from "@/windows/dash/maps";
 import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
 
@@ -41,6 +42,11 @@ const dashTabData: DashTabData[] = [
     name: "Home",
     icon: "house-symbolic",
     ui: Home,
+  },
+  {
+    name: "Map",
+    icon: "compass-symbolic",
+    ui: Maps,
   },
   {
     name: "Ledger",
