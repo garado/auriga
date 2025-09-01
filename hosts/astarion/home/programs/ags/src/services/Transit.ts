@@ -13,7 +13,7 @@
  * IMPORTS
  **********************************************/
 
-import { GObject, register, property } from "astal/gobject";
+import { GObject, register, property, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
@@ -223,11 +223,67 @@ export enum Mode {
 
 const transitConfig = SettingsManager.get_default().config.transit;
 
-const USE_REAL_API_CALL = false;
+/** Use cached fake data for development or make real API requests */
+const USE_REAL_API_CALL = true;
+
+/** Maximum API calls per calendar month on Transit API free tier */
+const TRANSIT_API_MONTHLY_LIMIT_MAX = 1500;
+
+/** Limit at which to warn user of Transit API usage */
+// const TRANSIT_API_MONTHLY_WARN = 1000;
+const TRANSIT_API_MONTHLY_WARN = 13;
+
+/** Limit at which to abort all API calls, so they don't flag my account for reaching the usage limit */
+// const TRANSIT_API_MONTHLY_HARD_STOP = 1400;
+const TRANSIT_API_MONTHLY_HARD_STOP = 15;
 
 /**********************************************
  * UTILITY
  **********************************************/
+
+/**
+ * @function incrementApiCallCounter
+ * @brief Transit API free tier has 1500 requests per month. There is no dashboard to
+ * check analytics, so API usage is tracked clientside by storing the number of calls
+ * to a file. The free tier has 1500 calls per calendar month and 5 calls per minute.
+ * @returns TRUE if API call should be allowed; FALSE otherwise
+ */
+const incrementApiCallCounter = async (): Promise<boolean> => {
+  const yyyyMm = new Date().toISOString().slice(0, 7);
+  const apiCountFile = `${GLib.get_user_cache_dir()}/astal/transit/${yyyyMm}`;
+
+  try {
+    await execAsync(`mkdir -p ${GLib.get_user_cache_dir()}/astal/transit/`);
+
+    // Initialize file with 0 if it doesn't exist, then read and increment
+    await execAsync(
+      `bash -c "test -f ${apiCountFile} || echo 0 > ${apiCountFile}"`,
+    );
+
+    const currentCountStr = await execAsync(`cat ${apiCountFile}`);
+    const currentCountNum = parseInt(currentCountStr.trim()) || 0;
+
+    print(currentCountNum);
+
+    if (currentCountNum > TRANSIT_API_MONTHLY_HARD_STOP) {
+      console.warn(
+        `Transit API monthly usage (${currentCountNum} calls) has exceeded the hard stop threshold of ${TRANSIT_API_MONTHLY_HARD_STOP}; aborting API call`,
+      );
+      return false;
+    } else if (currentCountNum > TRANSIT_API_MONTHLY_WARN) {
+      console.warn(
+        `Transit API monthly usage (${currentCountNum} calls) has exceeded the usage warning limit of ${TRANSIT_API_MONTHLY_WARN}`,
+      );
+    }
+
+    await execAsync(`bash -c "echo ${currentCountNum + 1} > ${apiCountFile}"`);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+
+  return true;
+};
 
 /**
  * @function makeApiCall
@@ -260,8 +316,12 @@ const makeApiCall = async (
 
   if (USE_REAL_API_CALL) {
     try {
-      const response = await execAsync(cmd);
-      return JSON.parse(response);
+      const shouldMakeRequest = await incrementApiCallCounter();
+
+      if (shouldMakeRequest) {
+        const response = await execAsync(cmd);
+        return JSON.parse(response);
+      }
     } catch (error) {
       log("transitService", `API call failed: ${error}`);
       throw error;

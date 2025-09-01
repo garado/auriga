@@ -253,7 +253,7 @@ export default class LocationAutocomplete extends GObject.Object {
     this.currentQuery = "";
     this.isSearching = false;
     this.currentLocation = locationConfig.defaultLocation;
-    this.cacheFilePath = `${GLib.get_user_cache_dir()}/locationiq-cache.json`;
+    this.cacheFilePath = `${GLib.get_user_cache_dir()}/astal/locationiq-cache.json`;
     this.#loadCacheFromFile();
   }
 
