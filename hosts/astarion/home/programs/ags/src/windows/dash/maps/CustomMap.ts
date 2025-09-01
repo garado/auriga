@@ -12,7 +12,7 @@
 import Gtk from "gi://Gtk?version=4.0";
 import Shumate from "gi://Shumate?version=1.0";
 import { GLib, GObject } from "astal";
-import { Gdk } from "astal/gtk4";
+import { Gdk, Widget } from "astal/gtk4";
 
 /*****************************************************************************
  * Constants
@@ -96,6 +96,7 @@ export const MapWidget = GObject.registerClass(
     private mapView: Shumate.SimpleMap;
     private viewport: Shumate.Viewport;
     private pathLayers: Shumate.PathLayer[] = [];
+    private markerLayers: Shumate.MarkerLayer[] = [];
     private _latitude: number = DEFAULT_LATITUDE;
     private _longitude: number = DEFAULT_LONGITUDE;
     private _zoom: number = 12;
@@ -334,7 +335,6 @@ export const MapWidget = GObject.registerClass(
       this.pathLayers.push(pathLayer);
     }
 
-    // Clear all routes
     clearRoutes(): void {
       for (let index = 0; index < this.pathLayers.length; index++) {
         const layer = this.pathLayers[index];
@@ -342,6 +342,41 @@ export const MapWidget = GObject.registerClass(
         this.mapView.remove_overlay_layer(layer);
       }
       this.pathLayers = [];
+    }
+
+    addMarker(
+      latitude: number,
+      longitude: number,
+      icon: string,
+      size: number = 24,
+    ): void {
+      const markerLayer = new Shumate.MarkerLayer({
+        viewport: this.viewport,
+      });
+
+      const iconWidget = Widget.Image({
+        iconName: icon,
+        pixelSize: size,
+      });
+
+      const marker = new Shumate.Marker({
+        child: iconWidget,
+      });
+
+      marker.set_location(latitude, longitude);
+      markerLayer.add_marker(marker);
+
+      this.mapView.add_overlay_layer(markerLayer);
+      this.markerLayers.push(markerLayer);
+    }
+
+    clearMarkers(): void {
+      for (let index = 0; index < this.markerLayers.length; index++) {
+        const layer = this.markerLayers[index];
+        layer.remove_all();
+        this.mapView.remove_overlay_layer(layer);
+      }
+      this.markerLayers = [];
     }
   },
 );

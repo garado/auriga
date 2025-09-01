@@ -101,14 +101,19 @@ export default () => {
     if (plan === undefined) return;
 
     map.clearRoutes();
+    map.clearMarkers();
 
     sidebarContent.children = plan.itineraries.map(TripResult);
-    sidebarContent.queue_resize();
 
-    map.centerOnRoute([
+    const coords = [
       { lat: plan.from.lat, lon: plan.from.lon },
       { lat: plan.to.lat, lon: plan.to.lon },
-    ]);
+    ];
+
+    map.centerOnRoute(coords);
+
+    map.addMarker(coords[0].lat, coords[0].lon, "map-pin-symbolic", 40);
+    map.addMarker(coords[1].lat, coords[1].lon, "map-pin-symbolic", 40);
 
     previewedItinerary.set(plan.itineraries[0]);
   });
