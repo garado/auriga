@@ -238,7 +238,7 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
   /** All legs of the currently selected itinerary */
   const legs = Widget.Box({
     vertical: true,
-    spacing: 8,
+    spacing: 12,
     children: selectedItinerary.legs.map((leg) =>
       modeHandlers[leg.mode as Mode](leg),
     ),
@@ -246,18 +246,20 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
 
   /** Destination name/address */
   const destinationSummary = Astalified.CenterBox({
-    vertical: false,
     cssClasses: ["destination"],
+    vertical: false,
     hexpand: false,
     startWidget: Widget.Image({
       cssClasses: ["icon"],
       iconName: "map-pin-symbolic",
     }),
     centerWidget: Widget.Box({
+      cssClasses: ["info"],
       vertical: true,
+      halign: Gtk.Align.FILL,
       children: [
         Widget.Label({
-          cssClasses: ["name"],
+          cssClasses: ["destination-name"],
           hexpand: true,
           label: destinationName,
           halign: Gtk.Align.START,
@@ -265,13 +267,15 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
           wrap: true,
         }),
         Widget.Label({
-          naturalWrapMode: Gtk.NaturalWrapMode.NONE,
-          hexpand: true,
-          cssClasses: ["address"],
+          // naturalWrapMode: Gtk.NaturalWrapMode.NONE,
+          cssClasses: ["destination-address"],
           label: destinationAddress,
-          halign: Gtk.Align.START,
           justify: Gtk.Justification.LEFT,
+          halign: Gtk.Align.FILL,
+          hexpand: true,
+          maxWidthChars: 1000,
           wrap: true,
+          xalign: 0,
         }),
       ],
     }),
