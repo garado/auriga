@@ -83,6 +83,12 @@
     map-scale, map-license
       color: transparent
 
+// Semi-transparent overlay to tint the entire map widget according to the theme
+.maps .map-overlay
+  background-color: rgba($primary-500, 0.3)
+
+// Widget showing a possible itinerary option
+// Shows a short summary of itinerary; not the detailed view
 .maps .trip-result
   border-radius: $border-radius
   padding: 0.8rem
@@ -116,9 +122,6 @@
           padding: 0.1rem 0.3rem
           border-radius: $border-radius / 2
 
-// Semi-transparent overlay to tint the entire map widget according to the theme
-.maps .map-overlay
-  background-color: rgba($primary-500, 0.3)
 
 // Detailed itinerary view
 .maps .trip-details

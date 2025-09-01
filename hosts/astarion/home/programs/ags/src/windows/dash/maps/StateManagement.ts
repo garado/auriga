@@ -44,7 +44,7 @@ Variable.derive([origin, destination], (x, y) => {
 export const previewedLocation: Variable<PlacePrediction | undefined> =
   Variable(undefined);
 
-/** Trip plan */
+/** Trip plan has been updated */
 export const tripPlan: Variable<TripPlanResponse | undefined> =
   Variable(undefined);
 

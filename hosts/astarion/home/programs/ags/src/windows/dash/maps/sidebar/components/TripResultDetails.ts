@@ -248,43 +248,43 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
   });
 
   /** Destination name/address */
-  const destinationSummary = Astalified.CenterBox({
+  const destinationSummary = Widget.Box({
     cssClasses: ["destination"],
     vertical: false,
     hexpand: false,
-    startWidget: Widget.Image({
-      cssClasses: ["icon"],
-      iconName: "map-pin-symbolic",
-    }),
-    centerWidget: Widget.Box({
-      cssClasses: ["info"],
-      vertical: true,
-      halign: Gtk.Align.FILL,
-      children: [
-        Widget.Label({
-          cssClasses: ["destination-name"],
-          hexpand: true,
-          label: destinationName,
-          halign: Gtk.Align.START,
-          justify: Gtk.Justification.LEFT,
-          wrap: true,
-        }),
-        Widget.Label({
-          // naturalWrapMode: Gtk.NaturalWrapMode.NONE,
-          cssClasses: ["destination-address"],
-          label: destinationAddress,
-          justify: Gtk.Justification.LEFT,
-          halign: Gtk.Align.FILL,
-          hexpand: true,
-          maxWidthChars: 1000,
-          wrap: true,
-          xalign: 0,
-        }),
-      ],
-    }),
-    endWidget: Widget.Label({
-      label: arriveTime,
-    }),
+    children: [
+      Widget.Image({
+        cssClasses: ["icon"],
+        iconName: "map-pin-symbolic",
+      }),
+      Widget.Box({
+        cssClasses: ["info"],
+        vertical: true,
+        halign: Gtk.Align.START,
+        children: [
+          Widget.Label({
+            cssClasses: ["destination-name"],
+            hexpand: true,
+            label: destinationName,
+            halign: Gtk.Align.START,
+            xalign: 0,
+            wrap: true,
+          }),
+          Widget.Label({
+            cssClasses: ["destination-address"],
+            label: destinationAddress,
+            halign: Gtk.Align.FILL,
+            hexpand: true,
+            maxWidthChars: 1000,
+            wrap: true,
+            xalign: 0,
+          }),
+        ],
+      }),
+      Widget.Label({
+        label: arriveTime,
+      }),
+    ],
   });
 
   return Widget.Box({
