@@ -25,12 +25,8 @@ export const SearchBox = (props: {
 }) => {
   return Widget.Entry({
     placeholderText: props.placeholder,
-    onKeyPressed: (_self, keyval, _keycode, state) => {
-      // Prevent keyboard shortcuts (Esc, Shift+L) from resetting the selection target
-      if (
-        state === Gdk.ModifierType.NO_MODIFIER_MASK &&
-        keyval !== Gdk.KEY_Escape
-      ) {
+    onNotifyText: (self) => {
+      if (self.text !== props.selectionTarget.get()?.displayPlace) {
         props.selectionTarget.set(undefined);
       }
     },
