@@ -43,6 +43,9 @@ export class MonitorArrangement extends Gtk.Box {
   private canvasWidth: number = 0;
   private canvasHeight: number = 0;
 
+  // Changes are applied after mouse leaves the widget
+  private pendingChanges: Map<string, { x: number; y: number }> = new Map();
+
   // Display area configuration
   private readonly MONITOR_SCALE = 0.05; // 10% of actual size for display
 
@@ -230,9 +233,18 @@ export class MonitorArrangement extends Gtk.Box {
       },
     );
 
+    const motionController = new Gtk.EventControllerMotion();
+    this.add_controller(motionController);
+
+    motionController.connect("leave", () => {
+      this.applyAllPendingChanges();
+    });
+
     draggable.connect("dragEnded", (_, x: number, y: number) => {
       draggable.remove_css_class("collision");
-      this.applyMonitorConfiguration(monitor, x, y);
+
+      const connector = monitor.get_connector() ?? "Undefined";
+      this.pendingChanges.set(connector, { x, y });
     });
   }
 
@@ -274,6 +286,19 @@ export class MonitorArrangement extends Gtk.Box {
       x: canvasX / this.MONITOR_SCALE,
       y: canvasY / this.MONITOR_SCALE,
     };
+  }
+
+  private async applyAllPendingChanges() {
+    if (this.pendingChanges.size === 0) return;
+
+    for (const [connector, position] of this.pendingChanges) {
+      const monitor = this.monitors.get(connector);
+      if (monitor) {
+        await this.applyMonitorConfiguration(monitor, position.x, position.y);
+      }
+    }
+
+    this.pendingChanges.clear();
   }
 
   /**
