@@ -9,6 +9,7 @@
  * Imports
  *****************************************************************************/
 
+import { GLib } from "astal";
 import { Gtk, astalify } from "astal/gtk4";
 import AstalCava from "gi://AstalCava?version=0.1";
 
@@ -286,8 +287,17 @@ export const Visualizer = (props: {
 
       self.set_draw_func(visualizerFunctions[style]);
 
+      // Throttle redraws
+      let drawPending = false;
       const signalId = cava?.connect("notify::values", () => {
-        self.queue_draw();
+        if (!drawPending) {
+          drawPending = true;
+          GLib.idle_add(GLib.PRIORITY_LOW, () => {
+            self.queue_draw();
+            drawPending = false;
+            return false;
+          });
+        }
       });
 
       self.connect("destroy", () => {
