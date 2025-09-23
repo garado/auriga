@@ -2,8 +2,7 @@
  * █▀▀ █▀▀ █▀▄▀█ █ █▄░█ █   █▀▀ █░█ ▄▀█ ▀█▀
  * █▄█ ██▄ █░▀░█ █ █░▀█ █   █▄▄ █▀█ █▀█ ░█░
  *
- * Interactive chat widget for communicating with Google Gemini AI.
- * Features syntax highlighting, markdown rendering, and real-time responses.
+ * Interactive chat widget for communicating with Gemini API
  *
  * UI inspiration from kotontrion's ChatGPT widget (unixporn discord).
  */
@@ -74,7 +73,7 @@ interface ResponseToken {
 }
 
 /** Extended widget interface with custom methods */
-interface ExtendedConversationWidget extends ReturnType<typeof Widget.Box> {
+interface ExtendedConversationWidget extends Astal.Box {
   setContent: (responseText: string) => void;
 }
 
@@ -242,16 +241,19 @@ const createConversationPiece = (
  * Creates the scrollable conversation container.
  * @returns Widget containing all conversation pieces
  */
-const createConversationContainer = Widget.Box({
-  vertical: true,
-  spacing: LAYOUT.conversationSpacing,
-  children: [],
-});
+const createConversationContainer = () =>
+  Widget.Box({
+    vertical: true,
+    spacing: LAYOUT.conversationSpacing,
+    children: [],
+  });
 
 /**
  * Creates the prompt input text view with keyboard handling.
  * @param conversationContainer - Reference to conversation container for ID counting
  * @returns Configured text view widget
+ *
+ * Note: using TextView to support multiline input.
  */
 const createPromptInputTextView = (conversationContainer: Astal.Box) => {
   const promptTextView = new Gtk.TextView({
@@ -345,9 +347,7 @@ const createPromptInputTextView = (conversationContainer: Astal.Box) => {
  * @param conversationContainer - The container to make scrollable
  * @returns Scrolled window widget
  */
-const createScrolledConversationWindow = (
-  conversationContainer: ReturnType<typeof createConversationContainer>,
-) =>
+const createScrolledConversationWindow = (conversationContainer: Astal.Box) =>
   new Gtk.ScrolledWindow({
     vexpand: true,
     hexpand: false,
@@ -370,6 +370,7 @@ export const GeminiChat = () => {
   const scrolledWindow = createScrolledConversationWindow(
     conversationContainer,
   );
+
   const promptInput = createPromptInputTextView(conversationContainer);
 
   return Widget.CenterBox({
