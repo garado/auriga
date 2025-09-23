@@ -12,20 +12,19 @@
  * Imports
  *****************************************************************************/
 
-import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 
 import { CustomSourceView } from "@/components/CustomSourceView";
-import GeminiService, {
-  ConversationType,
-  ConversationData,
-} from "@/services/Gemini";
+import GeminiService, { ConversationType } from "@/services/Gemini";
+import SettingsManager from "@/services/settings";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const geminiService = GeminiService.get_default();
+const gemini = GeminiService.get_default();
+const settings = SettingsManager.get_default();
 
 /*****************************************************************************
  * Constants
@@ -41,7 +40,7 @@ const CSS_CLASSES = {
 } as const;
 
 const UI_LABELS = {
-  userDisplayName: "Alexis",
+  userDisplayName: settings.config.dashHome.profile.name,
   aiDisplayName: "Gemini",
   thinkingMessage: "Thinking...",
 } as const;
@@ -50,7 +49,7 @@ const LAYOUT = {
   conversationSpacing: 10,
 } as const;
 
-const KEYBOARD = {
+const KB_SHORTCUTS = {
   enterKey: Gdk.KEY_Return,
   keypadEnterKey: Gdk.KEY_KP_Enter,
   shiftModifier: Gdk.ModifierType.SHIFT_MASK,
@@ -243,61 +242,18 @@ const createConversationPiece = (
  * Creates the scrollable conversation container.
  * @returns Widget containing all conversation pieces
  */
-const createConversationContainer = () => {
-  const container = Widget.Box({
-    vertical: true,
-    spacing: LAYOUT.conversationSpacing,
-    children: [],
-    setup: (self) => {
-      /**
-       * Handles new prompt events from the Gemini service.
-       */
-      const handlePromptReceived = (_: any, id: number, prompt: string) => {
-        // Add user prompt
-        self.append(
-          createConversationPiece({
-            id,
-            text: prompt,
-            conversationType: ConversationType.Prompt,
-          }),
-        );
-
-        // Add placeholder for AI response
-        self.append(
-          createConversationPiece({
-            id: id + 1,
-            text: UI_LABELS.thinkingMessage,
-            conversationType: ConversationType.Response,
-          }),
-        );
-      };
-
-      /**
-       * Handles response events from the Gemini service.
-       */
-      const handleResponseReceived = (_: any, id: number, response: string) => {
-        const responseWidget = self.get_children()[
-          id
-        ] as ExtendedConversationWidget;
-        responseWidget.setContent(response);
-      };
-
-      // geminiService.connect("prompt-received", handlePromptReceived);
-      // geminiService.connect("response-received", handleResponseReceived);
-    },
-  });
-
-  return container;
-};
+const createConversationContainer = Widget.Box({
+  vertical: true,
+  spacing: LAYOUT.conversationSpacing,
+  children: [],
+});
 
 /**
  * Creates the prompt input text view with keyboard handling.
  * @param conversationContainer - Reference to conversation container for ID counting
  * @returns Configured text view widget
  */
-const createPromptInputTextView = (
-  conversationContainer: ReturnType<typeof createConversationContainer>,
-) => {
+const createPromptInputTextView = (conversationContainer: Astal.Box) => {
   const promptTextView = new Gtk.TextView({
     cssClasses: [CSS_CLASSES.promptEntry],
     canFocus: true,
@@ -323,19 +279,58 @@ const createPromptInputTextView = (
     state: Gdk.ModifierType,
   ): boolean => {
     const isEnterKey =
-      keyval === KEYBOARD.enterKey || keyval === KEYBOARD.keypadEnterKey;
-    const isShiftPressed = !!(state & KEYBOARD.shiftModifier);
+      keyval === KB_SHORTCUTS.enterKey ||
+      keyval === KB_SHORTCUTS.keypadEnterKey;
+
+    const isShiftPressed = !!(state & KB_SHORTCUTS.shiftModifier);
 
     if (isEnterKey && !isShiftPressed) {
       const promptText = promptTextView.buffer.text;
       if (promptText.trim().length > 0) {
-        geminiService.prompt(conversationContainer.children.length, promptText);
+        const id = conversationContainer.children.length;
+
+        // Add user prompt immediately
+        conversationContainer.append(
+          createConversationPiece({
+            id,
+            text: promptText,
+            conversationType: ConversationType.Prompt,
+          }),
+        );
+
+        // Add placeholder for response
+        conversationContainer.append(
+          createConversationPiece({
+            id: id + 1,
+            text: UI_LABELS.thinkingMessage,
+            conversationType: ConversationType.Response,
+          }),
+        );
+
+        // Call Gemini with callbacks
+        gemini.prompt(
+          id,
+          promptText,
+          (responseId, response) => {
+            const responseWidget = conversationContainer.get_children()[
+              responseId + 1
+            ] as ExtendedConversationWidget;
+            responseWidget.setContent(response);
+          },
+          (errorId, error) => {
+            const responseWidget = conversationContainer.get_children()[
+              errorId + 1
+            ] as ExtendedConversationWidget;
+            responseWidget.setContent(`Error: ${error}`);
+          },
+        );
+
         promptTextView.buffer.set_text("", -1);
       }
-      return true; // Event handled
+      return true;
     }
 
-    return false; // Let other handlers process the event
+    return false;
   };
 
   const keyController = new Gtk.EventControllerKey();
