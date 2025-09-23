@@ -4,9 +4,6 @@
 
 # Replaces /etc/nixos/configuration.nix
 
-# A .nix file is just a big Nix expression (I think)
-# This .nix file is a function that takes an attribute set as an inputs
-
 { inputs, lib, config, pkgs, musnix, ... }: 
 let
   unstable = inputs.nixpkgs-unstable;
@@ -82,72 +79,69 @@ in {
   ];
 
   environment.systemPackages = with pkgs; [
+    # DE/WM
     inputs.swww.packages.${pkgs.system}.swww
-    unstable.legacyPackages."${pkgs.system}".gcalcli
     unstable.legacyPackages."${pkgs.system}".hyprpicker # v0.4.2
-
-    gnomeExtensions.bluetooth-battery
-    gnomeExtensions.bluetooth-battery-meter
-
-    hledger
-
-    cava
-    vim
-    brightnessctl
-    grimblast       # Screenshots
-    htop acpi
-
+    brightnessctl playerctl
+    wl-clipboard
     libnotify
 
-    youtube-tui     # Can't find a working invidious instance?
-    mpv
-
-    steam-tui
-    taskwarrior-tui
-
-    nodejs_22 hugo go
-    nodePackages.typescript
-
-    reckon          # CLI CSV to ledger with ML
-
-    exiftool
-
-    ripgrep zip unzip wget lf
-
-    kitty           # Terminal
+    # Essentials
+    ripgrep zip unzip wget lf mpv
     firefox
     gthumb
     imagemagick
-
-    libimobiledevice  # Mount iPhone
-    ifuse
-
-    libgccjit       # Stuff for C
-    gcc_multi
-    clang-tools
-
-    playerctl       # Track control
-    zathura         # PDF viewer
-    wl-clipboard    # Copy to clipboard
-    gimp            # Photoshop minus the piece of shit subscription service
-
-    # python
-    python3
-    poetry
-
-    guitarix        # Amp sim
-    qjackctl        # Alllll for the amp sim
-    libjack2
-    jack2
-    jack_capture
-
-    prismlauncher   # Minecraft
-    sox             # Play audio
-    audacity        # Audio editing
-    wineWowPackages.stable  # *gag*
+    zathura
+    gimp
     wireplumber
-    # pamixer         # Volume control
-    # pavucontrol     # Audio control
+    sox
+    audacity
+
+    # GNOME extensions
+    gnomeExtensions.bluetooth-battery
+    gnomeExtensions.bluetooth-battery-meter
+
+    # Terminal
+    kitty
+    vim
+
+    # CLI tools
+    unstable.legacyPackages."${pkgs.system}".gcalcli
+    hledger reckon
+    cava
+
+    # TUI
+    youtube-tui steam-tui taskwarrior-tui
+
+    # Utilities and monitoring
+    htop btop radeontop acpi
+    grimblast
+    exiftool
+
+    # C/C++ dev
+    libgccjit gcc_multi clang-tools gdb
+
+    # JS dev
+    nodejs_22 nodePackages.typescript
+
+    # Go dev
+    go hugo
+
+    # Python dev
+    python3 poetry
+
+    # Misc: iPhone mounting
+    libimobiledevice ifuse
+
+    # Guitar
+    guitarix qjackctl libjack2 jack2 jack_capture
+
+    # Gaming
+    steamcmd
+    prismlauncher
+
+    # *gag*
+    wineWowPackages.stable
   ];
 
   security.rtkit.enable = true;
@@ -223,10 +217,14 @@ in {
 
   programs = {
     git.enable = true;
-    zsh.enable = true;
     hyprland.enable = true;
-    steam.enable = true;
     thunar.enable = true;
+    zsh.enable = true;
+
+    steam = {
+      enable = true;
+      dedicatedServer.openFirewall = true;
+    };
   };
 
 
