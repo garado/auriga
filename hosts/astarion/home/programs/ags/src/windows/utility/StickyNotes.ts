@@ -12,7 +12,6 @@
 
 import { Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 
-import { CustomSourceView } from "@/components/CustomSourceView";
 import SettingsManager from "@/services/settings";
 import { clearChildren } from "@/utils/BoxUtils";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
@@ -32,11 +31,13 @@ let stickyNotesContainer: Astal.Box | undefined = undefined;
  *****************************************************************************/
 
 const CSS_CLASSES = {
-  placeholder: "placeholder-text",
-  stickyNotesContainer: "sticky-notes", // For all sticky notes
-  stickyNoteContainer: "sticky-note", // For individual sticky note
+  placeholder: "placeholder",
+  entireWidget: "sticky-notes", // Container holding the entire widget
+  stickyNotesContainer: "sticky-notes-container", // Container holding all sticky notes
+  stickyNoteContainer: "sticky-note", // An individual sticky note
   stickyNoteTitle: "title",
   stickyNoteContent: "content",
+  reloadButton: "reload-button",
 } as const;
 
 /*****************************************************************************
@@ -80,7 +81,7 @@ const StickyNote = (noteName: string, noteText: string) => {
         useMarkup: true,
       }),
       Widget.Label({
-        label: convertMarkdownToPangoMarkup(noteText),
+        label: convertMarkdownToPangoMarkup(noteText.trim()),
         cssClasses: [CSS_CLASSES.stickyNoteContent],
         selectable: true,
         xalign: 0,
@@ -101,7 +102,7 @@ const Placeholder = () => {
   if (settings.config.utility.stickyNotesPath == "") {
     label = "No sticky notes directory configured.\nUpdate your user settings.";
   } else {
-    label = "No sticky notes added yet!";
+    label = "No sticky notes added yet.";
   }
 
   return Widget.Label({
@@ -116,17 +117,57 @@ const Placeholder = () => {
 };
 
 /**
+ * Button to reload sticky notes.
+ */
+const ReloadContentButton = () => {
+  return Widget.Button({
+    canFocus: false,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    cssClasses: [CSS_CLASSES.reloadButton],
+    hexpand: true,
+    halign: Gtk.Align.CENTER,
+    child: Widget.Box({
+      vertical: false,
+      spacing: 8,
+      children: [
+        Widget.Image({
+          iconName: "arrows-clockwise-symbolic",
+        }),
+        Widget.Label({
+          label: "Reload notes",
+        }),
+      ],
+    }),
+    onClicked: loadStickies,
+  });
+};
+
+/**
  * Container for all sticky notes.
  */
 export const StickyNotes = () => {
   stickyNotesContainer = Widget.Box({
+    vertical: true,
     cssClasses: [CSS_CLASSES.stickyNotesContainer],
     children: [Placeholder()],
+    spacing: 20,
   });
 
   if (notesPath !== "") {
     loadStickies();
   }
 
-  return stickyNotesContainer;
+  return Widget.Box({
+    name: "StickyNotesTab",
+    cssClasses: [CSS_CLASSES.entireWidget],
+    vexpand: true,
+    hexpand: true,
+    vertical: true,
+    children: [
+      Widget.Box({
+        children: [ReloadContentButton()],
+      }),
+      stickyNotesContainer,
+    ],
+  });
 };
