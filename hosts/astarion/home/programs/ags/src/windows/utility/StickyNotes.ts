@@ -49,6 +49,8 @@ const CSS_CLASSES = {
  * the stickyNotesContainer widget.
  */
 const loadStickies = () => {
+  if (notesPath === "") return;
+
   const stickies = readAllFilesFromDir(notesPath);
   clearChildren(stickyNotesContainer!);
 
