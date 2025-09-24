@@ -99,6 +99,7 @@ export interface SystemConfig {
 
   utility: {
     palettes: Record<string, string[]>;
+    stickyNotesPath: string;
   };
 
   misc: {

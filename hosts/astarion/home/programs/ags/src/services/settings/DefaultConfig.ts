@@ -132,6 +132,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
         "Chinese White",
       ],
     },
+    stickyNotesPath: "",
   },
 
   misc: {

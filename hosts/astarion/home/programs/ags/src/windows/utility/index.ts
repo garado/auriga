@@ -9,19 +9,18 @@
  * Imports
  *****************************************************************************/
 
-import { App, Astal, Gdk, Gtk, Widget, astalify } from "astal/gtk4";
+import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
+import { bind, Variable } from "astal";
 
 import { GeminiChat } from "@/windows/utility/GeminiChat";
 import { Tools } from "@/windows/utility/tools";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { StickyNotes } from "./StickyNotes";
 import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
-import { bind, Variable } from "astal";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
-
-const Notebook = astalify(Gtk.Notebook);
 
 const KEYBOARD_SHORTCUTS = {
   CLOSE_UTILITY: "Escape",
@@ -41,6 +40,11 @@ const utilityTabData: any[] = [
     name: "Gemini",
     icon: "google-logo-symbolic",
     ui: GeminiChat,
+  },
+  {
+    name: "Sticky Notes",
+    icon: "note-symbolic",
+    ui: StickyNotes,
   },
 ];
 

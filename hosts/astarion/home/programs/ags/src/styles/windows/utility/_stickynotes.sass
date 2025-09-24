@@ -1,0 +1,35 @@
+
+
+@use '../../theme/theme' as *
+
+.utility .sticky-notes
+  .placeholder
+    color: $neutral-300
+
+  .reload-button
+    transition: all 0.1s ease-in-out
+    padding: 0.6rem 1rem
+    border-radius: $border-radius
+    margin-bottom: 1rem
+
+    &:hover
+      background-color: $primary-700
+
+    &:not(:hover)
+      background-color: $neutral-700
+
+  .sticky-note
+    padding: 0.8rem
+    border-radius: $border-radius
+
+    // Pseudo-random accents
+    @for $i from 1 through length($accents)
+      &:nth-child(#{$i})
+        background-color: nth($accents, $i)
+
+    .title
+      font-size: 1.5rem
+
+    .content
+      selection
+        background-color: $yellow-500
