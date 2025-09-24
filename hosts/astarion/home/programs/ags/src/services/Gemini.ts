@@ -19,6 +19,8 @@ import SettingsManager from "./settings";
 
 const GEMINI_API_KEY = SettingsManager.get_default().config.misc.geminiAPI;
 
+const USE_REAL_API_CALL = true;
+
 /*****************************************************************************
  * Types/interfaces
  *****************************************************************************/
@@ -132,6 +134,11 @@ export default class Gemini extends GObject.Object {
     callback: (id: number, response: string) => void,
     errorCallback?: (id: number, error: string, errorCode?: number) => void,
   ) {
+    if (!USE_REAL_API_CALL) {
+      callback(id, "Placeholder text.");
+      return;
+    }
+
     const cmd = `curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
                   -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "${escapeQuotes(promptText)}"}] }] }'`;
 

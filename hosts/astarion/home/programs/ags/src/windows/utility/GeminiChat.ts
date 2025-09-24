@@ -2,8 +2,7 @@
  * █▀▀ █▀▀ █▀▄▀█ █ █▄░█ █   █▀▀ █░█ ▄▀█ ▀█▀
  * █▄█ ██▄ █░▀░█ █ █░▀█ █   █▄▄ █▀█ █▀█ ░█░
  *
- * Interactive chat widget for communicating with Google Gemini AI.
- * Features syntax highlighting, markdown rendering, and real-time responses.
+ * Interactive chat widget for communicating with Gemini API
  *
  * UI inspiration from kotontrion's ChatGPT widget (unixporn discord).
  */
@@ -12,20 +11,20 @@
  * Imports
  *****************************************************************************/
 
-import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 
 import { CustomSourceView } from "@/components/CustomSourceView";
-import GeminiService, {
-  ConversationType,
-  ConversationData,
-} from "@/services/Gemini";
+import GeminiService, { ConversationType } from "@/services/Gemini";
+import SettingsManager from "@/services/settings";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
+import { clearChildren } from "@/utils/BoxUtils";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const geminiService = GeminiService.get_default();
+const gemini = GeminiService.get_default();
+const settings = SettingsManager.get_default();
 
 /*****************************************************************************
  * Constants
@@ -37,11 +36,13 @@ const CSS_CLASSES = {
   userSpeaker: "user",
   geminiSpeaker: "gemini",
   content: "content",
-  promptEntry: "prompt-entry",
+  promptText: "prompt",
+  responseText: "response",
+  promptEntryTextbox: "prompt-entry-textbox",
 } as const;
 
 const UI_LABELS = {
-  userDisplayName: "Alexis",
+  userDisplayName: settings.config.dashHome.profile.name,
   aiDisplayName: "Gemini",
   thinkingMessage: "Thinking...",
 } as const;
@@ -50,11 +51,15 @@ const LAYOUT = {
   conversationSpacing: 10,
 } as const;
 
-const KEYBOARD = {
+const KB_SHORTCUTS = {
   enterKey: Gdk.KEY_Return,
   keypadEnterKey: Gdk.KEY_KP_Enter,
   shiftModifier: Gdk.ModifierType.SHIFT_MASK,
 } as const;
+
+const COMMANDS = {
+  clear: "/clear",
+};
 
 /*****************************************************************************
  * Type definitions
@@ -75,7 +80,7 @@ interface ResponseToken {
 }
 
 /** Extended widget interface with custom methods */
-interface ExtendedConversationWidget extends ReturnType<typeof Widget.Box> {
+interface ExtendedConversationWidget extends Astal.Box {
   setContent: (responseText: string) => void;
 }
 
@@ -90,7 +95,7 @@ interface ExtendedConversationWidget extends ReturnType<typeof Widget.Box> {
  */
 const tokenizeGeminiResponse = (markdownResponse: string): ResponseToken[] => {
   const tokens: ResponseToken[] = [];
-  let remainingText = markdownResponse;
+  let remainingText = markdownResponse.replaceAll("\n\n", "\n");
   let isProcessingCodeBlock = false;
 
   while (remainingText.length > 0) {
@@ -117,7 +122,7 @@ const tokenizeGeminiResponse = (markdownResponse: string): ResponseToken[] => {
       });
 
       remainingText = remainingText.slice(
-        tokens[tokens.length - 1].content.length + 3,
+        tokens[tokens.length - 1].content.length + "```".length,
       );
     } else {
       // No more code blocks, add remaining text
@@ -132,6 +137,60 @@ const tokenizeGeminiResponse = (markdownResponse: string): ResponseToken[] => {
   }
 
   return tokens;
+};
+
+/**
+ * Call Gemini API with a specific prompt text and set up UI accordingly
+ * @param promptText - the prompt text to pass to Gemini APi
+ * @param conversationContainer - the widget containing the prompt/response content widgets
+ */
+const submitPrompt = (promptText: string, conversationContainer: Astal.Box) => {
+  const id = conversationContainer.children.length;
+
+  // Add user prompt immediately
+  conversationContainer.append(
+    createConversationPiece({
+      id,
+      text: promptText,
+      conversationType: ConversationType.Prompt,
+    }),
+  );
+
+  // Add placeholder for response
+  conversationContainer.append(
+    createConversationPiece({
+      id: id + 1,
+      text: UI_LABELS.thinkingMessage,
+      conversationType: ConversationType.Response,
+    }),
+  );
+
+  // Call Gemini with callbacks
+  gemini.prompt(
+    id,
+    promptText,
+    (responseId, response) => {
+      const responseWidget = conversationContainer.get_children()[
+        responseId + 1
+      ] as ExtendedConversationWidget;
+      responseWidget.setContent(response);
+    },
+    (errorId, error) => {
+      const responseWidget = conversationContainer.get_children()[
+        errorId + 1
+      ] as ExtendedConversationWidget;
+      responseWidget.setContent(`Error: ${error}`);
+    },
+  );
+};
+
+/**
+ * Runs a slash command.
+ */
+const runSlashCommand = (command: string, conversationContainer: Astal.Box) => {
+  if (COMMANDS.clear == command) {
+    clearChildren(conversationContainer);
+  }
 };
 
 /*****************************************************************************
@@ -151,6 +210,7 @@ const createSpeakerLabel = (conversationType: ConversationType) => {
       CSS_CLASSES.speaker,
       isUserMessage ? CSS_CLASSES.userSpeaker : CSS_CLASSES.geminiSpeaker,
     ],
+    visible: isUserMessage,
     label: isUserMessage ? UI_LABELS.userDisplayName : UI_LABELS.aiDisplayName,
     xalign: 0,
   });
@@ -204,7 +264,12 @@ const createConversationPiece = (
     vertical: true,
     children: [
       Widget.Label({
-        cssClasses: [CSS_CLASSES.content],
+        cssClasses: [
+          CSS_CLASSES.content,
+          props.conversationType == ConversationType.Prompt
+            ? CSS_CLASSES.promptText
+            : CSS_CLASSES.responseText,
+        ],
         selectable: true,
         useMarkup: true,
         label: props.text,
@@ -243,63 +308,23 @@ const createConversationPiece = (
  * Creates the scrollable conversation container.
  * @returns Widget containing all conversation pieces
  */
-const createConversationContainer = () => {
-  const container = Widget.Box({
+const createConversationContainer = () =>
+  Widget.Box({
     vertical: true,
     spacing: LAYOUT.conversationSpacing,
     children: [],
-    setup: (self) => {
-      /**
-       * Handles new prompt events from the Gemini service.
-       */
-      const handlePromptReceived = (_: any, id: number, prompt: string) => {
-        // Add user prompt
-        self.append(
-          createConversationPiece({
-            id,
-            text: prompt,
-            conversationType: ConversationType.Prompt,
-          }),
-        );
-
-        // Add placeholder for AI response
-        self.append(
-          createConversationPiece({
-            id: id + 1,
-            text: UI_LABELS.thinkingMessage,
-            conversationType: ConversationType.Response,
-          }),
-        );
-      };
-
-      /**
-       * Handles response events from the Gemini service.
-       */
-      const handleResponseReceived = (_: any, id: number, response: string) => {
-        const responseWidget = self.get_children()[
-          id
-        ] as ExtendedConversationWidget;
-        responseWidget.setContent(response);
-      };
-
-      // geminiService.connect("prompt-received", handlePromptReceived);
-      // geminiService.connect("response-received", handleResponseReceived);
-    },
   });
-
-  return container;
-};
 
 /**
  * Creates the prompt input text view with keyboard handling.
  * @param conversationContainer - Reference to conversation container for ID counting
  * @returns Configured text view widget
+ *
+ * Note: using TextView to support multiline input.
  */
-const createPromptInputTextView = (
-  conversationContainer: ReturnType<typeof createConversationContainer>,
-) => {
+const createPromptInputTextView = (conversationContainer: Astal.Box) => {
   const promptTextView = new Gtk.TextView({
-    cssClasses: [CSS_CLASSES.promptEntry],
+    cssClasses: [CSS_CLASSES.promptEntryTextbox],
     canFocus: true,
     focusOnClick: true,
     focusable: true,
@@ -310,6 +335,8 @@ const createPromptInputTextView = (
 
   /**
    * Handles key press events for the prompt input.
+   * This will submit a prompt or execute a slash command.
+   *
    * @param controller - The event controller
    * @param keyval - The key value
    * @param keycode - The hardware key code
@@ -322,20 +349,28 @@ const createPromptInputTextView = (
     _keycode: number,
     state: Gdk.ModifierType,
   ): boolean => {
+    // Check for user pressing <Enter> to run a prompt or a slash command
+    // (<Shift+Enter> will create a newline for multiline inputs)
     const isEnterKey =
-      keyval === KEYBOARD.enterKey || keyval === KEYBOARD.keypadEnterKey;
-    const isShiftPressed = !!(state & KEYBOARD.shiftModifier);
+      keyval === KB_SHORTCUTS.enterKey ||
+      keyval === KB_SHORTCUTS.keypadEnterKey;
+    const isShiftPressed = state & KB_SHORTCUTS.shiftModifier;
+    if (!(isEnterKey && !isShiftPressed)) return false;
 
-    if (isEnterKey && !isShiftPressed) {
-      const promptText = promptTextView.buffer.text;
-      if (promptText.trim().length > 0) {
-        geminiService.prompt(conversationContainer.children.length, promptText);
-        promptTextView.buffer.set_text("", -1);
+    const promptText = promptTextView.buffer.text;
+
+    if (promptText.trim().length > 0) {
+      if (Object.values(COMMANDS).includes(promptText)) {
+        runSlashCommand(promptText, conversationContainer);
+      } else {
+        submitPrompt(promptText, conversationContainer);
       }
-      return true; // Event handled
     }
 
-    return false; // Let other handlers process the event
+    // Clear buffer and reset cursor pos
+    promptTextView.buffer.set_text("", -1);
+
+    return true;
   };
 
   const keyController = new Gtk.EventControllerKey();
@@ -350,9 +385,7 @@ const createPromptInputTextView = (
  * @param conversationContainer - The container to make scrollable
  * @returns Scrolled window widget
  */
-const createScrolledConversationWindow = (
-  conversationContainer: ReturnType<typeof createConversationContainer>,
-) =>
+const createScrolledConversationWindow = (conversationContainer: Astal.Box) =>
   new Gtk.ScrolledWindow({
     vexpand: true,
     hexpand: false,
@@ -375,6 +408,7 @@ export const GeminiChat = () => {
   const scrolledWindow = createScrolledConversationWindow(
     conversationContainer,
   );
+
   const promptInput = createPromptInputTextView(conversationContainer);
 
   return Widget.CenterBox({

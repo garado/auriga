@@ -3,6 +3,7 @@
 @use './calculator'
 @use './metronome'
 @use './paintmixer'
+@use './gemini'
 
 /****************************************
  * GENERAL
@@ -30,44 +31,4 @@
 
     .icon
       padding-right: 0.5rem
-
-/****************************************
- * GEMINI
- ****************************************/
-
-.utility .gemini
-  .header
-    font-size: 2rem
-    border-bottom: 0.15rem solid $neutral-600
-
-  .prompt-entry
-    border-style: solid
-    border-width: 0.3rem
-    border-radius: $border-radius
-    padding: 0.4rem
-    transition: 0.1s all
-
-    &.focus
-      border-color: $primary-500
-
-    &:not(.focus)
-      border-color: $neutral-500
-
-  .speaker
-    font-weight: 500
-    font-size: 1.4rem
-
-    &.user
-      color: $primary-400
-
-    &.gemini
-      color: $accent-1
-
-  // Seems like there's no direct CSS selector for selected/highlighted text 
-  // on Gtk.Label. But in Gtk Inspector, the selected text is a child of the
-  // actual label. So - apply a class to the selectable label ('content'), 
-  // and set the bg color of all children.
-  .content
-    *
-      background-color: $yellow-500
 
