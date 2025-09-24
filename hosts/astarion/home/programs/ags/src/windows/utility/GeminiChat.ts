@@ -35,7 +35,9 @@ const CSS_CLASSES = {
   userSpeaker: "user",
   geminiSpeaker: "gemini",
   content: "content",
-  promptEntry: "prompt-entry",
+  promptText: "prompt",
+  responseText: "response",
+  promptEntryTextbox: "prompt-entry-textbox",
 } as const;
 
 const UI_LABELS = {
@@ -88,7 +90,7 @@ interface ExtendedConversationWidget extends Astal.Box {
  */
 const tokenizeGeminiResponse = (markdownResponse: string): ResponseToken[] => {
   const tokens: ResponseToken[] = [];
-  let remainingText = markdownResponse;
+  let remainingText = markdownResponse.replaceAll("\n\n", "\n");
   let isProcessingCodeBlock = false;
 
   while (remainingText.length > 0) {
@@ -115,7 +117,7 @@ const tokenizeGeminiResponse = (markdownResponse: string): ResponseToken[] => {
       });
 
       remainingText = remainingText.slice(
-        tokens[tokens.length - 1].content.length + 3,
+        tokens[tokens.length - 1].content.length + "```".length,
       );
     } else {
       // No more code blocks, add remaining text
@@ -149,6 +151,7 @@ const createSpeakerLabel = (conversationType: ConversationType) => {
       CSS_CLASSES.speaker,
       isUserMessage ? CSS_CLASSES.userSpeaker : CSS_CLASSES.geminiSpeaker,
     ],
+    visible: isUserMessage,
     label: isUserMessage ? UI_LABELS.userDisplayName : UI_LABELS.aiDisplayName,
     xalign: 0,
   });
@@ -202,7 +205,12 @@ const createConversationPiece = (
     vertical: true,
     children: [
       Widget.Label({
-        cssClasses: [CSS_CLASSES.content],
+        cssClasses: [
+          CSS_CLASSES.content,
+          props.conversationType == ConversationType.Prompt
+            ? CSS_CLASSES.promptText
+            : CSS_CLASSES.responseText,
+        ],
         selectable: true,
         useMarkup: true,
         label: props.text,
@@ -257,7 +265,7 @@ const createConversationContainer = () =>
  */
 const createPromptInputTextView = (conversationContainer: Astal.Box) => {
   const promptTextView = new Gtk.TextView({
-    cssClasses: [CSS_CLASSES.promptEntry],
+    cssClasses: [CSS_CLASSES.promptEntryTextbox],
     canFocus: true,
     focusOnClick: true,
     focusable: true,
