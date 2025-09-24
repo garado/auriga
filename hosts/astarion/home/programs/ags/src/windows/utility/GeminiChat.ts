@@ -17,6 +17,7 @@ import { CustomSourceView } from "@/components/CustomSourceView";
 import GeminiService, { ConversationType } from "@/services/Gemini";
 import SettingsManager from "@/services/settings";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
+import { clearChildren } from "@/utils/BoxUtils";
 
 /*****************************************************************************
  * Module-level variables
@@ -55,6 +56,10 @@ const KB_SHORTCUTS = {
   keypadEnterKey: Gdk.KEY_KP_Enter,
   shiftModifier: Gdk.ModifierType.SHIFT_MASK,
 } as const;
+
+const COMMANDS = {
+  clear: "/clear",
+};
 
 /*****************************************************************************
  * Type definitions
@@ -132,6 +137,60 @@ const tokenizeGeminiResponse = (markdownResponse: string): ResponseToken[] => {
   }
 
   return tokens;
+};
+
+/**
+ * Call Gemini API with a specific prompt text and set up UI accordingly
+ * @param promptText - the prompt text to pass to Gemini APi
+ * @param conversationContainer - the widget containing the prompt/response content widgets
+ */
+const submitPrompt = (promptText: string, conversationContainer: Astal.Box) => {
+  const id = conversationContainer.children.length;
+
+  // Add user prompt immediately
+  conversationContainer.append(
+    createConversationPiece({
+      id,
+      text: promptText,
+      conversationType: ConversationType.Prompt,
+    }),
+  );
+
+  // Add placeholder for response
+  conversationContainer.append(
+    createConversationPiece({
+      id: id + 1,
+      text: UI_LABELS.thinkingMessage,
+      conversationType: ConversationType.Response,
+    }),
+  );
+
+  // Call Gemini with callbacks
+  gemini.prompt(
+    id,
+    promptText,
+    (responseId, response) => {
+      const responseWidget = conversationContainer.get_children()[
+        responseId + 1
+      ] as ExtendedConversationWidget;
+      responseWidget.setContent(response);
+    },
+    (errorId, error) => {
+      const responseWidget = conversationContainer.get_children()[
+        errorId + 1
+      ] as ExtendedConversationWidget;
+      responseWidget.setContent(`Error: ${error}`);
+    },
+  );
+};
+
+/**
+ * Runs a slash command.
+ */
+const runSlashCommand = (command: string, conversationContainer: Astal.Box) => {
+  if (COMMANDS.clear == command) {
+    clearChildren(conversationContainer);
+  }
 };
 
 /*****************************************************************************
@@ -276,6 +335,8 @@ const createPromptInputTextView = (conversationContainer: Astal.Box) => {
 
   /**
    * Handles key press events for the prompt input.
+   * This will submit a prompt or execute a slash command.
+   *
    * @param controller - The event controller
    * @param keyval - The key value
    * @param keycode - The hardware key code
@@ -288,59 +349,28 @@ const createPromptInputTextView = (conversationContainer: Astal.Box) => {
     _keycode: number,
     state: Gdk.ModifierType,
   ): boolean => {
+    // Check for user pressing <Enter> to run a prompt or a slash command
+    // (<Shift+Enter> will create a newline for multiline inputs)
     const isEnterKey =
       keyval === KB_SHORTCUTS.enterKey ||
       keyval === KB_SHORTCUTS.keypadEnterKey;
+    const isShiftPressed = state & KB_SHORTCUTS.shiftModifier;
+    if (!(isEnterKey && !isShiftPressed)) return false;
 
-    const isShiftPressed = !!(state & KB_SHORTCUTS.shiftModifier);
+    const promptText = promptTextView.buffer.text;
 
-    if (isEnterKey && !isShiftPressed) {
-      const promptText = promptTextView.buffer.text;
-      if (promptText.trim().length > 0) {
-        const id = conversationContainer.children.length;
-
-        // Add user prompt immediately
-        conversationContainer.append(
-          createConversationPiece({
-            id,
-            text: promptText,
-            conversationType: ConversationType.Prompt,
-          }),
-        );
-
-        // Add placeholder for response
-        conversationContainer.append(
-          createConversationPiece({
-            id: id + 1,
-            text: UI_LABELS.thinkingMessage,
-            conversationType: ConversationType.Response,
-          }),
-        );
-
-        // Call Gemini with callbacks
-        gemini.prompt(
-          id,
-          promptText,
-          (responseId, response) => {
-            const responseWidget = conversationContainer.get_children()[
-              responseId + 1
-            ] as ExtendedConversationWidget;
-            responseWidget.setContent(response);
-          },
-          (errorId, error) => {
-            const responseWidget = conversationContainer.get_children()[
-              errorId + 1
-            ] as ExtendedConversationWidget;
-            responseWidget.setContent(`Error: ${error}`);
-          },
-        );
-
-        promptTextView.buffer.set_text("", -1);
+    if (promptText.trim().length > 0) {
+      if (Object.values(COMMANDS).includes(promptText)) {
+        runSlashCommand(promptText, conversationContainer);
+      } else {
+        submitPrompt(promptText, conversationContainer);
       }
-      return true;
     }
 
-    return false;
+    // Clear buffer and reset cursor pos
+    promptTextView.buffer.set_text("", -1);
+
+    return true;
   };
 
   const keyController = new Gtk.EventControllerKey();
