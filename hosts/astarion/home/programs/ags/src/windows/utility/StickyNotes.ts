@@ -50,12 +50,14 @@ const CSS_CLASSES = {
  */
 const loadStickies = () => {
   const stickies = readAllFilesFromDir(notesPath);
+  clearChildren(stickyNotesContainer!);
 
   if (Object.keys(stickies).length) {
-    clearChildren(stickyNotesContainer!);
     for (const [filename, content] of Object.entries(stickies)) {
       stickyNotesContainer!.append(StickyNote(filename, content));
     }
+  } else {
+    stickyNotesContainer!.append(Placeholder());
   }
 };
 
@@ -149,13 +151,10 @@ export const StickyNotes = () => {
   stickyNotesContainer = Widget.Box({
     vertical: true,
     cssClasses: [CSS_CLASSES.stickyNotesContainer],
-    children: [Placeholder()],
     spacing: 20,
   });
 
-  if (notesPath !== "") {
-    loadStickies();
-  }
+  loadStickies();
 
   return Widget.Box({
     name: "StickyNotesTab",
