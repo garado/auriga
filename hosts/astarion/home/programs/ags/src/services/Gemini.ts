@@ -19,7 +19,7 @@ import SettingsManager from "./settings";
 
 const GEMINI_API_KEY = SettingsManager.get_default().config.misc.geminiAPI;
 
-const USE_REAL_API_CALL = false;
+const USE_REAL_API_CALL = true;
 
 /*****************************************************************************
  * Types/interfaces
