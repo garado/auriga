@@ -154,6 +154,7 @@ export const StickyNotes = () => {
     vertical: true,
     cssClasses: [CSS_CLASSES.stickyNotesContainer],
     spacing: 20,
+    children: [Placeholder()],
   });
 
   loadStickies();
