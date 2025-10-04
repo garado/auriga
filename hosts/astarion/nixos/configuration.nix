@@ -122,7 +122,7 @@ in {
     exiftool
 
     # C/C++ dev
-    libgccjit gcc_multi clang-tools gdb gnumake
+    libgccjit gcc_multi clang-tools gdb gnumake valgrind
 
     # JS dev
     nodejs_22 nodePackages.typescript
