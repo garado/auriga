@@ -1,21 +1,19 @@
+local on_attach = vim.lsp.config.on_attach
+local capabilities = vim.lsp.config.capabilities
 
-local on_attach = require("plugins.configs.lspconfig").on_attach
-local capabilities = require("plugins.configs.lspconfig").capabilities
+vim.lsp.config('cssls', {
+  on_attach = on_attach,
+  capabilities = capabilities,
+})
 
-local lspconfig = require "lspconfig"
+vim.lsp.config('ts_ls', {
+  on_attach = on_attach,
+  capabilities = capabilities,
+})
 
--- if you just want default config for the servers then put them in a table
-local servers = { "cssls", "ts_ls" }
-
-for _, lsp in ipairs(servers) do
-  lspconfig[lsp].setup {
-    on_attach = on_attach,
-    capabilities = capabilities,
-  }
-end
-
-
-lspconfig.html.setup {
+vim.lsp.config('html', {
+  on_attach = on_attach,
+  capabilities = capabilities,
   init_options = {
     provideFormatter = true 
   },
@@ -26,10 +24,13 @@ lspconfig.html.setup {
       }
     },
   },
-}
+})
 
-lspconfig.clangd.setup {
+vim.lsp.config('clangd', {
   cmd = { "clangd" },
   on_attach = on_attach,
   capabilities = capabilities,
-}
+})
+
+-- Enable all LSPs
+vim.lsp.enable({'cssls', 'ts_ls', 'html', 'clangd'})
