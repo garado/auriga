@@ -58,5 +58,6 @@
 
     # Misc
     py = "python3";
+    m = "make";
   };
 }

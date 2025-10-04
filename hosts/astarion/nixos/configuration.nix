@@ -76,6 +76,7 @@ in {
     "steam-unwrapped"
     "steamcmd"
     "reaper"
+    "zoom"
   ];
 
   environment.systemPackages = with pkgs; [
@@ -96,6 +97,7 @@ in {
     wireplumber
     sox
     audacity
+    zoom-us
 
     # GNOME extensions
     gnomeExtensions.bluetooth-battery
@@ -109,6 +111,7 @@ in {
     unstable.legacyPackages."${pkgs.system}".gcalcli
     hledger reckon
     cava
+    tree
 
     # TUI
     youtube-tui steam-tui taskwarrior-tui
@@ -119,7 +122,7 @@ in {
     exiftool
 
     # C/C++ dev
-    libgccjit gcc_multi clang-tools gdb
+    libgccjit gcc_multi clang-tools gdb gnumake
 
     # JS dev
     nodejs_22 nodePackages.typescript
