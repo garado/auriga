@@ -77,6 +77,7 @@ in {
     "steamcmd"
     "reaper"
     "zoom"
+    "waveforms" "adept2-runtime"
   ];
 
   environment.systemPackages = with pkgs; [
@@ -118,11 +119,12 @@ in {
 
     # Utilities and monitoring
     htop btop radeontop acpi
-    grimblast
+    grimblast obs-studio
     exiftool
 
-    # C/C++ dev
+    # Embedded dev (C/C++)
     libgccjit gcc_multi clang-tools gdb gnumake valgrind
+    kicad
 
     # JS dev
     nodejs_22 nodePackages.typescript
@@ -133,8 +135,8 @@ in {
     # Python dev
     python3 poetry
 
-    # Misc: iPhone mounting
-    libimobiledevice ifuse
+    # Misc
+    libimobiledevice ifuse  # iPhone mounting
 
     # Guitar
     guitarix qjackctl libjack2 jack2 jack_capture

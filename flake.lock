@@ -537,6 +537,20 @@
         "type": "github"
       }
     },
+    "nixpkgs_6": {
+      "locked": {
+        "lastModified": 1759570798,
+        "narHash": "sha256-kbkzsUKYzKhuvMOuxt/aTwWU2mnrwoY964yN3Y4dE98=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0d4f673a88f8405ae14484e6a1ea870e0ba4ca26",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -569,7 +583,8 @@
         "musnix": "musnix",
         "nixpkgs": "nixpkgs_4",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "swww": "swww"
+        "swww": "swww",
+        "waveforms": "waveforms"
       }
     },
     "rust-overlay": {
@@ -625,6 +640,25 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default-linux",
+        "type": "github"
+      }
+    },
+    "waveforms": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_6"
+      },
+      "locked": {
+        "lastModified": 1757845097,
+        "narHash": "sha256-pA+G2XGZ1ZDDJ2L5SG0JcvACXNm0oZ3n2erujcD3A9o=",
+        "owner": "liff",
+        "repo": "waveforms-flake",
+        "rev": "c6fac3b8694ab95a3f4204b6bf110df9d2594d0f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "liff",
+        "repo": "waveforms-flake",
+        "rev": "c6fac3b8694ab95a3f4204b6bf110df9d2594d0f",
         "type": "github"
       }
     },
