@@ -31,7 +31,7 @@
 
     # Enchiridion
     ench = "cd $ENCHIRIDION";
-    todo = "cd $ENCHIRIDION/self/todo/ ; nvim";
+    todo = "cd ~/Documents/stickynotes/todo.md ; nvim";
     goals = "cd $ENCHIRIDION/self/goals/ ; nvim";
     
     # Nix
