@@ -55,7 +55,7 @@ export const debug = async () => {
 
 export default () => {
   const map = MapWidget({
-    zoom: 10,
+    zoom: 12,
     style: "dark",
   });
 
@@ -163,14 +163,14 @@ export default () => {
 
     // Focus map on starting point of trip
     const startPoint = selectedItinerary.get()!.legs[0].from;
-    map.animateTo(startPoint.lat, startPoint.lon, 15.5);
+    map.animateTo(startPoint.lat, startPoint.lon, 12);
   });
 
   // When place prediction is focused, map should zoom there and show a marker
   previewedLocation.subscribe((location) => {
     if (location === undefined) return;
     map.clearMarkers();
-    map.animateTo(Number(location.lat), Number(location.lon), 13);
+    map.animateTo(Number(location.lat), Number(location.lon), 10);
     map.addMarker(
       Number(location.lat),
       Number(location.lon),
