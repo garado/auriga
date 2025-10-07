@@ -16,6 +16,7 @@ import SettingsManager from "@/services/settings";
 import { clearChildren } from "@/utils/BoxUtils";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
 import { readAllFilesFromDir } from "@/utils/File";
+import { setupEventController } from "@/utils/EventControllerKeySetup";
 
 /*****************************************************************************
  * Module-level variables
@@ -38,6 +39,10 @@ const CSS_CLASSES = {
   stickyNoteTitle: "title",
   stickyNoteContent: "content",
   reloadButton: "reload-button",
+} as const;
+
+const KEYBINDS = {
+  REFRESH_DATA: "r",
 } as const;
 
 /*****************************************************************************
@@ -171,5 +176,13 @@ export const StickyNotes = () => {
       }),
       stickyNotesContainer,
     ],
+    setup: (self) => {
+      setupEventController({
+        widget: self,
+        binds: {
+          [KEYBINDS.REFRESH_DATA]: loadStickies,
+        },
+      });
+    },
   });
 };
