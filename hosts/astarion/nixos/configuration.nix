@@ -99,6 +99,9 @@ in {
     sox
     audacity
     zoom-us
+    ffmpeg
+    shotcut
+    obs-studio
 
     # GNOME extensions
     gnomeExtensions.bluetooth-battery
