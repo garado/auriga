@@ -23,6 +23,33 @@ scale
     highlight
       background-color: $primary-500
 
+dropdown
+  > button
+
+  popover
+    border-radius: $border-radius
+    background: $neutral-700
+
+    listview > row
+      padding: 0.3rem 0.7rem
+
+      &:first-child
+        border-top-left-radius: $border-radius
+        border-top-right-radius: $border-radius
+      
+      &:last-child
+        border-bottom-left-radius: $border-radius
+        border-bottom-right-radius: $border-radius
+
+      &:hover
+        background-color: $neutral-600
+
+      &:selected
+        background-color: $primary-600
+
+      image
+        margin-left: 1rem
+
 switch
   // Switch track/background
   border-radius: 1rem
