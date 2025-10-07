@@ -139,7 +139,7 @@ export default class Gemini extends GObject.Object {
       return;
     }
 
-    const cmd = `curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}" \
+    const cmd = `curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
                   -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "${escapeQuotes(promptText)}"}] }] }'`;
 
     execAsync(cmd)
