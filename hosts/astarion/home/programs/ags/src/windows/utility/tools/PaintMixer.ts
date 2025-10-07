@@ -19,7 +19,7 @@ import Gemini from "@/services/Gemini";
 import SettingsManager from "@/services/settings";
 import { Dropdown } from "@/components/Dropdown";
 import { ExpansionPanel } from "@/components/ExpansionPanel";
-import { WINDOW_NAMES } from "app";
+import { toggleWindow, WINDOW_NAMES } from "app";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
 import { clearChildren } from "@/utils/BoxUtils";
 import {
@@ -98,8 +98,9 @@ let allMixInstructions: Gtk.Box;
  * Helper functions
  *****************************************************************************/
 
-/** Check if input is valid hex color. */
-const isValidHexColor = (input: string) => /^#[0-9A-F]{6}$/i.test(input);
+/** Check if input contains valid hex color and extract it. */
+const validateHexColor = (input: string) =>
+  input.match(/#[0-9A-F]{6}/i)?.[0] ?? null;
 
 /** Get the directory path for a specific palette */
 const getPaletteDir = (palette: string) =>
@@ -124,20 +125,20 @@ const pickColor = async (): Promise<void> => {
     const palette = currentPalette.get();
     if (!palette) return;
 
-    App.get_window(WINDOW_NAMES.UTILITY)?.set_visible(false);
+    toggleWindow(WINDOW_NAMES.UTILITY);
 
     // Small delay to ensure window fully hides before hyprpicker launches
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     const cmd = `hyprpicker --no-fancy --render-inactive --format=hex`;
-    const output = await execAsync(cmd);
+    const output = validateHexColor(await execAsync(cmd));
 
-    if (isValidHexColor(output)) {
+    if (output) {
       const availableColors = utilityConfig.palettes[palette] || [];
       promptMixingInstructions(output, availableColors, palette);
     }
 
-    App.get_window(WINDOW_NAMES.UTILITY)?.set_visible(true);
+    toggleWindow(WINDOW_NAMES.UTILITY);
   } catch (error) {
     console.log(error);
   }

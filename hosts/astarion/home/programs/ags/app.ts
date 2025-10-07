@@ -42,7 +42,7 @@ export const WINDOW_NAMES = {
 /**
  * Hide/show window with revealer
  */
-const toggleWindow = (windowName: string) => {
+export const toggleWindow = (windowName: string) => {
   const win = App.get_window(windowName);
 
   if (win!.visible) {
