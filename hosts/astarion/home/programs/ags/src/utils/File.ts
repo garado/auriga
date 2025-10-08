@@ -16,7 +16,7 @@ import { Gio } from "astal";
  *****************************************************************************/
 
 /**
- * Create directory
+ * Create directory (mkdir -p)
  * @param dirPath - path of directory to create
  */
 export function mkdir(dirPath: string): void {
@@ -25,11 +25,9 @@ export function mkdir(dirPath: string): void {
     const dir = Gio.File.new_for_path(dirPath);
 
     if (dir && !dir.query_exists(null)) {
-      console.log(`Creating parent directories for: ${dirPath}`);
       dir.make_directory_with_parents(null);
+      console.log(`Directory created: ${dirPath}`);
     }
-
-    console.log(`Directory created: ${dirPath}`);
   } catch (error) {
     console.error("Error creating directory:", error);
     throw error;
