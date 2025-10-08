@@ -144,7 +144,7 @@ const createSummaryAccountWidget = (
  */
 const createUserAccountWidgets = () =>
   bind(ledgerService, "accountData").as((accounts) =>
-    accounts.map(createAccountWidget),
+    accounts?.map(createAccountWidget),
   );
 
 /**

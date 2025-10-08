@@ -21,7 +21,6 @@ import SettingsManager from "../settings";
 import {
   Account,
   DebtItem,
-  AccountConfig,
   CategorySpend,
   TransactionData,
   CategorySpending,
@@ -30,6 +29,7 @@ import {
 
 import LedgerCSVParser from "./Parsing";
 import LedgerUtils from "./Utils";
+import LedgerQuery from "./queries";
 
 /*****************************************************************************
  * Module-level variables
@@ -265,112 +265,11 @@ export default class Ledger extends GObject.Object {
     }
   }
 
-  /**
-   * Initialize account balance data for accounts defined in user config.
-   * Fetches current balances from hledger and converts them to display format.
-   *
-   * This method:
-   * 1. Builds hledger balance commands for each configured account
-   * 2. Executes commands in parallel
-   * 3. Parses CSV output and converts to Account format
-   * 4. Updates the accountData property with results
-   *
-   * @private
-   * @returns void
-   *
-   * @example
-   * Raw hledger output for each account:
-   * ```
-   * "account","balance"
-   * "Assets:Checking","$11064.66"
-   * "total","$11064.66"
-   * ```
-   *
-   * Gets transformed into:
-   * ```typescript
-   * {
-   *   displayName: "Checking Account",
-   *   total: 11064.66
-   * }
-   * ```
-   */
-  #initAccountData() {
-    // Build hledger commands for each account
-    const commands = ledgerConfig.accountList.map(
-      (accountData: AccountConfig) => {
-        // use `--infer-market-prices -X '$'` to convert shares to $
-        return `${this.hledgerCmd()} balance "${accountData.accountName}" ${CSV} -X "$" --infer-market-prices`;
-      },
+  async #initAccountData() {
+    this.accountData = await LedgerQuery.accountData(
+      this.hledgerCmd(),
+      ledgerConfig.accountList,
     );
-
-    // Execute all commands in parallel
-    const promises = commands.map(async (cmd: string) => {
-      return execAsync(`bash -c '${cmd}'`);
-    });
-
-    Promise.all(promises)
-      .then((results) => {
-        const tmpAccountData: Array<Account> = [];
-
-        // Process each account's result
-        for (let i = 0; i < ledgerConfig.accountList.length; i++) {
-          const accountConfig = ledgerConfig.accountList[i];
-
-          try {
-            const balanceRows = LedgerCSVParser.balance(results[i]);
-
-            if (balanceRows.length === 0) {
-              console.warn(
-                `No balance data found for account: ${accountConfig.displayName}`,
-              );
-              tmpAccountData.push({
-                displayName: accountConfig.displayName,
-                total: 0,
-              });
-              continue;
-            }
-
-            // Get the total row (should be the last row)
-            const totalRow =
-              balanceRows.find((row) => row.account === "total") ||
-              balanceRows[balanceRows.length - 1];
-
-            const balance = LedgerUtils.parseAmount(totalRow.balance);
-
-            const output: Account = {
-              displayName: accountConfig.displayName,
-              total: balance,
-            };
-
-            tmpAccountData.push(output);
-          } catch (parseError) {
-            console.error(
-              `Failed to parse balance data for account ${accountConfig.displayName}:`,
-              parseError,
-            );
-
-            // Add account with 0 balance as fallback to prevent UI breakage
-            tmpAccountData.push({
-              displayName: accountConfig.displayName,
-              total: 0,
-            });
-          }
-        }
-
-        // Update the property with all results
-        this.accountData = tmpAccountData;
-
-        log(
-          "ledgerService",
-          `#initAccountData: Successfully loaded ${tmpAccountData.length} account balances`,
-        );
-      })
-      .catch((err) => {
-        console.error(`Failed to fetch account data:`, err);
-
-        // Set empty array as fallback to prevent UI crashes
-        this.accountData = [];
-      });
   }
 
   /**
