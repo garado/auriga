@@ -33,14 +33,11 @@ const Grid = astalify(Gtk.Grid);
 export default () => {
   const Left = Grid({
     setup: (self) => {
-      GLib.idle_add(0, () => {
-        /* Widget, Col, Row, Width, Height*/
-        self.attach(Profile(), 0, 0, 1, 1);
-        self.attach(Clock(), 0, 1, 1, 1);
-        self.attach(Quote(), 0, 2, 1, 1);
-        self.attach(Github(), 0, 3, 1, 1);
-        return GLib.SOURCE_REMOVE;
-      });
+      /* Widget, Col, Row, Width, Height*/
+      self.attach(Profile(), 0, 0, 1, 1);
+      self.attach(Clock(), 0, 1, 1, 1);
+      self.attach(Quote(), 0, 2, 1, 1);
+      self.attach(Github(), 0, 3, 1, 1);
 
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
