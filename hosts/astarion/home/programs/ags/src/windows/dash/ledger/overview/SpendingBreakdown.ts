@@ -70,7 +70,7 @@ const createChartContainer = () =>
     hpack: "center",
     vpack: "center",
     spacing: LAYOUT.chartContainerSpacing,
-    children: bind(ledgerService, "monthlyCategorySpending").as(
+    children: bind(ledgerService, "recentCategorySpending").as(
       (spendingBreakdown) => {
         if (spendingBreakdown === undefined) {
           // Return empty array when no data is available

@@ -230,7 +230,7 @@ const createTransactionsListSection = (debtItems: DebtItem[]) =>
  * @returns Widget containing complete debt information for the account
  */
 const createAccountDebtWidget = (accountName: string) => {
-  const debtItems = ledgerService.debtItems[accountName];
+  const debtItems = ledgerService.debtsAndLoans[accountName];
   const totalAmount = calculateTotalDebtAmount(debtItems);
   const displayInfo = getDebtDisplayInfo(totalAmount);
 
@@ -256,7 +256,7 @@ const createDebtsContainer = () =>
     hexpand: false,
     vertical: true,
     spacing: LAYOUT.debtSpacing,
-    children: bind(ledgerService, "debtItems").as((debtItemsMap) =>
+    children: bind(ledgerService, "debtsAndLoans").as((debtItemsMap) =>
       Object.keys(debtItemsMap).map(createAccountDebtWidget),
     ),
   });

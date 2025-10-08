@@ -42,11 +42,11 @@ const SUMMARY_ACCOUNTS = {
   },
   monthlyIncome: {
     displayName: "Income (last 30 days)",
-    dataBinding: "incomeThisMonth" as const,
+    dataBinding: "recentIncome" as const,
   },
   monthlyExpenses: {
     displayName: "Expenses (last 30 days)",
-    dataBinding: "expensesThisMonth" as const,
+    dataBinding: "recentExpenses" as const,
   },
 } as const;
 

@@ -182,7 +182,7 @@ const registerTransactions = (csvOutput: string): Array<TransactionData> => {
  * @returns Object with accounts as keys and arrays of debt/liability transactions as values
  * @throws {Error} When CSV output is invalid or malformed
  */
-const debtsLiabilities = (csvOutput: string): Record<string, DebtItem[]> => {
+const debtsLoans = (csvOutput: string): Record<string, DebtItem[]> => {
   if (!csvOutput || typeof csvOutput !== "string") {
     throw new Error(
       "Invalid debts/liabilities CSV output: expected non-empty string",
@@ -311,7 +311,7 @@ const LedgerCSVParser = {
   balanceTrend: balanceTrend,
   balance: balance,
   registerTransactions: registerTransactions,
-  debtsLiabilities: debtsLiabilities,
+  debtsLoans: debtsLoans,
   categorySpending: categorySpending,
 };
 

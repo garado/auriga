@@ -28,17 +28,11 @@ import {
 
 const ledgerConfig = SettingsManager.get_default().config.dashLedger;
 
-const CSV = " --output-format csv ";
-
 const BALANCE_TREND_CACHEFILE = `${GLib.get_user_cache_dir()}/astal/ledgerbal`;
 
 const INCLUDES = ledgerConfig.includes
   .map((file: string) => `-f "${file.replace(/"/g, '\\"')}"`)
   .join(" ");
-
-/*****************************************************************************
- * Helper functions
- *****************************************************************************/
 
 /*****************************************************************************
  * Class definition
@@ -58,30 +52,61 @@ export default class Ledger extends GObject.Object {
   }
 
   // Properties ----------------------------------------------------------------
-  @property(Object)
-  declare balancesOverTime: Number[];
 
+  /**
+   * Array of historical net worth values over time.
+   * Each element represents the total net worth (assets minus liabilities)
+   * for a specific date, sampled regular intervals.
+   * Used in dashboard "FIRE" tab.
+   */
   @property(Object)
-  declare accountData: Array<Account>;
+  declare balancesOverTime: number[];
 
+  /**
+   * Array of financial accounts with their balances and metadata.
+   * Used in dashboard "Overview" tab.
+   */
   @property(Object)
-  declare transactions: Array<TransactionData>;
+  declare accountData: Account[];
 
+  /**
+   * List of recent financial transactions.
+   * Ordered chronologically, showing the most recent N transactions
+   * across all accounts.
+   */
   @property(Object)
-  declare debtItems: Record<string, Array<DebtItem>>;
+  declare recentTransactions: Array<TransactionData>;
 
+  /**
+   * Outstanding debts and liabilities.
+   * key is the account name, value is an array containing all debts/liabilities
+   * to/from that account.
+   */
   @property(Object)
-  declare monthlyCategorySpending: CategorySpending[];
+  declare debtsAndLoans: Record<string, Array<DebtItem>>;
 
+  /**
+   * Spending breakdown by category for the last 30 days.
+   * Hierarchical structure of expense categories with their amounts,
+   * used for visualizing recent spending distribution in pie charts.
+   * Used in pie chart in dashboard ledger "Overview" tab.
+   */
+  @property(Object)
+  declare recentCategorySpending: CategorySpending[];
+
+  /** Income obtained in the last 30 days. */
   @property(Number)
-  declare incomeThisMonth: Number;
+  declare recentIncome: number;
 
+  /** Expenses from the last 30 days. */
   @property(Number)
-  declare expensesThisMonth: Number;
+  declare recentExpenses: number;
 
+  /** Total net worth. */
   @property(Number)
-  declare netWorth: Number;
+  declare netWorth: number;
 
+  /** Monthly spending sorted by category for the last N months. */
   @property(Object)
   declare monthlySpendingByCategory: Object;
 
@@ -92,10 +117,10 @@ export default class Ledger extends GObject.Object {
     // Default values
     this.accountData = [];
     this.netWorth = 0;
-    this.incomeThisMonth = 0;
-    this.expensesThisMonth = 0;
-    this.debtItems = {};
-    this.monthlyCategorySpending = [];
+    this.recentIncome = 0;
+    this.recentExpenses = 0;
+    this.debtsAndLoans = {};
+    this.recentCategorySpending = [];
     this.balancesOverTime = [];
     this.monthlySpendingByCategory = {
       subcategories: {},
@@ -122,7 +147,7 @@ export default class Ledger extends GObject.Object {
     this.#initNetWorth();
     this.#initMonthlyCashFlow();
     this.#initDebts();
-    this.#initCategorySpending();
+    this.#initRecentCategorySpending();
     this.#initRecentTransactions();
     this.#initBalanceTrends();
     this.#initSpendingAnalysis();
@@ -159,16 +184,16 @@ export default class Ledger extends GObject.Object {
       this.hledgerCmd(),
     );
 
-    this.incomeThisMonth = monthlyCashFlow.income;
-    this.expensesThisMonth = monthlyCashFlow.expenses;
+    this.recentIncome = monthlyCashFlow.income;
+    this.recentExpenses = monthlyCashFlow.expenses;
   }
 
   async #initDebts() {
-    this.debtItems = await LedgerQuery.debtsLiabilities(this.hledgerCmd());
+    this.debtsAndLoans = await LedgerQuery.debtsLoans(this.hledgerCmd());
   }
 
-  async #initCategorySpending() {
-    this.monthlyCategorySpending = await LedgerQuery.categorySpending(
+  async #initRecentCategorySpending() {
+    this.recentCategorySpending = await LedgerQuery.categorySpending(
       this.hledgerCmd(),
     );
   }
@@ -187,6 +212,8 @@ export default class Ledger extends GObject.Object {
   }
 
   async #initRecentTransactions() {
-    this.transactions = await LedgerQuery.recentTransactions(this.hledgerCmd());
+    this.recentTransactions = await LedgerQuery.recentTransactions(
+      this.hledgerCmd(),
+    );
   }
 }

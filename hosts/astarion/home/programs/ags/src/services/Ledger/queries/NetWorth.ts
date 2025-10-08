@@ -25,7 +25,7 @@ const CSV = " --output-format csv ";
  *
  * The last row contains the net worth: $40,000
  */
-export const netWorth = async (baseCmd: string): Promise<Number> => {
+export const netWorth = async (baseCmd: string): Promise<number> => {
   // Use balance sheet command:
   // `hledger bs --depth 0 -X '$' --infer-market-prices --output-format csv`
   // -X '$' converts all currencies to dollars; --infer-market-prices converts investments to dollars

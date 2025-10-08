@@ -1,8 +1,8 @@
 /**
- * █▀▄ █▀▀ █▄▄ ▀█▀ █▀   ▄▀█ █▄░█ █▀▄   █░░ █ ▄▀█ █▄▄ █ █░░ █ ▀█▀ █ █▀▀ █▀
- * █▄▀ ██▄ █▄█ ░█░ ▄█   █▀█ █░▀█ █▄▀   █▄▄ █ █▀█ █▄█ █ █▄▄ █ ░█░ █ ██▄ ▄█
+ * █▀▄ █▀▀ █▄▄ ▀█▀ █▀   ▄▀█ █▄░█ █▀▄   █░░ █▀█ ▄▀█ █▄░█ █▀
+ * █▄▀ ██▄ █▄█ ░█░ ▄█   █▀█ █░▀█ █▄▀   █▄▄ █▄█ █▀█ █░▀█ ▄█
  *
- * Query pending debts and liabilities from uncleared transactions.
+ * Query pending debts and loans/liabilities from uncleared transactions.
  */
 
 /*****************************************************************************
@@ -47,7 +47,7 @@ import { DebtItem } from "../Types";
  * ```
  */
 
-export const debtsLiabilities = async (
+export const debtsLoans = async (
   baseCmd: string,
 ): Promise<Record<string, DebtItem[]>> => {
   // hledger register Reimbursements Liabilities --pending --output-format csv
@@ -57,7 +57,7 @@ export const debtsLiabilities = async (
 
   try {
     const out = await execAsync(`bash -c '${cmd}'`);
-    return LedgerCSVParser.debtsLiabilities(out);
+    return LedgerCSVParser.debtsLoans(out);
   } catch (err) {
     console.error(`Failed to fetch debts/liabilities:`, err);
     return fallback;

@@ -194,7 +194,7 @@ const createTransactionContainer = () =>
     vertical: true,
     homogeneous: true,
     spacing: LAYOUT.transactionSpacing,
-    children: bind(ledgerService, "transactions").as((transactions) => {
+    children: bind(ledgerService, "recentTransactions").as((transactions) => {
       if (transactions === null) {
         // TODO: Investigate why transactions can be null and handle appropriately
         return [];
