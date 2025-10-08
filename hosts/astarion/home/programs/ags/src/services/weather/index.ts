@@ -9,9 +9,11 @@
  * Imports
  *****************************************************************************/
 
-import { GObject, register, property, signal } from "astal/gobject";
+import { GObject, register, property, signal, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import SettingsManager from "../settings";
+import { fileWrite, mkdir } from "@/utils/File";
+import { readFile } from "astal";
 
 /*****************************************************************************
  * Types/interfaces
@@ -123,7 +125,36 @@ export interface ForecastItem {
 
 const WEATHER_CFG = SettingsManager.get_default().config.weather;
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
-const UPDATE_INTERVAL = 600000; // 10 minutes in ms
+
+const WEATHER_CACHE_DIR = `${GLib.get_user_cache_dir()}/astal/weather`;
+
+const CURRENT_WEATHER_CACHE_FILE = `${WEATHER_CACHE_DIR}/current_weather.json`;
+const FORECAST_CACHE_FILE = `${WEATHER_CACHE_DIR}/forecast.json`;
+
+const CURRENT_WEATHER_CACHE_TS = `${WEATHER_CACHE_DIR}/current_weather_ts`;
+const FORECAST_CACHE_TS = `${WEATHER_CACHE_DIR}/forecast_ts`;
+
+const CURRENT_WEATHER_UPDATE_INTERVAL = 60 * 10 * 1000; // (ms) 10 minutes
+const FORECAST_UPDATE_INTERVAL = 60 * 60 * 1000; // (ms) 1 hour
+
+const CACHE_VALIDITY = {
+  currentWeather: {
+    file: CURRENT_WEATHER_CACHE_FILE,
+    interval: CURRENT_WEATHER_UPDATE_INTERVAL,
+    timestamp: CURRENT_WEATHER_CACHE_TS,
+  },
+  forecast: {
+    file: FORECAST_CACHE_FILE,
+    interval: FORECAST_UPDATE_INTERVAL,
+    timestamp: FORECAST_CACHE_TS,
+  },
+} as const;
+
+interface CacheValidityData {
+  file: string;
+  interval: number;
+  timestamp: string;
+}
 
 /*****************************************************************************
  * Class definition
@@ -164,26 +195,62 @@ export default class OpenWeather extends GObject.Object {
     this.forecast = [];
     this.loading = false;
 
-    this.fetchCurrent();
-    this.fetchForecast();
+    this.#initCache();
+    this.#fetchCurrent();
+    this.#fetchForecast();
   }
 
   // Public functions --------------------------------------------------------
+
+  #testCacheValidity(cacheData: CacheValidityData) {
+    try {
+      // Check existence
+      if (!readFile(cacheData.file)) return false;
+
+      // Check timestamp file
+      const timestamp = Number(readFile(cacheData.timestamp));
+      if (Date.now() - timestamp > cacheData.interval) return false;
+    } catch (err) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Initialize cache directories, creating them if they don't yet exist
+   */
+  #initCache() {
+    mkdir(WEATHER_CACHE_DIR);
+  }
 
   /**
    * Fetch current weather data
    * https://openweathermap.org/current
    */
-  async fetchCurrent() {
+  async #fetchCurrent() {
     this.loading = true;
 
-    const url = `${BASE_URL}/weather?lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}`;
+    // Check if cached data is recent enough or even exists at all
+    const isCacheValid = this.#testCacheValidity(CACHE_VALIDITY.currentWeather);
+
+    let cmd = "";
+    if (isCacheValid) {
+      cmd = `bash -c "cat ${CACHE_VALIDITY.currentWeather.file}"`;
+    } else {
+      // Query data from API
+      const url = `${BASE_URL}/weather?lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}`;
+      cmd = `bash -c "curl -s '${url}' | tee ${CACHE_VALIDITY.currentWeather.file}"`;
+    }
 
     try {
-      // const response = await execAsync(`curl -s "${url}"`);
-      const response = await execAsync(
-        `bash -c "cat /home/alexis/.cache/astal/current-weather.json"`,
-      );
+      const response = await execAsync(cmd);
+
+      // Save data query timestamp if the curl was successful
+      if (!isCacheValid) {
+        fileWrite(CACHE_VALIDITY.currentWeather.timestamp, `${Date.now()}`);
+      }
+
       this.current = JSON.parse(response);
     } catch (err) {
       console.error("OpenWeather: fetchCurrent failed:", err);
@@ -195,15 +262,29 @@ export default class OpenWeather extends GObject.Object {
   /**
    * Fetch forecast data for the next 12 hours (3-hour intervals)
    */
-  async fetchForecast() {
+  async #fetchForecast() {
     this.loading = true;
-    const url = `${BASE_URL}/forecast?lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}&cnt=4`;
+
+    // Check if cached data is recent enough or even exists at all
+    const isCacheValid = this.#testCacheValidity(CACHE_VALIDITY.forecast);
+
+    let cmd = "";
+    if (isCacheValid) {
+      cmd = `bash -c "cat ${CACHE_VALIDITY.forecast.file}"`;
+    } else {
+      // Query data from API
+      const url = `${BASE_URL}/forecast?cnt=4&lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}`;
+      cmd = `bash -c "curl -s '${url}' | tee ${CACHE_VALIDITY.forecast.file}"`;
+    }
 
     try {
-      // const response = await execAsync(`curl -s "${url}"`);
-      const response = await execAsync(
-        `bash -c "cat /home/alexis/.cache/astal/forecast-weather.json"`,
-      );
+      const response = await execAsync(cmd);
+
+      // Save data query timestamp if the curl was successful
+      if (!isCacheValid) {
+        fileWrite(CACHE_VALIDITY.forecast.timestamp, `${Date.now()}`);
+      }
+
       this.forecast = JSON.parse(response).list;
     } catch (err) {
       console.error("OpenWeather: fetchForecast failed:", err);
