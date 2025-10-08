@@ -28,7 +28,7 @@
  * Imports
  *****************************************************************************/
 
-import { GObject, register, property, signal } from "astal/gobject";
+import { GObject, register, property, signal, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals";
 
@@ -84,7 +84,7 @@ export const uiVars = {
 
 export const DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-const TMPFILE = "/tmp/ags/gcalcli";
+const TMPFILE = `${GLib.get_user_cache_dir()}/astal/gcalcli`;
 const USER_UTC_OFFSET = new Date().getTimezoneOffset() / -60;
 const HOURS_PER_DAY = 24;
 const MINUTES_PER_HOUR = 60;

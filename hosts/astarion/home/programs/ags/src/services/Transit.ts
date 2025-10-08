@@ -328,7 +328,7 @@ const makeApiCall = async (
     }
   } else {
     const cachefile = endpoint.replace("/public/", "").replace("/otp/", "");
-    const file = `/tmp/ags/transit/${cachefile}`;
+    const file = `${GLib.get_user_cache_dir()}/astal/transit/${cachefile}`;
     try {
       const response = await execAsync(`cat ${file}`);
       return JSON.parse(response);

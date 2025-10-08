@@ -13,7 +13,7 @@
  *****************************************************************************/
 
 import { App, Gdk, Gtk, Widget } from "astal/gtk4";
-import { Variable, execAsync } from "astal";
+import { GLib, Variable, execAsync } from "astal";
 
 import Gemini from "@/services/Gemini";
 import SettingsManager from "@/services/settings";
@@ -36,7 +36,7 @@ import {
 const geminiService = Gemini.get_default();
 const utilityConfig = SettingsManager.get_default().config.utility;
 
-const RESULTS_CACHE_DIR = "/tmp/ags/colors/";
+const RESULTS_CACHE_DIR = `${GLib.get_user_cache_dir()}/astal/color/`;
 
 const CSS_CLASSES = {
   CONTAINER: "paint-mixer",

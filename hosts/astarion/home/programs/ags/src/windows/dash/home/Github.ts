@@ -12,7 +12,7 @@
  *****************************************************************************/
 
 import { Gtk, Widget, astalify, hook } from "astal/gtk4";
-import { Variable, bind } from "astal";
+import { GLib, Variable, bind } from "astal";
 import { exec, execAsync } from "astal/process";
 import SettingsManager from "@/services/settings";
 import { getCairoColorFromClass } from "@/utils/Helpers";
@@ -36,7 +36,7 @@ let intensityColors = {};
 
 // Populate the contribData and contribCount variables
 // @TODO This is hardcoded
-const url = "/tmp/ags/github/2025-07-27";
+const url = `${GLib.get_user_cache_dir()}/astal/github/2025-07-27`;
 
 execAsync(`bash -c 'cat ${url}'`)
   .then((x) => {

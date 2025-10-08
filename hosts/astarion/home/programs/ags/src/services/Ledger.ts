@@ -10,7 +10,7 @@
  * Imports
  *****************************************************************************/
 
-import { GObject, register, property } from "astal/gobject";
+import { GObject, register, property, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import Gio from "gi://Gio";
 
@@ -27,7 +27,7 @@ const ledgerConfig = SettingsManager.get_default().config.dashLedger;
 
 const CSV = " --output-format csv ";
 
-const BALANCE_TREND_CACHEFILE = "/tmp/ags/ledgerbal";
+const BALANCE_TREND_CACHEFILE = `${GLib.get_user_cache_dir()}/astal/ledgerbal`;
 
 const INCLUDES = ledgerConfig.includes
   .map((file: string) => `-f "${file.replace(/"/g, '\\"')}"`)
