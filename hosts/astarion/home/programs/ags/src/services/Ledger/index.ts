@@ -27,8 +27,9 @@ import {
   TransactionData,
   CategorySpending,
   HLedgerRegisterFields,
-  CategoryTotals,
-} from "@/services/Ledger/Types";
+} from "./Types";
+import { parseBalanceTrendCSV } from "./Parsing";
+import { parseAmount } from "./Utils";
 
 /*****************************************************************************
  * Module-level variables
@@ -276,7 +277,7 @@ export default class Ledger extends GObject.Object {
       execAsync(`bash -c "${cmd} | tail -n 1 | tee ${BALANCE_TREND_CACHEFILE}"`)
         .then((out) => {
           try {
-            this.balancesOverTime = this.#parseBalanceTrendCSV(out);
+            this.balancesOverTime = parseBalanceTrendCSV(out);
             log(
               "ledgerService",
               `Loaded ${this.balancesOverTime.length} daily balance data points`,
@@ -301,7 +302,7 @@ export default class Ledger extends GObject.Object {
       execAsync(cmd)
         .then((out) => {
           try {
-            this.balancesOverTime = this.#parseBalanceTrendCSV(out);
+            this.balancesOverTime = parseBalanceTrendCSV(out);
             log(
               "ledgerService",
               `Loaded ${this.balancesOverTime.length} cached balance data points`,
@@ -397,7 +398,7 @@ export default class Ledger extends GObject.Object {
               balanceRows.find((row) => row.account === "total") ||
               balanceRows[balanceRows.length - 1];
 
-            const balance = this.parseAmount(totalRow.balance);
+            const balance = parseAmount(totalRow.balance);
 
             const output: Account = {
               displayName: accountConfig.displayName,
@@ -477,7 +478,7 @@ export default class Ledger extends GObject.Object {
 
           // The net worth is in the last row
           const netWorthRow = balanceRows[balanceRows.length - 1];
-          const netWorth = this.parseAmount(netWorthRow.balance);
+          const netWorth = parseAmount(netWorthRow.balance);
 
           if (isNaN(netWorth)) {
             throw new Error(`Invalid net worth value: ${netWorthRow.balance}`);
@@ -533,7 +534,7 @@ export default class Ledger extends GObject.Object {
 
         balanceRows.forEach((row) => {
           const accountName = row.account.toLowerCase();
-          const absoluteAmount = Math.abs(this.parseAmount(row.balance));
+          const absoluteAmount = Math.abs(parseAmount(row.balance));
 
           if (accountName.includes("income")) {
             this.incomeThisMonth = absoluteAmount;
@@ -827,29 +828,6 @@ export default class Ledger extends GObject.Object {
   // Private helper functions --------------------------------------------------
 
   /**
-   * Parses a monetary amount string into a numeric value.
-   * Handles various currency symbols and formatting.
-   *
-   * @param amountStr - String representation of monetary amount (e.g., "$1,234.56", "€500.00")
-   * @returns Numeric value of the amount, or 0 if parsing fails
-   */
-  parseAmount(amountStr: string): number {
-    if (!amountStr || typeof amountStr !== "string") {
-      return 0;
-    }
-
-    const cleaned = amountStr.replace(/[^0-9.-]/g, "");
-    const parsed = Number(cleaned);
-
-    if (isNaN(parsed)) {
-      console.warn(`Failed to parse amount: "${amountStr}"`);
-      return 0;
-    }
-
-    return parsed;
-  }
-
-  /**
    * Parses CSV output from hledger balance command into structured data.
    *
    * @param csvOutput - Raw CSV string from hledger balance command
@@ -873,61 +851,6 @@ export default class Ledger extends GObject.Object {
         account: fields[0],
         balance: fields[1],
       };
-    });
-  }
-
-  /**
-   * Parses CSV output from hledger daily balance sheet command.
-   * The --daily flag outputs a single row with all daily balances as comma-separated values.
-   *
-   * @param csvOutput - Single CSV row with daily balance amounts
-   * @returns Array of numeric balance values for each day
-   * @throws {Error} When CSV output is invalid or malformed
-   *
-   * @private
-   *
-   * @example
-   * Input: `"Net:","$4199.26","$4087.17","$1454.35"`
-   * Output: [4199.26, 4087.17, 1454.35]
-   */
-  #parseBalanceTrendCSV(csvOutput: string): Array<number> {
-    if (!csvOutput || typeof csvOutput !== "string") {
-      throw new Error(
-        "Invalid balance trend CSV output: expected non-empty string",
-      );
-    }
-
-    const trimmed = csvOutput.trim();
-    if (trimmed === "") {
-      console.warn("Empty balance trend data");
-      return [];
-    }
-
-    // Split by comma and remove quotes
-    const fields = trimmed
-      .split(",")
-      .map((field) => field.replaceAll('"', "").trim());
-
-    if (fields.length < 2) {
-      throw new Error(
-        `Invalid balance trend format: expected at least 2 fields, got ${fields.length}`,
-      );
-    }
-
-    // First field is "Net:" label; rest are daily balance amounts
-    const balanceFields = fields.slice(1);
-
-    return balanceFields.map((amountStr, index) => {
-      const balance = this.parseAmount(amountStr);
-
-      if (isNaN(balance)) {
-        console.warn(
-          `Invalid balance amount at position ${index + 1}: "${amountStr}"`,
-        );
-        return 0;
-      }
-
-      return balance;
     });
   }
 
@@ -1048,7 +971,7 @@ export default class Ledger extends GObject.Object {
         return; // Skip this line
       }
 
-      const amount = this.parseAmount(amountStr);
+      const amount = parseAmount(amountStr);
 
       // Initialize account array if it doesn't exist
       if (!groupedByAccount[account]) {
@@ -1115,7 +1038,7 @@ export default class Ledger extends GObject.Object {
         const category = pathParts.length > 1 ? pathParts[1] : pathParts[0];
 
         // Parse the amount
-        const amount = this.parseAmount(amountStr);
+        const amount = parseAmount(amountStr);
 
         if (!category) {
           console.warn(
