@@ -28,7 +28,9 @@ import {
   CategorySpending,
   HLedgerRegisterFields,
 } from "./Types";
-import { parseBalanceCSV, parseBalanceTrendCSV } from "./Parsing";
+
+import LedgerCSVParser from "./Parsing";
+
 import { parseAmount } from "./Utils";
 
 /*****************************************************************************
@@ -277,7 +279,7 @@ export default class Ledger extends GObject.Object {
       execAsync(`bash -c "${cmd} | tail -n 1 | tee ${BALANCE_TREND_CACHEFILE}"`)
         .then((out) => {
           try {
-            this.balancesOverTime = parseBalanceTrendCSV(out);
+            this.balancesOverTime = LedgerCSVParser.balanceTrend(out);
             log(
               "ledgerService",
               `Loaded ${this.balancesOverTime.length} daily balance data points`,
@@ -302,7 +304,7 @@ export default class Ledger extends GObject.Object {
       execAsync(cmd)
         .then((out) => {
           try {
-            this.balancesOverTime = parseBalanceTrendCSV(out);
+            this.balancesOverTime = LedgerCSVParser.balanceTrend(out);
             log(
               "ledgerService",
               `Loaded ${this.balancesOverTime.length} cached balance data points`,
@@ -380,7 +382,7 @@ export default class Ledger extends GObject.Object {
           const accountConfig = ledgerConfig.accountList[i];
 
           try {
-            const balanceRows = parseBalanceCSV(results[i]);
+            const balanceRows = LedgerCSVParser.balance(results[i]);
 
             if (balanceRows.length === 0) {
               console.warn(
@@ -470,7 +472,7 @@ export default class Ledger extends GObject.Object {
         if (!out) return;
 
         try {
-          const balanceRows = parseBalanceCSV(out);
+          const balanceRows = LedgerCSVParser.balance(out);
 
           if (balanceRows.length === 0) {
             throw new Error("No balance sheet data returned from hledger");
@@ -530,7 +532,7 @@ export default class Ledger extends GObject.Object {
 
     execAsync(`bash -c '${cmd}' | tail -n -2`).then((out) => {
       try {
-        const balanceRows = parseBalanceCSV(out);
+        const balanceRows = LedgerCSVParser.balance(out);
 
         balanceRows.forEach((row) => {
           const accountName = row.account.toLowerCase();
@@ -590,7 +592,7 @@ export default class Ledger extends GObject.Object {
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
         try {
-          this.debtItems = this.#parseDebtsLiabilitiesCSV(out);
+          this.debtItems = LedgerCSVParser.debtsLiabilities(out);
         } catch (parseError) {
           console.error(`Failed to parse debts/liabilities data:`, parseError);
           console.error(`Raw hledger output:`, out);
@@ -652,7 +654,7 @@ export default class Ledger extends GObject.Object {
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
         try {
-          this.monthlyCategorySpending = this.#parseCategorySpendingCSV(out);
+          this.monthlyCategorySpending = LedgerCSVParser.categorySpending(out);
           // this.notify("monthly-category-spending");
         } catch (parseError) {
           console.error(`Failed to parse category spending data:`, parseError);
@@ -700,7 +702,7 @@ export default class Ledger extends GObject.Object {
         if (!out) return;
 
         try {
-          this.transactions = this.#parseRegisterTransactionsCSV(out);
+          this.transactions = LedgerCSVParser.registerTransactions(out);
           log(
             "ledgerService",
             `Loaded ${this.transactions.length} recent transactions`,
@@ -826,205 +828,4 @@ export default class Ledger extends GObject.Object {
   };
 
   // Private helper functions --------------------------------------------------
-
-  /**
-   * Parses CSV output from hledger register command into TransactionData objects.
-   * Maps CSV fields using the HLedgerRegCSV enum to proper object properties.
-   *
-   * @param csvOutput - Raw CSV string from hledger register command
-   * @returns Array of parsed transaction objects
-   * @throws {Error} When CSV output is invalid or malformed
-   *
-   * @private
-   *
-   * @example
-   * Input CSV row: `"1","2024-01-15","","Store","Expenses:Food","$45.67","$45.67"`
-   * Output object: `{ txnidx: "1", date: "2024-01-15", desc: "Store", ... }`
-   */
-  #parseRegisterTransactionsCSV(csvOutput: string): Array<TransactionData> {
-    if (!csvOutput || typeof csvOutput !== "string") {
-      throw new Error(
-        "Invalid transactions CSV output: expected non-empty string",
-      );
-    }
-
-    const lines = csvOutput.replaceAll('"', "").split("\n");
-
-    // Remove header row and filter out empty lines
-    const dataLines = lines.slice(1).filter((line) => line.trim() !== "");
-
-    if (dataLines.length === 0) {
-      console.warn("No transaction data found");
-      return [];
-    }
-
-    return dataLines.map((line, index) => {
-      const fields = line.split(",");
-
-      // Validate we have enough fields for a complete transaction
-      if (fields.length != HLedgerRegisterFields.LENGTH) {
-        // Divide by 2 because enum has numeric keys too
-        console.warn(
-          `Invalid transaction CSV row at line ${index + 2}: insufficient fields in "${line}"`,
-        );
-
-        // Return a minimal valid transaction object
-        return {
-          txnidx: "",
-          date: "",
-          code: "",
-          desc: "Invalid transaction",
-          account: "",
-          amount: "$0.00",
-          total: "$0.00",
-        } as TransactionData;
-      }
-
-      // Map CSV fields to object properties using the enum
-      const transaction: TransactionData = {
-        txnidx: fields[HLedgerRegisterFields.txnidx] || "",
-        date: fields[HLedgerRegisterFields.date] || "",
-        code: fields[HLedgerRegisterFields.code] || "",
-        desc: fields[HLedgerRegisterFields.desc] || "",
-        account: fields[HLedgerRegisterFields.account] || "",
-        amount: fields[HLedgerRegisterFields.amount] || "$0.00",
-        total: fields[HLedgerRegisterFields.total] || "$0.00",
-      };
-
-      return transaction;
-    });
-  }
-
-  /**
-   * Parses CSV output from hledger register command for debts and liabilities.
-   * Groups transactions by account and creates DebtItem objects.
-   *
-   * @param csvOutput - Raw CSV string from hledger register --pending command
-   * @returns Object with accounts as keys and arrays of debt/liability transactions as values
-   * @throws {Error} When CSV output is invalid or malformed
-   *
-   * @private
-   */
-  #parseDebtsLiabilitiesCSV(csvOutput: string): Record<string, DebtItem[]> {
-    if (!csvOutput || typeof csvOutput !== "string") {
-      throw new Error(
-        "Invalid debts/liabilities CSV output: expected non-empty string",
-      );
-    }
-
-    const lines = csvOutput.replaceAll('"', "").split("\n");
-    const dataLines = lines.slice(1).filter((line) => line.trim() !== "");
-
-    if (dataLines.length === 0) {
-      console.info("No pending debts or liabilities found");
-      return {};
-    }
-
-    const groupedByAccount: Record<string, DebtItem[]> = {};
-
-    dataLines.forEach((line, index) => {
-      const fields = line.split(",");
-
-      if (fields.length != HLedgerRegisterFields.LENGTH) {
-        console.warn(
-          `Invalid debt/liability CSV row at line ${index + 2}: insufficient fields in "${line}"`,
-        );
-        return;
-      }
-
-      const account = fields[HLedgerRegisterFields.account];
-      const description = fields[HLedgerRegisterFields.desc];
-      const amountStr = fields[HLedgerRegisterFields.amount];
-
-      // Validate required fields
-      if (!account || !description || !amountStr) {
-        console.warn(
-          `Missing required fields in debt/liability row at line ${index + 2}: "${line}"`,
-        );
-        return; // Skip this line
-      }
-
-      const amount = parseAmount(amountStr);
-
-      // Initialize account array if it doesn't exist
-      if (!groupedByAccount[account]) {
-        groupedByAccount[account] = [];
-      }
-
-      // Add transaction to the account group
-      groupedByAccount[account].push({
-        desc: description,
-        total: amount,
-      });
-    });
-
-    return groupedByAccount;
-  }
-
-  /**
-   * Parses CSV output from hledger balance command for category spending data.
-   * Extracts category names from account paths and converts amounts to numbers.
-   *
-   * @param csvOutput - Raw CSV string from hledger balance Expenses command
-   * @returns Array of category spending objects
-   * @throws {Error} When CSV output is invalid or malformed
-   *
-   * @private
-   *
-   * @example
-   * Input: `"Expenses:Food","$450.00"`
-   * Output: `{ category: "Food", total: 450.00 }`
-   */
-  #parseCategorySpendingCSV(csvOutput: string): Array<CategorySpending> {
-    if (!csvOutput || typeof csvOutput !== "string") {
-      throw new Error(
-        "Invalid category spending CSV output: expected non-empty string",
-      );
-    }
-
-    const lines = csvOutput.replaceAll('"', "").split("\n");
-
-    // Remove header row and filter out empty lines
-    const dataLines = lines.slice(1).filter((line) => line.trim() !== "");
-
-    if (dataLines.length === 0) {
-      console.info("No category spending data found for current month");
-      return [];
-    }
-
-    return dataLines
-      .map((line, index) => {
-        const fields = line.split(",");
-
-        if (fields.length < 2) {
-          console.warn(
-            `Invalid category spending CSV row at line ${index + 2}: insufficient fields in "${line}"`,
-          );
-          return { category: "Unknown", total: 0 };
-        }
-
-        const accountPath = fields[0];
-        const amountStr = fields[1];
-
-        // Extract category name from account path (e.g., "Expenses:Food" → "Food")
-        const pathParts = accountPath.split(":");
-        const category = pathParts.length > 1 ? pathParts[1] : pathParts[0];
-
-        // Parse the amount
-        const amount = parseAmount(amountStr);
-
-        if (!category) {
-          console.warn(
-            `Could not extract category name from account path: "${accountPath}"`,
-          );
-          return { category: "Unknown", total: amount };
-        }
-
-        return {
-          category: category,
-          total: amount,
-        };
-      })
-      .filter((item) => item.total > 0); // Filter out zero or negative amounts
-  }
 }
