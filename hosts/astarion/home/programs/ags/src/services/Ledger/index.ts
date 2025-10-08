@@ -106,7 +106,7 @@ export default class Ledger extends GObject.Object {
 
   // Properties ----------------------------------------------------------------
   @property(Object)
-  declare balancesOverTime: Array<Number>;
+  declare balancesOverTime: Number[];
 
   @property(Object)
   declare accountData: Array<Account>;
@@ -192,80 +192,6 @@ export default class Ledger extends GObject.Object {
     }
   }
 
-  /**
-   * Initialize balance trend data over time using hledger's daily balance sheet output.
-   * Uses a single hledger command with --daily flag to get daily net worth snapshots.
-   *
-   * The command outputs one CSV row per day with the net worth for that date.
-   * Results are cached to file avoid expensive recalculation.
-   *
-   * @private
-   * @returns {void}
-   */
-  #initBalanceTrends(): void {
-    log("ledgerService", "#initBalanceTrends");
-
-    /**
-     * Fetch all balance trends from hledger using the --daily flag.
-     * hledger bs -X '$' --infer-market-prices --depth O --output-format csv --daily
-     */
-    const fetchAllFromLedger = () => {
-      const cmd = `${this.hledgerCmd()} bs -X '$' --infer-market-prices --depth 0 --output-format csv --daily`;
-
-      execAsync(`bash -c "${cmd} | tail -n 1 | tee ${BALANCE_TREND_CACHEFILE}"`)
-        .then((out) => {
-          try {
-            this.balancesOverTime = LedgerCSVParser.balanceTrend(out);
-            log(
-              "ledgerService",
-              `Loaded ${this.balancesOverTime.length} daily balance data points`,
-            );
-          } catch (parseError) {
-            console.error(`Failed to parse balance trend data:`, parseError);
-            this.balancesOverTime = [];
-          }
-        })
-        .catch((err) => {
-          console.error(`Failed to fetch balance trends:`, err);
-          this.balancesOverTime = [];
-        });
-    };
-
-    /**
-     * Load balance trends from cached file.
-     */
-    const fetchFromFile = () => {
-      const cmd = `cat ${BALANCE_TREND_CACHEFILE}`;
-
-      execAsync(cmd)
-        .then((out) => {
-          try {
-            this.balancesOverTime = LedgerCSVParser.balanceTrend(out);
-            log(
-              "ledgerService",
-              `Loaded ${this.balancesOverTime.length} cached balance data points`,
-            );
-          } catch (parseError) {
-            console.error(`Failed to parse cached balance data:`, parseError);
-            // If cache is corrupted, fetch fresh data
-            fetchAllFromLedger();
-          }
-        })
-        .catch((err) => {
-          console.warn(`Cache file read failed, fetching fresh data:`, err);
-          fetchAllFromLedger();
-        });
-    };
-
-    // Check if cache file exists
-    const cfile = Gio.File.new_for_path(BALANCE_TREND_CACHEFILE);
-    if (!cfile.query_exists(null)) {
-      fetchAllFromLedger();
-    } else {
-      fetchFromFile();
-    }
-  }
-
   async #initAccountData() {
     this.accountData = await LedgerQuery.accountData(
       this.hledgerCmd(),
@@ -293,6 +219,13 @@ export default class Ledger extends GObject.Object {
   async #initCategorySpending() {
     this.monthlyCategorySpending = await LedgerQuery.categorySpending(
       this.hledgerCmd(),
+    );
+  }
+
+  async #initBalanceTrends() {
+    this.balancesOverTime = await LedgerQuery.balanceTrends(
+      this.hledgerCmd(),
+      BALANCE_TREND_CACHEFILE,
     );
   }
 
