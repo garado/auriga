@@ -250,7 +250,7 @@ const debtsLiabilities = (csvOutput: string): Record<string, DebtItem[]> => {
  * Input: `"Expenses:Food","$450.00"`
  * Output: `{ category: "Food", total: 450.00 }`
  */
-const categorySpending = (csvOutput: string): Array<CategorySpending> => {
+const categorySpending = (csvOutput: string): CategorySpending[] => {
   if (!csvOutput || typeof csvOutput !== "string") {
     throw new Error(
       "Invalid category spending CSV output: expected non-empty string",

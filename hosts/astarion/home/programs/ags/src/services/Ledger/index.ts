@@ -118,7 +118,7 @@ export default class Ledger extends GObject.Object {
   declare debtItems: Record<string, Array<DebtItem>>;
 
   @property(Object)
-  declare monthlyCategorySpending: Array<CategorySpending>;
+  declare monthlyCategorySpending: CategorySpending[];
 
   @property(Number)
   declare incomeThisMonth: Number;
@@ -290,65 +290,10 @@ export default class Ledger extends GObject.Object {
     this.debtItems = await LedgerQuery.debtsLiabilities(this.hledgerCmd());
   }
 
-  /**
-   * Load spending breakdown by category for the current month.
-   * Fetches expense data at depth 2 to get subcategories (e.g., "Food", "Transport")
-   * and calculates totals for pie chart visualization.
-   *
-   * Uses --depth 2 to get meaningful subcategories without too much detail,
-   * and --no-total to exclude the summary total row.
-   *
-   * @private
-   * @returns {void}
-   *
-   * @example
-   * Raw hledger balance output:
-   * ```
-   * "account","balance"
-   * "Expenses:Food","$450.00"
-   * "Expenses:Transport","$120.00"
-   * "Expenses:Entertainment","$80.00"
-   * ```
-   *
-   * Gets transformed into:
-   * ```typescript
-   * [
-   *   { category: "Food", total: 450.00 },
-   *   { category: "Transport", total: 120.00 },
-   *   { category: "Entertainment", total: 80.00 }
-   * ]
-   * ```
-   */
-  #initCategorySpending(): void {
-    log("ledgerService", `#initCategorySpending`);
-
-    // Calculate date 30 days ago
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    // 30 days ago in YYYY-MM-DD format
-    const startDate = thirtyDaysAgo.toISOString().slice(0, 10);
-
-    // hledger bal Expenses --no-total --depth 2 --output-format csv --begin monthStart
-    const cmd = `${this.hledgerCmd()} bal Expenses --begin ${startDate} --no-total --depth 2 ${CSV}`;
-
-    execAsync(`bash -c '${cmd}'`)
-      .then((out) => {
-        try {
-          this.monthlyCategorySpending = LedgerCSVParser.categorySpending(out);
-          // this.notify("monthly-category-spending");
-        } catch (parseError) {
-          console.error(`Failed to parse category spending data:`, parseError);
-          console.error(`Raw hledger output:`, out);
-          this.monthlyCategorySpending = [];
-          // this.notify("monthly-category-spending");
-        }
-      })
-      .catch((err) => {
-        console.error(`Failed to fetch category spending:`, err);
-        this.monthlyCategorySpending = [];
-        // this.notify("monthly-category-spending");
-      });
+  async #initCategorySpending() {
+    this.monthlyCategorySpending = await LedgerQuery.categorySpending(
+      this.hledgerCmd(),
+    );
   }
 
   /**
