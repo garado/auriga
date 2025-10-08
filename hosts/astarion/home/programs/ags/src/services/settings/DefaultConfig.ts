@@ -153,4 +153,10 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
     apiToken: "",
     userKey: "",
   },
+
+  weather: {
+    apiKey: "",
+    lat: 37.7749,
+    lon: -122.4194,
+  },
 };

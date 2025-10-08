@@ -118,6 +118,12 @@ export interface SystemConfig {
     apiToken: string;
     userKey: string;
   };
+
+  weather: {
+    apiKey: string;
+    lat: number;
+    lon: number;
+  };
 }
 
 /*****************************************************************************
