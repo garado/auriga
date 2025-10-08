@@ -17,7 +17,7 @@ import Gio from "gi://Gio";
 import { log } from "@/globals.ts";
 
 import { Binding } from "astal";
-import SettingsManager from "./settings";
+import SettingsManager from "../settings";
 
 /*****************************************************************************
  * Module-level variables

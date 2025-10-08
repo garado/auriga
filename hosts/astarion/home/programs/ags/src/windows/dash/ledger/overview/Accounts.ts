@@ -12,7 +12,7 @@
 
 import { Gtk, Widget } from "astal/gtk4";
 import { bind, Binding } from "astal";
-import Ledger, { Account } from "@/services/Ledger.ts";
+import Ledger, { Account } from "@/services/Ledger";
 
 /*****************************************************************************
  * Module-level variables
