@@ -158,7 +158,6 @@ const stopMetronome = (): void => {
  */
 const handleMetronomeError = (): void => {
   stopMetronome();
-  // Could show user notification here in the future
 };
 
 /**
@@ -198,7 +197,7 @@ const adjustBpm = (bpmEntry: any, adjustment: number): void => {
  * Creates the BPM input entry widget.
  * @returns Widget for BPM input
  */
-const createBpmEntry = () => {
+const BpmEntry = () => {
   const bpmEntry = Widget.Entry({
     cssClasses: [CSS_CLASSES.bpmEntry],
     text: METR_CFG.defaultBpm.toString(),
@@ -237,7 +236,7 @@ const createBpmEntry = () => {
  * @param bpmEntry - Reference to BPM entry for getting current value
  * @returns Widget for play/pause control
  */
-const createPlayPauseButton = (bpmEntry: any) => {
+const PlayPauseButton = (bpmEntry: any) => {
   const playPauseButton = Widget.Image({
     cssClasses: [CSS_CLASSES.bpmControl],
     iconName: ICONS.play,
@@ -271,7 +270,7 @@ const createPlayPauseButton = (bpmEntry: any) => {
  * @param bpmEntry - Reference to BPM entry to update
  * @returns Widget for increasing BPM
  */
-const createIncreaseButton = (bpmEntry: any) =>
+const IncreaseButton = (bpmEntry: any) =>
   Widget.Image({
     cssClasses: [CSS_CLASSES.bpmControl],
     iconName: ICONS.increase,
@@ -287,7 +286,7 @@ const createIncreaseButton = (bpmEntry: any) =>
  * @param bpmEntry - Reference to BPM entry to update
  * @returns Widget for decreasing BPM
  */
-const createDecreaseButton = (bpmEntry: any) =>
+const DecreaseButton = (bpmEntry: any) =>
   Widget.Image({
     cssClasses: [CSS_CLASSES.bpmControl],
     iconName: ICONS.decrease,
@@ -302,7 +301,7 @@ const createDecreaseButton = (bpmEntry: any) =>
  * Creates the header widget for the metronome.
  * @returns Widget containing the metronome title
  */
-const createMetronomeHeader = () =>
+const MetronomeHeader = () =>
   Widget.Label({
     cssClasses: [CSS_CLASSES.widgetHeader],
     label: "Metronome",
@@ -313,10 +312,10 @@ const createMetronomeHeader = () =>
  * @param bpmEntry - Reference to BPM entry
  * @returns Widget containing all control buttons
  */
-const createControlsContainer = (bpmEntry: any) => {
-  const decreaseButton = createDecreaseButton(bpmEntry);
-  const playPauseButton = createPlayPauseButton(bpmEntry);
-  const increaseButton = createIncreaseButton(bpmEntry);
+const ControlsContainer = (bpmEntry: any) => {
+  const decreaseButton = DecreaseButton(bpmEntry);
+  const playPauseButton = PlayPauseButton(bpmEntry);
+  const increaseButton = IncreaseButton(bpmEntry);
 
   return Widget.Box({
     cssClasses: [CSS_CLASSES.controlsContainer],
@@ -338,9 +337,9 @@ const createControlsContainer = (bpmEntry: any) => {
  * @returns Widget containing the complete metronome interface
  */
 export const Metronome = () => {
-  const bpmEntry = createBpmEntry();
-  const header = createMetronomeHeader();
-  const controlsContainer = createControlsContainer(bpmEntry);
+  const bpmEntry = BpmEntry();
+  const header = MetronomeHeader();
+  const controlsContainer = ControlsContainer(bpmEntry);
 
   return Widget.Box({
     cssClasses: [CSS_CLASSES.metronome],
