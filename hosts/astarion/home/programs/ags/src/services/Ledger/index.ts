@@ -28,7 +28,7 @@ import {
   CategorySpending,
   HLedgerRegisterFields,
 } from "./Types";
-import { parseBalanceTrendCSV } from "./Parsing";
+import { parseBalanceCSV, parseBalanceTrendCSV } from "./Parsing";
 import { parseAmount } from "./Utils";
 
 /*****************************************************************************
@@ -380,7 +380,7 @@ export default class Ledger extends GObject.Object {
           const accountConfig = ledgerConfig.accountList[i];
 
           try {
-            const balanceRows = this.parseBalanceCSV(results[i]);
+            const balanceRows = parseBalanceCSV(results[i]);
 
             if (balanceRows.length === 0) {
               console.warn(
@@ -470,7 +470,7 @@ export default class Ledger extends GObject.Object {
         if (!out) return;
 
         try {
-          const balanceRows = this.parseBalanceCSV(out);
+          const balanceRows = parseBalanceCSV(out);
 
           if (balanceRows.length === 0) {
             throw new Error("No balance sheet data returned from hledger");
@@ -530,7 +530,7 @@ export default class Ledger extends GObject.Object {
 
     execAsync(`bash -c '${cmd}' | tail -n -2`).then((out) => {
       try {
-        const balanceRows = this.parseBalanceCSV(out);
+        const balanceRows = parseBalanceCSV(out);
 
         balanceRows.forEach((row) => {
           const accountName = row.account.toLowerCase();
@@ -826,33 +826,6 @@ export default class Ledger extends GObject.Object {
   };
 
   // Private helper functions --------------------------------------------------
-
-  /**
-   * Parses CSV output from hledger balance command into structured data.
-   *
-   * @param csvOutput - Raw CSV string from hledger balance command
-   * @returns Array of parsed balance rows
-   * @throws {Error} When CSV output is invalid or malformed
-   */
-  parseBalanceCSV(csvOutput: string): Array<HLedgerBalanceRow> {
-    if (!csvOutput || typeof csvOutput !== "string") {
-      throw new Error("Invalid CSV output");
-    }
-
-    const lines = csvOutput.replaceAll('"', "").split("\n");
-    const dataLines = lines.slice(1).filter((line) => line.trim() !== ""); // Skip header, remove empty lines
-
-    return dataLines.map((line) => {
-      const fields = line.split(",");
-      if (fields.length < 2) {
-        throw new Error(`Invalid balance CSV row: ${line}`);
-      }
-      return {
-        account: fields[0],
-        balance: fields[1],
-      };
-    });
-  }
 
   /**
    * Parses CSV output from hledger register command into TransactionData objects.

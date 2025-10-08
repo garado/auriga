@@ -9,6 +9,7 @@
  * Imports
  *****************************************************************************/
 
+import { HLedgerBalanceRow } from "./Types";
 import { parseAmount } from "./Utils";
 
 /*****************************************************************************
@@ -65,5 +66,34 @@ export const parseBalanceTrendCSV = (csvOutput: string): Array<number> => {
     }
 
     return balance;
+  });
+};
+
+/**
+ * Parses CSV output from hledger balance command into structured data.
+ *
+ * @param csvOutput - Raw CSV string from hledger balance command
+ * @returns Array of parsed balance rows
+ * @throws {Error} When CSV output is invalid or malformed
+ */
+export const parseBalanceCSV = (
+  csvOutput: string,
+): Array<HLedgerBalanceRow> => {
+  if (!csvOutput || typeof csvOutput !== "string") {
+    throw new Error("Invalid CSV output");
+  }
+
+  const lines = csvOutput.replaceAll('"', "").split("\n");
+  const dataLines = lines.slice(1).filter((line) => line.trim() !== ""); // Skip header, remove empty lines
+
+  return dataLines.map((line) => {
+    const fields = line.split(",");
+    if (fields.length < 2) {
+      throw new Error(`Invalid balance CSV row: ${line}`);
+    }
+    return {
+      account: fields[0],
+      balance: fields[1],
+    };
   });
 };
