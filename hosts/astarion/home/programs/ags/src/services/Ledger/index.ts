@@ -50,43 +50,6 @@ const INCLUDES = ledgerConfig.includes
  * Helper functions
  *****************************************************************************/
 
-const getLastNMonthsDays = (n: number) => {
-  const now = new Date();
-  const result = [];
-
-  for (let i = 0; i < n; i++) {
-    let month = now.getMonth() - i;
-
-    const year = month < 1 ? now.getFullYear() - 1 : now.getFullYear();
-
-    month = month < 1 ? 12 + month : month;
-
-    const d = new Date(year, month, 1);
-
-    const firstDay =
-      `${d.getFullYear()}` +
-      "-" +
-      `${d.getMonth() + 1}`.padStart(2, "0") +
-      "-" +
-      `${d.getDate()}`.padStart(2, "0");
-
-    d.setMonth(d.getMonth() + 1);
-
-    d.setDate(0); // Last day of previous month
-
-    const lastDay =
-      `${d.getFullYear()}` +
-      "-" +
-      `${d.getMonth() + 1}`.padStart(2, "0") +
-      "-" +
-      `${d.getDate()}`.padStart(2, "0");
-
-    result.push({ first: firstDay, last: lastDay });
-  }
-
-  return result.reverse();
-};
-
 /*****************************************************************************
  * Class definition
  *****************************************************************************/
@@ -132,7 +95,7 @@ export default class Ledger extends GObject.Object {
   @property(Object)
   declare monthlySpendingByCategory: Object;
 
-  // Private main functions ----------------------------------------------------
+  // Private functions ---------------------------------------------------------
   constructor() {
     super();
 
@@ -149,9 +112,6 @@ export default class Ledger extends GObject.Object {
       subtotal: [0],
     };
 
-    // Check if hledger files are even there
-    // If not, skip all of init
-
     this.initAll();
   }
 
@@ -159,6 +119,7 @@ export default class Ledger extends GObject.Object {
    * Initialize the service's data.
    */
   async initAll() {
+    // Check if hledger files are even there. If not, skip all of init
     if (!(await this.#testIncludeFilesExist())) {
       console.warn(
         "Could not find hledger files; aborting hledger service init",
@@ -229,6 +190,12 @@ export default class Ledger extends GObject.Object {
     );
   }
 
+  async #initSpendingAnalysis() {
+    this.monthlySpendingByCategory = await LedgerQuery.spendingAnalysis(
+      this.hledgerCmd(),
+    );
+  }
+
   /**
    * Load the most recent income and expense transactions.
    * Fetches the last 20 transactions from Income and Expenses accounts
@@ -277,117 +244,4 @@ export default class Ledger extends GObject.Object {
         this.transactions = [];
       });
   }
-
-  #initSpendingAnalysis = () => {
-    const monthStrings = getLastNMonthsDays(3);
-
-    const promises = monthStrings.map(async (monthStr) => {
-      return this.#calculateMonthlySpend(monthStr.first, monthStr.last);
-    });
-
-    Promise.all(promises)
-      .then((result) => {
-        const spendingByMonth = {} as MonthlySpending;
-
-        for (let i = 0; i < monthStrings.length; i++) {
-          spendingByMonth[monthStrings[i].first] = result[i]!;
-        }
-
-        this.monthlySpendingByCategory =
-          this.#aggregateMonthlySpendingByCategory(spendingByMonth);
-      })
-      .catch((err) => print(`initSpendingAnalysis: ${err}`));
-  };
-
-  /**
-   * I have to be honest this was vibe coded
-   */
-  #aggregateMonthlySpendingByCategory = (
-    monthlyData: MonthlySpending,
-  ): CategorySpend => {
-    const months = Object.keys(monthlyData).sort(); // Ensure chronological order
-    const monthCount = months.length;
-
-    function mergeNodes(
-      category: string,
-      index: number,
-      node: SpendingNode,
-      result: CategorySpend,
-    ) {
-      if (node === undefined) return;
-
-      result.subtotal[index] = node.subtotal; // Set the correct month index
-
-      for (const subcategory in node.subcategories) {
-        if (!result.subcategories[subcategory]) {
-          result.subcategories[subcategory] = {
-            subtotal: new Array(monthCount).fill(0),
-            subcategories: {},
-          };
-        }
-
-        mergeNodes(
-          subcategory,
-          index,
-          node.subcategories[subcategory],
-          result.subcategories[subcategory],
-        );
-      }
-    }
-
-    const aggregated: CategorySpend = {
-      subtotal: new Array(monthCount).fill(0),
-      subcategories: {},
-    };
-
-    months.forEach((month, index) => {
-      const rootNode = monthlyData[month];
-      mergeNodes("root", index, rootNode, aggregated);
-    });
-
-    return aggregated;
-  };
-
-  /**
-   * Initialize monthly spending for a single month.
-   */
-  #calculateMonthlySpend = async (first: string, last: string) => {
-    const cmd = `hledger ${INCLUDES} -b ${first} -e ${last} bal ^Expenses ${CSV}`;
-
-    return execAsync(`bash -c '${cmd}'`)
-      .then((out) => {
-        const split = out.replaceAll('"', "").split("\n").slice(1);
-
-        let tmp = {} as CategorySpend;
-        let total = 0;
-
-        split.map((line: string) => {
-          const [rawCategory, rawAmount] = line.split(",");
-          const category = rawCategory.replaceAll("Expenses:", "");
-          const amount = Number(rawAmount.replace(/[^0-9,.]/g, ""));
-
-          const categorySpend = LedgerUtils.stringToCategorySpend(
-            category,
-            amount,
-          );
-
-          if (rawCategory == "total") {
-            total = amount;
-          } else {
-            tmp = LedgerUtils.deepMergeCategories(tmp, categorySpend);
-          }
-        });
-
-        LedgerUtils.recursiveSubtotalSum(tmp);
-
-        tmp.subtotal = total;
-
-        return tmp;
-      })
-      .catch((err) =>
-        print(`calculateMonthlySpend (${first} - ${last}): ${err}`),
-      );
-  };
-
-  // Private helper functions --------------------------------------------------
 }
