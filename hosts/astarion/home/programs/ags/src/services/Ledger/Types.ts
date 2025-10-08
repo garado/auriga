@@ -28,8 +28,6 @@ export interface CategorySpend {
 // { "2025-01": CategorySpend, "2025-02": CategorySpend, ... }
 export type MonthlySpending = Record<string, CategorySpend>;
 
-export type CategoryTotals = Record<string, number[]>; // { "Food": [JanTotal, FebTotal, ...], "Transport": [...] }
-
 // REWRITTEN INTERFACES ----------------------------
 
 /**
