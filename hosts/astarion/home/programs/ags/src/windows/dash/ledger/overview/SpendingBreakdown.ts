@@ -14,7 +14,7 @@ import { Gtk, Widget } from "astal/gtk4";
 import { bind } from "astal";
 
 import PieChart from "@/components/PieChart.ts";
-import Ledger from "@/services/Ledger.ts";
+import Ledger from "@/services/Ledger";
 
 /*****************************************************************************
  * Module-level variables
@@ -70,7 +70,7 @@ const createChartContainer = () =>
     hpack: "center",
     vpack: "center",
     spacing: LAYOUT.chartContainerSpacing,
-    children: bind(ledgerService, "monthlyCategorySpending").as(
+    children: bind(ledgerService, "recentCategorySpending").as(
       (spendingBreakdown) => {
         if (spendingBreakdown === undefined) {
           // Return empty array when no data is available

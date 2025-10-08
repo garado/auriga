@@ -16,7 +16,7 @@ import { App } from "astal/gtk4";
 import { GObject, register, property } from "astal/gobject";
 import { exec, execAsync } from "astal/process";
 
-import { AccountConfig } from "../Ledger.ts";
+import { AccountConfig } from "@/services/Ledger";
 import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
 import { fileWrite } from "@/utils/File.ts";
 import { Location } from "../Transit.ts";

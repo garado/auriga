@@ -15,7 +15,7 @@ import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 import Pango from "gi://Pango?version=1.0";
 
-import Ledger, { DebtItem } from "@/services/Ledger.ts";
+import Ledger, { DebtItem } from "@/services/Ledger";
 
 /*****************************************************************************
  * Module-level variables
@@ -230,7 +230,7 @@ const createTransactionsListSection = (debtItems: DebtItem[]) =>
  * @returns Widget containing complete debt information for the account
  */
 const createAccountDebtWidget = (accountName: string) => {
-  const debtItems = ledgerService.debtItems[accountName];
+  const debtItems = ledgerService.debtsAndLoans[accountName];
   const totalAmount = calculateTotalDebtAmount(debtItems);
   const displayInfo = getDebtDisplayInfo(totalAmount);
 
@@ -256,7 +256,7 @@ const createDebtsContainer = () =>
     hexpand: false,
     vertical: true,
     spacing: LAYOUT.debtSpacing,
-    children: bind(ledgerService, "debtItems").as((debtItemsMap) =>
+    children: bind(ledgerService, "debtsAndLoans").as((debtItemsMap) =>
       Object.keys(debtItemsMap).map(createAccountDebtWidget),
     ),
   });

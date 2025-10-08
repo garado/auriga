@@ -33,7 +33,7 @@ const logFlags: { [key: string]: boolean } = {
   goalService: false,
   habitifyService: false,
   lifeService: false,
-  ledgerService: false,
+  ledgerService: true,
   transitService: true,
   locationService: true,
 

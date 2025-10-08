@@ -12,7 +12,7 @@
 
 import { Gtk, Widget } from "astal/gtk4";
 import { bind, Binding } from "astal";
-import Ledger, { Account } from "@/services/Ledger.ts";
+import Ledger, { Account } from "@/services/Ledger";
 
 /*****************************************************************************
  * Module-level variables
@@ -42,11 +42,11 @@ const SUMMARY_ACCOUNTS = {
   },
   monthlyIncome: {
     displayName: "Income (last 30 days)",
-    dataBinding: "incomeThisMonth" as const,
+    dataBinding: "recentIncome" as const,
   },
   monthlyExpenses: {
     displayName: "Expenses (last 30 days)",
-    dataBinding: "expensesThisMonth" as const,
+    dataBinding: "recentExpenses" as const,
   },
 } as const;
 
@@ -144,7 +144,7 @@ const createSummaryAccountWidget = (
  */
 const createUserAccountWidgets = () =>
   bind(ledgerService, "accountData").as((accounts) =>
-    accounts.map(createAccountWidget),
+    accounts?.map(createAccountWidget),
   );
 
 /**

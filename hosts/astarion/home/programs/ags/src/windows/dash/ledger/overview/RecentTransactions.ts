@@ -13,7 +13,7 @@
 import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 
-import Ledger, { TransactionData } from "@/services/Ledger.ts";
+import Ledger, { TransactionData } from "@/services/Ledger";
 
 /*****************************************************************************
  * Module-level variables
@@ -194,7 +194,7 @@ const createTransactionContainer = () =>
     vertical: true,
     homogeneous: true,
     spacing: LAYOUT.transactionSpacing,
-    children: bind(ledgerService, "transactions").as((transactions) => {
+    children: bind(ledgerService, "recentTransactions").as((transactions) => {
       if (transactions === null) {
         // TODO: Investigate why transactions can be null and handle appropriately
         return [];
