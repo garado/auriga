@@ -33,6 +33,15 @@ export type CategoryTotals = Record<string, number[]>; // { "Food": [JanTotal, F
 // REWRITTEN INTERFACES ----------------------------
 
 /**
+ * Represents cash flow (income and expenses).
+ * @interface
+ */
+export interface CashFlow {
+  income: number;
+  expenses: number;
+}
+
+/**
  * Represents spending data for a single category.
  * @interface
  */

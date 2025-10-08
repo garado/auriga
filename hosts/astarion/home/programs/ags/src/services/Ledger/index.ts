@@ -25,6 +25,7 @@ import {
   TransactionData,
   CategorySpending,
   MonthlySpending,
+  CashFlow,
 } from "./Types";
 
 import LedgerCSVParser from "./Parsing";
@@ -168,7 +169,7 @@ export default class Ledger extends GObject.Object {
 
     this.#initAccountData();
     this.#initNetWorth();
-    this.#initMonthlyTotals();
+    this.#initMonthlyCashFlow();
     this.#initDebtItems();
     this.#initCategorySpending();
     this.#initRecentTransactions();
@@ -276,50 +277,13 @@ export default class Ledger extends GObject.Object {
     this.netWorth = await LedgerQuery.netWorth(this.hledgerCmd());
   }
 
-  /**
-   * Initialize monthly income and expenses for the last 30 days.
-   *
-   * Uses hledger balance command with --depth 1 to get only top-level categories,
-   * filtered to the current month using --begin parameter.
-   *
-   * @private
-   * @returns {void}
-   */
-  #initMonthlyTotals(): void {
-    log("ledgerService", "#initMonthlyTotals");
+  async #initMonthlyCashFlow() {
+    const monthlyCashFlow: CashFlow = await LedgerQuery.monthlyCashFlow(
+      this.hledgerCmd(),
+    );
 
-    // Calculate date 30 days ago
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    // 30 days ago in YYYY-MM-DD format
-    const startDate = thirtyDaysAgo.toISOString().slice(0, 10);
-
-    // hledger bal ^Income ^Expenses --depth 1 -X '$' --infer-market-price --output-format csv --no-total -b ${startDate}
-    const cmd = `${this.hledgerCmd()} bal ^Income ^Expenses --depth 1 -X '$' --infer-market-price ${CSV} --no-total -b ${startDate}`;
-
-    execAsync(`bash -c '${cmd}' | tail -n -2`).then((out) => {
-      try {
-        const balanceRows = LedgerCSVParser.balance(out);
-
-        balanceRows.forEach((row) => {
-          const accountName = row.account.toLowerCase();
-          const absoluteAmount = Math.abs(LedgerUtils.parseAmount(row.balance));
-
-          if (accountName.includes("income")) {
-            this.incomeThisMonth = absoluteAmount;
-          } else if (accountName.includes("expenses")) {
-            this.expensesThisMonth = absoluteAmount;
-          }
-        });
-      } catch (error) {
-        console.error(`Failed to parse monthly income/expenses data:`, error);
-        console.error(`Raw hledger output:`, out);
-
-        this.incomeThisMonth = 0;
-        this.expensesThisMonth = 0;
-      }
-    });
+    this.incomeThisMonth = monthlyCashFlow.income;
+    this.expensesThisMonth = monthlyCashFlow.expenses;
   }
 
   /**
