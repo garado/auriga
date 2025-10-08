@@ -170,7 +170,7 @@ export default class Ledger extends GObject.Object {
     this.#initAccountData();
     this.#initNetWorth();
     this.#initMonthlyCashFlow();
-    this.#initDebtItems();
+    this.#initDebts();
     this.#initCategorySpending();
     this.#initRecentTransactions();
     this.#initBalanceTrends();
@@ -286,59 +286,8 @@ export default class Ledger extends GObject.Object {
     this.expensesThisMonth = monthlyCashFlow.expenses;
   }
 
-  /**
-   * Load pending debts and liabilities from uncleared transactions.
-   *
-   * This function is specific to a personal hledger workflow where:
-   * - Credit card liabilities are never marked as pending/cleared
-   * - Interpersonal debts (money owed to/from people) are marked as pending
-   * - When debts are paid back, they get cleared
-   *
-   * Only fetches pending (uncleared) transactions to show outstanding debts.
-   * Groups transactions by account to show who owes what.
-   *
-   * @private
-   * @returns {void}
-   *
-   * @example
-   * Raw hledger register output:
-   * ```
-   * "1","2024-01-15","","Lunch split","Liabilities:John","$15.00","$15.00"
-   * "2","2024-01-16","","Gas money","Reimbursements:Work","$25.00","$40.00"
-   * ```
-   *
-   * Gets grouped into:
-   * ```typescript
-   * {
-   *   "Liabilities:John": [{ desc: "Lunch split", total: 15.00 }],
-   *   "Reimbursements:Work": [{ desc: "Gas money", total: 25.00 }]
-   * }
-   * ```
-   */
-  #initDebtItems(): void {
-    log("ledgerService", "#initDebtItems");
-
-    // hledger register Reimbursements Liabilities --pending --output-format csv
-    const cmd = `${this.hledgerCmd()} register Reimbursements Liabilities --pending ${CSV}`;
-
-    execAsync(`bash -c '${cmd}'`)
-      .then((out) => {
-        try {
-          this.debtItems = LedgerCSVParser.debtsLiabilities(out);
-        } catch (parseError) {
-          console.error(`Failed to parse debts/liabilities data:`, parseError);
-          console.error(`Raw hledger output:`, out);
-
-          // Set empty object as fallback
-          this.debtItems = {};
-        }
-      })
-      .catch((err) => {
-        console.error(`Failed to fetch debts/liabilities:`, err);
-
-        // Set empty object as fallback to prevent UI crashes
-        this.debtItems = {};
-      });
+  async #initDebts() {
+    this.debtItems = await LedgerQuery.debtsLiabilities(this.hledgerCmd());
   }
 
   /**
