@@ -3,34 +3,24 @@
  * █▀█ █▄▄ ██▄ █▄▀ █▄█ ██▄ █▀▄
  *
  * Service for interfacing with hledger.
- * NOTE: This will be refactored as part of issue auriga-27
  */
 
 /*****************************************************************************
  * Imports
  *****************************************************************************/
 
-import { GObject, register, property, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
-import Gio from "gi://Gio";
-
-import { log } from "@/globals.ts";
-
+import { GObject, register, property, GLib } from "astal/gobject";
 import SettingsManager from "../settings";
+import LedgerQuery from "./queries";
 
 import {
   Account,
   DebtItem,
-  CategorySpend,
   TransactionData,
   CategorySpending,
-  MonthlySpending,
   CashFlow,
 } from "./Types";
-
-import LedgerCSVParser from "./Parsing";
-import LedgerUtils from "./Utils";
-import LedgerQuery from "./queries";
 
 /*****************************************************************************
  * Module-level variables
@@ -196,52 +186,7 @@ export default class Ledger extends GObject.Object {
     );
   }
 
-  /**
-   * Load the most recent income and expense transactions.
-   * Fetches the last 20 transactions from Income and Expenses accounts
-   * and parses them into structured TransactionData objects.
-   *
-   * Uses hledger register command to get detailed transaction history,
-   * limited to the most recent entries for performance.
-   *
-   * @private
-   * @returns {void}
-   *
-   * @example
-   * Raw hledger register output:
-   * ```
-   * "txnidx","date","code","desc","account","amount","total"
-   * "1","2024-01-15","","Grocery Store","Expenses:Food","$45.67","$45.67"
-   * "2","2024-01-16","","Salary","Income:Job","$-2000.00","$-1954.33"
-   * ```
-   *
-   * Gets parsed into TransactionData objects with proper field mapping.
-   */
-  #initRecentTransactions(): void {
-    log("ledgerService", "#initRecentTransactions");
-
-    // hledger reg ^Income ^Expenses --output-format csv
-    const cmd = `hledger ${INCLUDES} reg ^Income ^Expenses ${CSV}`;
-
-    execAsync(`bash -c '${cmd} | tail -n 20'`)
-      .then((out) => {
-        if (!out) return;
-
-        try {
-          this.transactions = LedgerCSVParser.registerTransactions(out);
-          log(
-            "ledgerService",
-            `Loaded ${this.transactions.length} recent transactions`,
-          );
-        } catch (parseError) {
-          console.error(`Failed to parse recent transactions:`, parseError);
-          console.error(`Raw hledger output:`, out);
-          this.transactions = [];
-        }
-      })
-      .catch((err) => {
-        console.error(`Failed to fetch recent transactions:`, err);
-        this.transactions = [];
-      });
+  async #initRecentTransactions() {
+    this.transactions = await LedgerQuery.recentTransactions(this.hledgerCmd());
   }
 }

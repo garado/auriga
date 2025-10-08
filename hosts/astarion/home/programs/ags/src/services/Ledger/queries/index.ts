@@ -4,6 +4,7 @@ import { categorySpending } from "./CategorySpending";
 import { debtsLiabilities } from "./DebtsLiabilities";
 import { monthlyCashFlow } from "./MonthlyTotals";
 import { netWorth } from "./netWorth";
+import { recentTransactions } from "./RecentTransactions";
 import { spendingAnalysis } from "./SpendingAnalysis";
 
 const LedgerQuery = {
@@ -14,6 +15,7 @@ const LedgerQuery = {
   categorySpending: categorySpending,
   balanceTrends: balanceTrends,
   spendingAnalysis: spendingAnalysis,
+  recentTransactions: recentTransactions,
 };
 
 export default LedgerQuery;
