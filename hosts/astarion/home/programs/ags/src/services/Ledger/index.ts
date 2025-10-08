@@ -272,74 +272,8 @@ export default class Ledger extends GObject.Object {
     );
   }
 
-  /**
-   * Calculate and update total net worth (assets minus liabilities).
-   * Uses hledger's balance sheet command to get the net position.
-   *
-   * The balance sheet command returns CSV with account categories and their totals,
-   * with the final row containing the net worth calculation.
-   *
-   * @private
-   * @returns {void}
-   *
-   * @example
-   * Raw hledger balance sheet output:
-   * ```
-   * "account","balance"
-   * "Assets","$50000.00"
-   * "Liabilities","$-10000.00"
-   * "Net:","$40000.00"
-   * ```
-   *
-   * The last row contains the net worth: $40,000
-   */
-  #initNetWorth(): void {
-    log("ledgerService", "#initNetWorth");
-
-    // Use balance sheet command:
-    // `hledger bs --depth 0 -X '$' --infer-market-prices --output-format csv`
-    // -X '$' converts all currencies to dollars; --infer-market-prices converts investments to dollars
-    const cmd = `${this.hledgerCmd()} bs --depth 0 -X '$' --infer-market-prices ${CSV}`;
-
-    execAsync(`bash -c '${cmd}'`)
-      .then((out) => {
-        if (!out) return;
-
-        try {
-          const balanceRows = LedgerCSVParser.balance(out);
-
-          if (balanceRows.length === 0) {
-            throw new Error("No balance sheet data returned from hledger");
-          }
-
-          // The net worth is in the last row
-          const netWorthRow = balanceRows[balanceRows.length - 1];
-          const netWorth = LedgerUtils.parseAmount(netWorthRow.balance);
-
-          if (isNaN(netWorth)) {
-            throw new Error(`Invalid net worth value: ${netWorthRow.balance}`);
-          }
-
-          this.netWorth = netWorth;
-          log("ledgerService", `Net worth updated: $${netWorth.toFixed(2)}`);
-        } catch (parseError) {
-          console.error(`Failed to parse net worth data:`, parseError);
-          console.error(`Raw hledger output:`, out);
-
-          // Keep previous value or set to 0 if first time
-          if (this.netWorth === undefined) {
-            this.netWorth = 0;
-          }
-        }
-      })
-      .catch((err) => {
-        console.error(`Failed to fetch net worth:`, err);
-
-        // Keep previous value or set to 0 if first time
-        if (this.netWorth === undefined) {
-          this.netWorth = 0;
-        }
-      });
+  async #initNetWorth() {
+    this.netWorth = await LedgerQuery.netWorth(this.hledgerCmd());
   }
 
   /**
