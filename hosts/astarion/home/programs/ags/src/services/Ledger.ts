@@ -332,6 +332,10 @@ export default class Ledger extends GObject.Object {
     this.#initSpendingAnalysis();
   }
 
+  hledgerCmd = () => {
+    return `hledger ${INCLUDES} `;
+  };
+
   async #testIncludeFilesExist(): Promise<boolean> {
     const cmd = `hledger files ${INCLUDES}`;
 
@@ -361,7 +365,7 @@ export default class Ledger extends GObject.Object {
      * hledger bs -X '$' --infer-market-prices --depth O --output-format csv --daily
      */
     const fetchAllFromLedger = () => {
-      const cmd = `hledger ${INCLUDES} bs -X '$' --infer-market-prices --depth 0 --output-format csv --daily`;
+      const cmd = `${this.hledgerCmd()} bs -X '$' --infer-market-prices --depth 0 --output-format csv --daily`;
 
       execAsync(`bash -c "${cmd} | tail -n 1 | tee ${BALANCE_TREND_CACHEFILE}"`)
         .then((out) => {
@@ -451,7 +455,7 @@ export default class Ledger extends GObject.Object {
     const commands = ledgerConfig.accountList.map(
       (accountData: AccountConfig) => {
         // use `--infer-market-prices -X '$'` to convert shares to $
-        return `hledger ${INCLUDES} balance "${accountData.accountName}" ${CSV} -X "$" --infer-market-prices`;
+        return `${this.hledgerCmd()} balance "${accountData.accountName}" ${CSV} -X "$" --infer-market-prices`;
       },
     );
 
@@ -552,7 +556,7 @@ export default class Ledger extends GObject.Object {
     // Use balance sheet command:
     // `hledger bs --depth 0 -X '$' --infer-market-prices --output-format csv`
     // -X '$' converts all currencies to dollars; --infer-market-prices converts investments to dollars
-    const cmd = `hledger ${INCLUDES} bs --depth 0 -X '$' --infer-market-prices ${CSV}`;
+    const cmd = `${this.hledgerCmd()} bs --depth 0 -X '$' --infer-market-prices ${CSV}`;
 
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
@@ -615,7 +619,7 @@ export default class Ledger extends GObject.Object {
     const startDate = thirtyDaysAgo.toISOString().slice(0, 10);
 
     // hledger bal ^Income ^Expenses --depth 1 -X '$' --infer-market-price --output-format csv --no-total -b ${startDate}
-    const cmd = `hledger ${INCLUDES} bal ^Income ^Expenses --depth 1 -X '$' --infer-market-price ${CSV} --no-total -b ${startDate}`;
+    const cmd = `${this.hledgerCmd()} bal ^Income ^Expenses --depth 1 -X '$' --infer-market-price ${CSV} --no-total -b ${startDate}`;
 
     execAsync(`bash -c '${cmd}' | tail -n -2`).then((out) => {
       try {
@@ -674,7 +678,7 @@ export default class Ledger extends GObject.Object {
     log("ledgerService", "#initDebtItems");
 
     // hledger register Reimbursements Liabilities --pending --output-format csv
-    const cmd = `hledger ${INCLUDES} register Reimbursements Liabilities --pending ${CSV}`;
+    const cmd = `${this.hledgerCmd()} register Reimbursements Liabilities --pending ${CSV}`;
 
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
@@ -736,7 +740,7 @@ export default class Ledger extends GObject.Object {
     const startDate = thirtyDaysAgo.toISOString().slice(0, 10);
 
     // hledger bal Expenses --no-total --depth 2 --output-format csv --begin monthStart
-    const cmd = `hledger ${INCLUDES} bal Expenses --begin ${startDate} --no-total --depth 2 ${CSV}`;
+    const cmd = `${this.hledgerCmd()} bal Expenses --begin ${startDate} --no-total --depth 2 ${CSV}`;
 
     execAsync(`bash -c '${cmd}'`)
       .then((out) => {
