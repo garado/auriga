@@ -16,6 +16,7 @@ import { Clock } from "@/windows/dash/home/Clock";
 import { Github } from "@/windows/dash/home/Github";
 import { Quote } from "@/windows/dash/home/Quote";
 import { Music } from "@/windows/dash/home/Music";
+import { Weather } from "./Weather";
 
 /*****************************************************************************
  * Module-level variables
@@ -59,7 +60,7 @@ export default () => {
   const Right = Grid({
     setup: (self) => {
       /* Widget, Col, Row, Width, Height*/
-
+      self.attach(Weather(), 1, 3, 1, 1);
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
     },
