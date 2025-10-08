@@ -19,19 +19,17 @@ import { log } from "@/globals.ts";
 import SettingsManager from "../settings";
 
 import {
-  HLedgerBalanceRow,
   Account,
   DebtItem,
   AccountConfig,
   CategorySpend,
   TransactionData,
   CategorySpending,
-  HLedgerRegisterFields,
+  MonthlySpending,
 } from "./Types";
 
 import LedgerCSVParser from "./Parsing";
-
-import { parseAmount } from "./Utils";
+import LedgerUtils from "./Utils";
 
 /*****************************************************************************
  * Module-level variables
@@ -86,69 +84,6 @@ const getLastNMonthsDays = (n: number) => {
   }
 
   return result.reverse();
-};
-
-const deepMergeCategories = (
-  node1: CategorySpend,
-  node2: CategorySpend,
-): CategorySpend => {
-  const mergedSubcategories = { ...node1.subcategories };
-
-  for (const key in node2.subcategories) {
-    if (mergedSubcategories[key]) {
-      mergedSubcategories[key] = deepMergeCategories(
-        mergedSubcategories[key],
-        node2.subcategories[key],
-      );
-    } else {
-      mergedSubcategories[key] = node2.subcategories[key];
-    }
-  }
-
-  return {
-    subtotal: node1.subtotal + node2.subtotal,
-    subcategories: mergedSubcategories,
-  };
-};
-
-const stringToCategorySpend = (
-  input: string,
-  subtotal: number,
-): CategorySpend => {
-  const parts = input.split(":");
-
-  const obj: CategorySpend = {
-    subcategories: {},
-    subtotal: 0,
-  };
-
-  let current = obj;
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-
-    current.subcategories[part] =
-      current.subcategories[part] ||
-      ({ subcategories: {}, subtotal: 0 } as CategorySpend);
-
-    current = current.subcategories[part] as CategorySpend;
-  }
-
-  current.subtotal = subtotal;
-
-  return obj;
-};
-
-const recursiveSubtotalSum = (category: CategorySpend): number => {
-  const subtotal =
-    category.subtotal +
-    Object.values(category.subcategories).reduce(
-      (sum, child) => sum + recursiveSubtotalSum(child),
-      0,
-    );
-
-  category.subtotal = subtotal;
-
-  return subtotal ?? 0;
 };
 
 /*****************************************************************************
@@ -400,7 +335,7 @@ export default class Ledger extends GObject.Object {
               balanceRows.find((row) => row.account === "total") ||
               balanceRows[balanceRows.length - 1];
 
-            const balance = parseAmount(totalRow.balance);
+            const balance = LedgerUtils.parseAmount(totalRow.balance);
 
             const output: Account = {
               displayName: accountConfig.displayName,
@@ -480,7 +415,7 @@ export default class Ledger extends GObject.Object {
 
           // The net worth is in the last row
           const netWorthRow = balanceRows[balanceRows.length - 1];
-          const netWorth = parseAmount(netWorthRow.balance);
+          const netWorth = LedgerUtils.parseAmount(netWorthRow.balance);
 
           if (isNaN(netWorth)) {
             throw new Error(`Invalid net worth value: ${netWorthRow.balance}`);
@@ -536,7 +471,7 @@ export default class Ledger extends GObject.Object {
 
         balanceRows.forEach((row) => {
           const accountName = row.account.toLowerCase();
-          const absoluteAmount = Math.abs(parseAmount(row.balance));
+          const absoluteAmount = Math.abs(LedgerUtils.parseAmount(row.balance));
 
           if (accountName.includes("income")) {
             this.incomeThisMonth = absoluteAmount;
@@ -807,16 +742,19 @@ export default class Ledger extends GObject.Object {
           const category = rawCategory.replaceAll("Expenses:", "");
           const amount = Number(rawAmount.replace(/[^0-9,.]/g, ""));
 
-          const categorySpend = stringToCategorySpend(category, amount);
+          const categorySpend = LedgerUtils.stringToCategorySpend(
+            category,
+            amount,
+          );
 
           if (rawCategory == "total") {
             total = amount;
           } else {
-            tmp = deepMergeCategories(tmp, categorySpend);
+            tmp = LedgerUtils.deepMergeCategories(tmp, categorySpend);
           }
         });
 
-        recursiveSubtotalSum(tmp);
+        LedgerUtils.recursiveSubtotalSum(tmp);
 
         tmp.subtotal = total;
 

@@ -22,7 +22,7 @@ import {
   HLedgerRegisterFields,
 } from "./Types";
 
-import { parseAmount } from "./Utils";
+import LedgerUtils from "./Utils";
 
 /*****************************************************************************
  * Function definitions
@@ -68,7 +68,7 @@ const balanceTrend = (csvOutput: string): Array<number> => {
   const balanceFields = fields.slice(1);
 
   return balanceFields.map((amountStr, index) => {
-    const balance = parseAmount(amountStr);
+    const balance = LedgerUtils.parseAmount(amountStr);
 
     if (isNaN(balance)) {
       console.warn(
@@ -221,7 +221,7 @@ const debtsLiabilities = (csvOutput: string): Record<string, DebtItem[]> => {
       return; // Skip this line
     }
 
-    const amount = parseAmount(amountStr);
+    const amount = LedgerUtils.parseAmount(amountStr);
 
     // Initialize account array if it doesn't exist
     if (!groupedByAccount[account]) {
@@ -286,7 +286,7 @@ const categorySpending = (csvOutput: string): Array<CategorySpending> => {
       const category = pathParts.length > 1 ? pathParts[1] : pathParts[0];
 
       // Parse the amount
-      const amount = parseAmount(amountStr);
+      const amount = LedgerUtils.parseAmount(amountStr);
 
       if (!category) {
         console.warn(
