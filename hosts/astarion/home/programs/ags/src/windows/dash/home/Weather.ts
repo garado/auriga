@@ -32,12 +32,23 @@ const CSS_CLASSES = {
 
   FORECAST: "forecast",
   FORECAST_ITEM: "item",
+  FORECAST_ITEM_ICON: "icon",
   FORECAST_ITEM_TEMP: "temperature",
   FORECAST_ITEM_TIME: "time",
 
   CURRENT_WEATHER: "current-weather",
   CURRENT_WEATHER_TEMP: "temperature",
   CURRENT_WEATHER_DESC: "description",
+};
+
+const WEATHER_ICON = {
+  Clouds: "cloud-symbolic",
+  Clear: "sun-symbolic",
+  Atmosphere: "cloud-fog-symbolic",
+  Snow: "snowflake-symbolic",
+  Rain: "cloud-rain-symbolic",
+  Drizzle: "drop-symbolic",
+  Thunderstorm: "lightning-symbolic",
 };
 
 /*****************************************************************************
@@ -106,6 +117,10 @@ const Forecast = () => {
       cssClasses: [CSS_CLASSES.FORECAST_ITEM],
       vertical: true,
       children: [
+        Widget.Image({
+          cssClasses: [CSS_CLASSES.FORECAST_ITEM_ICON],
+          iconName: WEATHER_ICON[item.weather[0].main] ?? "cloud-symbolic",
+        }),
         Widget.Label({
           cssClasses: [CSS_CLASSES.FORECAST_ITEM_TEMP],
           label: `${Math.round(item.main.temp)}°`,
