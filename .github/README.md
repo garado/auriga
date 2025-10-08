@@ -3,14 +3,22 @@
   <img src="dashboard-home.png" />
   <br>
   Another desktop with an emphasis on functionality and cohesive design. Made
-  with ❤️ and <a href="https://aylur.github.io/ags/" target="_blank">ags</a>.
+  with Nix, <a href="https://aylur.github.io/ags/" target="_blank">ags</a>, and ❤️.
 </div>
 
 <h2>What is it?</h2>
 <p>This repo contains my entire system configuration - all of my configs, my shell, etc. It is managed with NixOS.</p>
-<p>
-  The included shell is the successor to previous config called <a href="https://github.com/garado/cozy" target="_blank">Cozy</a>.
-</p>
+<p>I am most proud of the shell (the UI for my system). It is completely custom-built and deeply personalized to my specific needs. Most importantly, I have a lot of fun adding random stuff to it.</p>
+<p>Some highlights:</p>
+<ul>
+  <li><b>Finance tracker:</b> balance tracking, spending analysis, budget tracking, and visualizations for financial goals</li>
+  <li><b>Paint color matcher:</b> AI-powered tool to analyze a color from a reference image and provide mixing instructions using the colors in my palette</li>
+  <li><b>Calendar:</b> synced with Google Calendar</li>
+  <li><b>Personal goals tracker:</b> sortable, filterable, searchable </li>
+  <li><b>Metronome:</b> for random quick guitar sessions</li>
+  <li><b>AI prompt interface:</b> provides quick access to Gemini</li>
+</ul>
+<p>The shell is the successor to my <a href="https://github.com/garado/cozy" target="_blank">previous one</a>.</p>
 
 <h2>Dashboard</h2>
 
