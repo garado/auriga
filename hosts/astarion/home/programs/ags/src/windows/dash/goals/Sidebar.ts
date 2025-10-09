@@ -332,6 +332,26 @@ const GoalDetailsSection = () => {
     return textView;
   };
 
+  const Pinned = () => {
+    return astalify(Gtk.CheckButton)({
+      hexpand: true,
+      vexpand: true,
+      cursor: Gdk.Cursor.new_from_name("pointer", null),
+      onButtonPressed: (self) => {
+        goalsService!.modify(
+          goalsService!.sidebarGoal,
+          "pinned",
+          `${self.active}`,
+        );
+      },
+      setup: (self) => {
+        hook(self, goalsService!, "notify::sidebar-goal", () => {
+          self.active = goalsService!.sidebarGoal?.pinned;
+        });
+      },
+    });
+  };
+
   /** Dropdown widget for selecting timescale. */
   const TimescaleDropdown = () =>
     Dropdown({
@@ -376,6 +396,8 @@ const GoalDetailsSection = () => {
     hexpand: true,
     vexpand: false,
     setup: (self) => {
+      self.activateOnSingleClick = false;
+
       const formFields = [
         ["Category", ProjectEntry()],
         ["Status", StatusDropdown()],
@@ -383,6 +405,7 @@ const GoalDetailsSection = () => {
         ["Parent", ParentNavigationLabel()],
         ["Timescale", TimescaleDropdown()],
         ["Why", WhyTextView()],
+        ["Pinned", Pinned()],
         ["Icon", IconEntry()],
         ["UUID", UUIDLabel()],
       ];

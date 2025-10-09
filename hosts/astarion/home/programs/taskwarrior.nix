@@ -15,11 +15,16 @@
       # UDAs for goals
       "uda.why.type" = "string";
       "uda.why.label" = "why";
+
       "uda.icon.type" = "string";
       "uda.icon.label" = "icon";
+
       "uda.timescale.type" = "string";
       "uda.timescale.values" = "short,mid,long,aspirational";
       "uda.timescale.label" = "timescale";
+
+      "uda.pinned.type" = "string";
+      "uda.pinned.label" = "pinned";
 
       # Set context to display goals
       "context.goals" = "tag:goals";

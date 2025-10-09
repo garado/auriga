@@ -37,6 +37,7 @@ export class Goal {
     public uuid: string,
     public children: Goal[] = [],
     public why: string,
+    public pinned: boolean,
     public depends?: string[],
     public icon?: string,
     public annotations?: Annotation[],
@@ -58,6 +59,7 @@ export class Goal {
       obj.uuid ?? "",
       obj.children ?? [],
       obj.why ?? "",
+      obj.pinned ?? false,
       obj.depends ?? [],
       obj.icon ?? "target-symbolic",
       obj.annotations ?? [],
@@ -458,13 +460,17 @@ export default class Goals extends GObject.Object {
    * @param {string} value - the new property value to set
    */
   modify = (goal: Goal, modType: string, value: string) => {
-    execAsync([
-      "task",
-      `rc.data.location=${this.dataDirectory}`,
-      goal.uuid,
-      "modify",
-      `${modType}:${value}`,
-    ]);
+    try {
+      execAsync([
+        "task",
+        `rc.data.location=${this.dataDirectory}`,
+        goal.uuid,
+        "modify",
+        `${modType}:${value}`,
+      ]);
+    } catch (err) {
+      console.error(err);
+    }
 
     goal[modType] = value;
 
