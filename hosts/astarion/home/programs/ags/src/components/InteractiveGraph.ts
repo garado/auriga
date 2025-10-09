@@ -233,6 +233,12 @@ export default ({
     const graphWidget = self as GraphWidget;
     setupData(graphWidget);
 
+    const hadjustment = (self.get_parent()?.get_parent() as Gtk.ScrolledWindow)
+      ?.hadjustment;
+
+    const scrollX = hadjustment ? hadjustment.get_value() : 0;
+    const viewportWidth = hadjustment ? hadjustment.get_page_size() : w;
+
     const xScale = (1 / graphWidget.longestArrayLength) * w;
     const yScale = (1 / (graphWidget.valueMax - graphWidget.valueMin)) * h;
 
@@ -348,7 +354,9 @@ export default ({
           }
 
           const extents = cr.textExtents(text);
-          cr.moveTo(w - extents.width, graphY - 5);
+
+          // Position at right edge of visible viewport
+          cr.moveTo(scrollX + viewportWidth - extents.width - 5, graphY - 5);
           cr.showText(text);
         }
       }
