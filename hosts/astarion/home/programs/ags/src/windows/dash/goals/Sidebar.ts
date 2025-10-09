@@ -263,7 +263,7 @@ const GoalDetailsSection = () => {
       xalign: 0,
       selectable: true,
       label: bind(goalsService!, "sidebarGoal").as(
-        (goal) => goal?.uuid.substring(0, 7) ?? "None",
+        (goal) => goal?.uuid.substring(0, 8) ?? "None",
       ),
     });
 
