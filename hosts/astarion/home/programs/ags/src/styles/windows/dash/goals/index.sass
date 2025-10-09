@@ -141,12 +141,21 @@
       min-width: 5rem
 
     .field-value
-      .text
-        .selection
-          background-color: $yellow-500
-
+      text selection
+        background-color: $yellow-500
+      
+    label.field-value > selection
+      background-color: $yellow-500
+      
     * 
       padding: 0.1rem
+
+    .copy-uuid *
+      transition: 0.1s all
+      color: $neutral-100
+
+      &:hover
+        color: $primary-500
 
   .annotations-section
     .annotation-date

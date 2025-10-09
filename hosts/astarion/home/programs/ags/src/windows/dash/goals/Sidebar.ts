@@ -40,6 +40,7 @@ const CSS_CLASSES = {
   annotationContent: "annotation-content",
   childrenSection: "children-section",
   detailsSection: "details-section",
+  copyEditUUID: "copy-uuid",
 } as const;
 
 const STATUS_ICONS = {
@@ -287,15 +288,31 @@ const GoalDetailsSection = () => {
   };
 
   /** Taskwarrior UUID */
-  const UUIDLabel = () =>
-    Widget.Label({
-      cssClasses: [CSS_CLASSES.fieldValue],
+  const UUIDInfo = () =>
+    Widget.CenterBox({
+      orientation: Gtk.Orientation.HORIZONTAL,
       hexpand: true,
-      xalign: 0,
-      selectable: true,
-      label: bind(goalsService!, "sidebarGoal").as(
-        (goal) => goal?.uuid.substring(0, 8) ?? "None",
-      ),
+      startWidget: Widget.Label({
+        cssClasses: [CSS_CLASSES.fieldValue],
+        hexpand: true,
+        xalign: 0,
+        selectable: true,
+        label: bind(goalsService!, "sidebarGoal").as(
+          (goal) => goal?.uuid.substring(0, 8) ?? "None",
+        ),
+      }),
+      endWidget: Widget.Button({
+        cursor: Gdk.Cursor.new_from_name("pointer", null),
+        cssClasses: [CSS_CLASSES.copyEditUUID],
+        child: Widget.Image({
+          iconName: "copy-symbolic",
+        }),
+        onButtonPressed: () => {
+          const display = Gdk.Display.get_default();
+          const clipboard = display?.get_clipboard();
+          clipboard?.set(`task edit ${goalsService!.sidebarGoal.uuid}`);
+        },
+      }),
     });
 
   /** Multi-line text view for editing the goal's "why" field. */
@@ -407,7 +424,7 @@ const GoalDetailsSection = () => {
         ["Why", WhyTextView()],
         ["Pinned", Pinned()],
         ["Icon", IconEntry()],
-        ["UUID", UUIDLabel()],
+        ["UUID", UUIDInfo()],
       ];
 
       formFields.forEach(([labelText, valueWidget]) => {
