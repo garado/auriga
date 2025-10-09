@@ -10,7 +10,7 @@
  * Imports
  *****************************************************************************/
 
-import { Gtk, hook, Widget } from "astal/gtk4";
+import { Gdk, Gtk, hook, Widget } from "astal/gtk4";
 import { bind } from "astal";
 import Goals from "@/services/Goals";
 import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
@@ -31,6 +31,7 @@ const CSS_CLASSES = {
   header: "header",
   searchContainer: "search-container",
   filters: "filters",
+  refresh: "refresh",
 } as const;
 
 /** Icon names used in the component */
@@ -40,7 +41,7 @@ const ICONS = {
 
 /** UI spacing and layout constants */
 const LAYOUT = {
-  mainSpacing: 6,
+  mainSpacing: 10,
   searchSpacing: 3,
   filtersSpacing: 12,
 } as const;
@@ -77,6 +78,21 @@ const HeaderLabel = () =>
     cssClasses: [CSS_CLASSES.header],
     label: "Goals",
     justify: Gtk.Justification.LEFT,
+  });
+
+/**
+ * Button to update data
+ */
+const Refresh = () =>
+  Widget.Button({
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    cssClasses: [CSS_CLASSES.refresh],
+    child: Widget.Label({
+      label: "Refresh",
+    }),
+    onButtonPressed: () => {
+      goalsService!.fetchGoals();
+    },
   });
 
 /**
@@ -185,8 +201,9 @@ const TopSection = () =>
     orientation: Gtk.Orientation.HORIZONTAL,
     startWidget: HeaderLabel(),
     endWidget: Widget.Box({
+      spacing: LAYOUT.mainSpacing,
       vertical: false,
-      children: [Search()],
+      children: [Refresh(), Search()],
     }),
   });
 

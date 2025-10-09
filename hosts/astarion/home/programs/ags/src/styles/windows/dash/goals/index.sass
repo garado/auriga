@@ -32,6 +32,22 @@
   .filters
     min-height: 2.5rem
 
+  .refresh
+    border-radius: $border-radius
+    font-size: 1rem
+    padding: 0rem 1rem
+    transition: all 0.15s
+
+    &:disabled
+      background-color: $neutral-700
+      color: $neutral-800
+
+    &:hover:not(:disabled)
+      background-color: $primary-500
+
+    &:not(:hover):not(:disabled)
+      background-color: $neutral-700
+
 /***************************************************
  * GOALBOX
  ***************************************************/
