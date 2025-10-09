@@ -57,8 +57,11 @@ const KEYBOARD_SHORTCUTS = {
 
 /** List model for timescale dropdown */
 const timescaleOptions = ["<none>", "short", "mid", "long", "aspirational"];
-
 const timescaleListModel = Gtk.StringList.new(timescaleOptions);
+
+/** List model for status dropdown */
+const statusOptions = ["pending", "completed"];
+const statusListModel = Gtk.StringList.new(statusOptions);
 
 /*****************************************************************************
  * Widget definitions
@@ -195,15 +198,43 @@ const GoalDetailsSection = () => {
       },
     });
 
-  /** Read-only label for the goal's status. */
-  const StatusLabel = () =>
-    Widget.Label({
-      cssClasses: [CSS_CLASSES.fieldValue],
-      hexpand: true,
-      xalign: 0,
-      label: bind(goalsService!, "sidebarGoal").as(
-        (goal) => goal?.status ?? "None",
-      ),
+  /** Dropdown widget for status. */
+  const StatusDropdown = () =>
+    Dropdown({
+      model: statusListModel,
+      setup: (self) => {
+        let updating = false;
+
+        const goal = goalsService!.sidebarGoal;
+        const index = statusOptions.indexOf(goal?.status ?? "pending");
+        self.set_selected(index >= 0 ? index : 0);
+
+        // Update dropdown when goal changes
+        hook(self, goalsService!, "notify::sidebar-goal", () => {
+          if (updating) return;
+          updating = true;
+
+          const goal = goalsService!.sidebarGoal;
+          const index = statusOptions.indexOf(goal?.status ?? "pending");
+          self.set_selected(index >= 0 ? index : 0);
+
+          updating = false;
+        });
+
+        // Update goal when dropdown changes
+        self.connect("notify::selected", () => {
+          if (updating) return;
+          updating = true;
+
+          const item = self.get_selected_item() as Gtk.StringObject;
+          const value = item.get_string();
+
+          const goal = goalsService!.sidebarGoal;
+          goalsService?.modify(goal, "status", value);
+
+          updating = false;
+        });
+      },
     });
 
   /** Editable entry widget for the goal's due date. */
@@ -347,7 +378,7 @@ const GoalDetailsSection = () => {
     setup: (self) => {
       const formFields = [
         ["Category", ProjectEntry()],
-        ["Status", StatusLabel()],
+        ["Status", StatusDropdown()],
         ["Due", DueDateEntry()],
         ["Parent", ParentNavigationLabel()],
         ["Timescale", TimescaleDropdown()],

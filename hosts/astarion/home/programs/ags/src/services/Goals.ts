@@ -465,6 +465,12 @@ export default class Goals extends GObject.Object {
       "modify",
       `${modType}:${value}`,
     ]);
+
     goal[modType] = value;
+
+    // Reload
+    if (value === "timescale" || value === "status") {
+      this.filtersUpdated();
+    }
   };
 }
