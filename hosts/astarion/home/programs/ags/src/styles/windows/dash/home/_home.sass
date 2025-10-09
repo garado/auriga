@@ -1,5 +1,6 @@
 
 @use '../../../theme/theme' as *
+@use '../../../mixins' as *
 
 /*********************************************
  * General
@@ -287,4 +288,48 @@
   color: $primary-900
   min-width: 0.8rem
 
+.home .pinned-goals
+  .header
+    font-size: 1.4rem
 
+  .goal
+    color: $neutral-800
+    background-color: $primary-400
+    padding: 0.8rem
+    transition: 0.2s all
+    border-radius: $border-radius
+    border-color: $primary-400
+    border-style: solid
+    border-width: 0.2rem
+
+    &:hover
+      border-color: $neutral-100
+
+    .description
+      color: $neutral-800
+
+    .goal-icon
+      color: $primary-800
+      -gtk-icon-size: 1.4rem
+
+    /* Custom categories */
+    &.career
+      @include goalbox-colorize($accent-1)
+
+    &.personal
+      @include goalbox-colorize($accent-2)
+
+    &.relationships
+      @include goalbox-colorize($accent-3)
+
+    &.mental
+      @include goalbox-colorize($accent-4)
+
+    &.health
+      @include goalbox-colorize($accent-5)
+
+    &.financial
+      @include goalbox-colorize($accent-6)
+
+    &.travel
+      @include goalbox-colorize($accent-7)

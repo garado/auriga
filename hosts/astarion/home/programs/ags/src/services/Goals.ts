@@ -59,7 +59,7 @@ export class Goal {
       obj.uuid ?? "",
       obj.children ?? [],
       obj.why ?? "",
-      obj.pinned ?? false,
+      obj.pinned === "true",
       obj.depends ?? [],
       obj.icon ?? "target-symbolic",
       obj.annotations ?? [],
@@ -478,5 +478,24 @@ export default class Goals extends GObject.Object {
     if (value === "timescale" || value === "status") {
       this.filtersUpdated();
     }
+  };
+
+  /**
+   * Get all pinned goals from the data tree.
+   * @returns {Goal[]} Array of all pinned goals
+   */
+  getPinnedGoals = (): Goal[] => {
+    const pinned: Goal[] = [];
+
+    const traverse = (node: Goal) => {
+      if (node.pinned) {
+        pinned.push(node);
+      }
+      node.children.forEach((child) => traverse(child));
+    };
+
+    Object.values(this.data).forEach((category) => traverse(category));
+
+    return pinned;
   };
 }

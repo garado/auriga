@@ -176,6 +176,7 @@ export default class Tasks extends GObject.Object {
       project.hierarchy.join(".") +
       (project.hierarchy.length > 0 ? "." : "") +
       project.name;
+
     const cmd = `task rc.data.location='${this.dataDirectory}' project:${projectPath} export`;
 
     execAsync(`bash -c "${cmd}"`)

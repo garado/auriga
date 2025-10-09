@@ -341,7 +341,7 @@ const GoalDetailsSection = () => {
         goalsService!.modify(
           goalsService!.sidebarGoal,
           "pinned",
-          `${self.active}`,
+          `${!self.active}`,
         );
       },
       setup: (self) => {
