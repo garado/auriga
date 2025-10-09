@@ -332,6 +332,9 @@ const GoalDetailsSection = () => {
           const item = self.get_selected_item() as Gtk.StringObject;
           const value = item.get_string();
 
+          const goal = goalsService!.sidebarGoal;
+          goalsService?.modify(goal, "timescale", value);
+
           updating = false;
         });
       },
