@@ -74,9 +74,9 @@ interface Filters {
   failed: boolean;
   developed: boolean;
   undeveloped: boolean;
-  shortterm: boolean;
-  medterm: boolean;
-  longterm: boolean;
+  short: boolean;
+  med: boolean;
+  long: boolean;
   aspirational: boolean;
 }
 
@@ -143,6 +143,10 @@ export default class Goals extends GObject.Object {
         pending: true,
         developed: true,
         undeveloped: false,
+        short: true,
+        med: true,
+        long: true,
+        aspirational: true,
       },
       sidebarBreadcrumbs: [],
       sidebarBreadcrumbIndex: -1,
@@ -367,6 +371,16 @@ export default class Goals extends GObject.Object {
       (!this.filters.developed && !this.filters.undeveloped) ||
       (this.filters.developed && this.filters.undeveloped);
 
+    const timescaleMatch =
+      (this.filters.short && goal.timescale === "short") ||
+      (this.filters.med && goal.timescale === "med") ||
+      (this.filters.long && goal.timescale === "long") ||
+      (this.filters.aspirational && goal.timescale === "aspirational") ||
+      (this.filters.short &&
+        this.filters.med &&
+        this.filters.long &&
+        this.filters.aspirational);
+
     let descriptionMatch = true;
     let categoryMatch = true;
 
@@ -378,7 +392,7 @@ export default class Goals extends GObject.Object {
       categoryMatch = catScore < LEVENSHTEIN_MATCH_THRESHOLD;
     }
 
-    return statusMatch && stateMatch && descriptionMatch;
+    return statusMatch && stateMatch && descriptionMatch && timescaleMatch;
   };
 
   /**

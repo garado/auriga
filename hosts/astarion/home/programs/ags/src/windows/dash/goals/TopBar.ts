@@ -129,7 +129,7 @@ const createFilterButtonGroup = (
    * @param filterKey - The filter key to toggle
    */
   const defaultUpdateHandler = (filterKey: string) => {
-    const filters = goalsService!.filters as Record<string, boolean>;
+    const filters = goalsService!.filters;
     filters[filterKey] = !filters[filterKey];
     goalsService!.filtersUpdated();
   };
@@ -169,24 +169,8 @@ const createStatusFilters = () =>
  * Creates timescale-based filter controls (Short term, Mid term, etc.).
  * @returns Widget containing timescale filter buttons
  */
-const createTimescaleFilters = () => {
-  /**
-   * Placeholder handler for timescale filter updates.
-   * TODO: Implement actual timescale filter logic
-   * @param filterKey - The timescale filter key
-   */
-  const handleTimescaleUpdate = (filterKey: string) => {
-    // TODO: Implement timescale filter logic
-    console.log(
-      `Timescale filter ${filterKey} clicked - implementation needed`,
-    );
-  };
-
-  return createFilterButtonGroup(
-    FILTER_CONFIGS.timescale,
-    handleTimescaleUpdate,
-  );
-};
+const createTimescaleFilters = () =>
+  createFilterButtonGroup(FILTER_CONFIGS.timescale);
 
 /**
  * Creates a category selection widget that displays available goal categories.
