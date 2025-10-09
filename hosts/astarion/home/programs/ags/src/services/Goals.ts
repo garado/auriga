@@ -365,21 +365,41 @@ export default class Goals extends GObject.Object {
         !this.filters.pending &&
         !this.filters.failed);
 
-    const stateMatch =
-      (this.filters.developed && goal.due && goal.why != undefined) ||
-      (this.filters.undeveloped && (!goal.due || !goal.why)) ||
-      (!this.filters.developed && !this.filters.undeveloped) ||
-      (this.filters.developed && this.filters.undeveloped);
+    let stateMatch;
+
+    if (goal.timescale === "aspirational") {
+      stateMatch =
+        (this.filters.developed &&
+          goal.due &&
+          goal.why != undefined &&
+          goal.timescale != undefined) ||
+        (this.filters.undeveloped &&
+          (!goal.due || !goal.why || !goal.timescale)) ||
+        (!this.filters.developed && !this.filters.undeveloped) ||
+        (this.filters.developed && this.filters.undeveloped);
+    } else {
+      stateMatch =
+        (this.filters.developed &&
+          goal.why != undefined &&
+          goal.timescale != undefined) ||
+        (this.filters.undeveloped && (!goal.why || !goal.timescale)) ||
+        (!this.filters.developed && !this.filters.undeveloped) ||
+        (this.filters.developed && this.filters.undeveloped);
+    }
 
     const timescaleMatch =
       (this.filters.short && goal.timescale === "short") ||
-      (this.filters.med && goal.timescale === "med") ||
+      (this.filters.med && goal.timescale === "mid") ||
       (this.filters.long && goal.timescale === "long") ||
       (this.filters.aspirational && goal.timescale === "aspirational") ||
       (this.filters.short &&
         this.filters.med &&
         this.filters.long &&
-        this.filters.aspirational);
+        this.filters.aspirational) ||
+      (!this.filters.short &&
+        !this.filters.med &&
+        !this.filters.long &&
+        !this.filters.aspirational);
 
     let descriptionMatch = true;
     let categoryMatch = true;
@@ -436,11 +456,15 @@ export default class Goals extends GObject.Object {
    * @param {Goal} goal - goal to modify
    * @param {string} modType - the property to modify
    * @param {string} value - the new property value to set
-   *
-   * Note: quote escaping not handled properly.
    */
   modify = (goal: Goal, modType: string, value: string) => {
-    const cmd = `task rc.data.location="${this.dataDirectory}" ${goal.uuid} modify ${modType}:"${value}"`;
-    execAsync(`bash -c '${cmd}'`);
+    execAsync([
+      "task",
+      `rc.data.location=${this.dataDirectory}`,
+      goal.uuid,
+      "modify",
+      `${modType}:${value}`,
+    ]);
+    goal[modType] = value;
   };
 }
