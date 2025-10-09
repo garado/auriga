@@ -80,27 +80,10 @@ const HeaderLabel = () =>
   });
 
 /**
- * Search input field.
- * @returns Widget for goal search functionality
- */
-const SearchEntry = () =>
-  Widget.Entry({
-    canFocus: true,
-    focusOnClick: true,
-    focusable: true,
-    placeholderText: "search...",
-    onKeyReleased: (self) => {
-      goalsService!.search = self.text;
-    },
-  });
-
-/**
  * Search container with icon and input field.
  * @returns Widget containing search interface
  */
-const SearchContainer = () => {
-  const searchEntry = SearchEntry();
-
+const Search = () => {
   return Widget.Box({
     cssClasses: [CSS_CLASSES.searchContainer],
     vertical: false,
@@ -109,7 +92,15 @@ const SearchContainer = () => {
       Widget.Image({
         iconName: ICONS.search,
       }),
-      searchEntry,
+      Widget.Entry({
+        canFocus: true,
+        focusOnClick: true,
+        focusable: true,
+        placeholderText: "search...",
+        onKeyReleased: (self) => {
+          goalsService!.search = self.text;
+        },
+      }),
     ],
   });
 };
@@ -135,6 +126,7 @@ const FilterButtonGroup = (
   };
 
   const buttons = filterConfig.map(({ key, label }) => ({
+    sensitive: bind(goalsService!, "search").as((term) => term === ""),
     name: label,
     active: bind(goalsService!, "filters").as(
       (filters) => (filters as Record<string, boolean>)[key],
@@ -192,7 +184,10 @@ const TopSection = () =>
   Widget.CenterBox({
     orientation: Gtk.Orientation.HORIZONTAL,
     startWidget: HeaderLabel(),
-    endWidget: SearchContainer(),
+    endWidget: Widget.Box({
+      vertical: false,
+      children: [Search()],
+    }),
   });
 
 /**

@@ -11,14 +11,18 @@
     border-bottom-right-radius: $border-radius
 
   :not(:last-child)
-    border-right: 0.3rem solid $neutral-600
-
+    border-right: 0.18rem solid $neutral-800
+    
   .segmented-toggle-button
     font-size: 1rem
     padding: 0rem 1rem
 
-    &:checked
+    &:disabled
+      background-color: $neutral-700
+      color: $neutral-800
+  
+    &:checked:not(:disabled)
       background-color: $primary-500
-
-    &:not(:checked) 
+  
+    &:not(:checked):not(:disabled)
       background-color: $neutral-700

@@ -361,6 +361,20 @@ export default class Goals extends GObject.Object {
    * @returns boolean - TRUE if given goal matches filter; FALSE otherwise
    */
   isMatching = (goal: Goal): boolean => {
+    let descriptionMatch = true;
+    let categoryMatch = true;
+
+    // For convenience, search terms override all filters
+    if (this.search) {
+      const descScore = scoreMatch(this.search, goal.description);
+      descriptionMatch = descScore < LEVENSHTEIN_MATCH_THRESHOLD;
+
+      const catScore = scoreMatch(this.search, goal.project);
+      categoryMatch = catScore < LEVENSHTEIN_MATCH_THRESHOLD;
+
+      return descriptionMatch || categoryMatch;
+    }
+
     const statusMatch =
       (this.filters.completed && goal.status == "completed") ||
       (this.filters.pending && goal.status == "pending") ||
@@ -404,17 +418,6 @@ export default class Goals extends GObject.Object {
         !this.filters.med &&
         !this.filters.long &&
         !this.filters.aspirational);
-
-    let descriptionMatch = true;
-    let categoryMatch = true;
-
-    if (this.search) {
-      const descScore = scoreMatch(this.search, goal.description);
-      descriptionMatch = descScore < LEVENSHTEIN_MATCH_THRESHOLD;
-
-      const catScore = scoreMatch(this.search, goal.project);
-      categoryMatch = catScore < LEVENSHTEIN_MATCH_THRESHOLD;
-    }
 
     return statusMatch && stateMatch && descriptionMatch && timescaleMatch;
   };

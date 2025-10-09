@@ -26,6 +26,7 @@ export type SegmentedButtonProps = {
   name: string;
   action: () => void;
   active: boolean | Binding<boolean>;
+  sensitive: boolean | Binding<boolean>;
 };
 
 /*****************************************************************************
@@ -35,6 +36,7 @@ export type SegmentedButtonProps = {
 export const SegmentedButtonGroup = (props: {
   buttons: Array<SegmentedButtonProps>;
   active?: boolean | Binding<boolean>;
+  sensitive?: boolean | Binding<boolean>;
   exclusive?: boolean;
 }) => {
   const Container = Widget.Box({
@@ -47,6 +49,7 @@ export const SegmentedButtonGroup = (props: {
         cursor: Gdk.Cursor.new_from_name("pointer", null),
         cssClasses: ["segmented-toggle-button"],
         onClicked: btn.action,
+        sensitive: btn.sensitive,
         setup: (self) => {
           self.set_label(btn.name);
 
