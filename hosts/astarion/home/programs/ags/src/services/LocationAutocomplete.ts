@@ -305,13 +305,7 @@ export default class LocationAutocomplete extends GObject.Object {
   #saveCacheToFile = () => {
     try {
       const data = JSON.stringify(this.searchCache);
-      const cmd = `bash -c 'cat > "${this.cacheFilePath}" << "EOF"
-${data}
-EOF'`;
-
-      execAsync(cmd).catch((error) => {
-        log("locationService", `Failed to save cache: ${error}`);
-      });
+      GLib.file_set_contents(this.cacheFilePath, data);
     } catch (error) {
       log("locationService", `Failed to save cache: ${error}`);
     }
