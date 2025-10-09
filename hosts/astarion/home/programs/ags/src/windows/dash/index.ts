@@ -20,6 +20,7 @@ import Tasks from "@/windows/dash/tasks";
 import Maps from "@/windows/dash/maps";
 import { AnimatedStack, AnimatedStackChild } from "@/components/AnimatedStack";
 import { setupEventController } from "@/utils/EventControllerKeySetup";
+import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
  * Types and interfaces
@@ -34,6 +35,9 @@ interface DashTabData {
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
+
+// User-specified tab order
+const customTabOrder = SettingsManager.get_default().config.dashTabs;
 
 const activeTabIndex = Variable(0);
 
@@ -74,52 +78,56 @@ const dashTabData: DashTabData[] = [
  * Widget definitions
  *****************************************************************************/
 
+/** Arrange tabs according to user-specified order */
+const reorderTabs = (tabs: DashTabData[], order: string[]): DashTabData[] => {
+  return order
+    .map((name) => tabs.find((tab) => tab.name === name))
+    .filter((tab): tab is DashTabData => tab !== undefined);
+};
+
 /**
  * @function DashTabBar
  * @brief Left-hand tab bar for indicating and switching the currently active tab
  */
-const DashTabBar = () =>
-  Widget.CenterBox({
+const DashTabBar = (tabSpec: DashTabData[]) => {
+  /** Navigation button for a single dashboard tab */
+  const DashTabEntry = (tabData: DashTabData) =>
+    Widget.Button({
+      canFocus: false,
+      cursor: Gdk.Cursor.new_from_name("pointer", null),
+      cssClasses: bind(activeTabIndex).as((index) =>
+        index == tabSpec.indexOf(tabData)
+          ? ["active", "tab-entry"]
+          : ["tab-entry"],
+      ),
+      child: Widget.Image({
+        cssClasses: ["icon"],
+        iconName: tabData.icon,
+      }),
+      onClicked: () => {
+        activeTabIndex.set(tabSpec.indexOf(tabData));
+      },
+    });
+
+  /** Contains all dashboard tab buttons */
+  return Widget.CenterBox({
     orientation: 1,
     cssClasses: ["tab-bar"],
     centerWidget: Widget.Box({
       vertical: true,
-      children: dashTabData.map(DashTabEntry),
+      children: tabSpec.map(DashTabEntry),
     }),
   });
+};
 
-/**
- * @function DashTabEntry
- * @brief Button for a single dashboard tab
- */
-const DashTabEntry = (tabData: DashTabData) =>
-  Widget.Button({
-    canFocus: false,
-    cursor: Gdk.Cursor.new_from_name("pointer", null),
-    cssClasses: bind(activeTabIndex).as((index) =>
-      index == dashTabData.indexOf(tabData)
-        ? ["active", "tab-entry"]
-        : ["tab-entry"],
-    ),
-    child: Widget.Image({
-      cssClasses: ["icon"],
-      iconName: tabData.icon,
-    }),
-    onClicked: () => {
-      activeTabIndex.set(dashTabData.indexOf(tabData));
-    },
-  });
-
-/**
- * Holds tab content.
- */
-const DashTabStack = () =>
+/** Holds tab content. */
+const DashTabStack = (tabSpec: DashTabData[]) =>
   AnimatedStack({
     name: "DashTabStack",
     cssClasses: ["tab-stack"],
     activePageIndex: activeTabIndex,
     vertical: true,
-    children: dashTabData.map((tabData) => {
+    children: tabSpec.map((tabData) => {
       return {
         ui: tabData.ui,
         name: tabData.name,
@@ -132,8 +140,10 @@ const DashTabStack = () =>
  *****************************************************************************/
 
 export default () => {
-  const TabBar = DashTabBar();
-  const TabStack = DashTabStack();
+  const orderedTabs = reorderTabs(dashTabData, customTabOrder);
+
+  const TabBar = DashTabBar(orderedTabs);
+  const TabStack = DashTabStack(orderedTabs);
 
   return Widget.Window({
     application: App,
@@ -156,7 +166,7 @@ export default () => {
 
       const binds: Record<string, () => void> = {};
 
-      for (let i = 0; i < dashTabData.length; i++) {
+      for (let i = 0; i < orderedTabs.length; i++) {
         const thisIndex = `${i + 1}`;
         binds[thisIndex] = () => {
           activeTabIndex.set(i);
