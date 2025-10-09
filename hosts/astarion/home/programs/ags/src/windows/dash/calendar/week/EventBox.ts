@@ -19,7 +19,7 @@ import Calendar, { Event, fhToTimeStr } from "@/services/Calendar";
  * Module-level variables
  *****************************************************************************/
 
-const cal = Calendar.get_default();
+let cal: InstanceType<typeof Calendar> | undefined = undefined;
 
 const DAYS_PER_WEEK = 7;
 
@@ -146,7 +146,7 @@ export class _EventBox extends Gtk.Box {
     }
 
     this.updatedEvent = { ...this.event };
-    this.rawWidth = this.dayWidth * cal.displayDaySpan(this.event);
+    this.rawWidth = this.dayWidth * cal!.displayDaySpan(this.event);
   };
 
   /**
@@ -283,18 +283,18 @@ export class _EventBox extends Gtk.Box {
 
     if (this.isMultiDayEvent) {
       const newStartDayIndex = this.snapToWeekday();
-      const originalDuration = cal.displayDaySpan(this.event);
+      const originalDuration = cal!.displayDaySpan(this.event);
 
       const newEndDayIndex = Math.min(
         newStartDayIndex + originalDuration - 1,
         DAYS_PER_WEEK - 1,
       );
 
-      this.updatedEvent.startDate = `${cal.weekDates[newStartDayIndex]}`;
-      this.updatedEvent.endDate = `${cal.weekDates[newEndDayIndex]}`;
+      this.updatedEvent.startDate = `${cal!.weekDates[newStartDayIndex]}`;
+      this.updatedEvent.endDate = `${cal!.weekDates[newEndDayIndex]}`;
     } else {
-      this.updatedEvent.startDate = `${cal.weekDates[this.snapToWeekday()]}`;
-      this.updatedEvent.endDate = `${cal.weekDates[this.snapToWeekday()]}`;
+      this.updatedEvent.startDate = `${cal!.weekDates[this.snapToWeekday()]}`;
+      this.updatedEvent.endDate = `${cal!.weekDates[this.snapToWeekday()]}`;
     }
   };
 
@@ -358,5 +358,6 @@ export class _EventBox extends Gtk.Box {
  * Factory function to create EventBox instances
  */
 export const EventBox = (props: Partial<EventBoxProps>) => {
+  cal = Calendar.get_default();
   return new _EventBox(props);
 };

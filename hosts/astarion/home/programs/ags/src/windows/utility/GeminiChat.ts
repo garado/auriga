@@ -23,7 +23,7 @@ import { clearChildren } from "@/utils/BoxUtils";
  * Module-level variables
  *****************************************************************************/
 
-const gemini = GeminiService.get_default();
+let gemini: InstanceType<typeof GeminiService> | undefined = undefined;
 const settings = SettingsManager.get_default();
 
 /*****************************************************************************
@@ -166,7 +166,7 @@ const submitPrompt = (promptText: string, conversationContainer: Astal.Box) => {
   );
 
   // Call Gemini with callbacks
-  gemini.prompt(
+  gemini!.prompt(
     id,
     promptText,
     (responseId, response) => {
@@ -404,6 +404,8 @@ const createScrolledConversationWindow = (conversationContainer: Astal.Box) =>
  * @returns Widget containing the complete Gemini chat interface
  */
 export const GeminiChat = () => {
+  gemini = GeminiService.get_default();
+
   const conversationContainer = createConversationContainer();
   const scrolledWindow = createScrolledConversationWindow(
     conversationContainer,

@@ -21,7 +21,7 @@ import { Dropdown } from "@/components/Dropdown";
  * Module-level variables
  *****************************************************************************/
 
-const goalsService = Goals.get_default();
+let goalsService: InstanceType<typeof Goals> | undefined = undefined;
 
 /*****************************************************************************
  * Constants
@@ -81,7 +81,7 @@ const GoalAnnotationsSection = () => {
   // Instantiate one of the above for every annotation
   return Widget.Box({
     cssClasses: [CSS_CLASSES.annotationsSection],
-    visible: bind(goalsService, "sidebarGoal").as(
+    visible: bind(goalsService!, "sidebarGoal").as(
       (goal) => goal?.annotations!.length > 0,
     ),
     vertical: true,
@@ -91,7 +91,7 @@ const GoalAnnotationsSection = () => {
         label: "Notes",
         xalign: 0,
       }),
-      bind(goalsService, "sidebarGoal").as(
+      bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.annotations!.map(AnnotationWidget) ?? [],
       ),
     ],
@@ -113,9 +113,9 @@ const GoalChildrenSection = () => {
         : STATUS_ICONS.default;
 
     const handleChildGoalNavigation = () => {
-      goalsService.sidebarBreadcrumbs.push(goalsService.sidebarGoal);
-      goalsService.sidebarBreadcrumbIndex++;
-      goalsService.sidebarGoal = childGoal;
+      goalsService!.sidebarBreadcrumbs.push(goalsService!.sidebarGoal);
+      goalsService!.sidebarBreadcrumbIndex++;
+      goalsService!.sidebarGoal = childGoal;
     };
 
     return Widget.Box({
@@ -143,7 +143,7 @@ const GoalChildrenSection = () => {
     cssClasses: [CSS_CLASSES.childrenSection],
     vertical: true,
     hexpand: false,
-    visible: bind(goalsService, "sidebarGoal").as(
+    visible: bind(goalsService!, "sidebarGoal").as(
       (goal) => goal?.children.length > 0,
     ),
     children: [
@@ -152,7 +152,7 @@ const GoalChildrenSection = () => {
         label: "Subgoals",
         xalign: 0,
       }),
-      bind(goalsService, "sidebarGoal").as(
+      bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.children.map(ChildGoalWidget) ?? [],
       ),
     ],
@@ -182,11 +182,11 @@ const GoalDetailsSection = () => {
     Widget.Entry({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
-      text: bind(goalsService, "sidebarGoal").as(
+      text: bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.project ?? "None",
       ),
       onActivate: (self) => {
-        goalsService.modify(goalsService.sidebarGoal, "project", self.text);
+        goalsService!.modify(goalsService!.sidebarGoal, "project", self.text);
       },
     });
 
@@ -196,7 +196,7 @@ const GoalDetailsSection = () => {
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
       xalign: 0,
-      label: bind(goalsService, "sidebarGoal").as(
+      label: bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.status ?? "None",
       ),
     });
@@ -206,11 +206,11 @@ const GoalDetailsSection = () => {
     Widget.Entry({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
-      text: bind(goalsService, "sidebarGoal").as((goal) =>
+      text: bind(goalsService!, "sidebarGoal").as((goal) =>
         goal?.due ? formatISODateToCustomFormat(goal.due) : "None",
       ),
       onActivate: (self) => {
-        goalsService.modify(goalsService.sidebarGoal, "due", self.text);
+        goalsService!.modify(goalsService!.sidebarGoal, "due", self.text);
       },
     });
 
@@ -219,20 +219,20 @@ const GoalDetailsSection = () => {
     Widget.Entry({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
-      text: bind(goalsService, "sidebarGoal").as(
+      text: bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.icon ?? "None",
       ),
       onActivate: (self) => {
-        goalsService.modify(goalsService.sidebarGoal, "icon", self.text);
+        goalsService!.modify(goalsService!.sidebarGoal, "icon", self.text);
       },
     });
 
   /** Clickable label for navigating to parent goal */
   const ParentNavigationLabel = () => {
     const handleParentNavigation = () => {
-      const parentGoal = goalsService.sidebarBreadcrumbs.pop();
+      const parentGoal = goalsService!.sidebarBreadcrumbs.pop();
       if (parentGoal) {
-        goalsService.sidebarGoal = parentGoal;
+        goalsService!.sidebarGoal = parentGoal;
       }
     };
 
@@ -241,7 +241,7 @@ const GoalDetailsSection = () => {
       valign: Gtk.Align.START,
       hexpand: false,
       xalign: 0,
-      label: bind(goalsService, "sidebarGoal").as(
+      label: bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.parent?.description ?? "None",
       ),
       wrap: true,
@@ -257,7 +257,7 @@ const GoalDetailsSection = () => {
       hexpand: true,
       xalign: 0,
       selectable: true,
-      label: bind(goalsService, "sidebarGoal").as(
+      label: bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.uuid.substring(0, 7) ?? "None",
       ),
     });
@@ -275,8 +275,8 @@ const GoalDetailsSection = () => {
           state !== KEYBOARD_SHORTCUTS.SHIFT_ENTER
         ) {
           self.editable = false;
-          goalsService.modify(
-            goalsService.sidebarGoal,
+          goalsService!.modify(
+            goalsService!.sidebarGoal,
             "why",
             self.buffer.text,
           );
@@ -287,8 +287,8 @@ const GoalDetailsSection = () => {
       setup: (self) => {
         self.set_wrap_mode(Gtk.WrapMode.WORD);
 
-        hook(self, goalsService, "notify::sidebar-goal", () => {
-          self.buffer.text = goalsService.sidebarGoal?.why ?? "None";
+        hook(self, goalsService!, "notify::sidebar-goal", () => {
+          self.buffer.text = goalsService!.sidebarGoal?.why ?? "None";
         });
       },
     });
@@ -341,17 +341,17 @@ const SidebarHeader = () => {
       iconName: STATUS_ICONS.close,
       cursor: Gdk.Cursor.new_from_name("pointer", null),
       onButtonPressed: () => {
-        goalsService.sidebarVisible = false;
+        goalsService!.sidebarVisible = false;
       },
     });
 
   /** Navigating goals hierarchies */
   const BreadcrumbNavigation = () => {
     const handleBreadcrumbNavigation = () => {
-      if (goalsService.sidebarBreadcrumbs.length > 0) {
-        const previousGoal = goalsService.sidebarBreadcrumbs.pop();
+      if (goalsService!.sidebarBreadcrumbs.length > 0) {
+        const previousGoal = goalsService!.sidebarBreadcrumbs.pop();
         if (previousGoal) {
-          goalsService.sidebarGoal = previousGoal;
+          goalsService!.sidebarGoal = previousGoal;
         }
       }
     };
@@ -370,7 +370,7 @@ const SidebarHeader = () => {
         // Widget.Image({
         //   iconName: STATUS_ICONS.caretRight,
         //   cursor: Gdk.Cursor.new_from_name("pointer", null),
-        //   visible: bind(goalsService, "sidebarBreadcrumbIndex").as((index) => index > 0),
+        //   visible: bind(goalsService!, "sidebarBreadcrumbIndex").as((index) => index > 0),
         //   onButtonPressed: () => {},
         // }),
       ],
@@ -380,7 +380,7 @@ const SidebarHeader = () => {
   const GoalTitle = () =>
     Widget.Label({
       cssClasses: [CSS_CLASSES.goalDescription],
-      label: bind(goalsService, "sidebarGoal").as(
+      label: bind(goalsService!, "sidebarGoal").as(
         (goal) => goal?.description ?? "None",
       ),
       wrap: true,
@@ -409,6 +409,7 @@ const SidebarHeader = () => {
  * @returns Widget containing the complete sidebar interface
  */
 export const Sidebar = () => {
+  goalsService = Goals.get_default();
   const Scrollable = astalify(Gtk.ScrolledWindow);
 
   return Scrollable({

@@ -32,7 +32,7 @@ import { SearchBox } from "./components/SearchBox";
  * Module vars
  *****************************************************************************/
 
-const transit = Transit.get_default();
+let transit: InstanceType<typeof Transit> | undefined = undefined;
 
 const CSS_CLASSES = {
   ORIGIN_DEST_SWAP: "origin-dest-swap",
@@ -109,7 +109,7 @@ const SidebarTop = () => {
       if (origin.get() === undefined || destination.get() === undefined) return;
 
       try {
-        const _tripPlan = await transit.planTrip(
+        const _tripPlan = await transit!.planTrip(
           origin.get()!.lat,
           origin.get()!.lon,
           destination.get()!.lat,
@@ -161,6 +161,8 @@ const SidebarTop = () => {
 };
 
 export default () => {
+  transit = Transit.get_default();
+
   const sidebar = Widget.Box({
     cssClasses: ["sidebar"],
     vexpand: true,

@@ -21,7 +21,7 @@ import Pango from "gi://Pango?version=1.0";
  * Module-level variables
  *****************************************************************************/
 
-const ts = Tasks.get_default();
+let ts: InstanceType<typeof Tasks> | undefined = undefined;
 
 /*****************************************************************************
  * Helper functions
@@ -59,18 +59,18 @@ const TopBar = () => {
     cssClasses: ["header"],
     orientation: Gtk.Orientation.HORIZONTAL,
     startWidget: Widget.Label({
-      label: bind(ts, "selectedProject").as(
+      label: bind(ts!, "selectedProject").as(
         (x) => x?.data.name ?? "No project selected",
       ),
     }),
   });
 
   /**
-   * Shows full project ancestry. (all parents of the project)
+   * Shows full project ancestry. (all parents! of the project)
    */
   const Breadcrumbs = Widget.Box({
     cssClasses: ["breadcrumbs"],
-    children: bind(ts, "selectedProject").as((x) => {
+    children: bind(ts!, "selectedProject").as((x) => {
       if (x === null) return [Widget.Label()];
 
       const children: Array<Gtk.Widget> = [];
@@ -109,7 +109,7 @@ const TaskWidget = (task: Task) => {
   const Indicator = Widget.Label({
     cssClasses: ["indicator"],
     xalign: 0,
-    // label: bind(ts, "selectedTask").as((st) =>
+    // label: bind(ts!, "selectedTask").as((st) =>
     //   st?.uuid == task.uuid ? "∘" : "",
     // ),
   });
@@ -134,8 +134,8 @@ const TaskWidget = (task: Task) => {
     justify: Gtk.Justification.LEFT,
     setup: (self) => {
       const hierarchy = [
-        ...ts.selectedProject.data.hierarchy,
-        ts.selectedProject.data.name,
+        ...ts!.selectedProject.data.hierarchy,
+        ts!.selectedProject.data.name,
       ];
 
       const prefix = commonPrefix(task.project, hierarchy.join("."));
@@ -164,7 +164,7 @@ const TaskWidget = (task: Task) => {
       children: [Project, Due],
     }),
     // onButtonPressed: () => {
-    //   ts.selectedTask = task;
+    //   ts!.selectedTask = task;
     // },
   });
 };
@@ -174,6 +174,7 @@ const TaskWidget = (task: Task) => {
  *****************************************************************************/
 
 export default () => {
+  ts = Tasks.get_default();
   const ListBox = astalify(Gtk.ListBox);
 
   const CommandBar = Widget.Entry({
@@ -186,10 +187,10 @@ export default () => {
     hexpand: true,
     vexpand: true,
     setup: (self) => {
-      hook(self, ts, "notify::displayed-tasks", () => {
+      hook(self, ts!, "notify::displayed-tasks", () => {
         self.remove_all();
 
-        const dt = ts.displayedTasks;
+        const dt = ts!.displayedTasks;
 
         if (dt == undefined) {
           self.append(Placeholder());

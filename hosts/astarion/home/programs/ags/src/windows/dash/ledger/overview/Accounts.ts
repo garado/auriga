@@ -18,7 +18,7 @@ import Ledger, { Account } from "@/services/Ledger";
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+let ledgerService: InstanceType<typeof Ledger> | undefined = undefined;
 
 /*****************************************************************************
  * Constants
@@ -135,7 +135,7 @@ const createSummaryAccountWidget = (
 ) =>
   createAccountWidget({
     displayName: summaryConfig.displayName,
-    total: bind(ledgerService, summaryConfig.dataBinding),
+    total: bind(ledgerService!, summaryConfig.dataBinding),
   });
 
 /**
@@ -143,7 +143,7 @@ const createSummaryAccountWidget = (
  * @returns Array of widgets representing user accounts
  */
 const createUserAccountWidgets = () =>
-  bind(ledgerService, "accountData").as((accounts) =>
+  bind(ledgerService!, "accountData").as((accounts) =>
     accounts?.map(createAccountWidget),
   );
 
@@ -154,6 +154,8 @@ const createUserAccountWidgets = () =>
  * @returns Widget containing the complete accounts interface
  */
 export const Accounts = () => {
+  ledgerService = Ledger.get_default();
+
   return Widget.Box({
     cssClasses: [CSS_CLASSES.accounts],
     orientation: Gtk.Orientation.VERTICAL,

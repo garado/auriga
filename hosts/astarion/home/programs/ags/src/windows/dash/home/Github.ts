@@ -38,7 +38,7 @@ const CSS_CLASSES = {
 
 const DrawingArea = astalify(Gtk.DrawingArea);
 
-const github = GithubService.get_default();
+let github: InstanceType<typeof GithubService> | undefined = undefined;
 
 let intensityColors: string[] = [];
 let cachedDrawData: Array<{ intensity: number }> | null = null;
@@ -48,7 +48,7 @@ let cachedDrawData: Array<{ intensity: number }> | null = null;
  *****************************************************************************/
 
 const processCachedData = () => {
-  cachedDrawData = github.contributions
+  cachedDrawData = github!.contributions
     .slice(0, MAX_CONTRIB_BOXES)
     .map((contrib) => ({
       intensity: Math.min(contrib?.intensity || 0, intensityColors.length - 1),
@@ -96,7 +96,7 @@ const ContribGrid = () =>
         });
       });
 
-      hook(self, github, "notify::contributions", () => {
+      hook(self, github!, "notify::contributions", () => {
         processCachedData();
         self.queue_draw();
       });
@@ -108,8 +108,10 @@ const ContribGrid = () =>
     },
   });
 
-export const Github = () =>
-  Widget.Box({
+export const Github = () => {
+  github = GithubService.get_default();
+
+  return Widget.Box({
     cssClasses: [CSS_CLASSES.CONTAINER, "widget-container"],
     vertical: true,
     children: [
@@ -124,3 +126,4 @@ export const Github = () =>
       ContribGrid(),
     ],
   });
+};

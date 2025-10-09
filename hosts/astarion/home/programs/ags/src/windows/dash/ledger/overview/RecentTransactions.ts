@@ -19,7 +19,7 @@ import Ledger, { TransactionData } from "@/services/Ledger";
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+let ledgerService: InstanceType<typeof Ledger> | undefined = undefined;
 
 const ScrollableWindow = astalify(Gtk.ScrolledWindow);
 
@@ -194,7 +194,7 @@ const createTransactionContainer = () =>
     vertical: true,
     homogeneous: true,
     spacing: LAYOUT.transactionSpacing,
-    children: bind(ledgerService, "recentTransactions").as((transactions) => {
+    children: bind(ledgerService!, "recentTransactions").as((transactions) => {
       if (transactions === null) {
         // TODO: Investigate why transactions can be null and handle appropriately
         return [];
@@ -235,6 +235,8 @@ const createScrollableTransactionsContainer = () =>
  * @returns Widget containing the complete transactions interface
  */
 export const Transactions = () => {
+  ledgerService = Ledger.get_default();
+
   return Widget.Box({
     vertical: true,
     cssClasses: [CSS_CLASSES.widgetContainer],

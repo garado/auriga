@@ -14,8 +14,6 @@ import LocationAutocomplete, {
 } from "@/services/LocationAutocomplete";
 import { sidebarContent, tripPlan } from "../../StateManagement";
 
-const autocomplete = LocationAutocomplete.get_default();
-
 export const SearchBox = (props: {
   /** Placeholder text for the search box */
   placeholder: string;
@@ -33,7 +31,9 @@ export const SearchBox = (props: {
     onActivate: async (self) => {
       // Call locationIQ API to autocomplete location
       try {
-        const responses = await autocomplete.searchNear(self.text);
+        const responses = await LocationAutocomplete.get_default().searchNear(
+          self.text,
+        );
         sidebarContent.children = responses.map((resp) => {
           tripPlan.set(undefined);
           return Prediction(resp, props.selectionTarget);

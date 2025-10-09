@@ -27,7 +27,7 @@ import { EventBox } from "@/windows/dash/calendar/week/EventBox";
  * Module-level variables
  *****************************************************************************/
 
-const cal = Calendar.get_default();
+let cal: InstanceType<typeof Calendar> | undefined = undefined;
 
 const DAYS_PER_WEEK = 7;
 const REALIZATION_TIMEOUT_MS = 50;
@@ -101,6 +101,8 @@ export class _AllDayGrid extends Gtk.Fixed {
     this.eventWidgets = [];
     this.nextWidgetId = 0;
 
+    cal = Calendar.get_default();
+
     // Update this widget when new data is available
     hook(this, cal, "weekdates-changed", () => {
       this.onNewDataAvailable();
@@ -128,8 +130,8 @@ export class _AllDayGrid extends Gtk.Fixed {
    */
   private onNewDataAvailable = () => {
     // Store new data
-    this.weekEvents = cal.weekEvents;
-    this.weekDates = cal.weekDates;
+    this.weekEvents = cal!.weekEvents;
+    this.weekDates = cal!.weekDates;
 
     // Reset widget state
     this.clearAllEventWidgets();
@@ -153,7 +155,7 @@ export class _AllDayGrid extends Gtk.Fixed {
    * Only render the widget if data is available AND size is allocated.
    */
   private tryRender = () => {
-    if (this.isRealized && cal.initComplete) {
+    if (this.isRealized && cal!.initComplete) {
       this.renderAllDayEvents();
     }
   };
@@ -246,7 +248,7 @@ export class _AllDayGrid extends Gtk.Fixed {
       let width = dayWidth;
       let eventStartDay = 0;
       let eventEndDay = DAYS_PER_WEEK - 1;
-      const displayDaySpan = cal.displayDaySpan(currentEvent);
+      const displayDaySpan = cal!.displayDaySpan(currentEvent);
 
       if (startIndex !== -1) {
         // Event starts within this week
