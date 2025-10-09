@@ -71,11 +71,11 @@ const KEYBOARD_SHORTCUTS = {
  */
 const GoalAnnotationsSection = () => {
   /**
-   * Creates a widget for displaying a single annotation.
+   * Displays a single annotation.
    * @param annotation - The annotation to display
    * @returns Widget containing annotation date and content
    */
-  const createAnnotationWidget = (annotation: Annotation) =>
+  const AnnotationWidget = (annotation: Annotation) =>
     Widget.Box({
       children: [
         Widget.Label({
@@ -102,7 +102,7 @@ const GoalAnnotationsSection = () => {
         xalign: 0,
       }),
       bind(goalsService, "sidebarGoal").as(
-        (goal) => goal?.annotations!.map(createAnnotationWidget) ?? [],
+        (goal) => goal?.annotations!.map(AnnotationWidget) ?? [],
       ),
     ],
   });
@@ -114,19 +114,16 @@ const GoalAnnotationsSection = () => {
  */
 const GoalChildrenSection = () => {
   /**
-   * Creates a widget for displaying a single child goal.
+   * Displays a single child goal.
    * @param childGoal - The child goal to display
    * @returns Widget containing child goal icon and description
    */
-  const createChildGoalWidget = (childGoal: Goal) => {
+  const ChildGoalWidget = (childGoal: Goal) => {
     const iconName =
       childGoal.status === "completed"
         ? STATUS_ICONS.completed
         : STATUS_ICONS.default;
 
-    /**
-     * Handles navigation to the child goal.
-     */
     const handleChildGoalNavigation = () => {
       goalsService.sidebarBreadcrumbs.push(goalsService.sidebarGoal);
       goalsService.sidebarBreadcrumbIndex++;
@@ -168,7 +165,7 @@ const GoalChildrenSection = () => {
         xalign: 0,
       }),
       bind(goalsService, "sidebarGoal").as(
-        (goal) => goal?.children.map(createChildGoalWidget) ?? [],
+        (goal) => goal?.children.map(ChildGoalWidget) ?? [],
       ),
     ],
   });
@@ -182,11 +179,11 @@ const GoalDetailsSection = () => {
   const DetailsList = astalify(Gtk.ListBox);
 
   /**
-   * Creates a label widget for form field keys.
+   * Label widget for form field keys.
    * @param labelText - The label text to display
    * @returns Widget containing the field label
    */
-  const createFieldLabel = (labelText: string) =>
+  const FieldLabel = (labelText: string) =>
     Widget.Label({
       cssClasses: [CSS_CLASSES.fieldKey],
       xalign: 0,
@@ -195,10 +192,10 @@ const GoalDetailsSection = () => {
     });
 
   /**
-   * Creates an editable entry widget for the goal's project/category.
+   * Editable entry widget for the goal's project/category.
    * @returns Widget for editing goal project
    */
-  const createProjectEntry = () =>
+  const ProjectEntry = () =>
     Widget.Entry({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
@@ -211,10 +208,10 @@ const GoalDetailsSection = () => {
     });
 
   /**
-   * Creates a read-only label for the goal's status.
+   * Read-only label for the goal's status.
    * @returns Widget displaying goal status
    */
-  const createStatusLabel = () =>
+  const StatusLabel = () =>
     Widget.Label({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
@@ -225,10 +222,10 @@ const GoalDetailsSection = () => {
     });
 
   /**
-   * Creates an editable entry widget for the goal's due date.
+   * Editable entry widget for the goal's due date.
    * @returns Widget for editing goal due date
    */
-  const createDueDateEntry = () =>
+  const DueDateEntry = () =>
     Widget.Entry({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
@@ -241,10 +238,10 @@ const GoalDetailsSection = () => {
     });
 
   /**
-   * Creates an editable entry widget for the goal's icon.
+   * Editable entry widget for the goal's icon.
    * @returns Widget for editing goal icon
    */
-  const createIconEntry = () =>
+  const IconEntry = () =>
     Widget.Entry({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
@@ -257,13 +254,10 @@ const GoalDetailsSection = () => {
     });
 
   /**
-   * Creates a clickable label for navigating to the parent goal.
+   * Clickable label for navigating to the parent goal.
    * @returns Widget for parent goal navigation
    */
-  const createParentNavigationLabel = () => {
-    /**
-     * Handles navigation to the parent goal.
-     */
+  const ParentNavigationLabel = () => {
     const handleParentNavigation = () => {
       const parentGoal = goalsService.sidebarBreadcrumbs.pop();
       if (parentGoal) {
@@ -286,10 +280,10 @@ const GoalDetailsSection = () => {
   };
 
   /**
-   * Creates a selectable label for displaying the goal's UUID.
+   * Selectable label for displaying the goal's UUID.
    * @returns Widget displaying shortened UUID
    */
-  const createUUIDLabel = () =>
+  const UUIDLabel = () =>
     Widget.Label({
       cssClasses: [CSS_CLASSES.fieldValue],
       hexpand: true,
@@ -301,10 +295,10 @@ const GoalDetailsSection = () => {
     });
 
   /**
-   * Creates a multi-line text view for editing the goal's "why" field.
+   * Multi-line text view for editing the goal's "why" field.
    * @returns Widget for editing goal purpose/reasoning
    */
-  const createWhyTextView = () => {
+  const WhyTextView = () => {
     const textView = astalify(Gtk.TextView)({
       hexpand: true,
       vexpand: true,
@@ -338,10 +332,10 @@ const GoalDetailsSection = () => {
   };
 
   /**
-   * Creates a dropdown widget for selecting timescale.
+   * Dropdown widget for selecting timescale.
    * @returns Widget for timescale selection
    */
-  const createTimescaleDropdown = () =>
+  const TimescaleDropdown = () =>
     Dropdown({
       exclusive: true,
     });
@@ -352,19 +346,19 @@ const GoalDetailsSection = () => {
     vexpand: false,
     setup: (self) => {
       const formFields = [
-        ["Category", createProjectEntry()],
-        ["Status", createStatusLabel()],
-        ["Due", createDueDateEntry()],
-        ["Parent", createParentNavigationLabel()],
-        ["Timescale", createTimescaleDropdown()],
-        ["Why", createWhyTextView()],
-        ["Icon", createIconEntry()],
-        ["UUID", createUUIDLabel()],
+        ["Category", ProjectEntry()],
+        ["Status", StatusLabel()],
+        ["Due", DueDateEntry()],
+        ["Parent", ParentNavigationLabel()],
+        ["Timescale", TimescaleDropdown()],
+        ["Why", WhyTextView()],
+        ["Icon", IconEntry()],
+        ["UUID", UUIDLabel()],
       ];
 
       formFields.forEach(([labelText, valueWidget]) => {
         const fieldRow = Widget.Box({
-          children: [createFieldLabel(labelText), valueWidget],
+          children: [FieldLabel(labelText), valueWidget],
         });
 
         self.append(fieldRow);
@@ -374,15 +368,14 @@ const GoalDetailsSection = () => {
 };
 
 /**
- * Creates the top section of the sidebar with navigation and goal title.
+ * Top section of the sidebar with navigation and goal title.
  * @returns Widget containing sidebar header
  */
-const createSidebarHeader = () => {
+const SidebarHeader = () => {
   /**
-   * Creates a close button for the sidebar.
-   * @returns Widget for closing sidebar
+   * Close button for the sidebar.
    */
-  const createCloseButton = () =>
+  const CloseButton = () =>
     Widget.Image({
       halign: Gtk.Align.START,
       iconName: STATUS_ICONS.close,
@@ -393,13 +386,9 @@ const createSidebarHeader = () => {
     });
 
   /**
-   * Creates navigation breadcrumbs for goal hierarchy.
-   * @returns Widget containing breadcrumb navigation
+   * Navigation breadcrumbs for goal hierarchy.
    */
-  const createBreadcrumbNavigation = () => {
-    /**
-     * Handles navigation to the previous goal in breadcrumb trail.
-     */
+  const BreadcrumbNavigation = () => {
     const handleBreadcrumbNavigation = () => {
       if (goalsService.sidebarBreadcrumbs.length > 0) {
         const previousGoal = goalsService.sidebarBreadcrumbs.pop();
@@ -431,10 +420,9 @@ const createSidebarHeader = () => {
   };
 
   /**
-   * Creates a label displaying the current goal's description.
-   * @returns Widget containing goal description
+   * Label displaying the current goal's description.
    */
-  const createGoalDescriptionLabel = () =>
+  const GoalDescriptionLabel = () =>
     Widget.Label({
       cssClasses: [CSS_CLASSES.goalDescription],
       label: bind(goalsService, "sidebarGoal").as(
@@ -451,10 +439,10 @@ const createSidebarHeader = () => {
     children: [
       Widget.CenterBox({
         orientation: Gtk.Orientation.HORIZONTAL,
-        startWidget: createBreadcrumbNavigation(),
-        endWidget: createCloseButton(),
+        startWidget: BreadcrumbNavigation(),
+        endWidget: CloseButton(),
       }),
-      createGoalDescriptionLabel(),
+      GoalDescriptionLabel(),
       GoalDetailsSection(),
       GoalChildrenSection(),
       GoalAnnotationsSection(),
@@ -473,6 +461,6 @@ export const Sidebar = () => {
     vertical: true,
     vexpand: true,
     hexpand: true,
-    children: [createSidebarHeader()],
+    children: [SidebarHeader()],
   });
 };
