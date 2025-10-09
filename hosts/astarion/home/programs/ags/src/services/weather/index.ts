@@ -273,7 +273,7 @@ export default class OpenWeather extends GObject.Object {
       cmd = `bash -c "cat ${CACHE_VALIDITY.forecast.file}"`;
     } else {
       // Query data from API
-      const url = `${BASE_URL}/forecast?cnt=4&lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}`;
+      const url = `${BASE_URL}/forecast?cnt=5&lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}`;
       cmd = `bash -c "curl -s '${url}' | tee ${CACHE_VALIDITY.forecast.file}"`;
     }
 

@@ -136,6 +136,7 @@ const Forecast = () => {
     cssClasses: [CSS_CLASSES.FORECAST],
     spacing: 8,
     vertical: false,
+    homogeneous: true,
     children: bind(weatherSvc, "forecast").as((forecasts) =>
       forecasts?.map(HourlyForecast),
     ),
@@ -150,6 +151,7 @@ export const Weather = () => {
   return Widget.Box({
     cssClasses: [CSS_CLASSES.CONTAINER],
     vertical: true,
+    spacing: 12,
     children: [
       Widget.CenterBox({
         orientation: Gtk.Orientation.HORIZONTAL,
