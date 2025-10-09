@@ -54,13 +54,13 @@ export const Profile = () => {
     vertical: true,
     hexpand: false,
     vexpand: false,
-    halign: Gtk.Align.BASELINE_CENTER,
-    valign: Gtk.Align.BASELINE_CENTER,
+    halign: Gtk.Align.CENTER,
+    valign: Gtk.Align.CENTER,
     cssClasses: ["profile"],
     children: [
       Widget.Box({
-        halign: Gtk.Align.BASELINE_CENTER,
-        hexpand: true,
+        halign: Gtk.Align.CENTER,
+        hexpand: false,
         cssClasses: ["pfp-container"],
         children: [Pfp()],
       }),

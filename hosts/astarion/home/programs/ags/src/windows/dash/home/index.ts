@@ -63,10 +63,17 @@ export default () => {
     },
   });
 
-  return Widget.Box({
-    vertical: false,
+  return Grid({
     cssClasses: ["home"],
-    spacing: WIDGET_SPACING,
-    children: [Left, Middle, Right],
+    setup: (self) => {
+      /* Widget, Col, Row, Width, Height*/
+      self.attach(Left, 0, 0, 1, 1);
+      self.attach(Middle, 1, 0, 1, 1);
+      self.attach(Right, 2, 0, 1, 1);
+
+      self.set_column_homogeneous(true);
+      self.set_row_spacing(WIDGET_SPACING);
+      self.set_column_spacing(WIDGET_SPACING);
+    },
   });
 };

@@ -29,7 +29,7 @@ const contribCount = Variable(0);
 const MAX_INTENSITY = 5;
 const MAX_CONTRIB_BOXES = 180;
 const NUM_ROWS = 7;
-const SQUARE_WIDTH = 10;
+const SQUARE_WIDTH = 9;
 const SQUARE_SPACING = 8;
 
 let intensityColors = {};
@@ -139,7 +139,6 @@ const ContribGrid = () =>
 export const Github = () =>
   Widget.Box({
     cssClasses: ["github", "widget-container"],
-    hexpand: true,
     vertical: true,
     spacing: 2,
     children: [

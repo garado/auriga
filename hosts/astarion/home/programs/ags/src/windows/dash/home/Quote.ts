@@ -46,7 +46,6 @@ const QuoteText = () =>
   Widget.Label({
     cssClasses: ["quote-text"],
     wrap: true,
-    hexpand: true,
     vexpand: true,
     justify: Gtk.Justification.CENTER,
     maxWidthChars: 24,
@@ -56,8 +55,6 @@ const QuoteText = () =>
 const Author = () =>
   Widget.Label({
     cssClasses: ["author"],
-    hexpand: true,
-    vexpand: true,
     justify: Gtk.Justification.CENTER,
     label: bind(currentQuote).as((value) => value[AUTHOR_INDEX]),
   });
