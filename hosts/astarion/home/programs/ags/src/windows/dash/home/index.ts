@@ -16,6 +16,7 @@ import { Clock } from "@/windows/dash/home/Clock";
 import { Github } from "@/windows/dash/home/Github";
 import { Quote } from "@/windows/dash/home/Quote";
 import { Music } from "@/windows/dash/home/Music";
+import { NotBeatPrints } from "@/windows/dash/home/NotBeatPrints";
 import { Weather } from "./Weather";
 import { PinnedGoals } from "./PinnedGoals";
 
@@ -48,7 +49,8 @@ export default () => {
   const Middle = Grid({
     setup: (self) => {
       // Widget, Col, Row, Width, Height
-      self.attach(Music(), 1, 3, 1, 1);
+      self.attach(Weather(), 0, 0, 1, 1);
+      self.attach(NotBeatPrints(), 0, 1, 1, 1);
 
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
@@ -58,8 +60,7 @@ export default () => {
   const Right = Grid({
     setup: (self) => {
       /* Widget, Col, Row, Width, Height*/
-      self.attach(Weather(), 0, 0, 1, 1);
-      self.attach(PinnedGoals(), 0, 1, 1, 1);
+      self.attach(PinnedGoals(), 0, 0, 1, 1);
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
     },

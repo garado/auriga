@@ -20,7 +20,7 @@ import GithubService from "@/services/Github";
  *****************************************************************************/
 
 const MAX_INTENSITY = 5;
-const MAX_CONTRIB_BOXES = 180;
+const MAX_CONTRIB_BOXES = 160;
 const NUM_ROWS = 7;
 const SQUARE_WIDTH = 9;
 const SQUARE_SPACING = 8;

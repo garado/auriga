@@ -54,38 +54,24 @@
  * Media player
  *********************************************/
 
-.home .player-container
+.home .not-beatprints
+  padding: 1.8rem
+
   .cover-art
-    border-radius: $border-radius
-    min-width: 10rem
-    min-height: 10rem
-    background-image: url('/home/alexis/Github/dotfiles/home/services/ags/assets/no-music.jpg')
     transition: all 0.25s ease-out
     background-size: 100%
     background-position: center
-    opacity: 0.3
+    opacity: 0.6
+
+  .title
+    font-size: 1.8rem
+    text-transform: uppercase
+  
+  .artist
+    font-size: 1.2rem
  
-  .album-art-gradient
-    border-radius: $border-radius
-    background-size: cover
-    background-position: center
-    opacity: 0.3
-    background: $primary-500
-
-  .info
-    margin: 1.5rem
+  .visualizer
     color: $neutral-100
-    background-color: rgba(0, 0, 0, 0)
-
-    .artist
-      font-size: 1rem
-
-    .title
-      font-size: 1.8rem
-      font-weight: 500
-
-  .kotontrion-cava
-    color: $primary-500
 
 /*********************************************
  * RSS

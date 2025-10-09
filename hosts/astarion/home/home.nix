@@ -94,6 +94,7 @@
       # gtksourceview5 // sadge
       libshumate /* Transit */
       gvfs /* Needed for fetching cover art */
+      imagemagick /* Cover art color analysis */
       inputs.ags.packages.${pkgs.system}.apps
       inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.auth
