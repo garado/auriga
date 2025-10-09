@@ -18,7 +18,16 @@
     font-size: 2rem
 
   .search-container
+    border-radius: $border-radius
+    padding: 0.1rem 1rem
     font-size: 1rem
+    border: 0.1rem solid
+    border-color: $neutral-900
+    transition: all 0.15s
+
+    &:focus-within
+      border-color: $neutral-100
+      color: $neutral-100
 
   .filters
     min-height: 2.5rem
