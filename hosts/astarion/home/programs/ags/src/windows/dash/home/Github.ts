@@ -50,6 +50,7 @@ let cachedDrawData: Array<{ intensity: number }> | null = null;
 const processCachedData = () => {
   cachedDrawData = github!.contributions
     .slice(0, MAX_CONTRIB_BOXES)
+    .reverse()
     .map((contrib) => ({
       intensity: Math.min(contrib?.intensity || 0, intensityColors.length - 1),
     }));
