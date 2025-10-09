@@ -46,39 +46,39 @@ const CSS_CLASSES = {
   TARGET: "target",
 } as const;
 
-const GRAPH_CONFIG = {
-  BALANCE_OVER_TIME: {
-    name: "Balance over time",
-    values: bind(ledgerService!, "balancesOverTime"),
-    calculateFit: true,
-    cssClass: CSS_CLASSES.BALANCE,
-    xIntersect: {
-      enable: true,
-      label: true,
-      labelTransform: formatLargeNumber,
-    },
-  },
-
-  // @TODO Make this user-configurable. Would be cool if runtime-configurable
-  FIRE_TARGET: {
-    name: "FIRE target",
-    values: Array.from({ length: 365 * 2 }, (_, i) => i * 160),
-    cssClass: CSS_CLASSES.TARGET,
-    dashed: true,
-    xIntersect: {
-      enable: true,
-      label: true,
-      labelTransform: formatLargeNumber,
-    },
-  },
-} as const;
-
 /*****************************************************************************
  * Widget definitions
  *****************************************************************************/
 
 export const FIREGraph = () => {
   ledgerService = Ledger.get_default();
+
+  const GRAPH_CONFIG = {
+    BALANCE_OVER_TIME: {
+      name: "Balance over time",
+      values: bind(ledgerService!, "balancesOverTime"),
+      calculateFit: true,
+      cssClass: CSS_CLASSES.BALANCE,
+      xIntersect: {
+        enable: true,
+        label: true,
+        labelTransform: formatLargeNumber,
+      },
+    },
+
+    // @TODO Make this user-configurable. Would be cool if runtime-configurable
+    FIRE_TARGET: {
+      name: "FIRE target",
+      values: Array.from({ length: 365 * 2 }, (_, i) => i * 160),
+      cssClass: CSS_CLASSES.TARGET,
+      dashed: true,
+      xIntersect: {
+        enable: true,
+        label: true,
+        labelTransform: formatLargeNumber,
+      },
+    },
+  } as const;
 
   return Widget.Box({
     children: [
