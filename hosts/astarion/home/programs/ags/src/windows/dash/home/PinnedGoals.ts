@@ -70,6 +70,10 @@ export const PinnedGoalsContainer = () => {
       hook(self, Goals.get_default(), "render-goals", () => {
         self.children = Goals.get_default().getPinnedGoals().map(PinnedGoal);
       });
+
+      hook(self, Goals.get_default(), "pinned-goals-updated", () => {
+        self.children = Goals.get_default().getPinnedGoals().map(PinnedGoal);
+      });
     },
   });
 };

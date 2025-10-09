@@ -12,7 +12,7 @@
 import { GObject, register, property, signal } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
-import { FuzzyFind, scoreMatch } from "@/utils/FuzzyFind.js";
+import { scoreMatch } from "@/utils/FuzzyFind.js";
 import SettingsManager from "./settings";
 
 /*****************************************************************************
@@ -135,6 +135,9 @@ export default class Goals extends GObject.Object {
 
   @signal(Object)
   declare renderGoals: (data: any) => void;
+
+  @signal()
+  declare pinnedGoalsUpdated: () => void;
 
   // Private functions --------------------------------------------------------
   constructor() {
@@ -268,14 +271,13 @@ export default class Goals extends GObject.Object {
    * @param {Goal} goal - The goal to check.
    */
   #isTaskFailed = (goal: Goal) => {
-    // if (goal.status == "completed" && goal.annotations != undefined) {
-    //   for (const x of goal.annotations) {
-    //     if (x.description == "failed") {
-    //       return true;
-    //     }
-    //   }
-    // }
-    return false;
+    if (goal.status == "completed" && goal.annotations != undefined) {
+      for (const x of goal.annotations) {
+        if (x.description == "failed") {
+          return true;
+        }
+      }
+    }
   };
 
   /**
@@ -470,13 +472,20 @@ export default class Goals extends GObject.Object {
       ]);
     } catch (err) {
       console.error(err);
+      return;
     }
 
+    // Update goals object
     goal[modType] = value;
 
-    // Reload
+    // Refresh filter results
     if (value === "timescale" || value === "status") {
       this.filtersUpdated();
+    }
+
+    // Send UI update signals as appropriate
+    if (modType === "pinned") {
+      this.emit("pinned-goals-updated");
     }
   };
 
@@ -488,7 +497,7 @@ export default class Goals extends GObject.Object {
     const pinned: Goal[] = [];
 
     const traverse = (node: Goal) => {
-      if (node.pinned) {
+      if (node.pinned === true) {
         pinned.push(node);
       }
       node.children.forEach((child) => traverse(child));
