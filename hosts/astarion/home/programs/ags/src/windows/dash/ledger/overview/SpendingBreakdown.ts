@@ -20,7 +20,7 @@ import Ledger from "@/services/Ledger";
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+let ledgerService: InstanceType<typeof Ledger> | undefined = undefined;
 
 /*****************************************************************************
  * Constants
@@ -70,7 +70,7 @@ const createChartContainer = () =>
     hpack: "center",
     vpack: "center",
     spacing: LAYOUT.chartContainerSpacing,
-    children: bind(ledgerService, "recentCategorySpending").as(
+    children: bind(ledgerService!, "recentCategorySpending").as(
       (spendingBreakdown) => {
         if (spendingBreakdown === undefined) {
           // Return empty array when no data is available
@@ -113,6 +113,8 @@ const createBreakdownContent = () =>
  * @returns Widget containing the complete spending breakdown interface
  */
 export const SpendingBreakdown = () => {
+  ledgerService = Ledger.get_default();
+
   return Widget.Box({
     vertical: true,
     hexpand: true,

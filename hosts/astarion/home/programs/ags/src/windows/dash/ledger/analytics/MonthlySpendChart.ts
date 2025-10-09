@@ -19,7 +19,7 @@ import Bar from "./BarGraphBar";
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+let ledgerService: InstanceType<typeof Ledger> | undefined = undefined;
 
 /*****************************************************************************
  * Constants
@@ -304,7 +304,7 @@ const createComponentHeader = () =>
 const createCenteredCategoriesContainer = () =>
   Widget.Box({
     halign: Gtk.Align.CENTER,
-    children: bind(ledgerService, "monthlySpendingByCategory").as(
+    children: bind(ledgerService!, "monthlySpendingByCategory").as(
       (spendingData) => createCategoriesContainer(spendingData),
     ),
   });
@@ -320,6 +320,8 @@ const createCenteredCategoriesContainer = () =>
  * @returns Widget containing the complete monthly spending visualization
  */
 export const MonthlySpendChart = () => {
+  ledgerService = Ledger.get_default();
+
   return Widget.Box({
     name: "monthly-spending-bar-graph",
     cssClasses: [CSS_CLASSES.widgetContainer, CSS_CLASSES.barGraph],

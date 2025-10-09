@@ -22,7 +22,7 @@ import InteractiveGraph from "@/components/InteractiveGraph";
  * Module-level variables
  *****************************************************************************/
 
-const ledgerService = Ledger.get_default();
+let ledgerService: InstanceType<typeof Ledger> | undefined = undefined;
 
 /*****************************************************************************
  * Helper functions
@@ -49,7 +49,7 @@ const CSS_CLASSES = {
 const GRAPH_CONFIG = {
   BALANCE_OVER_TIME: {
     name: "Balance over time",
-    values: bind(ledgerService, "balancesOverTime"),
+    values: bind(ledgerService!, "balancesOverTime"),
     calculateFit: true,
     cssClass: CSS_CLASSES.BALANCE,
     xIntersect: {
@@ -78,6 +78,8 @@ const GRAPH_CONFIG = {
  *****************************************************************************/
 
 export const FIREGraph = () => {
+  ledgerService = Ledger.get_default();
+
   return Widget.Box({
     children: [
       InteractiveGraph({
