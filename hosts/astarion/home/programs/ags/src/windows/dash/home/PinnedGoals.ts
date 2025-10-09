@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 import Goals, { Goal } from "@/services/Goals";
-import { hook, Widget } from "astal/gtk4";
+import { Gtk, hook, Widget } from "astal/gtk4";
 import { setActiveTabByName } from "..";
 
 /*****************************************************************************
@@ -86,9 +86,19 @@ export const PinnedGoals = () => {
     vertical: true,
     spacing: 12,
     children: [
-      Widget.Label({
-        label: "Pinned Goals",
-        cssClasses: [CSS_CLASSES.HEADER],
+      Widget.Box({
+        vertical: false,
+        halign: Gtk.Align.CENTER,
+        spacing: 8,
+        children: [
+          Widget.Image({
+            iconName: "push-pin-symbolic",
+          }),
+          Widget.Label({
+            label: "Pinned Goals",
+            cssClasses: [CSS_CLASSES.HEADER],
+          }),
+        ],
       }),
       PinnedGoalsContainer(),
     ],
