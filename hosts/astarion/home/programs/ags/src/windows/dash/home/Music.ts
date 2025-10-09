@@ -147,7 +147,7 @@ export const Music = () =>
     vertical: true,
     vexpand: true,
     hexpand: true,
-    valign: Gtk.Align.CENTER,
-    halign: Gtk.Align.CENTER,
+    valign: Gtk.Align.FILL,
+    halign: Gtk.Align.FILL,
     children: bind(mpris, "players").as((arr) => MediaPlayer(arr[0])),
   });
