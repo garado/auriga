@@ -18,7 +18,7 @@ import { Gtk, Widget } from "astal/gtk4";
  * Module-level variables
  *****************************************************************************/
 
-const weatherSvc = OpenWeather.get_default();
+let weather: InstanceType<typeof OpenWeather> | undefined = undefined;
 
 const CSS_CLASSES = {
   CONTAINER: "weather",
@@ -63,7 +63,7 @@ const Overview = () =>
       Widget.Label({
         cssClasses: [CSS_CLASSES.OVERVIEW_TEXT],
         wrap: true,
-        label: bind(weatherSvc, "current").as(
+        label: bind(weather!, "current").as(
           (cw) =>
             `${Math.round(cw?.main.temp || 0)}° and ${cw?.main.humidity}% humidity in ${cw?.name} with ${cw?.weather[0].description}`,
         ),
@@ -81,7 +81,7 @@ const HiLo = () => {
       }),
       Widget.Label({
         cssClasses: [CSS_CLASSES.HI_LO_TEMP],
-        label: bind(weatherSvc, "current").as(
+        label: bind(weather!, "current").as(
           (cw) => `${Math.round(cw?.main.temp_max || 0)}°`,
         ),
       }),
@@ -97,7 +97,7 @@ const HiLo = () => {
       }),
       Widget.Label({
         cssClasses: [CSS_CLASSES.HI_LO_TEMP],
-        label: bind(weatherSvc, "current").as(
+        label: bind(weather!, "current").as(
           (cw) => `${Math.round(cw?.main.temp_min || 0)}°`,
         ),
       }),
@@ -137,7 +137,7 @@ const Forecast = () => {
     spacing: 8,
     vertical: false,
     homogeneous: true,
-    children: bind(weatherSvc, "forecast").as((forecasts) =>
+    children: bind(weather!, "forecast").as((forecasts) =>
       forecasts?.map(HourlyForecast),
     ),
   });
@@ -148,6 +148,8 @@ const Forecast = () => {
  *****************************************************************************/
 
 export const Weather = () => {
+  weather = OpenWeather.get_default();
+
   return Widget.Box({
     cssClasses: [CSS_CLASSES.CONTAINER],
     vertical: true,
