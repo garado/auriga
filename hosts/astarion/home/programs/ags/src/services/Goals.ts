@@ -12,7 +12,7 @@
 import { GObject, register, property, signal } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
-import { Levenshtein } from "@/utils/FuzzyFind.js";
+import { FuzzyFind, scoreMatch } from "@/utils/FuzzyFind.js";
 import SettingsManager from "./settings";
 
 /*****************************************************************************
@@ -88,7 +88,7 @@ interface Filters {
 
 const goalsConfig = SettingsManager.get_default().config.dashGoals;
 
-const LEVENSHTEIN_MATCH_THRESHOLD = 20;
+const LEVENSHTEIN_MATCH_THRESHOLD = 10;
 
 /*****************************************************************************
  * Class definition
@@ -407,10 +407,10 @@ export default class Goals extends GObject.Object {
     let categoryMatch = true;
 
     if (this.search) {
-      const descScore = Levenshtein(goal.description, this.search);
+      const descScore = scoreMatch(this.search, goal.description);
       descriptionMatch = descScore < LEVENSHTEIN_MATCH_THRESHOLD;
 
-      const catScore = Levenshtein(goal.project, this.search);
+      const catScore = scoreMatch(this.search, goal.project);
       categoryMatch = catScore < LEVENSHTEIN_MATCH_THRESHOLD;
     }
 
