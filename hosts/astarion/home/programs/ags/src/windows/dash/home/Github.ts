@@ -2,9 +2,7 @@
  * █▀▀ █ ▀█▀ █░█ █░█ █▄▄   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █ █▄▄ █▀
  * █▄█ █ ░█░ █▀█ █▄█ █▄█   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █ █▄█ ▄█
  *
- * Github contributions widget.
- *
- * @TODO This needs serious optimization.
+ * Displays Github contributions.
  */
 
 /*****************************************************************************
@@ -12,19 +10,14 @@
  *****************************************************************************/
 
 import { Gtk, Widget, astalify, hook } from "astal/gtk4";
-import { GLib, Variable, bind } from "astal";
-import { exec, execAsync } from "astal/process";
+import { bind } from "astal";
 import SettingsManager from "@/services/settings";
 import { getCairoColorFromClass } from "@/utils/Helpers";
+import GithubService from "@/services/Github";
 
 /*****************************************************************************
- * Module-level variables
+ * Constants
  *****************************************************************************/
-
-const DrawingArea = astalify(Gtk.DrawingArea);
-
-const contribData = Variable({});
-const contribCount = Variable(0);
 
 const MAX_INTENSITY = 5;
 const MAX_CONTRIB_BOXES = 180;
@@ -32,62 +25,46 @@ const NUM_ROWS = 7;
 const SQUARE_WIDTH = 9;
 const SQUARE_SPACING = 8;
 
-let intensityColors = {};
+const CSS_CLASSES = {
+  CONTAINER: "github",
+  HEADER: "header",
+  SUBHEADER: "subheader",
+  CONTRIB_GRID: "contrib-container",
+} as const;
 
-// Populate the contribData and contribCount variables
-// @TODO This is hardcoded
-const url = `${GLib.get_user_cache_dir()}/astal/github/2025-07-27`;
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
-execAsync(`bash -c 'cat ${url}'`)
-  .then((x) => {
-    const out = JSON.parse(x);
+const DrawingArea = astalify(Gtk.DrawingArea);
 
-    // API returns data for the entire year including days in the future
-    // so remove the last (365 - day of year) entries
-    const daysLeftInYear = 365 - Number(exec("date +%j"));
-    contribData.set(out.contributions.slice(daysLeftInYear));
+const github = GithubService.get_default();
 
-    // Count total contribs
-    let _contribCount = 0;
-    out.years.forEach((y) => (_contribCount += y.total));
-    contribCount.set(_contribCount);
-  })
-  .catch((err) => print(err));
+let intensityColors: string[] = [];
+let cachedDrawData: Array<{ intensity: number }> | null = null;
+
+/*****************************************************************************
+ * Functions
+ *****************************************************************************/
+
+const processCachedData = () => {
+  cachedDrawData = github.contributions
+    .slice(0, MAX_CONTRIB_BOXES)
+    .map((contrib) => ({
+      intensity: Math.min(contrib?.intensity || 0, intensityColors.length - 1),
+    }));
+};
 
 const cacheIntensityColors = () => {
   intensityColors = Array.from({ length: MAX_INTENSITY }, (_, i) =>
     getCairoColorFromClass(`intensity-${i}`),
   );
+  processCachedData();
 };
-
-/*****************************************************************************
- * Widget definitions
- *****************************************************************************/
-
-/* Widget for a single contrib square */
-const ContribBox = (intensity = 0) =>
-  DrawingArea({
-    cssClasses: [`intensity-${intensity}`],
-    halign: Gtk.Align.CENTER,
-    valign: Gtk.Align.CENTER,
-    setup: (self) => {
-      const styles = self.get_style_context();
-      const fg = styles.get_color();
-
-      // Size
-      self.set_size_request(SQUARE_WIDTH, SQUARE_WIDTH);
-
-      self.set_draw_func((_, cr: any) => {
-        cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
-        cr.rectangle(0, 0, SQUARE_WIDTH, SQUARE_WIDTH);
-        cr.fill();
-      });
-    },
-  });
 
 const ContribGrid = () =>
   DrawingArea({
-    cssClasses: ["contrib-container"],
+    cssClasses: [CSS_CLASSES.CONTRIB_GRID],
     halign: Gtk.Align.CENTER,
     valign: Gtk.Align.CENTER,
     setup: (self) => {
@@ -104,50 +81,44 @@ const ContribGrid = () =>
       self.set_size_request(totalWidth, totalHeight);
 
       self.set_draw_func((_, cr: any) => {
-        const data = contribData.get();
+        if (!cachedDrawData) return;
 
-        for (let i = 0; i < Math.min(MAX_CONTRIB_BOXES, data.length); i++) {
+        cachedDrawData.forEach((item, i) => {
           const col = Math.floor(i / NUM_ROWS);
           const row = i % NUM_ROWS;
           const x = col * (SQUARE_WIDTH + SQUARE_SPACING);
           const y = row * (SQUARE_WIDTH + SQUARE_SPACING);
 
-          const intensity = Math.min(
-            data[i]?.intensity || 0,
-            intensityColors.length - 1,
-          );
-          const color = intensityColors[intensity];
-
+          const color = intensityColors[item.intensity];
           cr.setSourceRGBA(color.red, color.green, color.blue, color.alpha);
           cr.rectangle(x, y, SQUARE_WIDTH, SQUARE_WIDTH);
           cr.fill();
-        }
+        });
       });
 
-      hook(self, contribData, () => self.queue_draw());
+      hook(self, github, "notify::contributions", () => {
+        processCachedData();
+        self.queue_draw();
+      });
 
       SettingsManager.get_default().connect("notify::current-theme", () => {
         cacheIntensityColors();
+        self.queue_draw();
       });
     },
   });
 
-/*****************************************************************************
- * Composition
- *****************************************************************************/
-
 export const Github = () =>
   Widget.Box({
-    cssClasses: ["github", "widget-container"],
+    cssClasses: [CSS_CLASSES.CONTAINER, "widget-container"],
     vertical: true,
-    spacing: 2,
     children: [
       Widget.Label({
-        cssClasses: ["header"],
-        label: bind(contribCount).as((value) => value.toString()),
+        cssClasses: [CSS_CLASSES.HEADER],
+        label: bind(github, "totalContributions").as((tc) => `${tc}`),
       }),
       Widget.Label({
-        cssClasses: ["subheader"],
+        cssClasses: [CSS_CLASSES.SUBHEADER],
         label: "total lifetime contributions",
       }),
       ContribGrid(),
