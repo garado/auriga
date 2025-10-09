@@ -12,7 +12,7 @@
 import { Project } from "@/services/Tasks";
 import { Gio, GObject } from "astal";
 import { Gtk, Widget } from "astal/gtk4";
-import Ts from "@/services/Tasks";
+import Tasks from "@/services/Tasks";
 import Tree, { TreeNode } from "@/utils/Tree";
 import Pango from "gi://Pango?version=1.0";
 
@@ -20,7 +20,7 @@ import Pango from "gi://Pango?version=1.0";
  * Module-level variables
  *****************************************************************************/
 
-const ts = Ts.get_default();
+let ts: InstanceType<typeof Tasks> | undefined = undefined;
 
 /*****************************************************************************
  * Types, interfaces, classes
@@ -260,8 +260,8 @@ const ProjectTreeList = (data: Tree<Project>) => {
       const treeListRow = model.get_item(selected) as Gtk.TreeListRow;
       const gProject = treeListRow.get_item() as GProjectNodeInterface;
 
-      if (ts.selectedProject != gProject._node) {
-        ts.newProjectSelected(gProject._node);
+      if (ts!.selectedProject != gProject._node) {
+        ts!.newProjectSelected(gProject._node);
       }
     }
   });
@@ -284,14 +284,16 @@ const ProjectTreeList = (data: Tree<Project>) => {
 };
 
 export const ProjectListView = () => {
+  ts = Tasks.get_default();
+
   const box = Widget.Box({
     orientation: Gtk.Orientation.VERTICAL,
     vexpand: true,
     hexpand: false,
     setup: (self) => {
-      ts.connect("notify::data", () => {
-        if (ts.data) {
-          rebuildTreeView(self, ts.data);
+      ts!.connect("notify::data", () => {
+        if (ts!.data) {
+          rebuildTreeView(self, ts!.data);
         }
       });
     },
