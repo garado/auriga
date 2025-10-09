@@ -11,12 +11,13 @@
 
 import { Gtk, astalify } from "astal/gtk4";
 import Calendar from "@/services/Calendar";
+import { GObject } from "astal";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const cal = Calendar.get_default();
+let cal: InstanceType<typeof Calendar> | undefined = undefined;
 
 /*****************************************************************************
  * Helper functions
@@ -26,7 +27,7 @@ const cal = Calendar.get_default();
  * Draw function for nowline (current time indicator)
  */
 const drawNowline = (self: any, cr: any, w: number, h: number) => {
-  if (cal.weekDates.includes(cal.today)) {
+  if (cal!.weekDates.includes(cal!.today)) {
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
@@ -58,6 +59,8 @@ const drawNowline = (self: any, cr: any, w: number, h: number) => {
  *****************************************************************************/
 
 export const Nowline = () => {
+  cal = Calendar.get_default();
+
   const DrawingArea = astalify(Gtk.DrawingArea);
 
   return DrawingArea({
@@ -65,7 +68,7 @@ export const Nowline = () => {
     cssClasses: ["nowline"],
     setup: (self) => {
       self.set_draw_func(drawNowline);
-      cal.connect("notify::week-dates", () => {
+      cal!.connect("notify::week-dates", () => {
         self.queue_draw();
       });
     },

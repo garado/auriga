@@ -26,7 +26,7 @@ import { EventBox } from "@/windows/dash/calendar/week/EventBox";
  * Module-level variables
  *****************************************************************************/
 
-const cal = Calendar.get_default();
+let cal: InstanceType<typeof Calendar> | undefined = undefined;
 
 const DAYS_PER_WEEK = 7;
 const HOURS_PER_DAY = 24;
@@ -109,6 +109,7 @@ export class _WeekGrid extends Gtk.Fixed {
 
   constructor(props?: Partial<WeekGridProps>) {
     super(props as any);
+    cal = Calendar.get_default();
 
     this.vexpand = false;
     this.hexpand = false;
@@ -123,7 +124,7 @@ export class _WeekGrid extends Gtk.Fixed {
 
     // Sometimes calendar service finishes initializing before this widget does.
     // In that case, the hook above won't get triggered. So also run the hook manually.
-    if (cal.initComplete) {
+    if (cal!.initComplete) {
       this.onNewDataAvailable();
     }
 
@@ -146,8 +147,8 @@ export class _WeekGrid extends Gtk.Fixed {
    */
   private onNewDataAvailable = () => {
     // Store new data
-    this.weekEvents = cal.weekEvents;
-    this.weekDates = cal.weekDates;
+    this.weekEvents = cal!.weekEvents;
+    this.weekDates = cal!.weekDates;
 
     // Reset widget state
     this.clearAllEventWidgets();
@@ -172,7 +173,7 @@ export class _WeekGrid extends Gtk.Fixed {
    * Only render the widget if data is available AND size is allocated.
    */
   private tryRender = () => {
-    if (this.isRealized && cal.initComplete) {
+    if (this.isRealized && cal!.initComplete) {
       this.renderAllDays();
     }
   };
