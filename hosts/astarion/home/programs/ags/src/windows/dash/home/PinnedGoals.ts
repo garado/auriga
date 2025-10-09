@@ -1,13 +1,40 @@
+/**
+ * █▀█ █ █▄░█ █▄░█ █▀▀ █▀▄   █▀▀ █▀█ ▄▀█ █░░ █▀
+ * █▀▀ █ █░▀█ █░▀█ ██▄ █▄▀   █▄█ █▄█ █▀█ █▄▄ ▄█
+ *
+ * Displays goals with the custom Taskwarrior UDA `pinned`.
+ * Clicking one navigates to the goals tab to display more info on the target.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import Goals, { Goal } from "@/services/Goals";
 import { hook, Widget } from "astal/gtk4";
+import { setActiveTabByName } from "..";
+
+/*****************************************************************************
+ * Module-level vars
+ *****************************************************************************/
+
+let goalService: InstanceType<typeof Goals> | undefined = undefined;
+
+/*****************************************************************************
+ * Constants
+ *****************************************************************************/
 
 const CSS_CLASSES = {
   CONTAINER: "pinned-goals",
   HEADER: "header",
   GOAL: "goal",
-  GOAL_DESCRIPTIOIN: "description",
+  GOAL_DESCRIPTION: "description",
   GOAL_ICON: "goal-icon",
 } as const;
+
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
 
 const PinnedGoal = (goal: Goal) => {
   return Widget.Box({
@@ -20,13 +47,18 @@ const PinnedGoal = (goal: Goal) => {
         iconName: goal.icon,
       }),
       Widget.Label({
-        cssClasses: [CSS_CLASSES.GOAL_DESCRIPTIOIN],
+        cssClasses: [CSS_CLASSES.GOAL_DESCRIPTION],
         label: goal.description,
         hexpand: true,
         wrap: true,
         xalign: 0,
       }),
     ],
+    onButtonPressed: () => {
+      setActiveTabByName("Goals");
+      goalService!.sidebarGoal = goal;
+      goalService!.sidebarVisible = true;
+    },
   });
 };
 
@@ -43,6 +75,8 @@ export const PinnedGoalsContainer = () => {
 };
 
 export const PinnedGoals = () => {
+  goalService = Goals.get_default();
+
   return Widget.Box({
     cssClasses: [CSS_CLASSES.CONTAINER, "widget-container"],
     vertical: true,

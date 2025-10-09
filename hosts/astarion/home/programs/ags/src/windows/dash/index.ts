@@ -85,6 +85,23 @@ const reorderTabs = (tabs: DashTabData[], order: string[]): DashTabData[] => {
     .filter((tab): tab is DashTabData => tab !== undefined);
 };
 
+const orderedTabs = reorderTabs(dashTabData, customTabOrder);
+
+/** Set active tab by index */
+export const setActiveTab = (index: number) => {
+  if (index >= 0 && index < orderedTabs.length) {
+    activeTabIndex.set(index);
+  }
+};
+
+/** Set active tab by name */
+export const setActiveTabByName = (name: string) => {
+  const index = orderedTabs.findIndex((tab) => tab.name === name);
+  if (index !== -1) {
+    activeTabIndex.set(index);
+  }
+};
+
 /**
  * @function DashTabBar
  * @brief Left-hand tab bar for indicating and switching the currently active tab
@@ -140,8 +157,6 @@ const DashTabStack = (tabSpec: DashTabData[]) =>
  *****************************************************************************/
 
 export default () => {
-  const orderedTabs = reorderTabs(dashTabData, customTabOrder);
-
   const TabBar = DashTabBar(orderedTabs);
   const TabStack = DashTabStack(orderedTabs);
 
