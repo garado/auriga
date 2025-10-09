@@ -19,7 +19,7 @@ import { bind } from "astal";
  * Module-level variables
  *****************************************************************************/
 
-const goalsService = Goals.get_default();
+let goalsService: InstanceType<typeof Goals> | undefined = undefined;
 
 /*****************************************************************************
  * Constants
@@ -90,7 +90,7 @@ const createSearchEntry = () =>
     focusable: true,
     placeholderText: "search...",
     onKeyReleased: (self) => {
-      goalsService.search = self.text;
+      goalsService!.search = self.text;
     },
   });
 
@@ -129,14 +129,14 @@ const createFilterButtonGroup = (
    * @param filterKey - The filter key to toggle
    */
   const defaultUpdateHandler = (filterKey: string) => {
-    const filters = goalsService.filters as Record<string, boolean>;
+    const filters = goalsService!.filters as Record<string, boolean>;
     filters[filterKey] = !filters[filterKey];
-    goalsService.filtersUpdated();
+    goalsService!.filtersUpdated();
   };
 
   const buttons = filterConfig.map(({ key, label }) => ({
     name: label,
-    active: bind(goalsService, "filters").as(
+    active: bind(goalsService!, "filters").as(
       (filters) => (filters as Record<string, boolean>)[key],
     ),
     action: () => {
@@ -217,7 +217,7 @@ const createCategorySelector = () =>
         });
       };
 
-      hook(self, goalsService, "render-goals", handleGoalsRender);
+      hook(self, goalsService!, "render-goals", handleGoalsRender);
     },
   });
 
@@ -259,6 +259,8 @@ const createBottomSection = () => {
  * @returns Widget containing the complete top bar interface
  */
 export default () => {
+  goalsService = Goals.get_default();
+
   return Widget.Box({
     cssClasses: [CSS_CLASSES.topBar],
     vertical: true,

@@ -22,7 +22,7 @@ import SettingsManager from "@/services/settings";
 
 const goalsConfig = SettingsManager.get_default().config.dashGoals;
 
-const gs = Goals.get_default();
+let gs: InstanceType<typeof Goals> | undefined = undefined;
 
 const CSS_CLASSES = {
   GOAL_BOX: "goalbox",
@@ -159,8 +159,8 @@ export class _GoalBox extends Gtk.CenterBox {
    * Opens the sidebar with this goal's details
    */
   private handleClick(): void {
-    gs.sidebarVisible = true;
-    gs.sidebarGoal = this.goal;
+    gs!.sidebarVisible = true;
+    gs!.sidebarGoal = this.goal;
   }
 }
 
@@ -170,5 +170,6 @@ export class _GoalBox extends Gtk.CenterBox {
  * @returns A new GoalBox instance
  */
 export const GoalBox = (props: Partial<GoalBoxProps>) => {
+  gs = Goals.get_default();
   return new _GoalBox(props);
 };

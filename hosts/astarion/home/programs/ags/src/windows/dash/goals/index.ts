@@ -25,7 +25,7 @@ import { Sidebar } from "./Sidebar";
  * Module-level variables
  *****************************************************************************/
 
-const gs = Goals.get_default();
+let gs: InstanceType<typeof Goals> | undefined = undefined;
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
 const FlowBox = astalify(Gtk.FlowBox);
@@ -59,7 +59,7 @@ const KEYBOARD_SHORTCUTS = {
  * @returns True if the goal matches current filters
  */
 const goalFilterFunction = (widget: any) => {
-  return gs.isMatching(widget.child.goal);
+  return gs!.isMatching(widget.child.goal);
 };
 
 /*****************************************************************************
@@ -147,6 +147,8 @@ const createOverlay = () =>
  * @returns The complete goals widget with topbar, content, and sidebar
  */
 export default () => {
+  gs = Goals.get_default();
+
   return Widget.Box({
     cssClasses: [CSS_CLASSES.GOALS],
     vertical: true,
@@ -158,10 +160,10 @@ export default () => {
         widget: self,
         binds: {
           [KEYBOARD_SHORTCUTS.CLOSE_SIDEBAR]: () => {
-            gs.sidebarVisible = false;
+            gs!.sidebarVisible = false;
           },
           [KEYBOARD_SHORTCUTS.REFRESH_GOALS]: () => {
-            gs.fetchGoals();
+            gs!.fetchGoals();
           },
         },
       });
