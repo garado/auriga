@@ -53,7 +53,7 @@ interface GoalBoxProps extends Gtk.Box.ConstructorProps {
  */
 const getCategoryIcon = (projectName: string): string => {
   const categoryIcons = goalsConfig.categoryIcons;
-  return categoryIcons?.[projectName] || "folder-symbolic";
+  return categoryIcons?.[projectName];
 };
 
 /*****************************************************************************
