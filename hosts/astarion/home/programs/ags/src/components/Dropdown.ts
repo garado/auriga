@@ -26,6 +26,9 @@ export type DropDownProps = {
   /** Index of the currently selected item in the list model */
   selected?: number;
 
+  /** Setup function. */
+  setup?: (self: Gtk.Widget) => void;
+
   /** */
   onSelectionChanged?: () => void;
 };
@@ -39,19 +42,22 @@ export const Dropdown = (props: DropDownProps) => {
 
   const customDropdown = dd({
     cssClasses: props.cssClasses,
+    setup: (self) => {
+      if (props.model) {
+        self.set_model(props.model);
+      }
+
+      if (props.selected !== undefined) {
+        self.set_selected(props.selected);
+      }
+
+      if (props.onSelectionChanged) {
+        self.connect("notify::selected", props.onSelectionChanged);
+      }
+
+      props.setup?.(self);
+    },
   });
-
-  if (props.model) {
-    customDropdown.set_model(props.model);
-  }
-
-  if (props.selected) {
-    customDropdown.set_selected(props.selected);
-  }
-
-  if (props.onSelectionChanged) {
-    customDropdown.connect("notify::selected", props.onSelectionChanged);
-  }
 
   return customDropdown;
 };

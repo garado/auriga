@@ -55,6 +55,11 @@ const KEYBOARD_SHORTCUTS = {
   SHIFT_ENTER: Gdk.ModifierType.SHIFT_MASK,
 } as const;
 
+/** List model for timescale dropdown */
+const timescaleOptions = ["<none>", "short", "mid", "long", "aspirational"];
+
+const timescaleListModel = Gtk.StringList.new(timescaleOptions);
+
 /*****************************************************************************
  * Widget definitions
  *****************************************************************************/
@@ -173,7 +178,7 @@ const GoalDetailsSection = () => {
     Widget.Label({
       cssClasses: [CSS_CLASSES.fieldKey],
       xalign: 0,
-      valign: Gtk.Align.START,
+      valign: Gtk.Align.CENTER,
       label: labelText,
     });
 
@@ -299,7 +304,37 @@ const GoalDetailsSection = () => {
   /** Dropdown widget for selecting timescale. */
   const TimescaleDropdown = () =>
     Dropdown({
-      exclusive: true,
+      model: timescaleListModel,
+      setup: (self) => {
+        let updating = false;
+
+        const goal = goalsService!.sidebarGoal;
+        const index = timescaleOptions.indexOf(goal?.timescale ?? "<none>");
+        self.set_selected(index >= 0 ? index : 0);
+
+        // Update dropdown when goal changes
+        hook(self, goalsService!, "notify::sidebar-goal", () => {
+          if (updating) return;
+          updating = true;
+
+          const goal = goalsService!.sidebarGoal;
+          const index = timescaleOptions.indexOf(goal?.timescale ?? "<none>");
+          self.set_selected(index >= 0 ? index : 0);
+
+          updating = false;
+        });
+
+        // Update goal when dropdown changes
+        self.connect("notify::selected", () => {
+          if (updating) return;
+          updating = true;
+
+          const item = self.get_selected_item() as Gtk.StringObject;
+          const value = item.get_string();
+
+          updating = false;
+        });
+      },
     });
 
   return DetailsList({

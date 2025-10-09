@@ -57,9 +57,9 @@ const FILTER_CONFIGS = {
     { key: "undeveloped", label: "In development" },
   ],
   timescale: [
-    { key: "shortterm", label: "Short term" },
-    { key: "medterm", label: "Mid term" },
-    { key: "longterm", label: "Long term" },
+    { key: "short", label: "Short term" },
+    { key: "med", label: "Mid term" },
+    { key: "long", label: "Long term" },
     { key: "aspirational", label: "Aspirational" },
   ],
 } as const;
