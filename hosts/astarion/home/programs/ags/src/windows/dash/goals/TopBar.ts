@@ -10,10 +10,10 @@
  * Imports
  *****************************************************************************/
 
-import Goals from "@/services/Goals";
 import { Gtk, hook, Widget } from "astal/gtk4";
-import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
 import { bind } from "astal";
+import Goals from "@/services/Goals";
+import { SegmentedButtonGroup } from "@/components/SegmentedButtonGroup";
 
 /*****************************************************************************
  * Module-level variables
@@ -69,10 +69,10 @@ const FILTER_CONFIGS = {
  *****************************************************************************/
 
 /**
- * Creates the main header label for the Goals section.
+ * Main header label for the Goals section.
  * @returns Widget containing the header label
  */
-const createHeaderLabel = () =>
+const HeaderLabel = () =>
   Widget.Label({
     cssClasses: [CSS_CLASSES.header],
     label: "Goals",
@@ -80,10 +80,10 @@ const createHeaderLabel = () =>
   });
 
 /**
- * Creates the search input field.
+ * Search input field.
  * @returns Widget for goal search functionality
  */
-const createSearchEntry = () =>
+const SearchEntry = () =>
   Widget.Entry({
     canFocus: true,
     focusOnClick: true,
@@ -95,11 +95,11 @@ const createSearchEntry = () =>
   });
 
 /**
- * Creates the search container with icon and input field.
+ * Search container with icon and input field.
  * @returns Widget containing search interface
  */
-const createSearchContainer = () => {
-  const searchEntry = createSearchEntry();
+const SearchContainer = () => {
+  const searchEntry = SearchEntry();
 
   return Widget.Box({
     cssClasses: [CSS_CLASSES.searchContainer],
@@ -120,7 +120,7 @@ const createSearchContainer = () => {
  * @param updateCallback - Optional callback for updating filters (defaults to standard filter update)
  * @returns Widget containing segmented button group for filters
  */
-const createFilterButtonGroup = (
+const FilterButtonGroup = (
   filterConfig: readonly { key: string; label: string }[],
   updateCallback?: (key: string) => void,
 ) => {
@@ -152,31 +152,10 @@ const createFilterButtonGroup = (
 };
 
 /**
- * Creates progress-based filter controls (Completed, In progress, Failed).
- * @returns Widget containing progress filter buttons
- */
-const createProgressFilters = () =>
-  createFilterButtonGroup(FILTER_CONFIGS.progress);
-
-/**
- * Creates status-based filter controls (Developed, In development).
- * @returns Widget containing status filter buttons
- */
-const createStatusFilters = () =>
-  createFilterButtonGroup(FILTER_CONFIGS.status);
-
-/**
- * Creates timescale-based filter controls (Short term, Mid term, etc.).
- * @returns Widget containing timescale filter buttons
- */
-const createTimescaleFilters = () =>
-  createFilterButtonGroup(FILTER_CONFIGS.timescale);
-
-/**
  * Creates a category selection widget that displays available goal categories.
  * @returns Widget for category selection
  */
-const createCategorySelector = () =>
+const CategorySelector = () =>
   Widget.Box({
     setup: (self) => {
       /**
@@ -209,25 +188,25 @@ const createCategorySelector = () =>
  * Creates the top section of the top bar containing header and search.
  * @returns Widget containing header and search controls
  */
-const createTopSection = () =>
+const TopSection = () =>
   Widget.CenterBox({
     orientation: Gtk.Orientation.HORIZONTAL,
-    startWidget: createHeaderLabel(),
-    endWidget: createSearchContainer(),
+    startWidget: HeaderLabel(),
+    endWidget: SearchContainer(),
   });
 
 /**
  * Creates the bottom section of the top bar containing filter controls.
  * @returns Widget containing all filter button groups
  */
-const createBottomSection = () => {
+const BottomSection = () => {
   const filtersContainer = Widget.Box({
     cssClasses: [CSS_CLASSES.filters],
     spacing: LAYOUT.filtersSpacing,
     children: [
-      createProgressFilters(),
-      createStatusFilters(),
-      createTimescaleFilters(),
+      FilterButtonGroup(FILTER_CONFIGS.progress),
+      FilterButtonGroup(FILTER_CONFIGS.status),
+      FilterButtonGroup(FILTER_CONFIGS.timescale),
     ],
   });
 
@@ -249,6 +228,6 @@ export default () => {
     cssClasses: [CSS_CLASSES.topBar],
     vertical: true,
     spacing: LAYOUT.mainSpacing,
-    children: [createTopSection(), createBottomSection()],
+    children: [TopSection(), BottomSection()],
   });
 };
