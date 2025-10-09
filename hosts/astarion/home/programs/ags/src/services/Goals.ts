@@ -42,6 +42,7 @@ export class Goal {
     public annotations?: Annotation[],
     public imgpath?: string,
     public parent?: Goal | undefined,
+    public timescale?: string /** short, mid, long, aspirational, or <none> */,
   ) {}
 
   static fromObject(obj: Partial<Goal>): Goal {
@@ -62,6 +63,7 @@ export class Goal {
       obj.annotations ?? [],
       obj.imgpath ?? "",
       obj.parent ?? undefined,
+      obj.timescale ?? undefined,
     );
   }
 }
