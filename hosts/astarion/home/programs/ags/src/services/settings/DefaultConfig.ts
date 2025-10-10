@@ -160,4 +160,10 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
     lat: 37.7749,
     lon: -122.4194,
   },
+
+  ttrss: {
+    url: "",
+    user: "",
+    pass: "",
+  },
 };
