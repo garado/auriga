@@ -217,6 +217,16 @@ in {
         };
       };
     };
+
+    tt-rss = {
+      enable = true;
+      virtualHost = "localhost";
+      selfUrlPath = "http://localhost:8080";
+    };
+
+    nginx.virtualHosts."localhost" = {
+      listen = [{ addr = "127.0.0.1"; port = 8080; }];
+    };
   };
 
   # --------------------------------------------
