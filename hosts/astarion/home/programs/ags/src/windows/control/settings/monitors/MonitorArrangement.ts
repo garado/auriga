@@ -9,10 +9,10 @@
  * Imports
  *****************************************************************************/
 
-import { Gtk, Gdk, Widget } from "astal/gtk4";
+import { Gtk, Gdk, Widget, App } from "astal/gtk4";
+import { execAsync, register, timeout } from "astal";
 
 import { DraggableBox, DraggableBoxClass } from "@/components/Draggable";
-import { execAsync, register, timeout } from "astal";
 
 /*****************************************************************************
  * Classes
@@ -22,6 +22,7 @@ const CSS_CLASSES = {
   ARRANGEMENT: "monitor-arrangement",
   CANVAS: "monitor-canvas",
   MONITOR: "monitor-item",
+  IDENTIFIER: "monitor-identifier",
   MONITOR_LABEL: "monitor-label",
   MONITOR_DRAGGING: "is-dragging",
 } as const;
@@ -30,6 +31,21 @@ const CSS_CLASSES = {
  * Types and interfaces
  *****************************************************************************/
 
+/** Popup displaying the monitor ID for convenience when rearranging monitors */
+const MonitorIdentifier = (monitor: Gdk.Monitor) => {
+  return Widget.Window({
+    gdkmonitor: monitor,
+    cssClasses: [CSS_CLASSES.IDENTIFIER],
+    child: Widget.Box({
+      children: [
+        Widget.Label({
+          label: `${monitor.get_connector()}`,
+        }),
+      ],
+    }),
+  });
+};
+
 /**
  * Monitor arrangement system
  */
@@ -37,6 +53,7 @@ const CSS_CLASSES = {
 export class MonitorArrangement extends Gtk.Box {
   private container: Gtk.Fixed;
   private monitors: Map<string, Gdk.Monitor> = new Map();
+  private monitorIdentifierWidgets: Gtk.Window[];
   private monitorWidgets: Map<string, DraggableBoxClass> = new Map();
   private allowOverlap: boolean = false;
 
@@ -60,6 +77,7 @@ export class MonitorArrangement extends Gtk.Box {
     this.vexpand = true;
     this.hexpand = false;
     this.allowOverlap = allowOverlap;
+    this.monitorIdentifierWidgets = [];
 
     // Child init
     this.container = new Gtk.Fixed({
@@ -69,6 +87,7 @@ export class MonitorArrangement extends Gtk.Box {
 
     this.append(this.container);
 
+    this.setupMotionController();
     this.setupSizeMonitoring();
     this.setupCanvas();
   }
@@ -79,6 +98,35 @@ export class MonitorArrangement extends Gtk.Box {
     this.container.heightRequest = this.canvasHeight;
     this.container.widthRequest = this.canvasWidth;
     this.container.add_css_class(CSS_CLASSES.CANVAS);
+  }
+
+  private setupMotionController() {
+    const motionController = new Gtk.EventControllerMotion();
+    this.add_controller(motionController);
+
+    motionController.connect("enter", () => {
+      // Create one identifier widget per monitor
+      this.monitorIdentifierWidgets = Array.from(this.monitors.values()).map(
+        MonitorIdentifier,
+      );
+
+      // Show them all
+      for (const monWindow of this.monitorIdentifierWidgets) {
+        App.add_window(monWindow);
+        monWindow.show();
+      }
+    });
+
+    motionController.connect("leave", () => {
+      this.applyAllPendingChanges();
+
+      for (const monWindow of this.monitorIdentifierWidgets) {
+        App.remove_window(monWindow);
+        monWindow.destroy();
+      }
+
+      this.monitorIdentifierWidgets = [];
+    });
   }
 
   /**
@@ -232,13 +280,6 @@ export class MonitorArrangement extends Gtk.Box {
         }
       },
     );
-
-    const motionController = new Gtk.EventControllerMotion();
-    this.add_controller(motionController);
-
-    motionController.connect("leave", () => {
-      this.applyAllPendingChanges();
-    });
 
     draggable.connect("dragEnded", (_, x: number, y: number) => {
       draggable.remove_css_class("collision");
