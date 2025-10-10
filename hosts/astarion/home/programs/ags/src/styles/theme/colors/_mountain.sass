@@ -55,8 +55,29 @@ $accent-8:  #a5b4cb
 $accent-9:  #8aacab
 $accent-10: #7d6a4f
 
-$accents: #896f70, #607861, #89876f, #c49ea0, #ceb188, #8a98ac, #9ec49f, #8f8aac, #8aacab, #7d6a4f
+$accent-1: #3e2a2b
+$accent-2: #2b362c
+$accent-3: #3e3d2b
+$accent-4: #5c3e40
+$accent-5: #5f4e32
+$accent-6: #404851
+$accent-7: #475c48
+$accent-8: #434051
+$accent-9: #405150
+$accent-10: #392f1f
+
+$accents: #3e2a2b, #2b362c, #3e3d2b, #5c3e40, #5f4e32, #404851, #475c48, #434051, #405150, #392f1f
 
 @for $index from 1 through list.length($accents)
   .accent-#{$index}
     background-color: list.nth($accents, $index)
+
+// Overrides
+:root
+  --dash-goals-career: #{$accent-1}
+  --dash-goals-personal: #{$accent-2}
+  --dash-goals-relationships: #{$accent-3}
+  --dash-goals-mental: #{$accent-4}
+  --dash-goals-health: #{$accent-5}
+  --dash-goals-financial: #{$accent-6}
+  --dash-goals-travel: #{$accent-8}

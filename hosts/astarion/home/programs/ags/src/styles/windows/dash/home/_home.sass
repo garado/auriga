@@ -279,12 +279,11 @@
     font-size: 1.4rem
 
   .goal
-    color: $neutral-800
     background-color: $primary-400
     padding: 0.8rem
     transition: 0.2s all
     border-radius: $border-radius
-    border-color: $primary-400
+    border-color: transparent
     border-style: solid
     border-width: 0.2rem
 
@@ -292,30 +291,30 @@
       border-color: $neutral-100
 
     .description
-      color: $neutral-800
+      color: $neutral-100
 
     .goal-icon
-      color: $primary-800
+      color: $neutral-100
       -gtk-icon-size: 1.4rem
 
     /* Custom categories */
     &.career
-      @include goalbox-colorize($accent-1)
-
+      background-color: var(--dash-goals-career)
+    
     &.personal
-      @include goalbox-colorize($accent-2)
-
+      background-color: var(--dash-goals-personal)
+    
     &.relationships
-      @include goalbox-colorize($accent-3)
-
+      background-color: var(--dash-goals-relationships)
+    
     &.mental
-      @include goalbox-colorize($accent-4)
-
+      background-color: var(--dash-goals-mental)
+    
     &.health
-      @include goalbox-colorize($accent-5)
-
+      background-color: var(--dash-goals-health)
+    
     &.financial
-      @include goalbox-colorize($accent-6)
-
+      background-color: var(--dash-goals-financial)
+    
     &.travel
-      @include goalbox-colorize($accent-7)
+      background-color: var(--dash-goals-travel)
