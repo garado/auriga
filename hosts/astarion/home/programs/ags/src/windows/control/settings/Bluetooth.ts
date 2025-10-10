@@ -46,9 +46,17 @@ export const Bluetooth = (globalRevealerState: Variable<boolean>) => {
 
   return ExpansionPanel({
     icon: "bluetooth-symbolic",
-    label: bind(bt, "isConnected").as((state) =>
-      state ? bt.devices[0].name : "None",
-    ),
+    label: bind(bt, "isConnected").as((state) => {
+      if (state) {
+        const connectedDevices = bt.devices.filter(
+          (device) => device.connected,
+        );
+
+        return connectedDevices[0]?.name || "None";
+      } else {
+        return "None";
+      }
+    }),
     children: bind(bt, "devices").as((bt) => bt.map(BluetoothWidget)),
     cssClasses: ["bluetooth"],
     vertical: true,
