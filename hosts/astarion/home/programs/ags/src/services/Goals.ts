@@ -510,4 +510,17 @@ export default class Goals extends GObject.Object {
 
     return pinned;
   };
+
+  navigateBreadcrumbs = (dir: number) => {
+    if (!this.sidebarVisible) return;
+
+    if (dir == -1) {
+      if (this.sidebarBreadcrumbs.length > 0) {
+        const previousGoal = this.sidebarBreadcrumbs.pop();
+        if (previousGoal) {
+          this.sidebarGoal = previousGoal;
+        }
+      }
+    }
+  };
 }

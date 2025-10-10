@@ -456,15 +456,6 @@ const SidebarHeader = () => {
 
   /** Navigating goals hierarchies */
   const BreadcrumbNavigation = () => {
-    const handleBreadcrumbNavigation = () => {
-      if (goalsService!.sidebarBreadcrumbs.length > 0) {
-        const previousGoal = goalsService!.sidebarBreadcrumbs.pop();
-        if (previousGoal) {
-          goalsService!.sidebarGoal = previousGoal;
-        }
-      }
-    };
-
     return Widget.Box({
       spacing: 4,
       halign: Gtk.Align.START,
@@ -473,15 +464,10 @@ const SidebarHeader = () => {
         Widget.Image({
           iconName: STATUS_ICONS.caretLeft,
           cursor: Gdk.Cursor.new_from_name("pointer", null),
-          onButtonPressed: handleBreadcrumbNavigation,
+          onButtonPressed: () => {
+            goalsService!.navigateBreadcrumbs(-1);
+          },
         }),
-        // Future: Add forward navigation
-        // Widget.Image({
-        //   iconName: STATUS_ICONS.caretRight,
-        //   cursor: Gdk.Cursor.new_from_name("pointer", null),
-        //   visible: bind(goalsService!, "sidebarBreadcrumbIndex").as((index) => index > 0),
-        //   onButtonPressed: () => {},
-        // }),
       ],
     });
   };

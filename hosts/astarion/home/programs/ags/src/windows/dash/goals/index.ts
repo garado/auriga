@@ -47,6 +47,7 @@ const CSS_CLASSES = {
 const KEYBOARD_SHORTCUTS = {
   CLOSE_SIDEBAR: "Escape",
   REFRESH_GOALS: "r",
+  BREADCRUMBS_BACKWARD: "h",
 } as const;
 
 /*****************************************************************************
@@ -164,6 +165,9 @@ export default () => {
           },
           [KEYBOARD_SHORTCUTS.REFRESH_GOALS]: () => {
             gs!.fetchGoals();
+          },
+          [KEYBOARD_SHORTCUTS.BREADCRUMBS_BACKWARD]: () => {
+            gs!.navigateBreadcrumbs(-1);
           },
         },
       });
