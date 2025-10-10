@@ -9,14 +9,12 @@
  * Imports
  *****************************************************************************/
 
-import { Gtk, Widget, astalify } from "astal/gtk4";
-import { GLib } from "astal";
+import { Gtk, astalify } from "astal/gtk4";
 import { Profile } from "@/windows/dash/home/Profile";
 import { Clock } from "@/windows/dash/home/Clock";
 import { Github } from "@/windows/dash/home/Github";
 import { Quote } from "@/windows/dash/home/Quote";
-import { Music } from "@/windows/dash/home/Music";
-import { NotBeatPrints } from "@/windows/dash/home/NotBeatPrints";
+import { Player } from "@/windows/dash/home/MediaPlayer";
 import { Weather } from "./Weather";
 import { PinnedGoals } from "./PinnedGoals";
 
@@ -49,9 +47,6 @@ export default () => {
   const Middle = Grid({
     setup: (self) => {
       // Widget, Col, Row, Width, Height
-      self.attach(Weather(), 0, 0, 1, 1);
-      self.attach(NotBeatPrints(), 0, 1, 1, 1);
-
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
     },
@@ -60,7 +55,10 @@ export default () => {
   const Right = Grid({
     setup: (self) => {
       /* Widget, Col, Row, Width, Height*/
-      self.attach(PinnedGoals(), 0, 0, 1, 1);
+      self.attach(Weather(), 0, 0, 1, 1);
+      self.attach(PinnedGoals(), 0, 1, 1, 1);
+      self.attach(Player(), 0, 2, 1, 1);
+
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
     },

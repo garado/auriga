@@ -1,9 +1,8 @@
 /**
- * █▄░█ █▀█ ▀█▀   █▄▄ █▀▀ ▄▀█ ▀█▀ █▀█ █▀█ █ █▄░█ ▀█▀ █▀
- * █░▀█ █▄█ ░█░   █▄█ ██▄ █▀█ ░█░ █▀▀ █▀▄ █ █░▀█ ░█░ ▄█
+ * █▀▄▀█ █▀▀ █▀▄ █ ▄▀█   █▀█ █░░ ▄▀█ █▄█ █▀▀ █▀█
+ * █░▀░█ ██▄ █▄▀ █ █▀█   █▀▀ █▄▄ █▀█ ░█░ ██▄ █▀▄
  *
- * Beatprints didn't support my themes. So I made my own beatprints clone!
- * Requires imagemagick for cover art analysis.
+ * Media player with audio visualizer.
  */
 
 /*****************************************************************************
@@ -18,16 +17,29 @@ import Gio from "gi://Gio?version=2.0";
 import Pango from "gi://Pango?version=1.0";
 
 /*****************************************************************************
- * Module-level variables
+ * Constants
  *****************************************************************************/
-
-const mpris = Mpris.get_default();
-const Picture = astalify(Gtk.Picture);
 
 const DEFAULT_COVER_ART_PATH = `${SRC}/assets/defaults/player-idle.jpg`;
 
 const DEFAULT_BAR_HEIGHT = 0.4;
 const DEFAULT_BAR_COUNT = 60;
+
+const CSS_CLASSES = {
+  PLAYER_CONTAINER: "media-player",
+  COLOR_OVERLAY: "cover-art-overlay",
+  INFORMATION: "info",
+  TITLE: "title",
+  ARTIST: "artist",
+  COVER_ART: "cover-art",
+} as const;
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
+const mpris = Mpris.get_default();
+const Picture = astalify(Gtk.Picture);
 
 /*****************************************************************************
  * Helper functions
@@ -66,7 +78,7 @@ const getImageColors = async (file: Gio.File): Promise<string[]> => {
  */
 const MediaPlayer = (player: Mpris.Player) => {
   const Title = Widget.Label({
-    cssClasses: ["title"],
+    cssClasses: [CSS_CLASSES.TITLE],
     xalign: 0,
     ellipsize: Pango.EllipsizeMode.END,
     maxWidthChars: 30,
@@ -76,7 +88,7 @@ const MediaPlayer = (player: Mpris.Player) => {
   });
 
   const Artist = Widget.Label({
-    cssClasses: ["artist"],
+    cssClasses: [CSS_CLASSES.ARTIST],
     xalign: 0,
     ellipsize: Pango.EllipsizeMode.END,
     label: player
@@ -85,7 +97,7 @@ const MediaPlayer = (player: Mpris.Player) => {
   });
 
   const CoverArt = Picture({
-    cssClasses: ["cover-art"],
+    cssClasses: [CSS_CLASSES.COVER_ART],
     vexpand: true,
     hexpand: true,
     setup: (self) => {
@@ -111,6 +123,7 @@ const MediaPlayer = (player: Mpris.Player) => {
     const colors = Variable<string[]>([]);
 
     return astalify(Gtk.DrawingArea)({
+      cssClasses: [CSS_CLASSES.COVER_ART],
       heightRequest: 16,
       setup: (self) => {
         if (player != null) {
@@ -163,51 +176,69 @@ const MediaPlayer = (player: Mpris.Player) => {
       style: VisualizerStyle.SYMMETRIC_BARS,
     });
 
-    visualizer.heightRequest = 40;
     visualizer.vexpand = false;
-
-    if (!player || player.playback_status !== Mpris.PlaybackStatus.PLAYING) {
-      visualizer.set_visible(false);
-    }
-
-    if (player) {
-      hook(visualizer, player, "notify::playback-status", () => {
-        visualizer.set_visible(
-          player.playback_status === Mpris.PlaybackStatus.PLAYING,
-        );
-      });
-    }
 
     return Widget.Box({
       vertical: false,
       spacing: 12,
+      heightRequest: 40,
       children: [
         Widget.Image({
           iconName: "music-notes-simple-symbolic",
         }),
         visualizer,
       ],
+      setup: (self) => {
+        if (
+          !player ||
+          player.playback_status !== Mpris.PlaybackStatus.PLAYING
+        ) {
+          self.set_visible(false);
+        }
+
+        if (player) {
+          hook(visualizer, player, "notify::playback-status", () => {
+            self.set_visible(
+              player.playback_status === Mpris.PlaybackStatus.PLAYING,
+            );
+          });
+        }
+      },
     });
   };
 
-  return Widget.Box({
-    vertical: true,
-    spacing: 12,
-    children: [
-      CoverArt,
-      ColorPalette(),
-      Widget.Box({
-        vertical: true,
-        children: [Title, Artist],
-      }),
-      PlayerVisualizer(),
-    ],
+  const Info = Widget.CenterBox({
+    cssClasses: [CSS_CLASSES.INFORMATION],
+    orientation: Gtk.Orientation.VERTICAL,
+    startWidget: Widget.Box({
+      vertical: true,
+      children: [Title, Artist],
+    }),
+    endWidget: PlayerVisualizer(),
+  });
+
+  return Widget.Overlay({
+    child: Widget.Overlay({
+      child: CoverArt,
+      setup: (self) => {
+        self.add_overlay(
+          Widget.Box({
+            cssClasses: [CSS_CLASSES.COLOR_OVERLAY],
+            hexpand: true,
+            vexpand: true,
+          }),
+        );
+      },
+    }),
+    setup: (self) => {
+      self.add_overlay(Info);
+    },
   });
 };
 
-export const NotBeatPrints = () =>
+export const Player = () =>
   Widget.Box({
-    cssClasses: ["not-beatprints", "widget-container"],
+    cssClasses: [CSS_CLASSES.PLAYER_CONTAINER],
     vertical: true,
     vexpand: true,
     hexpand: true,

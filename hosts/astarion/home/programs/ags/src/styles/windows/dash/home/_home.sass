@@ -54,24 +54,34 @@
  * Media player
  *********************************************/
 
-.home .not-beatprints
-  padding: 1.8rem
+.home .media-player
+  border-radius: $border-radius
+  min-height: 10rem
 
   .cover-art
+    border-radius: $border-radius
     transition: all 0.25s ease-out
     background-size: 100%
     background-position: center
-    opacity: 0.6
+    filter: sepia(50%)
+    opacity: 0.4
 
-  .title
-    font-size: 1.8rem
-    text-transform: uppercase
+  .cover-art-overlay
+    border-radius: $border-radius
+    opacity: 0.4
+    background-color: $primary-700
   
-  .artist
-    font-size: 1.2rem
- 
-  .visualizer
-    color: $neutral-100
+  .info
+    padding: 1.4rem
+
+    .title
+      font-size: 1.8rem
+
+    .artist
+      font-size: 1.2rem
+
+    .visualizer
+      color: $neutral-100
 
 /*********************************************
  * RSS
