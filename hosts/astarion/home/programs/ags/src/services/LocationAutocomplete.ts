@@ -221,6 +221,7 @@ export default class LocationAutocomplete extends GObject.Object {
   private searchCache: SearchCache = {};
   private cacheTimeout: number = 30 * 24 * 60 * 60 * 1000; // 30 days
   private cacheFilePath: string;
+  private pinnedLocationsCachePath: string;
 
   @property(Object)
   declare recentPredictions: PlacePrediction[];
@@ -254,6 +255,7 @@ export default class LocationAutocomplete extends GObject.Object {
     this.isSearching = false;
     this.currentLocation = locationConfig.defaultLocation;
     this.cacheFilePath = `${GLib.get_user_cache_dir()}/astal/locationiq-cache.json`;
+    this.pinnedLocationsCachePath = `${GLib.get_user_cache_dir()}/astal/locationiq-pinned.json`;
     this.#loadCacheFromFile();
   }
 
@@ -437,6 +439,52 @@ export default class LocationAutocomplete extends GObject.Object {
   /**************************************************
    * PUBLIC FUNCTIONS
    **************************************************/
+
+  /** Save a location */
+  savePinnedLocation = async (location: PlacePrediction) => {
+    try {
+      const pinned = await this.queryPinnedLocations();
+
+      // Avoid duplicates based on placeId
+      if (!pinned.some((p) => p.placeId === location.placeId)) {
+        pinned.push(location);
+        const data = JSON.stringify(pinned);
+        GLib.file_set_contents(this.pinnedLocationsCachePath, data);
+        log(
+          "locationService",
+          `Saved pinned location: ${location.displayName}`,
+        );
+      }
+    } catch (error) {
+      log("locationService", `Failed to save pinned location: ${error}`);
+    }
+  };
+
+  /** Query all pinned locations */
+  queryPinnedLocations = async (): Promise<PlacePrediction[]> => {
+    try {
+      const content = await execAsync(
+        `bash -c 'test -f "${this.pinnedLocationsCachePath}" && cat "${this.pinnedLocationsCachePath}" || echo "[]"'`,
+      );
+      return JSON.parse(content);
+    } catch (error) {
+      log("locationService", `Failed to load pinned locations: ${error}`);
+      return [];
+    }
+  };
+
+  /** Delete a pinned location */
+  deletePinnedLocation = async (placeId: string) => {
+    try {
+      const pinned = await this.queryPinnedLocations();
+      const filtered = pinned.filter((p) => p.placeId !== placeId);
+      const data = JSON.stringify(filtered);
+      GLib.file_set_contents(this.pinnedLocationsCachePath, data);
+      log("locationService", `Deleted pinned location: ${placeId}`);
+    } catch (error) {
+      log("locationService", `Failed to delete pinned location: ${error}`);
+    }
+  };
 
   /**
    * @function search
