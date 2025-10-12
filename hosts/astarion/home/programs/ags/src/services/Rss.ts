@@ -130,7 +130,7 @@ export default class TTRSS extends GObject.Object {
     }
 
     try {
-      const cmd = `curl -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"getHeadlines","sid":"${this.sessionId}","feed_id":${feedId},"limit":${limit},"output_mode":"json","include_attachments":true,"show_excerpt":true}'`;
+      const cmd = `curl -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"getHeadlines","sid":"${this.sessionId}","feed_id":${feedId},"limit":${limit},"output_mode":"json","show_excerpt":true,"excerpt_length":500}'`;
       const raw = await execAsync(["bash", "-c", cmd]);
       const data = JSON.parse(raw);
 
