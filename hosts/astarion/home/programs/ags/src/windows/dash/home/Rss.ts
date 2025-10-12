@@ -27,6 +27,7 @@ const Scrollable = astalify(Gtk.ScrolledWindow);
 const CSS_CLASSES = {
   CONTAINER: "rss-feed",
   LINK_BUTTON: "link-btn",
+  WIDGET_HEADER: "header",
   HEADLINE: "headline",
   HEADLINE_TITLE: "headline-title",
   HEADLINE_EXCERPT: "headline-excerpt",
@@ -129,8 +130,9 @@ const FeedItem = (headline: Headline) => {
   });
 };
 
-const Header = () =>
+const WidgetHeader = () =>
   Widget.Box({
+    cssClasses: [CSS_CLASSES.WIDGET_HEADER],
     spacing: 8,
     vertical: false,
     hexpand: true,
@@ -170,6 +172,6 @@ export const Rss = () => {
   return Widget.Box({
     vertical: true,
     cssClasses: [CSS_CLASSES.CONTAINER, "widget-container"],
-    children: [Header(), widget],
+    children: [WidgetHeader(), widget],
   });
 };
