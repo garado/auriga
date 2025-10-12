@@ -9,11 +9,11 @@
  * Imports
  *****************************************************************************/
 
-import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
-import TTRSS, { Headline } from "@/services/Rss";
-import { bind, Gio, Variable } from "astal";
+import { AstalIO, bind, timeout, Variable } from "astal";
 import Pango from "gi://Pango?version=1.0";
-import GdkPixbuf from "gi://GdkPixbuf?version=2.0";
+import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
+
+import TTRSS, { Headline } from "@/services/Rss";
 import { epochToRelativeTime } from "@/utils/Time";
 
 /*****************************************************************************
@@ -23,6 +23,8 @@ import { epochToRelativeTime } from "@/utils/Time";
 let ttrss: InstanceType<typeof TTRSS> | undefined = undefined;
 
 const Scrollable = astalify(Gtk.ScrolledWindow);
+
+const HOVER_REVEAL_EXCERPT_TIMEOUT = 1000;
 
 const CSS_CLASSES = {
   CONTAINER: "rss-feed",
@@ -35,40 +37,13 @@ const CSS_CLASSES = {
 };
 
 /*****************************************************************************
- * Helper functions
- *****************************************************************************/
-
-async function loadImageFromUrl(url: string): Promise<Gtk.Picture> {
-  print(url);
-  if (url === undefined) return;
-
-  const picture = new Gtk.Picture();
-
-  return new Promise((resolve, reject) => {
-    const file = Gio.File.new_for_uri(url);
-
-    file.load_contents_async(null, (file, res) => {
-      try {
-        const [, contents] = file.load_contents_finish(res);
-
-        const stream = Gio.MemoryInputStream.new_from_bytes(contents);
-        const pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, null);
-        const texture = Gdk.Texture.new_for_pixbuf(pixbuf);
-
-        picture.set_paintable(texture);
-        resolve(picture);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  });
-}
-
-/*****************************************************************************
  * Widget definition
  *****************************************************************************/
 
 const FeedItem = (headline: Headline) => {
+  const isHovered = Variable(false);
+  let hoverTimeout: AstalIO.Time | null = null;
+
   const ArticleTitle = Widget.Label({
     cssClasses: [CSS_CLASSES.HEADLINE_TITLE],
     label: headline.title,
@@ -79,11 +54,11 @@ const FeedItem = (headline: Headline) => {
     xalign: 0,
   });
 
-  const ArticleExcept = Widget.Label({
+  const ArticleExcerpt = Widget.Label({
     cssClasses: [CSS_CLASSES.HEADLINE_EXCERPT],
     xalign: 0,
     label: headline.excerpt,
-    lines: 2,
+    lines: bind(isHovered).as((hover) => (hover ? 5 : 2)),
     ellipsize: Pango.EllipsizeMode.END,
     wrap: true,
     visible: headline.excerpt != "",
@@ -101,7 +76,17 @@ const FeedItem = (headline: Headline) => {
     cssClasses: [CSS_CLASSES.HEADLINE],
     vertical: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    children: [ArticleTitle, SourceTitleAndTime, ArticleExcept],
+    children: [ArticleTitle, SourceTitleAndTime, ArticleExcerpt],
+    onHoverEnter: () => {
+      hoverTimeout = timeout(HOVER_REVEAL_EXCERPT_TIMEOUT, () => {
+        isHovered.set(true);
+      });
+    },
+    onHoverLeave: () => {
+      hoverTimeout?.cancel();
+      hoverTimeout = null;
+      isHovered.set(false);
+    },
     onButtonPressed: () => {
       Gtk.show_uri(null, headline.link, Gdk.CURRENT_TIME);
     },
@@ -120,14 +105,14 @@ const WidgetHeader = () =>
         iconName: "rss-symbolic",
       }),
       Widget.Label({
-        label: "RSS Feed",
+        label: "RSS",
       }),
     ],
   });
 
 export const Rss = () => {
   ttrss = TTRSS.get_default();
-  ttrss.fetchHeadlines(10);
+  ttrss.fetchHeadlines(20);
 
   const HeadlineContainer = Widget.Box({
     vertical: true,
