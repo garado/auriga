@@ -136,7 +136,6 @@ export default class TTRSS extends GObject.Object {
 
       if (data.content) {
         this.headlines = data.content;
-        print(JSON.stringify(this.headlines[0]));
       } else {
         console.error("Failed to fetch headlines:", data);
       }
