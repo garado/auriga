@@ -14,8 +14,6 @@
  *********************************************/
 
 .home .rss-feed
-  transition: all 0.1s ease-out
-    
   .header
     font-size: 1.4rem
 
@@ -23,22 +21,19 @@
     padding: 0.4rem
 
     .headline-title
+      transition: all 0.1s ease-out
       color: $neutral-100
       font-size: 1rem
       font-weight: bold
+
+    &:hover .headline-title
+      color: $primary-500
 
     .headline-feed-title
       font-size: 0.8rem
       color: $neutral-300
 
     .headline-excerpt
-
-    .link-btn
-      background-color: $neutral-800
-
-    *:hover
-      .headline-title
-        color: $primary-500
 
 /*********************************************
  * Book

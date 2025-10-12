@@ -69,19 +69,6 @@ async function loadImageFromUrl(url: string): Promise<Gtk.Picture> {
  *****************************************************************************/
 
 const FeedItem = (headline: Headline) => {
-  const linkRevealControl = Variable(false);
-
-  const LinkRevealer = Widget.Revealer({
-    revealChild: bind(linkRevealControl),
-    transitionType: Gtk.RevealerTransitionType.SLIDE_LEFT,
-    child: Widget.Button({
-      cssClasses: [CSS_CLASSES.LINK_BUTTON],
-      child: Widget.Image({
-        iconName: "link-symbolic",
-      }),
-    }),
-  });
-
   const ArticleTitle = Widget.Label({
     cssClasses: [CSS_CLASSES.HEADLINE_TITLE],
     label: headline.title,
@@ -112,20 +99,11 @@ const FeedItem = (headline: Headline) => {
 
   return Widget.Box({
     cssClasses: [CSS_CLASSES.HEADLINE],
-    vertical: false,
+    vertical: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    children: [
-      Widget.Box({
-        vertical: true,
-        children: [ArticleTitle, SourceTitleAndTime, ArticleExcept],
-      }),
-      LinkRevealer,
-    ],
-    onHoverEnter: () => {
-      linkRevealControl.set(true);
-    },
-    onHoverLeave: () => {
-      linkRevealControl.set(false);
+    children: [ArticleTitle, SourceTitleAndTime, ArticleExcept],
+    onButtonPressed: () => {
+      Gtk.show_uri(null, headline.link, Gdk.CURRENT_TIME);
     },
   });
 };
