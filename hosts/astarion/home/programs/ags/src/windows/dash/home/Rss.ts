@@ -9,17 +9,20 @@
  * Imports
  *****************************************************************************/
 
-import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import TTRSS, { Headline } from "@/services/Rss";
 import { bind, Gio, Variable } from "astal";
 import Pango from "gi://Pango?version=1.0";
 import GdkPixbuf from "gi://GdkPixbuf?version=2.0";
+import { epochToRelativeTime } from "@/utils/Time";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
 let ttrss: InstanceType<typeof TTRSS> | undefined = undefined;
+
+const Scrollable = astalify(Gtk.ScrolledWindow);
 
 const CSS_CLASSES = {
   CONTAINER: "rss-feed",
@@ -84,6 +87,7 @@ const FeedItem = (headline: Headline) => {
     hexpand: true,
     ellipsize: Pango.EllipsizeMode.END,
     wrap: true,
+    lines: 2,
     xalign: 0,
   });
 
@@ -94,14 +98,15 @@ const FeedItem = (headline: Headline) => {
     lines: 2,
     ellipsize: Pango.EllipsizeMode.END,
     wrap: true,
+    visible: headline.excerpt != "",
   });
 
-  const SourceTitle = Widget.Label({
+  const SourceTitleAndTime = Widget.Label({
     cssClasses: [CSS_CLASSES.HEADLINE_FEED_TITLE],
     hexpand: true,
     ellipsize: Pango.EllipsizeMode.END,
     xalign: 0,
-    label: headline.feed_title,
+    label: `${headline.feed_title} - ${epochToRelativeTime(headline.updated)}`,
   });
 
   return Widget.Box({
@@ -111,7 +116,7 @@ const FeedItem = (headline: Headline) => {
     children: [
       Widget.Box({
         vertical: true,
-        children: [ArticleTitle, SourceTitle, ArticleExcept],
+        children: [ArticleTitle, SourceTitleAndTime, ArticleExcept],
       }),
       LinkRevealer,
     ],
@@ -152,9 +157,19 @@ export const Rss = () => {
     ),
   });
 
+  const widget = Scrollable({
+    hexpand: true,
+    vexpand: true,
+    setup: (self) => {
+      self.hscrollbar_policy = Gtk.PolicyType.NEVER;
+      self.vscrollbar_policy = Gtk.PolicyType.ALWAYS;
+      self.set_child(HeadlineContainer);
+    },
+  });
+
   return Widget.Box({
     vertical: true,
     cssClasses: [CSS_CLASSES.CONTAINER, "widget-container"],
-    children: [Header(), HeadlineContainer],
+    children: [Header(), widget],
   });
 };

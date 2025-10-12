@@ -14,10 +14,13 @@
  *********************************************/
 
 .home .rss-feed
+  transition: all 0.1s ease-out
+
   .headline
     padding: 0.4rem
 
     .headline-title
+      color: $neutral-100
       font-size: 1rem
       font-weight: bold
 
@@ -29,6 +32,10 @@
 
     .link-btn
       background-color: $neutral-800
+
+    *:hover
+      .headline-title
+        color: $primary-500
 
 /*********************************************
  * Book
