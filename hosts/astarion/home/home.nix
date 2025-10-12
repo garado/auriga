@@ -108,6 +108,7 @@
       libshumate /* Transit */
       gvfs /* Needed for fetching cover art */
       imagemagick /* Cover art color analysis */
+      gtk4-layer-shell
       inputs.ags.packages.${pkgs.system}.apps
       inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.auth
