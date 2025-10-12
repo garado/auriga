@@ -17,6 +17,7 @@ import { Quote } from "@/windows/dash/home/Quote";
 import { Player } from "@/windows/dash/home/MediaPlayer";
 import { Weather } from "./Weather";
 import { PinnedGoals } from "./PinnedGoals";
+import { Rss } from "./Rss";
 
 /*****************************************************************************
  * Module-level variables
@@ -47,6 +48,8 @@ export default () => {
   const Middle = Grid({
     setup: (self) => {
       // Widget, Col, Row, Width, Height
+      self.attach(Rss(), 0, 0, 1, 1);
+
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
     },

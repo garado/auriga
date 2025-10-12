@@ -125,6 +125,12 @@ export interface SystemConfig {
     lat: number;
     lon: number;
   };
+
+  ttrss: {
+    url: string;
+    user: string;
+    pass: string;
+  };
 }
 
 /*****************************************************************************
