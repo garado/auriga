@@ -1,0 +1,160 @@
+/**
+ * █▀█ █▀ █▀   █▀▀ █▀▀ █▀▀ █▀▄
+ * █▀▄ ▄█ ▄█   █▀░ ██▄ ██▄ █▄▀
+ *
+ * RSS feed widget.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
+import { Gdk, Gtk, Widget } from "astal/gtk4";
+import TTRSS, { Headline } from "@/services/Rss";
+import { bind, Gio, Variable } from "astal";
+import Pango from "gi://Pango?version=1.0";
+import GdkPixbuf from "gi://GdkPixbuf?version=2.0";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
+let ttrss: InstanceType<typeof TTRSS> | undefined = undefined;
+
+const CSS_CLASSES = {
+  CONTAINER: "rss-feed",
+  LINK_BUTTON: "link-btn",
+  HEADLINE: "headline",
+  HEADLINE_TITLE: "headline-title",
+  HEADLINE_EXCERPT: "headline-excerpt",
+  HEADLINE_FEED_TITLE: "headline-feed-title",
+};
+
+/*****************************************************************************
+ * Helper functions
+ *****************************************************************************/
+
+async function loadImageFromUrl(url: string): Promise<Gtk.Picture> {
+  print(url);
+  if (url === undefined) return;
+
+  const picture = new Gtk.Picture();
+
+  return new Promise((resolve, reject) => {
+    const file = Gio.File.new_for_uri(url);
+
+    file.load_contents_async(null, (file, res) => {
+      try {
+        const [, contents] = file.load_contents_finish(res);
+
+        const stream = Gio.MemoryInputStream.new_from_bytes(contents);
+        const pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, null);
+        const texture = Gdk.Texture.new_for_pixbuf(pixbuf);
+
+        picture.set_paintable(texture);
+        resolve(picture);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
+
+const FeedItem = (headline: Headline) => {
+  const linkRevealControl = Variable(false);
+
+  const LinkRevealer = Widget.Revealer({
+    revealChild: bind(linkRevealControl),
+    transitionType: Gtk.RevealerTransitionType.SLIDE_LEFT,
+    child: Widget.Button({
+      cssClasses: [CSS_CLASSES.LINK_BUTTON],
+      child: Widget.Image({
+        iconName: "link-symbolic",
+      }),
+    }),
+  });
+
+  const ArticleTitle = Widget.Label({
+    cssClasses: [CSS_CLASSES.HEADLINE_TITLE],
+    label: headline.title,
+    hexpand: true,
+    ellipsize: Pango.EllipsizeMode.END,
+    wrap: true,
+    xalign: 0,
+  });
+
+  const ArticleExcept = Widget.Label({
+    cssClasses: [CSS_CLASSES.HEADLINE_EXCERPT],
+    xalign: 0,
+    label: headline.excerpt,
+    lines: 2,
+    ellipsize: Pango.EllipsizeMode.END,
+    wrap: true,
+  });
+
+  const SourceTitle = Widget.Label({
+    cssClasses: [CSS_CLASSES.HEADLINE_FEED_TITLE],
+    hexpand: true,
+    ellipsize: Pango.EllipsizeMode.END,
+    xalign: 0,
+    label: headline.feed_title,
+  });
+
+  return Widget.Box({
+    cssClasses: [CSS_CLASSES.HEADLINE],
+    vertical: false,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    children: [
+      Widget.Box({
+        vertical: true,
+        children: [ArticleTitle, SourceTitle, ArticleExcept],
+      }),
+      LinkRevealer,
+    ],
+    onHoverEnter: () => {
+      linkRevealControl.set(true);
+    },
+    onHoverLeave: () => {
+      linkRevealControl.set(false);
+    },
+  });
+};
+
+const Header = () =>
+  Widget.Box({
+    spacing: 8,
+    vertical: false,
+    hexpand: true,
+    halign: Gtk.Align.CENTER,
+    children: [
+      Widget.Image({
+        iconName: "rss-symbolic",
+      }),
+      Widget.Label({
+        label: "RSS Feed",
+      }),
+    ],
+  });
+
+export const Rss = () => {
+  ttrss = TTRSS.get_default();
+  ttrss.fetchHeadlines(10);
+
+  const HeadlineContainer = Widget.Box({
+    vertical: true,
+    spacing: 8,
+    children: bind(ttrss, "headlines").as((headlines) =>
+      headlines.map(FeedItem),
+    ),
+  });
+
+  return Widget.Box({
+    vertical: true,
+    cssClasses: [CSS_CLASSES.CONTAINER, "widget-container"],
+    children: [Header(), HeadlineContainer],
+  });
+};
