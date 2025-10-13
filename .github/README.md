@@ -3,7 +3,7 @@
   <img src="dashboard-home.png" />
   <br>
   Another desktop with an emphasis on functionality and cohesive design. Made
-  with Nix, <a href="https://aylur.github.io/ags/" target="_blank">ags</a>, and ❤️.
+  with <a href="https://aylur.github.io/ags/" target="_blank">ags</a> and ❤️.
 </div>
 
 <h2>What is it?</h2>
