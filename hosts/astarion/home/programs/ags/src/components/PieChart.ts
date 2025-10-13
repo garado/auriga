@@ -143,8 +143,13 @@ export default (props: {
   values: Array<PieChartData>;
   drawLegend?: boolean;
   vertical?: boolean;
+  sortDescending?: boolean;
 }) => {
   const pieColorsMap = new WeakMap();
+
+  if (props.sortDescending ?? true) {
+    props.values.sort((a, b) => b.total - a.total);
+  }
 
   const Pie = DrawingArea({
     widthRequest: 200,
