@@ -60,14 +60,14 @@ type LockWindowInfo = {
  * Module-level variables
  *****************************************************************************/
 
-const userConfig = require("userconfig.ts").UserConfig;
+const userConfig = settings.config;
 
 const promptText = Variable("");
 
 const inputVisible = Variable(false);
 const inputNeeded = Variable(false);
 
-let auth = new AstalAuth.Pam();
+let auth: AstalAuth.Pam | null = new AstalAuth.Pam();
 
 let sessionLock = Lock.prepare_lock();
 
@@ -154,8 +154,8 @@ const initAuth = (thisAuth: AstalAuth.Pam) => {
 
   thisAuth.connect("success", unlockSession);
 
-  thisAuth.connect("fail", (p, msg) => {
-    auth.start_authenticate();
+  thisAuth.connect("fail", (_p, _msg) => {
+    auth!.start_authenticate();
   });
 
   thisAuth.start_authenticate();
@@ -173,13 +173,12 @@ const Background = () => {
   return new Widget.Box({
     className: "background-img",
     css: `
-      background-image: url('${SRC}/assets/defaults/theme/lockscreen/mountain.jpg');
+      background-image: url('${userConfig.theme.themeConfig[settings.currentTheme].lockscreen}');
       background-size: cover;
       background-position: center;
     `,
     hexpand: true,
     vexpand: true,
-    children: [],
   });
 };
 
@@ -227,7 +226,7 @@ const LoginBox = () => {
     sensitive: bind(inputNeeded),
     onActivate: (self) => {
       inputNeeded.set(false);
-      auth.supply_secret(self.text);
+      auth!.supply_secret(self.text);
       self.text = "";
     },
     setup: (self) => {
@@ -292,12 +291,13 @@ App.start({
   instanceName: "lock",
   css: CSS_PATH,
   requestHandler(request: string, res: (response: any) => void) {
-    const [command, ..._args] = request.split(" ");
+    const [command, ...args] = request.split(" ");
 
     if (command == "lock") {
       lockSession();
       return;
     } else if (command == "reload-theme") {
+      settings.currentTheme = args[0];
       App.apply_css(CSS_PATH);
       return;
     }
