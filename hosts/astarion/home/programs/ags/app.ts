@@ -9,11 +9,6 @@
  * Imports
  *****************************************************************************/
 
-Object.assign(globalThis, {
-  App: App,
-  GtkVersion: 4,
-});
-
 import { Gtk, App } from "astal/gtk4";
 import { exec } from "astal/process";
 import { timeout } from "astal/time";
@@ -25,6 +20,10 @@ import Utility from "@/windows/utility";
 import Control from "@/windows/control";
 import Launcher from "@/windows/launcher";
 import Notifications from "@/windows/notifications";
+
+// Required entrypoint config for sharing modules between Gtk3 lock and Gtk4 app
+globalThis.App = App;
+globalThis.GtkVersion = 4;
 
 /*****************************************************************************
  * Module-level variables

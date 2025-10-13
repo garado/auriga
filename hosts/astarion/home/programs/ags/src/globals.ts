@@ -6,6 +6,20 @@
  */
 
 /*****************************************************************************
+ * Types/interfaces
+ *****************************************************************************/
+
+declare global {
+  interface GlobalThis {
+    log: {
+      doSomething: (section: string, str: string) => void;
+    };
+    App: any; // Astal.App
+    GtkVersion: number;
+  }
+}
+
+/*****************************************************************************
  * Globals
  *****************************************************************************/
 
@@ -28,7 +42,7 @@ const logFlags: { [key: string]: boolean } = {
 
   // Service logging
   dashService: false,
-  taskService: true,
+  taskService: false,
   calService: false,
   goalService: false,
   habitifyService: false,
@@ -53,6 +67,4 @@ export function log(section: string, str: string) {
 }
 
 /** Add things to globalThis so they can be used anywhere. */
-Object.assign(globalThis, {
-  log: log,
-});
+globalThis.log = log;

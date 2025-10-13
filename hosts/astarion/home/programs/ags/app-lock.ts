@@ -2,19 +2,27 @@
  * █░░ █▀█ █▀▀ █▄▀ █▀ █▀▀ █▀█ █▀▀ █▀▀ █▄░█
  * █▄▄ █▄█ █▄▄ █░█ ▄█ █▄▄ █▀▄ ██▄ ██▄ █░▀█
  *
- * Lockscreen using gtk3-session-lock (gtk3! not 4!) and Astal.Auth.
+ * Lockscreen using gtk-session-lock (Gtk3 version) and Astal.Auth (PAM).
+ *
+ * This lockscreen process runs in the background and can be triggered with
+ * the lock command `ags -i lock lock` (configured as WM bind).
+ * It runs in the background to reduce startup latency.
+ *
+ * On each time the lock command runs, `lockSession()` runs:
+ * - Prepares gtk-session-lock instance again
+ * - Creates new Astal.Auth instance
+ * - Creates a lock widget for every monitor
+ *
  * Note: the lockscreen app is completely separate from the rest of the shell.
- * Could not get this to work with Gtk4 unfortunately.
+ * Could not get this to work with Gtk4 unfortunately (I tried for over a year)
+ *
+ * Thank you kotontrion
+ * https://github.com/kotontrion/dotfiles/blob/main/.config/ags/lockscreen.js
  */
 
 /*****************************************************************************
  * Imports
  *****************************************************************************/
-
-Object.assign(globalThis, {
-  App: App,
-  GtkVersion: 3,
-});
 
 import Lock from "gi://GtkSessionLock";
 import Gdk from "gi://Gdk?version=3.0";
@@ -23,6 +31,10 @@ import AstalAuth from "gi://AstalAuth";
 import { bind, exec, timeout, Variable } from "astal";
 import { App, Widget } from "astal/gtk3";
 import SettingsManager from "@/services/settings";
+
+// Required entrypoint config for sharing modules between Gtk3 lock and Gtk4 app
+globalThis.App = App;
+globalThis.GtkVersion = 3;
 
 const settings = SettingsManager.get_default();
 
@@ -61,8 +73,6 @@ type LockWindowInfo = {
  *****************************************************************************/
 
 const userConfig = settings.config;
-
-const promptText = Variable("");
 
 const inputVisible = Variable(false);
 const inputNeeded = Variable(false);
@@ -140,14 +150,12 @@ const createWindow = (monitor: Gdk.Monitor) => {
 };
 
 const initAuth = (thisAuth: AstalAuth.Pam) => {
-  thisAuth.connect("auth-prompt-visible", (_auth, msg) => {
-    promptText.set(msg);
+  thisAuth.connect("auth-prompt-visible", (_auth, _msg) => {
     inputVisible.set(true);
     inputNeeded.set(true);
   });
 
-  thisAuth.connect("auth-prompt-hidden", (_auth, msg) => {
-    promptText.set(msg);
+  thisAuth.connect("auth-prompt-hidden", (_auth, _msg) => {
     inputVisible.set(false);
     inputNeeded.set(true);
   });
@@ -170,10 +178,13 @@ const compileSASS = () => {
  *****************************************************************************/
 
 const Background = () => {
+  const currThemeConfig =
+    settings.config.theme.themeConfig[settings.currentTheme];
+
   return new Widget.Box({
     className: "background-img",
     css: `
-      background-image: url('${userConfig.theme.themeConfig[settings.currentTheme].lockscreen}');
+      background-image: url('${currThemeConfig.lockscreen}');
       background-size: cover;
       background-position: center;
     `,
