@@ -17,8 +17,8 @@
     settings = {
       # Execute these programs at launch
       exec-once = [
-        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app-lock.ts & sleep 0.2 ; ags run app.ts --gtk4"
         "sleep 1 && swww-daemon &"
+        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app-lock.ts & sleep 1 ; ags run app.ts --gtk4"
       ];
 
       # Plugin options
@@ -94,7 +94,6 @@
       
       windowrule = [
         # Window layout
-        # TODO: Not working
         "float, class:^(thunar)$"
         "float, class:^(mpv)$"
       ];
