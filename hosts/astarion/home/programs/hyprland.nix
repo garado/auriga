@@ -18,7 +18,7 @@
       # Execute these programs at launch
       exec-once = [
         "sleep 1 && swww-daemon &"
-        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app.ts --gtk4"
+        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app-lock.ts"
       ];
 
       # Plugin options
@@ -132,7 +132,10 @@
 
         "CTRL SHIFT, w, killactive"
 
-        # Restart Astal
+        # Lock
+        "ALT_L SHIFT, L, exec, cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app-lock.ts"
+
+        # Restart desktop shell
         "ALT_L SHIFT, r, exec, pkill -SIGKILL gjs ; cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags ; ags run app.ts --gtk4"
 
         # Screenshot
