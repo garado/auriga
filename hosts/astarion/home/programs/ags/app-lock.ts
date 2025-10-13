@@ -1,3 +1,11 @@
+/**
+ * █░░ █▀█ █▀▀ █▄▀ █▀ █▀▀ █▀█ █▀▀ █▀▀ █▄░█
+ * █▄▄ █▄█ █▄▄ █░█ ▄█ █▄▄ █▀▄ ██▄ ██▄ █░▀█
+ *
+ * Lockscreen using gtk3-session-lock (gtk3! not 4!) and Astal.Auth.
+ * Note: the lockscreen app is completely separate from the rest of the shell.
+ */
+
 /*****************************************************************************
  * Imports
  *****************************************************************************/
@@ -6,8 +14,17 @@ import Lock from "gi://GtkSessionLock";
 import Gdk from "gi://Gdk?version=3.0";
 import Gtk from "gi://Gtk?version=3.0";
 import AstalAuth from "gi://AstalAuth";
-import { bind, idle, Variable } from "astal";
+import { bind, exec, execAsync, GLib, Variable } from "astal";
 import { App, Widget } from "astal/gtk3";
+
+/*****************************************************************************
+ * Interfaces
+ *****************************************************************************/
+
+type LockWindowInfo = {
+  window: Gtk.Window;
+  monitor: Gdk.Monitor;
+};
 
 /*****************************************************************************
  * Module-level variables
@@ -19,15 +36,79 @@ const inputNeeded = Variable(false);
 
 const auth = new AstalAuth.Pam();
 
+const windows: LockWindowInfo[] = [];
+
 /*****************************************************************************
  * Helper functions
  *****************************************************************************/
 
+/**
+ * Unlock.
+ */
 const unlockSession = () => {
-  console.log("Unlocking...");
   lock.unlock_and_destroy();
   windows.forEach((w) => w.window.destroy());
   Gdk.Display.get_default()?.sync();
+
+  // Launch actual config
+  const cmd = `ags run ${SRC}/app.ts --gtk4`;
+  execAsync(cmd).then(() => {
+    App.quit();
+  });
+};
+
+/**
+ * Lock.
+ */
+const lockSession = () => {
+  const display = Gdk.Display.get_default();
+  if (display === null) return;
+
+  // Attach a LockWindow to every monitor
+  for (let m = 0; m < display.get_n_monitors(); m++) {
+    const monitor = display.get_monitor(m);
+    if (monitor) createWindow(monitor);
+  }
+
+  // Attach a LockWindow to any new monitors that get connected
+  display?.connect("monitor-added", (_disp, monitor) => {
+    const w = createWindow(monitor);
+    lock.new_surface(w.window, w.monitor);
+    w.window.show();
+  });
+
+  lock.lock_lock();
+
+  windows.map((w) => {
+    lock.new_surface(w.window, w.monitor);
+    w.window.show();
+  });
+};
+
+/** Create a LockWindow on a given monitor */
+const createWindow = (monitor: Gdk.Monitor) => {
+  const window = LockWindow();
+  const win = { window, monitor };
+  windows.push(win);
+  return win;
+};
+
+/** After authentication is complete, kill this app. */
+const onUnlockFinished = () => {
+  console.log("wat");
+  lock.destroy();
+  windows.forEach((w) => w.window.destroy());
+  Gdk.Display.get_default()?.sync();
+
+  // Launch actual config
+  try {
+    const cmd = `ags run ${SRC}/app.ts --gtk4`;
+    console.log(cmd);
+    exec(cmd);
+  } catch (e) {
+    console.log(e);
+  }
+
   App.quit();
 };
 
@@ -35,13 +116,13 @@ const unlockSession = () => {
  * Signal setup
  *****************************************************************************/
 
-auth.connect("auth-prompt-visible", (auth, msg) => {
+auth.connect("auth-prompt-visible", (_auth, msg) => {
   prompt.set(msg);
   inputVisible.set(true);
   inputNeeded.set(true);
 });
 
-auth.connect("auth-prompt-hidden", (auth, msg) => {
+auth.connect("auth-prompt-hidden", (_auth, msg) => {
   prompt.set(msg);
   inputVisible.set(false);
   inputNeeded.set(true);
@@ -126,8 +207,6 @@ const AuthNotifs = () =>
     );
 
 const lock = Lock.prepare_lock();
-
-const windows = [];
 
 // const Right = () =>
 //   new Widget.Box({
@@ -226,47 +305,15 @@ const LockWindow = () =>
     }),
   });
 
-function createWindow(monitor) {
-  const window = LockWindow();
-  const win = { window, monitor };
-  windows.push(win);
-  return win;
-}
-
-function lock_screen() {
-  const display = Gdk.Display.get_default();
-  for (let m = 0; m < display?.get_n_monitors(); m++) {
-    const monitor = display?.get_monitor(m);
-    createWindow(monitor);
-  }
-
-  display?.connect("monitor-added", (disp, monitor) => {
-    const w = createWindow(monitor);
-    lock.new_surface(w.window, w.monitor);
-    w.window.show();
-  });
-
-  lock.lock_lock();
-  windows.map((w) => {
-    lock.new_surface(w.window, w.monitor);
-    w.window.show();
-  });
-}
-
-function on_finished() {
-  lock.destroy();
-  windows.forEach((w) => w.window.destroy());
-  Gdk.Display.get_default()?.sync();
-  App.quit();
-}
+/*****************************************************************************
+ * Main
+ *****************************************************************************/
 
 App.start({
+  instanceName: "lock",
   main: () => {
-    // lock.connect("locked", on_locked);
-    lock.connect("finished", on_finished);
-    lock_screen();
+    // lock.connect("finished", onUnlockFinished);
+    lockSession();
     auth.start_authenticate();
-
-    console.log("god please fucking work");
   },
 });
