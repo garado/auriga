@@ -11,6 +11,11 @@
  * Imports
  *****************************************************************************/
 
+Object.assign(globalThis, {
+  App: App,
+  GtkVersion: 3,
+});
+
 import Lock from "gi://GtkSessionLock";
 import Gdk from "gi://Gdk?version=3.0";
 import Gtk from "gi://Gtk?version=3.0";
@@ -18,11 +23,6 @@ import AstalAuth from "gi://AstalAuth";
 import { bind, exec, timeout, Variable } from "astal";
 import { App, Widget } from "astal/gtk3";
 import SettingsManager from "@/services/settings";
-
-Object.assign(globalThis, {
-  App: App,
-  GtkVersion: 3,
-});
 
 const settings = SettingsManager.get_default();
 
@@ -296,6 +296,9 @@ App.start({
 
     if (command == "lock") {
       lockSession();
+      return;
+    } else if (command == "reload-theme") {
+      App.apply_css(CSS_PATH);
       return;
     }
 
