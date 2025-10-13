@@ -4,10 +4,11 @@
 
 { pkgs, config, ... }: {
   programs.zsh.shellAliases = {
-    # Basic shell commands
+    # Shell commands
     c = "clear";
     lsa = "ls -la";
     p = "pwd";
+    pclip = "pwd | wl-copy";
     
     # Quick navigation
     ".."   = "cd ..";
@@ -17,22 +18,18 @@
     dots = "cd ~/Github/dotfiles/";
     docs = "cd ~/Documents";
     pics = "cd ~/Pictures";
+    vids = "cd ~/Videos";
     gh   = "cd ~/Github";
     dl   = "cd ~/Downloads";
     tabs = "cd ~/Documents/Music/guitar/";
-  
+
     cfg = "cd ~/.config";
     cfgags = "cd ~/Github/dotfiles/hosts/astarion/home/programs/ags/";
-  
-    # Quick edit
-    # TODO Relative paths?
-    edl = "nvim $ENCHIRIDION/self/ledger/2024/2024.ledger";
-    edq = "nvim ~/Github/dotfiles/home/programs/qutebrowser.nix";
-
-    # Enchiridion
     ench = "cd $ENCHIRIDION";
+
+    # Quick edit
+    edl = "nvim $ENCHIRIDION/self/ledger/2024/2024.ledger";
     todo = "cd ~/Documents/stickynotes/ ; nvim todo.md";
-    goals = "cd $ENCHIRIDION/self/goals/ ; nvim";
     
     # Nix
     rebuild = "sudo nixos-rebuild switch --flake .#astarion";
@@ -43,20 +40,16 @@
     v = "nvim";
     nv = "nvim";
     tt = "taskwarrior-tui";
-    taskt = "task context todo";
-    taskg = "task context goals";
-    taskn = "task context none";
   
     # Git
     gst = "git status";
-    gc = "git commit -m ";
-    gp = "git push";
+    gtc = "git commit";
+    gtcm = "git commit -m ";
+    gtp = "git push";
+    gds = "git diff --staged";
+    gtd = "git diff";
 
-    # ags development
-    a = "ags -c ./config.js";
-    pa = "pkill .ags-wrapped";
-
-    # Misc
+    # Development
     py = "python3";
     m = "make";
   };
