@@ -1,4 +1,0 @@
-# Rename all *.txt to *.text
-for file in *.svg; do
-    mv -- "$file" "${file%.svg}-symbolic.svg"
-done
