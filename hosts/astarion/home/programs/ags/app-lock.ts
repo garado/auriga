@@ -13,6 +13,9 @@
  * - Creates new Astal.Auth instance
  * - Creates a lock widget for every monitor
  *
+ * The lockscreen background is just the normal wallpaper but pre-blurred with
+ * a little bit of magick and applied as a CSS background image.
+ *
  * Note: the lockscreen app is completely separate from the rest of the shell.
  * Could not get this to work with Gtk4 unfortunately (I tried for over a year)
  *
