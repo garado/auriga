@@ -8,7 +8,7 @@
 
 <h2>What is it?</h2>
 <p>This repo contains my entire system configuration - all of my configs, my shell, etc. It is managed with NixOS.</p>
-<p>The <b>desktop shell</b> (the UI for my system) is completely custom and deeply personalized. It is a creative outlet disguised as a set of productivity and utility widgets, and captures the best part of being a software engineer - making cool stuff!</p>
+<p>The <b>desktop shell</b> (the UI for my system) is completely custom and deeply personalized. It is a creative outlet disguised as a set of productivity and utility widgets, and captures the best part of programming - making fun stuff!</p>
 <p>Some highlights:</p>
 <ul>
   <li><b>Finance tracker:</b> balance tracking, spending analysis, budget tracking, and visualizations for financial goals</li>
