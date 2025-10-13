@@ -60,7 +60,9 @@ $accents: #d4af37, #cc1e1e, #8b4513, #000000, #2d1b0f, #1a0f0f, #4a3728, #b8860b
     background-color: list.nth($accents, $index)
 
 // Overrides
-:root
-  --bar-workspace-empty-color: #{$neutral-900}
-  --bar-workspace-not-empty-color: #{$neutral-100}
-  --bar-workspace-focused-color: #{saturate($yellow-300, 40%)}
+$gtk-version: 4 !default
+@if $gtk-version == 4
+  :root
+    --bar-workspace-empty-color: #{$neutral-900}
+    --bar-workspace-not-empty-color: #{$neutral-100}
+    --bar-workspace-focused-color: #{saturate($yellow-300, 40%)}

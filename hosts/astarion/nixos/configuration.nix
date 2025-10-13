@@ -153,6 +153,8 @@ in {
   ];
 
   security.rtkit.enable = true;
+  security.pam.services.astal-auth = {};
+
   services.pipewire = {
     enable = true;
     alsa = {

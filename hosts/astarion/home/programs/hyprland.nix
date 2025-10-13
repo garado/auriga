@@ -18,7 +18,7 @@
       # Execute these programs at launch
       exec-once = [
         "sleep 1 && swww-daemon &"
-        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app.ts --gtk4"
+        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app-lock.ts & sleep 1 ; ags run app.ts --gtk4"
       ];
 
       # Plugin options
@@ -94,7 +94,6 @@
       
       windowrule = [
         # Window layout
-        # TODO: Not working
         "float, class:^(thunar)$"
         "float, class:^(mpv)$"
       ];
@@ -132,18 +131,21 @@
 
         "CTRL SHIFT, w, killactive"
 
-        # Restart Astal
-        "ALT_L SHIFT, r, exec, pkill -SIGKILL gjs ; cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags ; ags run app.ts --gtk4"
+        # Lock
+        "ALT_L SHIFT, L, exec, astal -i lock lock"
+
+        # Restart desktop shell
+        "ALT_L SHIFT, r, exec, cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags ; ags quit -i app ; ags run app.ts --gtk4"
 
         # Screenshot
         "$mainMod SHIFT, s, exec, grimblast copy area"
 
         # Launchers, etc
         "$mainMod, RETURN, exec, kitty"
-        "$mainMod, J, exec, astal toggle-window dash"
-        "$mainMod, H, exec, astal toggle-window utility"
-        "$mainMod, L, exec, astal toggle-window control"
-        "$mainMod, R, exec, astal toggle-window launcher"
+        "$mainMod, J, exec, astal -i app toggle-window dash"
+        "$mainMod, H, exec, astal -i app toggle-window utility"
+        "$mainMod, L, exec, astal -i app toggle-window control"
+        "$mainMod, R, exec, astal -i app toggle-window launcher"
 
         # Move focus between windows
         "ALT_L, TAB, cyclenext"

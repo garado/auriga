@@ -12,7 +12,6 @@
  * Imports
  *****************************************************************************/
 
-import { App } from "astal/gtk4";
 import { GObject, register, property } from "astal/gobject";
 import { exec, execAsync } from "astal/process";
 
@@ -43,6 +42,7 @@ export interface ThemeConfig {
   nvim: string;
   kitty: string;
   wallpaper: string;
+  lockscreen: string;
   preview: string;
 }
 
@@ -249,18 +249,25 @@ export default class SettingsManager extends GObject.Object {
   /**
    * Apply astal CSS theme.
    */
-  private applyCSSTheme = async (themeName: string) => {
+  private applyCSSTheme = async (themeName: string = this.currentTheme) => {
     // Create/update colors.sass file
     const colorsContent = `@forward "${themeName}"`;
     fileWrite(APP_PATHS.SASS_COLORS_PATH, colorsContent);
 
     // Compile SASS and apply CSS
     try {
-      await execAsync(
-        `sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`,
-      );
-      App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
+      const gtk4Cmd = `sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`;
+      exec(gtk4Cmd);
+
+      const gtk3Cmd = `sass ${SRC}/src/styles/lock.sass /tmp/ags/lock-style.css`;
+      exec(gtk3Cmd);
+
+      globalThis.App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
       this.notify("current-theme");
+
+      if (globalThis.GtkVersion == 4) {
+        execAsync(`astal -i lock reload-theme ${themeName}`);
+      }
     } catch (error) {
       console.error("Failed to compile SASS:", error);
       return;
@@ -288,7 +295,10 @@ export default class SettingsManager extends GObject.Object {
     this.applyKittyTheme(themeName);
     this.applyNeovimTheme(themeName);
     this.applyWallpaper(themeName);
-    this.applyCSSTheme(themeName);
+
+    if (globalThis.GtkVersion == 4) {
+      this.applyCSSTheme(themeName);
+    }
   }
 
   // Private helper functions ------------------------------------------------

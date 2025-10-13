@@ -29,8 +29,6 @@
       # Entertainment
       ncspot
 
-      gtksourceview5
-
       # Productivity
       obsidian
 
@@ -95,9 +93,10 @@
       libshumate /* Transit */
       gvfs /* Needed for fetching cover art */
       imagemagick /* Cover art color analysis */
+      gtk-session-lock
       inputs.ags.packages.${pkgs.system}.apps
-      inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.auth
+      inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.bluetooth
       inputs.ags.packages.${pkgs.system}.cava
       inputs.ags.packages.${pkgs.system}.greet

@@ -21,6 +21,10 @@ import Control from "@/windows/control";
 import Launcher from "@/windows/launcher";
 import Notifications from "@/windows/notifications";
 
+// Required entrypoint config for sharing modules between Gtk3 lock and Gtk4 app
+globalThis.App = App;
+globalThis.GtkVersion = 4;
+
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
@@ -90,6 +94,7 @@ compileSASS();
 App.start({
   css: "/tmp/ags/style.css",
   icons: `${SRC}/assets/icons/`,
+  instanceName: "app",
   requestHandler(request: string, res: (response: any) => void) {
     const [command, ...args] = request.split(" ");
 
