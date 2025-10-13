@@ -12,7 +12,6 @@
  * Imports
  *****************************************************************************/
 
-import { App } from "astal/gtk4";
 import { GObject, register, property } from "astal/gobject";
 import { exec, execAsync } from "astal/process";
 
@@ -259,7 +258,7 @@ export default class SettingsManager extends GObject.Object {
       await execAsync(
         `sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`,
       );
-      App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
+      globalThis.App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
       this.notify("current-theme");
     } catch (error) {
       console.error("Failed to compile SASS:", error);
@@ -288,7 +287,10 @@ export default class SettingsManager extends GObject.Object {
     this.applyKittyTheme(themeName);
     this.applyNeovimTheme(themeName);
     this.applyWallpaper(themeName);
-    this.applyCSSTheme(themeName);
+
+    if (globalThis.GtkVersion === 4) {
+      this.applyCSSTheme(themeName);
+    }
   }
 
   // Private helper functions ------------------------------------------------

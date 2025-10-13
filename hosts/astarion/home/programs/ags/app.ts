@@ -21,6 +21,11 @@ import Control from "@/windows/control";
 import Launcher from "@/windows/launcher";
 import Notifications from "@/windows/notifications";
 
+Object.assign(globalThis, {
+  App: App,
+  GtkVersion: 4,
+});
+
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
