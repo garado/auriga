@@ -27,7 +27,9 @@ const fetchBalanceTrendFromLedger = async (
   const cmd = `${baseCmd} bs -X '$' --infer-market-prices --depth 0 --output-format csv --daily`;
 
   try {
-    const out = await execAsync(`${cmd} | tail -n 1 | tee ${cachefile}`);
+    const out = await execAsync(
+      `bash -c "${cmd} | tail -n 1 | tee ${cachefile}"`,
+    );
 
     try {
       return LedgerCSVParser.balanceTrend(out);
