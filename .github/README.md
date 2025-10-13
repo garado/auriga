@@ -8,11 +8,11 @@
 
 <h2>What is it?</h2>
 <p>This repo contains my entire system configuration - all of my configs, my shell, etc. It is managed with NixOS.</p>
-<p>I am most proud of the shell (the UI for my system). It is completely custom-built and deeply personalized to my specific needs. Most importantly, I have a lot of fun adding random stuff to it.</p>
+<p>The <b>desktop shell</b> (the UI for my system) is completely custom and deeply personalized. It is a creative outlet disguised as a set of productivity and utility widgets, and captures the best part of being a software engineer - making cool stuff!</p>
 <p>Some highlights:</p>
 <ul>
   <li><b>Finance tracker:</b> balance tracking, spending analysis, budget tracking, and visualizations for financial goals</li>
-  <li><b>Paint color matcher:</b> AI-powered tool to analyze a color from a reference image and provide mixing instructions using the colors in my palette</li>
+  <li><b>Paint color matcher:</b> AI-powered tool to analyze a color from a reference image and provide mixing instructions using the colors in my paint palettes</li>
   <li><b>Calendar:</b> synced with Google Calendar</li>
   <li><b>Personal goals tracker:</b> sortable, filterable, searchable </li>
   <li><b>Metronome:</b> for random quick guitar sessions</li>
@@ -119,4 +119,9 @@
     <li><a href="https://github.com/leowercase/dotfiles" target="_blank">leowercase</a></li>
     <li><a href="https://github.com/budimanjojo/dotfiles" target="_blank">budimanjojo</a></li>
   </ul>
+</div>
+
+<h2>Disclaimer</h2>
+<div>
+<p>This config is designed specifically for me. Works on my machine, but for others, it's best used as an implementation reference. I can provide little to no support if you want to run this yourself.</p>
 </div>
