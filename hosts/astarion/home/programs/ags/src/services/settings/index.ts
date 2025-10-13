@@ -42,6 +42,7 @@ export interface ThemeConfig {
   nvim: string;
   kitty: string;
   wallpaper: string;
+  lockscreen: string;
   preview: string;
 }
 
@@ -265,7 +266,7 @@ export default class SettingsManager extends GObject.Object {
       this.notify("current-theme");
 
       if (globalThis.GtkVersion == 4) {
-        execAsync("astal -i lock reload-theme");
+        execAsync(`astal -i lock reload-theme ${themeName}`);
       }
     } catch (error) {
       console.error("Failed to compile SASS:", error);
