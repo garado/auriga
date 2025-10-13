@@ -31,6 +31,7 @@ const CSS_PATH = `/tmp/ags/lock-style.css`;
 
 const CSS_CLASSES = {
   LOCK_CONTAINER: "lock-container",
+  LOCK_WINDOW: "lock-window",
 
   GREETING: "greeting",
 
@@ -113,7 +114,9 @@ const lockSession = () => {
  */
 const unlockSession = () => {
   sessionLock.unlock_and_destroy();
-  windows.forEach((w) => w.window.destroy());
+  windows.forEach((w) => {
+    w.window.destroy();
+  });
   windows = [];
 
   Gdk.Display.get_default()?.sync();
@@ -126,7 +129,7 @@ const unlockSession = () => {
  */
 const createWindow = (monitor: Gdk.Monitor) => {
   const window = LockWindow();
-  const win = { window, monitor };
+  const win: LockWindowInfo = { window: window, monitor: monitor };
   windows.push(win);
   return win;
 };
@@ -200,7 +203,9 @@ const LoginBox = () => {
   const ProfilePicture = new Widget.Box({
     className: CSS_CLASSES.PROFILE_PICTURE,
     vexpand: false,
-    hexpand: true,
+    hexpand: false,
+    halign: Gtk.Align.CENTER,
+    valign: Gtk.Align.CENTER,
     css: `background-image: url('${userConfig.dashHome.profile.pfp}');`,
   });
 
@@ -210,6 +215,7 @@ const LoginBox = () => {
   });
 
   const PasswordEntry = new Widget.Entry({
+    className: CSS_CLASSES.PASSWORD_PROMPT,
     halign: Gtk.Align.CENTER,
     xalign: 0.5,
     visibility: bind(inputVisible),
@@ -238,14 +244,14 @@ const LoginBox = () => {
 };
 
 const LockWindow = () => {
-  const content = new Widget.Box({
+  const content = new Widget.CenterBox({
+    startWidget: DateTime(),
+    centerWidget: LoginBox(),
     vertical: true,
     vexpand: true,
     hexpand: true,
     halign: Gtk.Align.CENTER,
     valign: Gtk.Align.CENTER,
-    spacing: 50,
-    children: [DateTime(), LoginBox()],
   });
 
   const Overlay = new Widget.Overlay({
@@ -266,7 +272,7 @@ const LockWindow = () => {
     }),
   });
 
-  win.get_style_context().add_class("fuck");
+  win.get_style_context().add_class(CSS_CLASSES.LOCK_WINDOW);
 
   return win;
 };

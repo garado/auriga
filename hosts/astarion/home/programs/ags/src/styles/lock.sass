@@ -8,7 +8,7 @@ $gtk-version: 3
 //   font-family: $font-stack
 //   color: $neutral-100
 
-.fuck
+.lock-window
   background-color: transparent
 
 .lock-container
@@ -16,23 +16,35 @@ $gtk-version: 3
   color: $neutral-100
 
   .profile-picture
-    min-height: 10rem
-    min-width: 10rem
+    min-height: 12rem
+    min-width: 12rem
     border-radius: 50%
     border: 0.3rem solid $primary-400
     background-size: 100%
     background-position: center
 
   .profile-name
-    font-size: 1.4rem
+    font-size: 1.6rem
 
   .password-prompt
+    border-radius: $border-radius
+    border: 0.15rem solid $primary-500
+    transition: 180ms all
+    color: $neutral-100
+    background-color: $neutral-800
+    font-size: 2rem
+    padding: 0.4rem
+    min-width: 15rem
+    caret-color: transparent
 
   .greeting
     font-size: 1rem
 
   .datetime
+    margin-bottom: 2rem
+
     .date
+      font-size: 1.6rem
 
     .time
       font-size: 8rem
