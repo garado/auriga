@@ -88,30 +88,15 @@
     # symlinked to ~/.config/ags
     configDir = ./programs/ags;
 
-    # # for gtk4-layer-shell compat
-    # gtk4-layer-shell must be loaded before libwayland
-    package = let
-      agsBase = inputs.ags.packages.${pkgs.system}.default;
-    in (pkgs.runCommand "ags-wrapped" {
-      buildInputs = [ pkgs.makeWrapper ];
-    } ''
-      mkdir -p $out/bin
-      makeWrapper ${agsBase}/bin/ags $out/bin/ags \
-        --set LD_PRELOAD ${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so
-    '') // {
-      override = args: agsBase.override args;
-      passthru = agsBase.passthru or {};
-    };
-
     extraPackages = with pkgs; [
       # gtksourceview5 // sadge
       libshumate /* Transit */
       gvfs /* Needed for fetching cover art */
       imagemagick /* Cover art color analysis */
-      gtk4-layer-shell
+      gtk-session-lock
       inputs.ags.packages.${pkgs.system}.apps
-      inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.auth
+      inputs.ags.packages.${pkgs.system}.battery
       inputs.ags.packages.${pkgs.system}.bluetooth
       inputs.ags.packages.${pkgs.system}.cava
       inputs.ags.packages.${pkgs.system}.greet
