@@ -90,6 +90,7 @@ compileSASS();
 App.start({
   css: "/tmp/ags/style.css",
   icons: `${SRC}/assets/icons/`,
+  instanceName: "app",
   requestHandler(request: string, res: (response: any) => void) {
     const [command, ...args] = request.split(" ");
 
