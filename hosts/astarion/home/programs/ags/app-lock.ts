@@ -4,6 +4,7 @@
  *
  * Lockscreen using gtk3-session-lock (gtk3! not 4!) and Astal.Auth.
  * Note: the lockscreen app is completely separate from the rest of the shell.
+ * Could not get this to work with Gtk4 unfortunately.
  */
 
 /*****************************************************************************
@@ -14,12 +15,26 @@ import Lock from "gi://GtkSessionLock";
 import Gdk from "gi://Gdk?version=3.0";
 import Gtk from "gi://Gtk?version=3.0";
 import AstalAuth from "gi://AstalAuth";
-import { bind, exec, execAsync, GLib, Variable } from "astal";
+import { bind, exec, execAsync, Gio, Variable } from "astal";
 import { App, Widget } from "astal/gtk3";
+import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
- * Interfaces
+ * Constants/interfaces
  *****************************************************************************/
+
+const SASS_PATH = `${SRC}/src/styles/lock.sass`;
+
+const CSS_PATH = `/tmp/ags/lock-style.css`;
+
+const userConfig = require("userconfig.ts").UserConfig;
+
+const CSS_CLASSES = {
+  LOCK_CONTAINER: "lock-container",
+  GREETING: "greeting",
+  PASSWORD_PROMPT: "password-prompt",
+  PROFILE_PICTURE: "profile-picture",
+} as const;
 
 type LockWindowInfo = {
   window: Gtk.Window;
@@ -30,11 +45,14 @@ type LockWindowInfo = {
  * Module-level variables
  *****************************************************************************/
 
-const prompt = Variable("");
+const promptText = Variable("");
+
 const inputVisible = Variable(false);
 const inputNeeded = Variable(false);
 
 const auth = new AstalAuth.Pam();
+
+const lock = Lock.prepare_lock();
 
 const windows: LockWindowInfo[] = [];
 
@@ -43,22 +61,21 @@ const windows: LockWindowInfo[] = [];
  *****************************************************************************/
 
 /**
- * Unlock.
+ * Unlock session.
  */
 const unlockSession = () => {
   lock.unlock_and_destroy();
   windows.forEach((w) => w.window.destroy());
+
   Gdk.Display.get_default()?.sync();
 
   // Launch actual config
-  const cmd = `ags run ${SRC}/app.ts --gtk4`;
-  execAsync(cmd).then(() => {
-    App.quit();
-  });
+  execAsync(`ags run ${SRC}/app.ts --gtk4`);
+  App.quit();
 };
 
 /**
- * Lock.
+ * Lock session.
  */
 const lockSession = () => {
   const display = Gdk.Display.get_default();
@@ -85,7 +102,9 @@ const lockSession = () => {
   });
 };
 
-/** Create a LockWindow on a given monitor */
+/**
+ * Create a LockWindow on a given monitor and store the window:monitor pairing information
+ */
 const createWindow = (monitor: Gdk.Monitor) => {
   const window = LockWindow();
   const win = { window, monitor };
@@ -93,23 +112,8 @@ const createWindow = (monitor: Gdk.Monitor) => {
   return win;
 };
 
-/** After authentication is complete, kill this app. */
-const onUnlockFinished = () => {
-  console.log("wat");
-  lock.destroy();
-  windows.forEach((w) => w.window.destroy());
-  Gdk.Display.get_default()?.sync();
-
-  // Launch actual config
-  try {
-    const cmd = `ags run ${SRC}/app.ts --gtk4`;
-    console.log(cmd);
-    exec(cmd);
-  } catch (e) {
-    console.log(e);
-  }
-
-  App.quit();
+const compileSASS = () => {
+  exec(`sass ${SASS_PATH} ${CSS_PATH}`);
 };
 
 /*****************************************************************************
@@ -117,13 +121,13 @@ const onUnlockFinished = () => {
  *****************************************************************************/
 
 auth.connect("auth-prompt-visible", (_auth, msg) => {
-  prompt.set(msg);
+  promptText.set(msg);
   inputVisible.set(true);
   inputNeeded.set(true);
 });
 
 auth.connect("auth-prompt-hidden", (_auth, msg) => {
-  prompt.set(msg);
+  promptText.set(msg);
   inputVisible.set(false);
   inputNeeded.set(true);
 });
@@ -138,181 +142,76 @@ auth.connect("fail", (p, msg) => {
  * Widget definitions
  *****************************************************************************/
 
-const Notif = (msg, type) => {
-  const notif = new Widget.Box({
-    class_name: `auth-notif ${type}`,
-    children: [
-      new Widget.Label({
-        label: msg,
-        max_width_chars: 25,
-        wrap: true,
-      }),
-    ],
+/** Shows password entry, password entry status, and user profile */
+const LoginBox = () => {
+  const ProfilePicture = new Widget.Box({
+    className: CSS_CLASSES.PROFILE_PICTURE,
+    vexpand: true,
+    hexpand: true,
+    css: `background-image: url('${userConfig.dashHome.profile.pfp}');`,
   });
 
-  const revealer = new Widget.Revealer({
-    child: notif,
-    halign: Gtk.Align.END,
-    transition: "slide_left",
-    transition_duration: 250,
-    reveal_child: true,
+  const ProfileName = new Widget.Label({
+    label: userConfig.dashHome.profile.name,
   });
 
-  // Utils.timeout(20000, () => {
-  //   revealer.reveal_child = false;
-  //   Utils.timeout(revealer.transition_duration, () => {
-  //     revealer.destroy();
-  //   });
-  // });
-  // Utils.idle(() => {
-  //   revealer.reveal_child = true;
-  // });
-  return revealer;
+  const PasswordEntry = new Widget.Entry({
+    halign: Gtk.Align.CENTER,
+    xalign: 0.5,
+    visibility: bind(inputVisible),
+    sensitive: bind(inputNeeded),
+    onActivate: (self) => {
+      inputNeeded.set(false);
+      auth.supply_secret(self.text);
+      self.text = "";
+    },
+    setup: (self) => {
+      self.connect("realize", () => {
+        self.grab_focus();
+      });
+    },
+  });
+
+  return new Widget.Box({
+    vertical: true,
+    halign: Gtk.Align.CENTER,
+    valign: Gtk.Align.CENTER,
+    hexpand: true,
+    vexpand: true,
+    spacing: 16,
+    children: [ProfilePicture, ProfileName, PasswordEntry],
+  });
 };
 
-const AuthNotifs = () =>
-  new Widget.Box({
-    halign: Gtk.Align.END,
-    valign: Gtk.Align.START,
-    vertical: true,
-  })
-    .hook(
-      auth,
-      (self, msg) => {
-        if (!msg) return;
-        self.add(Notif(msg, "error"));
-        self.show_all();
-        auth.supply_secret(null);
-      },
-      "auth-error",
-    )
-    .hook(
-      auth,
-      (self, msg) => {
-        if (!msg) return;
-        self.add(Notif(msg, "info"));
-        self.show_all();
-        auth.supply_secret(null);
-      },
-      "auth-info",
-    )
-    .hook(
-      auth,
-      (self, msg) => {
-        if (!msg) return;
-        self.add(Notif(msg, "fail"));
-        self.show_all();
-      },
-      "fail",
-    );
-
-const lock = Lock.prepare_lock();
-
-// const Right = () =>
-//   new Widget.Box({
-//     halign: Gtk.Align.END,
-//     children: [
-//       RoundedAngleEnd("topleft", { class_name: "angle", hexpand: true }),
-//       Clock(),
-//     ],
-//   });
-//
-// const Left = () =>
-//   new Widget.Box({
-//     children: [
-//       SessionBox(),
-//       RoundedAngleEnd("topright", { class_name: "angle" }),
-//     ],
-//   });
-//
-// const Bar = () =>
-//   new Widget.CenterBox({
-//     start_widget: Left(),
-//     end_widget: Right(),
-//   });
-
-const LoginBox = () =>
-  new Widget.Box({
-    children: [
-      new Widget.Overlay({
-        hexpand: true,
-        vexpand: true,
-        child: new Widget.Box({
-          vertical: true,
-          halign: Gtk.Align.CENTER,
-          valign: Gtk.Align.CENTER,
-          spacing: 16,
-          children: [
-            new Widget.Box({
-              halign: Gtk.Align.CENTER,
-              class_name: "avatar",
-            }),
-            new Widget.Box({
-              // class_name: inputNeeded
-              //   .bind()
-              //   .as((n) => `entry-box ${n ? "" : "hidden"}`),
-              vertical: true,
-              children: [
-                new Widget.Label({
-                  // label: bind(prompt),
-                  label: "prompt?",
-                }),
-                new Widget.Entry({
-                  halign: Gtk.Align.CENTER,
-                  xalign: 0.5,
-                  visibility: bind(inputVisible),
-                  sensitive: bind(inputNeeded),
-                  onActivate: (self) => {
-                    inputNeeded.set(false);
-                    auth.supply_secret(self.text);
-                    self.text = "";
-                  },
-                  setup: (self) => {
-                    self.connect("realize", () => {
-                      self.grab_focus();
-                    });
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        overlays: [],
-      }),
-    ],
-  });
-
-const LockWindow = () =>
-  new Gtk.Window({
+const LockWindow = () => {
+  return new Gtk.Window({
     child: new Widget.Box({
       children: [
         new Widget.Revealer({
           reveal_child: true,
-          transition: "crossfade",
+          transitionType: Gtk.RevealerTransitionType.CROSSFADE,
           transition_duration: 500,
           child: new Widget.Box({
-            class_name: "lock-container",
+            className: CSS_CLASSES.LOCK_CONTAINER,
             vertical: true,
-            children: [
-              new Widget.Label({
-                label: "fucking help me",
-              }),
-              LoginBox(),
-            ],
+            children: [LoginBox()],
           }),
         }),
       ],
     }),
   });
+};
 
 /*****************************************************************************
  * Main
  *****************************************************************************/
 
+compileSASS();
+
 App.start({
   instanceName: "lock",
+  css: CSS_PATH,
   main: () => {
-    // lock.connect("finished", onUnlockFinished);
     lockSession();
     auth.start_authenticate();
   },
