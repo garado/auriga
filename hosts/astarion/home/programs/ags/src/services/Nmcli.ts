@@ -10,16 +10,9 @@
  * Imports
  *****************************************************************************/
 
-import { AstalIO } from "astal";
+import { Gio } from "astal";
 import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
-import { interval } from "astal/time";
-
-/*****************************************************************************
- * Constants
- *****************************************************************************/
-
-const SCAN_INTERVAL_MS = 10000;
 
 /*****************************************************************************
  * Interfaces
@@ -67,9 +60,10 @@ export default class NmcliService extends GObject.Object {
   declare enabled: boolean;
 
   // Private variables --------------------------------------------------------
-  #scanInterval: number | null = null;
-  #scanTimer: AstalIO.Time | null = null;
   #knownConnections: Set<string> = new Set();
+
+  /** dbus subscription references **/
+  #subscriptionIds: number[] = [];
 
   // Constructor --------------------------------------------------------------
   constructor() {
@@ -79,14 +73,51 @@ export default class NmcliService extends GObject.Object {
     this.status = { connected: false, ssid: null, strength: 0 };
     this.enabled = false;
 
-    this.#init();
+    this.#setupDbusConnections();
+    this.#initData();
   }
 
   // Private functions --------------------------------------------------------
-  async #init() {
+
+  /**
+   * Subscribe to dbus signals for automatic UI updates
+   */
+  async #setupDbusConnections() {
+    const bus = Gio.DBus.system;
+
+    // Connection state changes
+    const stateId = bus.signal_subscribe(
+      "org.freedesktop.NetworkManager",
+      "org.freedesktop.NetworkManager",
+      "StateChanged",
+      "/org/freedesktop/NetworkManager",
+      null,
+      Gio.DBusSignalFlags.NONE,
+      () => {
+        this.#updateStatus();
+      },
+    );
+
+    // Property changes on wireless device (includes access points)
+    const propsId = bus.signal_subscribe(
+      "org.freedesktop.NetworkManager",
+      "org.freedesktop.DBus.Properties",
+      "PropertiesChanged",
+      null, // Listen on all paths
+      null,
+      Gio.DBusSignalFlags.NONE,
+      () => {
+        this.#updateAccessPoints();
+      },
+    );
+
+    this.#subscriptionIds.push(stateId, propsId);
+  }
+
+  async #initData() {
     await this.#updateKnownConnections();
-    this.#updateStatus();
-    this.#updateAccessPoints();
+    await this.#updateStatus();
+    await this.#updateAccessPoints();
   }
 
   /**
@@ -255,8 +286,9 @@ export default class NmcliService extends GObject.Object {
     try {
       await execAsync("nmcli radio wifi on");
       this.enabled = true;
-      await this.#updateStatus();
+      await this.#initData();
     } catch (err) {
+      console.error(err);
       throw new Error(`Failed to enable WiFi: ${err}`);
     }
   }
@@ -268,8 +300,9 @@ export default class NmcliService extends GObject.Object {
     try {
       await execAsync("nmcli radio wifi off");
       this.enabled = false;
-      await this.#updateStatus();
+      await this.#initData();
     } catch (err) {
+      console.error(err);
       throw new Error(`Failed to disable WiFi: ${err}`);
     }
   }
@@ -285,29 +318,6 @@ export default class NmcliService extends GObject.Object {
       await this.#updateAccessPoints();
     } catch (err) {
       console.warn(`Scan failed: ${err}`);
-    }
-  }
-
-  /**
-   * Start periodic scanning.
-   */
-  startScanning(): void {
-    if (this.#scanInterval) return;
-
-    this.#scanTimer = interval(SCAN_INTERVAL_MS, async () => {
-      await this.#updateAccessPoints();
-      await this.#updateStatus();
-    });
-  }
-
-  /**
-   * Stop periodic scanning
-   */
-  stopScanning(): void {
-    if (this.#scanInterval) {
-      this.#scanInterval = null;
-      this.#scanTimer?.cancel();
-      this.#scanTimer = null;
     }
   }
 }
