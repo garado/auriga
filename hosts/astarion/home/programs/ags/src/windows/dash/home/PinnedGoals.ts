@@ -11,8 +11,9 @@
  *****************************************************************************/
 
 import Goals, { Goal } from "@/services/Goals";
-import { Gtk, hook, Widget } from "astal/gtk4";
+import { Gtk, Gdk, hook, Widget } from "astal/gtk4";
 import { setActiveTabByName } from "..";
+import { relativeTimeFromISO } from "@/utils/Helpers";
 
 /*****************************************************************************
  * Module-level vars
@@ -30,6 +31,7 @@ const CSS_CLASSES = {
   GOAL: "goal",
   GOAL_DESCRIPTION: "description",
   GOAL_ICON: "goal-icon",
+  GOAL_STATS: "goal-stats",
 } as const;
 
 /*****************************************************************************
@@ -37,21 +39,40 @@ const CSS_CLASSES = {
  *****************************************************************************/
 
 const PinnedGoal = (goal: Goal) => {
+  const completedSubgoals = goal.children.filter(
+    (child) => child.status === "completed",
+  ).length;
+
+  const icon = Widget.Image({
+    cssClasses: [CSS_CLASSES.GOAL_ICON],
+    iconName: goal.icon,
+  });
+
+  const description = Widget.Label({
+    cssClasses: [CSS_CLASSES.GOAL_DESCRIPTION],
+    label: goal.description,
+    hexpand: true,
+    wrap: true,
+    xalign: 0,
+  });
+
   return Widget.Box({
     cssClasses: [CSS_CLASSES.GOAL, goal.project],
-    vertical: false,
-    spacing: 8,
+    spacing: 6,
     children: [
-      Widget.Image({
-        cssClasses: [CSS_CLASSES.GOAL_ICON],
-        iconName: goal.icon,
-      }),
-      Widget.Label({
-        cssClasses: [CSS_CLASSES.GOAL_DESCRIPTION],
-        label: goal.description,
-        hexpand: true,
-        wrap: true,
-        xalign: 0,
+      icon,
+      Widget.Box({
+        cursor: Gdk.Cursor.new_from_name("pointer", null),
+        vertical: true,
+        spacing: 2,
+        children: [
+          description,
+          Widget.Label({
+            xalign: 0,
+            cssClasses: [CSS_CLASSES.GOAL_STATS],
+            label: `${completedSubgoals}/${goal.children.length} completed • due ${relativeTimeFromISO(goal.due)}`,
+          }),
+        ],
       }),
     ],
     onButtonPressed: () => {

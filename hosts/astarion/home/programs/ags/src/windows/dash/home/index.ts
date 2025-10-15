@@ -48,7 +48,8 @@ export default () => {
   const Middle = Grid({
     setup: (self) => {
       // Widget, Col, Row, Width, Height
-      self.attach(Rss(), 0, 0, 1, 1);
+      self.attach(Weather(), 0, 0, 1, 1);
+      self.attach(Rss(), 0, 1, 1, 1);
 
       self.set_row_spacing(WIDGET_SPACING);
       self.set_column_spacing(WIDGET_SPACING);
@@ -58,7 +59,6 @@ export default () => {
   const Right = Grid({
     setup: (self) => {
       /* Widget, Col, Row, Width, Height*/
-      self.attach(Weather(), 0, 0, 1, 1);
       self.attach(PinnedGoals(), 0, 1, 1, 1);
       self.attach(Player(), 0, 2, 1, 1);
 
