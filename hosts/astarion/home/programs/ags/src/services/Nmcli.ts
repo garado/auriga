@@ -28,15 +28,16 @@ const SCAN_INTERVAL_MS = 10000;
 export interface AccessPoint {
   ssid: string;
   bssid: string;
-  signal: number;
+  strength: number;
   security: string;
   inUse: boolean;
+  known: boolean;
 }
 
 export interface WifiStatus {
   connected: boolean;
   ssid: string | null;
-  signal: number;
+  strength: number;
 }
 
 /*****************************************************************************
@@ -68,22 +69,51 @@ export default class NmcliService extends GObject.Object {
   // Private variables --------------------------------------------------------
   #scanInterval: number | null = null;
   #scanTimer: AstalIO.Time | null = null;
+  #knownConnections: Set<string> = new Set();
 
   // Constructor --------------------------------------------------------------
   constructor() {
     super();
 
     this.accessPoints = [];
-    this.status = { connected: false, ssid: null, signal: 0 };
+    this.status = { connected: false, ssid: null, strength: 0 };
     this.enabled = false;
 
     this.#init();
   }
 
   // Private functions --------------------------------------------------------
-  #init() {
+  async #init() {
+    await this.#updateKnownConnections();
     this.#updateStatus();
     this.#updateAccessPoints();
+  }
+
+  /**
+   * Check if a network has a known connection profile.
+   * Called from first `updateAccessPoints` call.
+   *
+   * The nmcli call includes networks that you've tried and failed to connect to - the
+   * filtering removes those by excluding `last connection timestamp == 0` entries.
+   */
+  async #updateKnownConnections() {
+    try {
+      const output = await execAsync(
+        "nmcli -t -f NAME,TIMESTAMP connection show",
+      );
+      this.#knownConnections = new Set(
+        output
+          .trim()
+          .split("\n")
+          .filter((line) => {
+            const [_name, timestamp] = line.split(":");
+            return timestamp !== "0";
+          })
+          .map((line) => line.split(":")[0]),
+      );
+    } catch (err) {
+      console.warn(`nmcli: Failed to get known connections: ${err}`);
+    }
   }
 
   /**
@@ -97,8 +127,8 @@ export default class NmcliService extends GObject.Object {
       const current = output.split("\n").find((line) => line.startsWith("*"));
 
       if (current) {
-        const signal = current.split(":")[1];
-        return parseInt(signal) || 0;
+        const strength = current.split(":")[1];
+        return parseInt(strength) || 0;
       }
     } catch {}
     return 0;
@@ -127,12 +157,12 @@ export default class NmcliService extends GObject.Object {
       this.status = {
         connected: state === "100 (connected)",
         ssid: connection && connection !== "--" ? connection : null,
-        signal: await this.#getCurrentConnection(),
+        strength: await this.#getCurrentConnection(),
       };
     } catch (err) {
       console.warn(`Failed to update WiFi status: ${err}`);
       this.enabled = false;
-      this.status = { connected: false, ssid: null, signal: 0 };
+      this.status = { connected: false, ssid: null, strength: 0 };
     }
   }
 
@@ -156,13 +186,14 @@ export default class NmcliService extends GObject.Object {
         .split("\n")
         .filter((line) => line) // Remove empty strings
         .map((line) => {
-          const [inUse, ssid, bssid, signal, security] = line.split(":");
+          const [inUse, ssid, bssid, strength, security] = line.split(":");
           return {
             ssid,
             bssid,
-            signal: parseInt(signal) || 0,
+            strength: parseInt(strength) || 0,
             security,
             inUse: inUse === "*",
+            known: this.#knownConnections.has(ssid),
           };
         })
         .filter((ap) => ap.ssid);
@@ -171,14 +202,14 @@ export default class NmcliService extends GObject.Object {
       const unique = new Map<string, AccessPoint>();
       aps.forEach((ap) => {
         const existing = unique.get(ap.ssid);
-        if (!existing || ap.signal > existing.signal) {
+        if (!existing || ap.strength > existing.strength) {
           unique.set(ap.ssid, ap);
         }
       });
 
-      // Sort by strongest signal
+      // Sort by strongest signal strength
       this.accessPoints = Array.from(unique.values()).sort(
-        (a, b) => b.signal - a.signal,
+        (a, b) => b.strength - a.strength,
       );
     } catch (err) {
       console.warn(`Failed to update access points: ${err}`);
