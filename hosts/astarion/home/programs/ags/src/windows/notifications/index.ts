@@ -1,15 +1,46 @@
+/**
+ * █▄░█ █▀█ ▀█▀ █ █▀▀ █ █▀▀ ▄▀█ ▀█▀ █ █▀█ █▄░█ █▀
+ * █░▀█ █▄█ ░█░ █ █▀░ █ █▄▄ █▀█ ░█░ █ █▄█ █░▀█ ▄█
+ *
+ * On-screen display for notifications.
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { bind, timeout } from "astal";
 import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 import { Notification } from "@/components/Notification";
 import Nd from "gi://AstalNotifd";
 
-const nd = Nd.get_default();
-const references = {};
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
-const NotifWrapper = (notif: any) =>
+const nd = Nd.get_default();
+
+/** References to notification widgets. Stored for easy widget destruction. */
+const references: Record<number, Gtk.Revealer> = {};
+
+/*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+const NOTIF_REVEAL_TIMEOUT = 200;
+
+const CSS_CLASSES = {
+  NOTIFICATION_WINDOW: "notification-window",
+} as const;
+
+/*****************************************************************************
+ * Widgets
+ *****************************************************************************/
+
+const NotifRevealWrapper = (notif: Nd.Notification) =>
   Widget.Revealer({
     child: Notification(notif),
-    transitionDuration: 200,
+    transitionDuration: NOTIF_REVEAL_TIMEOUT,
     transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
     revealChild: false,
   });
@@ -17,31 +48,37 @@ const NotifWrapper = (notif: any) =>
 const Notifications = () =>
   Widget.Box({
     name: "notifications",
-    cssClasses: ["notification-window"],
+    cssClasses: [CSS_CLASSES.NOTIFICATION_WINDOW],
     vertical: true,
     vexpand: false,
     hexpand: true,
     spacing: 20,
     setup: (self) => {
-      nd.connect("notified", (_, id) => {
+      // Create
+      nd.connect("notified", (_, id: number) => {
         if (!nd.dontDisturb) {
           const n = nd.get_notification(id);
-          const widget = NotifWrapper(n);
+          const widget = NotifRevealWrapper(n);
           references[id] = widget;
           self.append(widget);
           widget.revealChild = true;
         }
       });
 
+      // Destroy
       nd.connect("resolved", (_, id) => {
         references[id].revealChild = false;
         timeout(200, () => {
           self.remove(references[id]);
-          references[id] = undefined;
+          delete references[id];
         });
       });
     },
   });
+
+/*****************************************************************************
+ * Export
+ *****************************************************************************/
 
 export default (monitor: Gdk.Monitor) => {
   const { TOP, RIGHT } = Astal.WindowAnchor;
