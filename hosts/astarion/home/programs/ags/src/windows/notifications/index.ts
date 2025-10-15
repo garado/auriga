@@ -27,7 +27,7 @@ const references: Record<number, Gtk.Revealer> = {};
  * Constants
  *****************************************************************************/
 
-const NOTIF_REVEAL_DURATION_MS = 200;
+const NOTIF_REVEAL_DURATION_MS = 150;
 
 const CSS_CLASSES = {
   NOTIFICATION_WINDOW: "notification-window",
@@ -43,12 +43,14 @@ const NotifRevealWrapper = (notif: Nd.Notification) =>
     transitionDuration: NOTIF_REVEAL_DURATION_MS,
     transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
     revealChild: false,
+    vexpand: false,
   });
 
 const Notifications = () =>
   Widget.Box({
     name: "notifications",
     cssClasses: [CSS_CLASSES.NOTIFICATION_WINDOW],
+    homogeneous: false,
     vertical: true,
     vexpand: false,
     hexpand: true,
@@ -98,9 +100,9 @@ export default (monitor: Gdk.Monitor) => {
     child: Notifications(),
     gdkmonitor: monitor,
     setup: (self) => {
-      /* Workaround for revealer bug.
-       * https://github.com/wmww/gtk4-layer-shell/issues/60 */
-      self.set_default_size(1, 1);
+      // Set to full monitor height to prevent window resizing when new notifs are added,
+      // which causes weird UI behavior
+      self.set_default_size(1, monitor.get_geometry().height);
     },
   });
 };
