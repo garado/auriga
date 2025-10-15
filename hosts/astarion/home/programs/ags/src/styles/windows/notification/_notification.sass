@@ -1,9 +1,10 @@
 
+@use 'sass:list'
 @use '../../theme/theme' as *
 
 .notification
   .top-bar
-    padding: 0.5rem
+    padding: 0.6rem 0.8rem
     background-color: $neutral-600
     border-top-left-radius: $border-radius
     border-top-right-radius: $border-radius
@@ -12,13 +13,32 @@
       -gtk-icon-transform: scale(0.8)
 
   .content
-    padding: 0.5rem
+    padding: 0.6rem 0.8rem
     background-color: $neutral-700
-    border-bottom-left-radius: $border-radius
-    border-bottom-right-radius: $border-radius
 
     .summary
       font-weight: 600
+
+    &:last-child
+      border-bottom-left-radius: $border-radius
+      border-bottom-right-radius: $border-radius
+
+  .timeout-bar
+    border-bottom-left-radius: $border-radius
+    border-bottom-right-radius: $border-radius
+
+    trough
+      min-height: 0.2rem
+      background-color: $neutral-700
+
+      progress
+        min-height: 0.2rem
+
+    // Apply random accent
+    @for $index from 1 through list.length($accents)
+      &.accent-#{$index} trough progress
+        background-color: list.nth($accents, $index)
+        color: list.nth($accents, $index)
 
 .notification-window
   margin: 1rem
