@@ -8,7 +8,7 @@
 
 <h2>What is it?</h2>
 <p>This repo contains my entire system configuration - all of my configs, my shell, etc. It is managed with NixOS.</p>
-<p>The <b>desktop shell</b> (the UI for my system) is completely custom and deeply personalized. It is a creative outlet disguised as a set of productivity and utility widgets, and captures the best part of programming - making fun stuff!</p>
+<p>The <b>desktop shell</b> (the UI for my system) is completely custom and deeply personalized. It is a creative outlet disguised as a suite of productivity widgets, built for the joy of programming.</p>
 <p>Some highlights:</p>
 <ul>
   <li><b>Finance tracker:</b> balance tracking, spending analysis, budget tracking, and visualizations for financial goals</li>
@@ -48,7 +48,6 @@
 <div align="center">
   <img src="dashboard-tasks.png" />
 </div>
-</div>
 
 <h3>Trip planning</h3>
 <p>A trip planning widget with multi-modal routing, route visualizations, and the option to send the trip details to my phone.</p>
@@ -71,7 +70,6 @@
 <div align="center">
   <img src="theme-reload.gif" height="800" />
 </div>
-</h3>
 
 <h2>Utility panel</h2>
 
@@ -123,5 +121,7 @@
 
 <h2>Disclaimer</h2>
 <div>
-<p>This config is designed specifically for me. Works on my machine, but for others, it's best used as an implementation reference. I can provide little to no support if you want to run this yourself.</p>
+<p>
+This config is designed specifically for my setup and workflow. Feel free to use it as a reference, but YMMV if you try to run it directly.
+</p>
 </div>
