@@ -27,7 +27,7 @@ const references: Record<number, Gtk.Revealer> = {};
  * Constants
  *****************************************************************************/
 
-const NOTIF_REVEAL_TIMEOUT = 200;
+const NOTIF_REVEAL_DURATION_MS = 200;
 
 const CSS_CLASSES = {
   NOTIFICATION_WINDOW: "notification-window",
@@ -40,7 +40,7 @@ const CSS_CLASSES = {
 const NotifRevealWrapper = (notif: Nd.Notification) =>
   Widget.Revealer({
     child: Notification(notif),
-    transitionDuration: NOTIF_REVEAL_TIMEOUT,
+    transitionDuration: NOTIF_REVEAL_DURATION_MS,
     transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
     revealChild: false,
   });
@@ -66,11 +66,16 @@ const Notifications = () =>
       });
 
       // Destroy
-      nd.connect("resolved", (_, id) => {
-        references[id].revealChild = false;
-        timeout(200, () => {
-          self.remove(references[id]);
-          delete references[id];
+      nd.connect("resolved", (_, id: number) => {
+        const widget = references[id];
+        if (!widget) return;
+
+        widget.revealChild = false;
+        timeout(NOTIF_REVEAL_DURATION_MS, () => {
+          if (references[id] === widget) {
+            self.remove(widget);
+            delete references[id];
+          }
         });
       });
     },
