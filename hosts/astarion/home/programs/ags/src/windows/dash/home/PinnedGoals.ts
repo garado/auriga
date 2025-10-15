@@ -39,10 +39,6 @@ const CSS_CLASSES = {
  *****************************************************************************/
 
 const PinnedGoal = (goal: Goal) => {
-  const completedSubgoals = goal.children.filter(
-    (child) => child.status === "completed",
-  ).length;
-
   const icon = Widget.Image({
     cssClasses: [CSS_CLASSES.GOAL_ICON],
     iconName: goal.icon,
@@ -55,6 +51,17 @@ const PinnedGoal = (goal: Goal) => {
     wrap: true,
     xalign: 0,
   });
+
+  const goalStatsText = () => {
+    if (goal.children.length == 0) {
+      return `due ${relativeTimeFromISO(goal.due)}`;
+    } else {
+      const completedSubgoals = goal.children.filter(
+        (child) => child.status === "completed",
+      ).length;
+      return `${completedSubgoals}/${goal.children.length} completed • due ${relativeTimeFromISO(goal.due)}`;
+    }
+  };
 
   return Widget.Box({
     cssClasses: [CSS_CLASSES.GOAL, goal.project],
@@ -70,7 +77,7 @@ const PinnedGoal = (goal: Goal) => {
           Widget.Label({
             xalign: 0,
             cssClasses: [CSS_CLASSES.GOAL_STATS],
-            label: `${completedSubgoals}/${goal.children.length} completed • due ${relativeTimeFromISO(goal.due)}`,
+            label: goalStatsText(),
           }),
         ],
       }),
