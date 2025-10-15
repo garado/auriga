@@ -93,8 +93,9 @@ export default class NmcliService extends GObject.Object {
    * Check if a network has a known connection profile.
    * Called from first `updateAccessPoints` call.
    *
-   * The nmcli call includes networks that you've tried and failed to connect to - the
-   * filtering removes those by excluding `last connection timestamp == 0` entries.
+   * The nmcli call includes networks that you've tried but never successfully
+   * connected to - the filtering removes those by excluding `last connection
+   * timestamp == 0` entries.
    */
   async #updateKnownConnections() {
     try {
