@@ -29,7 +29,7 @@ const bt = Bt.get_default();
  *****************************************************************************/
 
 const BluetoothControl = () => {
-  return ToggleButton({
+  return Widget.Button({
     cssClasses: ["action-btn"],
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     hexpand: true,
@@ -41,10 +41,24 @@ const BluetoothControl = () => {
         }),
       );
 
-      // Manually bind the property, because the property throws an LSP error
-      bind(bt, "isPowered").subscribe((value) => {
-        self.active = Boolean(value);
+      if (bt.isPowered) {
+        self.add_css_class("active");
+      }
+
+      bind(bt, "isPowered").subscribe((isPowered) => {
+        if (isPowered) {
+          self.add_css_class("active");
+        } else {
+          self.remove_css_class("active");
+        }
       });
+    },
+    onClicked: () => {
+      if (bt.isPowered) {
+        bt.adapter.set_powered(false);
+      } else {
+        bt.adapter.set_powered(true);
+      }
     },
   });
 };
