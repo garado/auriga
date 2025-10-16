@@ -239,10 +239,13 @@ export default class NmcliService extends GObject.Object {
         }
       });
 
-      // Sort by strongest signal strength
-      this.accessPoints = Array.from(unique.values()).sort(
-        (a, b) => b.strength - a.strength,
-      );
+      // Sort known networks first, then sort by signal strength
+      this.accessPoints = Array.from(unique.values()).sort((a, b) => {
+        if (a.known !== b.known) {
+          return a.known ? -1 : 1;
+        }
+        return b.strength - a.strength;
+      });
     } catch (err) {
       console.warn(`Failed to update access points: ${err}`);
       this.accessPoints = [];
