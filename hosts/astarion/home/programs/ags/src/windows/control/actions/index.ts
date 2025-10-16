@@ -12,7 +12,7 @@
  * Imports
  *****************************************************************************/
 
-import { astalify, Gdk, Gtk, hook, Widget } from "astal/gtk4";
+import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import { bind, execAsync, Variable } from "astal";
 import Bt from "gi://AstalBluetooth";
 import NmcliService from "@/services/Nmcli";
@@ -23,6 +23,7 @@ import NmcliService from "@/services/Nmcli";
 
 const ToggleButton = astalify(Gtk.ToggleButton);
 const bt = Bt.get_default();
+const nmcli = NmcliService.get_default();
 
 /*****************************************************************************
  * Widget definitions
@@ -34,17 +35,16 @@ const BluetoothControl = () => {
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     hexpand: true,
     tooltipText: "Enable/disable Bluetooth",
+    child: Widget.Image({
+      iconName: "bluetooth-symbolic",
+    }),
     setup: (self) => {
-      self.set_child(
-        Widget.Image({
-          iconName: "bluetooth-symbolic",
-        }),
-      );
-
+      // Initial state
       if (bt.isPowered) {
         self.add_css_class("active");
       }
 
+      // Future updates
       bind(bt, "isPowered").subscribe((isPowered) => {
         if (isPowered) {
           self.add_css_class("active");
@@ -69,14 +69,17 @@ const WifiControl = () => {
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     tooltipText: "Enable/disable wifi",
+    child: Widget.Image({
+      iconName: "wifi-high-symbolic",
+    }),
     setup: (self) => {
-      self.set_child(
-        Widget.Image({
-          iconName: "wifi-high-symbolic",
-        }),
-      );
+      // Initial state
+      if (nmcli.enabled) {
+        self.add_css_class("active");
+      }
 
-      bind(NmcliService.get_default(), "enabled").subscribe((enabled) => {
+      // Future updates
+      bind(nmcli, "enabled").subscribe((enabled) => {
         if (enabled) {
           self.add_css_class("active");
         } else {
@@ -85,11 +88,10 @@ const WifiControl = () => {
       });
     },
     onClicked: () => {
-      const service = NmcliService.get_default();
-      if (service.enabled) {
-        service.disable();
+      if (nmcli.enabled) {
+        nmcli.disable();
       } else {
-        service.enable();
+        nmcli.enable();
       }
     },
   });
