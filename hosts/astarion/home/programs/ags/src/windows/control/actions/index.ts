@@ -130,33 +130,48 @@ const DNDControl = () => {
 };
 
 const GammastepControl = () => {
-  const gammastepActive = Variable(false).watch(
-    "bash -c 'systemctl --user is-active gammastep.service'",
+  /**
+   * Add `|| true` because command returns nonzero exit when service is inactive,
+   * which gjs will complain about
+   */
+  const gammastepActive = Variable(false).poll(
+    10 * 1000, // 10 seconds
+    "bash -c 'systemctl --user is-active gammastep.service || true'",
     (out) => {
-      return out === "active";
+      return out.trim() === "active";
     },
   );
 
-  return ToggleButton({
+  return Widget.Button({
     cssClasses: ["action-btn"],
     hexpand: true,
-    tooltipText: "Enable/disable nightshift (gammastep)",
+    tooltipText: "Enable/disable gammastep",
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    onDestroy: gammastepActive.drop,
-    onButtonPressed: (self) => {
-      const cmd = self.active ? "stop" : "start";
-      execAsync(`systemctl --user ${cmd} gammastep.service`);
-    },
+    onDestroy: () => gammastepActive.drop(),
+    child: Widget.Image({
+      iconName: "moon-symbolic",
+    }),
     setup: (self) => {
-      self.set_child(
-        Widget.Image({
-          iconName: "moon-symbolic",
-        }),
-      );
+      // Initial state
+      if (gammastepActive.get()) {
+        self.add_css_class("active");
+      }
 
-      // Manually bind the property, because the property throws an LSP error
-      bind(gammastepActive).subscribe((value) => {
-        self.active = Boolean(value);
+      // Future updates
+      gammastepActive.subscribe((active) => {
+        if (active) {
+          self.add_css_class("active");
+        } else {
+          self.remove_css_class("active");
+        }
+      });
+    },
+    onClicked: () => {
+      const newState = !gammastepActive.get();
+      const cmd = newState ? "start" : "stop";
+
+      execAsync(`systemctl --user ${cmd} gammastep.service`).then(() => {
+        gammastepActive.set(newState);
       });
     },
   });
