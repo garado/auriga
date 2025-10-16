@@ -21,6 +21,7 @@ import {
   CategorySpending,
   CashFlow,
 } from "./Types";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Module-level variables
@@ -110,6 +111,9 @@ export default class Ledger extends GObject.Object {
   @property(Object)
   declare monthlySpendingByCategory: Object;
 
+  // Private variables ---------------------------------------------------------
+  #hledgerCmd: string = `${CMD.hledger} ${INCLUDES} `;
+
   // Private functions ---------------------------------------------------------
   constructor() {
     super();
@@ -153,12 +157,8 @@ export default class Ledger extends GObject.Object {
     this.#initSpendingAnalysis();
   }
 
-  hledgerCmd = () => {
-    return `hledger ${INCLUDES} `;
-  };
-
   async #testIncludeFilesExist(): Promise<boolean> {
-    const cmd = `hledger files ${INCLUDES}`;
+    const cmd = `${CMD.hledger} files ${INCLUDES}`;
 
     try {
       await execAsync(cmd);
@@ -170,18 +170,18 @@ export default class Ledger extends GObject.Object {
 
   async #initAccountData() {
     this.accountData = await LedgerQuery.accountData(
-      this.hledgerCmd(),
+      this.#hledgerCmd,
       ledgerConfig.accountList,
     );
   }
 
   async #initNetWorth() {
-    this.netWorth = await LedgerQuery.netWorth(this.hledgerCmd());
+    this.netWorth = await LedgerQuery.netWorth(this.#hledgerCmd);
   }
 
   async #initMonthlyCashFlow() {
     const monthlyCashFlow: CashFlow = await LedgerQuery.monthlyCashFlow(
-      this.hledgerCmd(),
+      this.#hledgerCmd,
     );
 
     this.recentIncome = monthlyCashFlow.income;
@@ -189,31 +189,31 @@ export default class Ledger extends GObject.Object {
   }
 
   async #initDebts() {
-    this.debtsAndLoans = await LedgerQuery.debtsLoans(this.hledgerCmd());
+    this.debtsAndLoans = await LedgerQuery.debtsLoans(this.#hledgerCmd);
   }
 
   async #initRecentCategorySpending() {
     this.recentCategorySpending = await LedgerQuery.categorySpending(
-      this.hledgerCmd(),
+      this.#hledgerCmd,
     );
   }
 
   async #initBalanceTrends() {
     this.balancesOverTime = await LedgerQuery.balanceTrends(
-      this.hledgerCmd(),
+      this.#hledgerCmd,
       BALANCE_TREND_CACHEFILE,
     );
   }
 
   async #initSpendingAnalysis() {
     this.monthlySpendingByCategory = await LedgerQuery.spendingAnalysis(
-      this.hledgerCmd(),
+      this.#hledgerCmd,
     );
   }
 
   async #initRecentTransactions() {
     this.recentTransactions = await LedgerQuery.recentTransactions(
-      this.hledgerCmd(),
+      this.#hledgerCmd,
     );
   }
 }

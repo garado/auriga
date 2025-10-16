@@ -12,6 +12,7 @@
 import { execAsync } from "astal";
 import LedgerCSVParser from "../Parsing";
 import { TransactionData } from "../Types";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Function definitions
@@ -45,7 +46,7 @@ export const recentTransactions = async (
   const cmd = `${baseCmd} reg ^Income ^Expenses --output-format csv`;
 
   try {
-    const out = await execAsync(`bash -c '${cmd} | tail -n 20'`);
+    const out = await execAsync(`${CMD.bash} -c '${cmd} | tail -n 20'`);
     if (!out) return [];
 
     try {

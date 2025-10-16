@@ -10,14 +10,35 @@
  *****************************************************************************/
 
 import { Widget } from "astal/gtk4";
-import { Variable, bind } from "astal";
+import { Variable, bind, interval } from "astal";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const time = Variable("").poll(1000, "date '+%H:%M'");
-const date = Variable("").poll(1000, "date '+%A %d %B %Y'");
+// For clock widget
+const time = Variable("");
+const date = Variable("");
+
+interval(1000, () => {
+  const now = new Date();
+
+  const newDate = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  const newTime = now.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  time.set(newTime);
+  date.set(newDate);
+});
 
 /*****************************************************************************
  * Widget definition

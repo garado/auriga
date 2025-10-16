@@ -13,6 +13,7 @@
 
 import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import { GLib } from "astal";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Types and interfaces
@@ -41,7 +42,7 @@ export interface MonitorData {
 const getMonitorData = () => {
   try {
     const [success, stdout] = GLib.spawn_command_line_sync(
-      "hyprctl monitors all -j",
+      `${CMD.hyprctl} monitors all -j`,
     );
     if (success && stdout != null) {
       const output = new TextDecoder().decode(stdout);
@@ -57,7 +58,7 @@ const getMonitorData = () => {
  */
 const setMonitorEnable = (monitorName: string, enable: boolean) => {
   GLib.spawn_command_line_async(
-    `hyprctl keyword monitor ${monitorName},${enable ? "enable" : "disable"}`,
+    `${CMD.hyprctl} keyword monitor ${monitorName},${enable ? "enable" : "disable"}`,
   );
 };
 

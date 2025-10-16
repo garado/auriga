@@ -1,6 +1,7 @@
 import { execAsync } from "astal";
 import LedgerCSVParser from "../Parsing";
 import LedgerUtils from "../Utils";
+import { CMD } from "@/utils/Commands";
 
 const CSV = " --output-format csv ";
 
@@ -34,7 +35,7 @@ export const netWorth = async (baseCmd: string): Promise<number> => {
   let netWorth = 0;
 
   try {
-    const out = await execAsync(`bash -c '${cmd}'`);
+    const out = await execAsync(`${CMD.bash} -c '${cmd}'`);
 
     if (!out) return 0;
 

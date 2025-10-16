@@ -31,9 +31,10 @@ import Lock from "gi://GtkSessionLock";
 import Gdk from "gi://Gdk?version=3.0";
 import Gtk from "gi://Gtk?version=3.0";
 import AstalAuth from "gi://AstalAuth";
-import { bind, exec, timeout, Variable } from "astal";
+import { bind, exec, interval, timeout, Variable } from "astal";
 import { App, Widget } from "astal/gtk3";
 import SettingsManager from "@/services/settings";
+import { CMD } from "@/utils/Commands";
 
 // Required entrypoint config for sharing modules between Gtk3 lock and Gtk4 app
 globalThis.App = App;
@@ -87,8 +88,28 @@ let sessionLock = Lock.prepare_lock();
 let windows: LockWindowInfo[] = [];
 
 // For clock widget
-const time = Variable("").poll(1000, "date '+%H:%M'");
-const date = Variable("").poll(1000, "date '+%A %d %B %Y'");
+const time = Variable("");
+const date = Variable("");
+
+interval(1000, () => {
+  const now = new Date();
+
+  const newDate = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  const newTime = now.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  time.set(newTime);
+  date.set(newDate);
+});
 
 /*****************************************************************************
  * Helper functions
@@ -173,7 +194,7 @@ const initAuth = (thisAuth: AstalAuth.Pam) => {
 };
 
 const compileSASS = () => {
-  exec(`sass ${SASS_PATH} ${CSS_PATH}`);
+  exec(`${CMD.sass} ${SASS_PATH} ${CSS_PATH}`);
 };
 
 /*****************************************************************************

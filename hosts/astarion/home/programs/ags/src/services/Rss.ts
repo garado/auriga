@@ -14,6 +14,7 @@ import { execAsync } from "astal/process";
 import { GObject, register, property } from "astal/gobject";
 import SettingsManager from "./settings";
 import { fileWrite } from "@/utils/File";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Constants
@@ -109,8 +110,8 @@ export default class TTRSS extends GObject.Object {
 
   async #login() {
     try {
-      const cmd = `curl -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"login","user":"${TTRSS_USER}","password":"${TTRSS_PASS}"}'`;
-      const raw = await execAsync(["bash", "-c", cmd]);
+      const cmd = `${CMD.curl} -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"login","user":"${TTRSS_USER}","password":"${TTRSS_PASS}"}'`;
+      const raw = await execAsync([CMD.bash, "-c", cmd]);
       const data = JSON.parse(raw);
 
       if (data.content?.session_id) {
@@ -130,8 +131,8 @@ export default class TTRSS extends GObject.Object {
     }
 
     try {
-      const cmd = `curl -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"getHeadlines","sid":"${this.sessionId}","feed_id":${feedId},"limit":${limit},"output_mode":"json","show_excerpt":true,"excerpt_length":500}'`;
-      const raw = await execAsync(["bash", "-c", cmd]);
+      const cmd = `${CMD.curl} -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"getHeadlines","sid":"${this.sessionId}","feed_id":${feedId},"limit":${limit},"output_mode":"json","show_excerpt":true,"excerpt_length":500}'`;
+      const raw = await execAsync([CMD.bash, "-c", cmd]);
       const data = JSON.parse(raw);
 
       if (data.content) {

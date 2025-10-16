@@ -10,6 +10,7 @@ import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import Tree, { TreeNode } from "@/utils/Tree.js";
 import SettingsManager from "./settings";
+import { CMD } from "@/utils/Commands";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -128,9 +129,9 @@ export default class Tasks extends GObject.Object {
    * @brief Parse projects from TaskWarrior and use them to build a tree.
    */
   #initProjectTree = () => {
-    const cmd = `task rc.data.location='${this.dataDirectory}' _unique project`;
+    const cmd = `${CMD.task} rc.data.location='${this.dataDirectory}' _unique project`;
 
-    execAsync(`bash -c "${cmd}"`)
+    execAsync(`${CMD.bash} -c "${cmd}"`)
       .then((out) => {
         const paths = out.split("\n");
         const tree = new Tree<Project>();
@@ -177,9 +178,9 @@ export default class Tasks extends GObject.Object {
       (project.hierarchy.length > 0 ? "." : "") +
       project.name;
 
-    const cmd = `task rc.data.location='${this.dataDirectory}' project:${projectPath} export`;
+    const cmd = `${CMD.task} rc.data.location='${this.dataDirectory}' project:${projectPath} export`;
 
-    execAsync(`bash -c "${cmd}"`)
+    execAsync(`${CMD.bash} -c "${cmd}"`)
       .then((out) => {
         const rawData = JSON.parse(out);
         const tasks = rawData.map((raw: Object) => Task.fromObject(raw));

@@ -19,6 +19,7 @@ import { AccountConfig } from "@/services/Ledger";
 import { DEFAULT_SYSTEM_CONFIG } from "./DefaultConfig.ts";
 import { fileWrite } from "@/utils/File.ts";
 import { Location } from "../Transit.ts";
+import { CMD } from "@/utils/Commands.ts";
 
 /*****************************************************************************
  * Constants
@@ -73,7 +74,7 @@ export interface SystemConfig {
   };
 
   dashCalendar: {
-    /** Adjust the color of events in the calendar based on the calendar name */
+    /** Adjust the color of events in the calendar ba${CMD.sed} on the calendar name */
     colors: Record<string, string>;
   };
 
@@ -208,7 +209,7 @@ export default class SettingsManager extends GObject.Object {
     try {
       const escapedTheme = themeName.replace(/[\/&]/g, "\\$&");
       await execAsync(
-        `sed -i --follow-symlinks 's/currentTheme:.*/currentTheme: "${escapedTheme}",/' ${APP_PATHS.USER_CONFIG_PATH}`,
+        `${CMD.sed} -i --follow-symlinks 's/currentTheme:.*/currentTheme: "${escapedTheme}",/' ${APP_PATHS.USER_CONFIG_PATH}`,
       );
     } catch (error) {
       console.error("Failed to update config file:", error);
@@ -224,13 +225,13 @@ export default class SettingsManager extends GObject.Object {
 
     if (nvimThemeName) {
       const nvimPath = "$NVCFG/chadrc.lua";
-      const nvimCmd = `sed -i 's/theme = \\".*\\"/theme = \\"${nvimThemeName}\\"/g'`;
+      const nvimCmd = `${CMD.sed} -i 's/theme = \\".*\\"/theme = \\"${nvimThemeName}\\"/g'`;
 
-      exec(`bash -c "${nvimCmd} ${nvimPath}"`);
+      exec(`${CMD.bash} -c "${nvimCmd} ${nvimPath}"`);
 
-      execAsync(`bash -c 'python3 ${APP_PATHS.NVIM_RELOAD_SCRIPT_PATH}'`).catch(
-        console.log,
-      );
+      execAsync(
+        `${CMD.bash} -c 'python3 ${APP_PATHS.NVIM_RELOAD_SCRIPT_PATH}'`,
+      ).catch(console.log);
     }
   };
 
@@ -241,7 +242,7 @@ export default class SettingsManager extends GObject.Object {
     const wallpaper = this.config.theme.themeConfig[themeName].wallpaper;
 
     if (wallpaper) {
-      const cmd = `swww img ${wallpaper} --transition-type fade --transition-step 20 --transition-fps 255 --transition-duration 1.5 --transition-bezier .69,.89,.73,.46`;
+      const cmd = `${CMD.swww} img ${wallpaper} --transition-type fade --transition-step 20 --transition-fps 255 --transition-duration 1.5 --transition-bezier .69,.89,.73,.46`;
       execAsync(cmd).catch(console.log);
     }
   };
@@ -256,17 +257,19 @@ export default class SettingsManager extends GObject.Object {
 
     // Compile SASS and apply CSS
     try {
-      const gtk4Cmd = `sass ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`;
+      const gtk4Cmd = `${CMD.sass} ${APP_PATHS.SASS_MAIN_PATH} ${APP_PATHS.COMPILED_CSS_PATH}`;
       exec(gtk4Cmd);
 
-      const gtk3Cmd = `sass ${SRC}/src/styles/lock.sass /tmp/ags/lock-style.css`;
+      const gtk3Cmd = `${CMD.sass} ${SRC}/src/styles/lock.sass /tmp/ags/lock-style.css`;
       exec(gtk3Cmd);
 
       globalThis.App.apply_css(APP_PATHS.COMPILED_CSS_PATH);
       this.notify("current-theme");
 
       if (globalThis.GtkVersion == 4) {
-        execAsync(`astal -i lock reload-theme ${themeName}`);
+        execAsync(`${CMD.astal} -i lock reload-theme ${themeName}`).catch(
+          (err) => console.error(err),
+        );
       }
     } catch (error) {
       console.error("Failed to compile SASS:", error);
@@ -281,11 +284,11 @@ export default class SettingsManager extends GObject.Object {
     const themeConfig = this.config.theme.themeConfig;
 
     if (themeConfig[themeName].kitty) {
-      execAsync(`kitty +kitten themes "${themeConfig[themeName].kitty}"`).catch(
-        () => {
-          execAsync(`bash -c "pgrep kitty | xargs kill -USR1"`);
-        },
-      );
+      execAsync(
+        `${CMD.kitty} +kitten themes "${themeConfig[themeName].kitty}"`,
+      ).catch(() => {
+        execAsync(`${CMD.bash} -c "pgrep kitty | xargs ${CMD.kill} -USR1"`);
+      });
     }
   };
 

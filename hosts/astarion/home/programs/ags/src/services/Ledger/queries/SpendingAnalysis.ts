@@ -12,6 +12,7 @@
 import { execAsync } from "astal";
 import { CategorySpend, MonthlySpending } from "../Types";
 import LedgerUtils from "../Utils";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Helpers
@@ -91,7 +92,7 @@ const calculateMonthlySpend = async (
   const cmd = `${baseCmd} -b ${first} -e ${last} bal ^Expenses --output-format csv`;
 
   try {
-    const out = await execAsync(`bash -c '${cmd}'`);
+    const out = await execAsync(`${CMD.bash} -c '${cmd}'`);
     const split = out.replaceAll('"', "").split("\n").slice(1);
 
     let tmp = {} as CategorySpend;
