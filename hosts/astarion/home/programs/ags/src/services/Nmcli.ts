@@ -3,7 +3,7 @@
  * █░▀█ ██▄ ░█░ ▀▄▀▄▀ █▄█ █▀▄ █░█
  *
  * Service to interface with nmcli for managing WiFi connections.
- * More featureful replacement for Astal.Network.
+ * Replacement made to deal with some instability in Astal.Network.
  */
 
 /*****************************************************************************
