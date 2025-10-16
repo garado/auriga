@@ -10,6 +10,7 @@
  * Imports
  *****************************************************************************/
 
+import { CMD } from "@/utils/Commands";
 import { Gio } from "astal";
 import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
@@ -130,9 +131,8 @@ export default class NmcliService extends GObject.Object {
    */
   async #updateKnownConnections() {
     try {
-      const output = await execAsync(
-        "nmcli -t -f NAME,TIMESTAMP connection show",
-      );
+      const cmd = `${CMD.nmcli} -t -f NAME,TIMESTAMP connection show`;
+      const output = await execAsync(cmd);
       this.#knownConnections = new Set(
         output
           .trim()
@@ -153,9 +153,8 @@ export default class NmcliService extends GObject.Object {
    */
   async #getCurrentConnection(): Promise<number> {
     try {
-      const output = await execAsync(
-        "nmcli -t -f IN-USE,SIGNAL device wifi list",
-      );
+      const cmd = `${CMD.nmcli} -t -f IN-USE,SIGNAL device wifi list`;
+      const output = await execAsync(cmd);
       const current = output.split("\n").find((line) => line.startsWith("*"));
 
       if (current) {
@@ -171,8 +170,8 @@ export default class NmcliService extends GObject.Object {
    */
   async #updateStatus() {
     try {
-      const cmd =
-        "nmcli -t -f GENERAL.STATE,GENERAL.CONNECTION device show wlp1s0"; // @TODO cmd not portable
+      // @TODO cmd not portable (hardcoded device)
+      const cmd = `${CMD.nmcli} -t -f GENERAL.STATE,GENERAL.CONNECTION device show wlp1s0`;
       const output = await execAsync(cmd);
       const lines = output.split("\n");
 
@@ -210,7 +209,7 @@ export default class NmcliService extends GObject.Object {
    */
   async #updateAccessPoints() {
     try {
-      const cmd = "nmcli -t -f IN-USE,SSID,BSSID,SIGNAL,SECURITY device wifi";
+      const cmd = `${CMD.nmcli} -t -f IN-USE,SSID,BSSID,SIGNAL,SECURITY device wifi`;
       const output = await execAsync(cmd);
 
       const aps: AccessPoint[] = output
@@ -260,8 +259,8 @@ export default class NmcliService extends GObject.Object {
   async activate(ssid: string, password?: string): Promise<void> {
     try {
       const cmd = password
-        ? `nmcli device wifi connect "${ssid}" password "${password}"`
-        : `nmcli device wifi connect "${ssid}"`;
+        ? `${CMD.nmcli} device wifi connect "${ssid}" password "${password}"`
+        : `${CMD.nmcli} device wifi connect "${ssid}"`;
 
       await execAsync(cmd);
       await this.#updateStatus();
@@ -275,7 +274,8 @@ export default class NmcliService extends GObject.Object {
    */
   async unactivate(): Promise<void> {
     try {
-      await execAsync("nmcli device disconnect wlp1s0");
+      const cmd = `${CMD.nmcli} device disconnect wlp1s0`;
+      await execAsync(cmd);
       await this.#updateStatus();
     } catch (err) {
       throw new Error(`Failed to disconnect: ${err}`);
@@ -287,7 +287,8 @@ export default class NmcliService extends GObject.Object {
    */
   async enable(): Promise<void> {
     try {
-      await execAsync("nmcli radio wifi on");
+      const cmd = `${CMD.nmcli} radio wifi on`;
+      await execAsync(cmd);
       this.enabled = true;
       await this.#initData();
     } catch (err) {
@@ -301,7 +302,8 @@ export default class NmcliService extends GObject.Object {
    */
   async disable(): Promise<void> {
     try {
-      await execAsync("nmcli radio wifi off");
+      const cmd = `${CMD.nmcli} radio wifi off`;
+      await execAsync(cmd);
       this.enabled = false;
       await this.#initData();
     } catch (err) {
@@ -315,7 +317,7 @@ export default class NmcliService extends GObject.Object {
    */
   async scan(): Promise<void> {
     try {
-      await execAsync("nmcli device wifi rescan");
+      const cmd = `${CMD.nmcli} device wifi rescan`;
       // Wait a moment for scan to complete
       await new Promise((resolve) => setTimeout(resolve, 2000));
       await this.#updateAccessPoints();

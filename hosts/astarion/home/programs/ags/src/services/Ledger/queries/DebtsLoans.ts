@@ -12,6 +12,7 @@
 import { execAsync } from "astal";
 import LedgerCSVParser from "../Parsing";
 import { DebtItem } from "../Types";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Function definition
@@ -56,7 +57,7 @@ export const debtsLoans = async (
   const fallback: Record<string, DebtItem[]> = {};
 
   try {
-    const out = await execAsync(`bash -c '${cmd}'`);
+    const out = await execAsync(`${CMD.bash} -c '${cmd}'`);
     return LedgerCSVParser.debtsLoans(out);
   } catch (err) {
     console.error(`Failed to fetch debts/liabilities:`, err);

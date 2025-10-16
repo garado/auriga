@@ -34,6 +34,7 @@ import AstalAuth from "gi://AstalAuth";
 import { bind, exec, interval, timeout, Variable } from "astal";
 import { App, Widget } from "astal/gtk3";
 import SettingsManager from "@/services/settings";
+import { CMD } from "@/utils/Commands";
 
 // Required entrypoint config for sharing modules between Gtk3 lock and Gtk4 app
 globalThis.App = App;
@@ -193,7 +194,7 @@ const initAuth = (thisAuth: AstalAuth.Pam) => {
 };
 
 const compileSASS = () => {
-  exec(`sass ${SASS_PATH} ${CSS_PATH}`);
+  exec(`${CMD.sass} ${SASS_PATH} ${CSS_PATH}`);
 };
 
 /*****************************************************************************

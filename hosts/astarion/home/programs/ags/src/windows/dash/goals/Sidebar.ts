@@ -16,6 +16,7 @@ import { bind } from "astal";
 import Goals, { Annotation, Goal } from "@/services/Goals";
 import { formatISODateToCustomFormat } from "@/utils/Helpers";
 import { Dropdown } from "@/components/Dropdown";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Module-level variables

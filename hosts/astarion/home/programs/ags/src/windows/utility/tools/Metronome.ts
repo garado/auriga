@@ -12,6 +12,7 @@
 import { Process, subprocess } from "astal";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Variable } from "astal";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Constants
@@ -116,7 +117,7 @@ const startMetronome = (bpm: number): void => {
   const clickInterval = calculateClickInterval(validatedBpm);
 
   // Construct command for generating metronome clicks
-  const command = `bash -c "play -q -n -c1 synth ${METR_CFG.clickDuration} sine ${METR_CFG.clickFrequency} pad ${clickInterval} repeat -" > /dev/null 2>&1`;
+  const command = `${CMD.bash} -c "play -q -n -c1 synth ${METR_CFG.clickDuration} sine ${METR_CFG.clickFrequency} pad ${clickInterval} repeat -" > /dev/null 2>&1`;
 
   try {
     metronomeProcess = subprocess(

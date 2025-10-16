@@ -12,6 +12,7 @@
 import { execAsync } from "astal";
 import LedgerCSVParser from "../Parsing";
 import { CategorySpending } from "../Types";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Function definitions
@@ -59,7 +60,7 @@ export const categorySpending = async (
   const cmd = `${baseCmd} bal Expenses --begin ${startDate} --no-total --depth 2 --output-format csv`;
 
   try {
-    const out = await execAsync(`bash -c '${cmd}'`);
+    const out = await execAsync(`${CMD.bash} -c '${cmd}'`);
     return LedgerCSVParser.categorySpending(out);
   } catch (err) {
     console.error(`Failed to fetch category spending:`, err);

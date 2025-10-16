@@ -16,6 +16,7 @@
  * Imports
  *****************************************************************************/
 
+import { CMD } from "@/utils/Commands";
 import { bind, execAsync, Variable } from "astal";
 import { App, Gdk, Gtk, Widget } from "astal/gtk4";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
@@ -162,7 +163,7 @@ const WindowEntry = (window: AstalHyprland.Client) => {
       if (windowKillTarget.get() === window && keyval === Gdk.KEY_Return) {
         // Enter pressed while close confirmation is showing - kill the window
         try {
-          execAsync(["kill", "-9", window.pid.toString()]);
+          execAsync([CMD.kill, "-9", window.pid.toString()]);
           windowKillTarget.set(null);
         } catch (error) {
           console.error("Failed to kill window:", error);

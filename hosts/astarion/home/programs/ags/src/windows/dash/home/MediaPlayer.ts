@@ -15,6 +15,7 @@ import { Visualizer, VisualizerStyle } from "@/components/Visualizer";
 import Mpris from "gi://AstalMpris";
 import Gio from "gi://Gio?version=2.0";
 import Pango from "gi://Pango?version=1.0";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Constants
@@ -65,7 +66,7 @@ const getImageColors = async (file: Gio.File): Promise<string[]> => {
   }
 
   const cmd = `magick "${imagePath}" -resize 100x100 +dither -colors 5 -unique-colors txt:- | grep -oE '#[0-9A-F]{6}'`;
-  const result = await execAsync(["bash", "-c", cmd]);
+  const result = await execAsync([CMD.bash, "-c", cmd]);
   return result.trim().split("\n").slice(0, 5);
 };
 

@@ -14,6 +14,7 @@ import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import { scoreMatch } from "@/utils/FuzzyFind.js";
 import SettingsManager from "./settings";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Types/interfaces
@@ -343,9 +344,9 @@ export default class Goals extends GObject.Object {
 
     this.data = {};
 
-    const cmd = `task rc.data.location="${this.dataDirectory}" tag:goals and "(status:pending or status:completed)" export`;
+    const cmd = `${CMD.task} rc.data.location="${this.dataDirectory}" tag:goals and "(status:pending or status:completed)" export`;
 
-    execAsync(`bash -c '${cmd}'`)
+    execAsync(`${CMD.bash} -c '${cmd}'`)
       .then((out) => {
         const rawData = JSON.parse(out);
         rawData.map((raw: Object) => this.#insertGoal(Goal.fromObject(raw)));

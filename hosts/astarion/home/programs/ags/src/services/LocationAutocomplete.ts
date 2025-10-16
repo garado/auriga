@@ -10,6 +10,7 @@ import { GObject, register, property, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
+import { CMD } from "@/utils/Commands";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -138,7 +139,7 @@ async function makeApiCall(
 
   // Escape the URL properly for bash
   const escapedUrl = url.replace(/"/g, '\\"');
-  const cmd = `curl -s "${escapedUrl}"`;
+  const cmd = `${CMD.curl} -s "${escapedUrl}"`;
 
   log("locationService", `Making API call: ${url}`);
 
@@ -286,7 +287,7 @@ export default class LocationAutocomplete extends GObject.Object {
    */
   #loadCacheFromFile = () => {
     try {
-      execAsync(`cat "${this.cacheFilePath}"`)
+      execAsync(`${CMD.cat} "${this.cacheFilePath}"}`)
         .then((content) => {
           this.searchCache = JSON.parse(content);
           log("locationService", "Cache loaded from file");
@@ -464,7 +465,7 @@ export default class LocationAutocomplete extends GObject.Object {
   queryPinnedLocations = async (): Promise<PlacePrediction[]> => {
     try {
       const content = await execAsync(
-        `bash -c 'test -f "${this.pinnedLocationsCachePath}" && cat "${this.pinnedLocationsCachePath}" || echo "[]"'`,
+        `${CMD.bash} -c 'test -f "${this.pinnedLocationsCachePath}" && cat "${this.pinnedLocationsCachePath}" || echo "[]"'`,
       );
       return JSON.parse(content);
     } catch (error) {

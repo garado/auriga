@@ -11,6 +11,7 @@ import { execAsync } from "astal";
 import { Account, AccountConfig } from "../Types";
 import LedgerCSVParser from "../Parsing";
 import LedgerUtils from "../Utils";
+import { CMD } from "@/utils/Commands";
 
 const CSV = " --output-format csv ";
 
@@ -59,7 +60,7 @@ export const accountData = async (
 
   // Execute all commands in parallel
   const promises = commands.map(async (cmd: string) => {
-    return execAsync(`bash -c '${cmd}'`);
+    return execAsync(`${CMD.bash} -c '${cmd}'`);
   });
 
   return Promise.all(promises)

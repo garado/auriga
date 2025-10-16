@@ -20,6 +20,7 @@ import Utility from "@/windows/utility";
 import Control from "@/windows/control";
 import Launcher from "@/windows/launcher";
 import Notifications from "@/windows/notifications";
+import { CMD } from "@/utils/Commands";
 
 // Required entrypoint config for sharing modules between Gtk3 lock and Gtk4 app
 globalThis.App = App;
@@ -82,7 +83,7 @@ const openWindow = (windowName: string) => {
 };
 
 const compileSASS = () => {
-  exec(`sass ${SRC}/src/styles/main.sass /tmp/ags/style.css`);
+  exec(`${CMD.sass} ${SRC}/src/styles/main.sass /tmp/ags/style.css`);
 };
 
 /*****************************************************************************

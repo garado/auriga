@@ -16,6 +16,7 @@ import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import { bind, execAsync, Variable } from "astal";
 import Bt from "gi://AstalBluetooth";
 import NmcliService from "@/services/Nmcli";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Module-level variables
@@ -136,7 +137,7 @@ const GammastepControl = () => {
    */
   const gammastepActive = Variable(false).poll(
     10 * 1000, // 10 seconds
-    "bash -c 'systemctl --user is-active gammastep.service || true'",
+    `${CMD.bash} -c 'systemctl --user is-active gammastep.service || true'`,
     (out) => {
       return out.trim() === "active";
     },
@@ -170,7 +171,7 @@ const GammastepControl = () => {
       const newState = !gammastepActive.get();
       const cmd = newState ? "start" : "stop";
 
-      execAsync(`systemctl --user ${cmd} gammastep.service`).then(() => {
+      execAsync(`${CMD.systemctl} --user ${cmd} gammastep.service`).then(() => {
         gammastepActive.set(newState);
       });
     },

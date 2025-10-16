@@ -13,6 +13,7 @@ import { execAsync } from "astal";
 import LedgerCSVParser from "../Parsing";
 import LedgerUtils from "../Utils";
 import { CashFlow } from "../Types";
+import { CMD } from "@/utils/Commands";
 
 const CSV = " --output-format csv ";
 
@@ -42,7 +43,7 @@ export const monthlyCashFlow = async (baseCmd: string): Promise<CashFlow> => {
   let monthlyCashFlow: CashFlow = { income: 0, expenses: 0 };
 
   try {
-    const out = await execAsync(`bash -c '${cmd}' | tail -n -2`);
+    const out = await execAsync(`${CMD.bash} -c '${cmd}' | tail -n -2`);
     const balanceRows = LedgerCSVParser.balance(out);
 
     balanceRows.forEach((row) => {

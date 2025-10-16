@@ -14,6 +14,7 @@ import { GObject, register } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
+import { CMD } from "@/utils/Commands";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -77,7 +78,7 @@ const makeApiCall = async (
     .map(([key, value]) => `-F "${key}=${value}"`)
     .join(" ");
 
-  const cmd = `curl -s ${formData} https://api.pushover.net/1/messages.json`;
+  const cmd = `${CMD.curl} -s ${formData} https://api.pushover.net/1/messages.json`;
 
   try {
     await execAsync(cmd);

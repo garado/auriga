@@ -11,6 +11,7 @@
 
 import { execAsync, Gio } from "astal";
 import LedgerCSVParser from "../Parsing";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Function definitions
@@ -28,7 +29,7 @@ const fetchBalanceTrendFromLedger = async (
 
   try {
     const out = await execAsync(
-      `bash -c "${cmd} | tail -n 1 | tee ${cachefile}"`,
+      `${CMD.bash} -c "${cmd} | tail -n 1 | tee ${cachefile}"`,
     );
 
     try {
@@ -53,7 +54,7 @@ const fetchBalanceTrendFromFile = async (
   const cmd = `cat ${cachefile}`;
 
   try {
-    const out = await execAsync(`bash -c "${cmd}"`);
+    const out = await execAsync(`${CMD.bash} -c "${cmd}"`);
 
     try {
       return LedgerCSVParser.balanceTrend(out);

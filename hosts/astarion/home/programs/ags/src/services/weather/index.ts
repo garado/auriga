@@ -14,6 +14,7 @@ import { execAsync } from "astal/process";
 import SettingsManager from "../settings";
 import { fileWrite, mkdir } from "@/utils/File";
 import { readFile } from "astal";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Types/interfaces
@@ -236,11 +237,11 @@ export default class OpenWeather extends GObject.Object {
 
     let cmd = "";
     if (isCacheValid) {
-      cmd = `bash -c "cat ${CACHE_VALIDITY.currentWeather.file}"`;
+      cmd = `${CMD.bash} -c "cat ${CACHE_VALIDITY.currentWeather.file}"`;
     } else {
       // Query data from API
       const url = `${BASE_URL}/weather?lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}`;
-      cmd = `bash -c "curl -s '${url}' | tee ${CACHE_VALIDITY.currentWeather.file}"`;
+      cmd = `${CMD.bash} -c "curl -s '${url}' | tee ${CACHE_VALIDITY.currentWeather.file}"`;
     }
 
     try {
@@ -270,11 +271,11 @@ export default class OpenWeather extends GObject.Object {
 
     let cmd = "";
     if (isCacheValid) {
-      cmd = `bash -c "cat ${CACHE_VALIDITY.forecast.file}"`;
+      cmd = `${CMD.bash} -c "cat ${CACHE_VALIDITY.forecast.file}"`;
     } else {
       // Query data from API
       const url = `${BASE_URL}/forecast?cnt=5&lat=${WEATHER_CFG.lat}&lon=${WEATHER_CFG.lon}&units=${WEATHER_CFG.units}&appid=${WEATHER_CFG.apiKey}`;
-      cmd = `bash -c "curl -s '${url}' | tee ${CACHE_VALIDITY.forecast.file}"`;
+      cmd = `${CMD.bash} -c "curl -s '${url}' | tee ${CACHE_VALIDITY.forecast.file}"`;
     }
 
     try {

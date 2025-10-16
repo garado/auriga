@@ -17,6 +17,7 @@ import { GObject, register, property, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
+import { CMD } from "@/utils/Commands";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -253,14 +254,16 @@ const incrementApiCallCounter = async (): Promise<boolean> => {
   const apiCountFile = `${GLib.get_user_cache_dir()}/astal/transit/${yyyyMm}`;
 
   try {
-    await execAsync(`mkdir -p ${GLib.get_user_cache_dir()}/astal/transit/`);
+    await execAsync(
+      `${CMD.mkdir} -p ${GLib.get_user_cache_dir()}/astal/transit/`,
+    );
 
     // Initialize file with 0 if it doesn't exist, then read and increment
     await execAsync(
-      `bash -c "test -f ${apiCountFile} || echo 0 > ${apiCountFile}"`,
+      `${CMD.bash} -c "test -f ${apiCountFile} || echo 0 > ${apiCountFile}"`,
     );
 
-    const currentCountStr = await execAsync(`cat ${apiCountFile}`);
+    const currentCountStr = await execAsync(`${CMD.cat} ${apiCountFile}`);
     const currentCountNum = parseInt(currentCountStr.trim()) || 0;
 
     print(currentCountNum);
@@ -276,7 +279,9 @@ const incrementApiCallCounter = async (): Promise<boolean> => {
       );
     }
 
-    await execAsync(`bash -c "echo ${currentCountNum + 1} > ${apiCountFile}"`);
+    await execAsync(
+      `${CMD.bash} -c "echo ${currentCountNum + 1} > ${apiCountFile}"`,
+    );
   } catch (error) {
     console.error(error);
     return false;
@@ -312,7 +317,7 @@ const makeApiCall = async (
   const queryString = queryParts.length > 0 ? "?" + queryParts.join("&") : "";
   const url = `${baseUrl}${endpoint}${queryString}`;
 
-  const cmd = `curl -s -H "apikey: ${apiKey}" "${url}"`;
+  const cmd = `${CMD.curl} -s -H "apikey: ${apiKey}" "${url}"`;
 
   if (USE_REAL_API_CALL) {
     try {
@@ -330,7 +335,7 @@ const makeApiCall = async (
     const cachefile = endpoint.replace("/public/", "").replace("/otp/", "");
     const file = `${GLib.get_user_cache_dir()}/astal/transit/${cachefile}`;
     try {
-      const response = await execAsync(`cat ${file}`);
+      const response = await execAsync(`${CMD.cat} ${file}`);
       return JSON.parse(response);
     } catch (error) {
       log("transitService", `Reading from cache failed: ${cachefile}`);

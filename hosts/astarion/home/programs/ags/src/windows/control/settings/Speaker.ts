@@ -16,6 +16,7 @@ import { Variable, bind, execAsync, timeout } from "astal";
 import { ExpansionPanel } from "@/components/ExpansionPanel.js";
 import AstalWp from "gi://AstalWp";
 import Pango from "gi://Pango?version=1.0";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Module-level variables
@@ -41,7 +42,7 @@ const SpeakerWidget_Default = (sink: AstalWp.Endpoint) =>
       if (sink.is_default) {
         wp?.audio.streams.forEach((stream) => {
           /* '0' seems to correspond to the default sink */
-          execAsync(`bash -c "wpctl set-route ${stream.id} 0"`);
+          execAsync(`${CMD.bash} -c "wpctl set-route ${stream.id} 0"`);
         });
       }
     },

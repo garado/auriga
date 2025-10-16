@@ -31,6 +31,7 @@
 import { GObject, register, property, signal, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
 import { log } from "@/globals";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Types/interfaces
@@ -162,7 +163,7 @@ export default class Calendar extends GObject.Object {
     }
 
     const cmd = `grep -E '(${dateStr})' ${TMPFILE}`;
-    execAsync(`bash -c "${cmd}"`)
+    execAsync(`${CMD.bash} -c "${cmd}"`)
       .then((out) => {
         this.#parseEventFromTSV(out);
       })
@@ -283,7 +284,7 @@ export default class Calendar extends GObject.Object {
   #readCache(dates: Array<string>) {
     log("calService", `#readCache: ${dates}`);
 
-    const cmd = `awk -F'\\t' '$1 <= "${dates[6]}" && $3 >= "${dates[0]}"' ${TMPFILE}`;
+    const cmd = `${CMD.awk} -F'\\t' '$1 <= "${dates[6]}" && $3 >= "${dates[0]}"' ${TMPFILE}`;
 
     execAsync(cmd)
       .then((out) => {
@@ -348,10 +349,9 @@ export default class Calendar extends GObject.Object {
   updateCache() {
     log("calService", "Updating cache");
 
-    const cmd =
-      "gcalcli agenda '8 months ago' 'in 8 months' --details calendar --details location --military --tsv";
+    const cmd = `${CMD.gcalcli} agenda '8 months ago' 'in 8 months' --details calendar --details location --military --tsv`;
 
-    execAsync(`bash -c "${cmd} | tee ${TMPFILE}"`)
+    execAsync(`${CMD.bash} -c "${cmd} | tee ${TMPFILE}"`)
       .then(() => this.#initWeekData())
       .catch((err) => {
         if (err.includes("expired or revoked")) {

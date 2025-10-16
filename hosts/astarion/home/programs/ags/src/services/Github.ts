@@ -16,6 +16,7 @@ import { exec, execAsync } from "astal/process";
 import { GObject, register, property } from "astal/gobject";
 import SettingsManager from "./settings";
 import { fileWrite } from "@/utils/File";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Constants
@@ -104,7 +105,7 @@ export default class Github extends GObject.Object {
       } else {
         // Fetch fresh data and cache it
         console.log("Fetching Github contribution data from API");
-        const cmd = `bash -c "curl -s https://github-contributions.vercel.app/api/v1/${USERNAME} | tee ${CACHEFILE}"`;
+        const cmd = `${CMD.bash} -c "curl -s https://github-contributions.vercel.app/api/v1/${USERNAME} | tee ${CACHEFILE}"`;
         const raw = await execAsync(cmd);
         const data = JSON.parse(raw);
         this.#processData(data);
@@ -118,7 +119,13 @@ export default class Github extends GObject.Object {
   }
 
   #processData(data: any) {
-    const daysLeftInYear = 365 - Number(exec("date +%j"));
+    // Find days left in year
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear(), 0, 0);
+    const diff_ms = today - startOfYear;
+    const dayOfYear = Math.floor((diff_ms / 1000) * 60 * 60 * 24);
+    const daysLeftInYear = 365 - dayOfYear; // or 366 for leap years if needed
+
     this.contributions = data.contributions.slice(daysLeftInYear);
 
     this.totalContributions = data.years.reduce(

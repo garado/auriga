@@ -16,6 +16,7 @@ import Battery from "gi://AstalBattery";
 import Gio from "gi://Gio";
 
 import SettingsManager from "@/services/settings";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Module-level variables
@@ -34,7 +35,7 @@ const bat = Battery.get_default();
  */
 const calcUptime = () => {
   // uptime in seconds
-  const raw = Number(exec("cut -d. -f1 /proc/uptime"));
+  const raw = Number(exec(`${CMD.cut} -d. -f1 /proc/uptime`));
 
   const d = Math.floor(raw / 86400);
   const h = Math.floor((raw % 86400) / 3600);
