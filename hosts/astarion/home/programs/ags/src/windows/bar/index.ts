@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
-import { Variable, bind, timeout } from "astal";
+import { Variable, bind, interval, timeout } from "astal";
 import Battery from "gi://AstalBattery";
 import Hyprland from "gi://AstalHyprland";
 import Wp from "gi://AstalWp";
@@ -29,7 +29,15 @@ const NUM_WORKSPACES = 9;
 const wp = Wp.get_default();
 const hypr = Hyprland.get_default();
 const bat = Battery.get_default();
-const time = Variable("").poll(1000, "date '+%H\n%M'");
+const time = Variable("");
+
+interval(1000, () => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const newTime = `${hours}\n${minutes}`;
+  time.set(newTime);
+});
 
 let barInstances = 0;
 
