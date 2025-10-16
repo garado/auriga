@@ -13,6 +13,7 @@ import { Gtk, Gdk, Widget, App } from "astal/gtk4";
 import { execAsync, register, timeout } from "astal";
 
 import { DraggableBox, DraggableBoxClass } from "@/components/Draggable";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Classes
@@ -355,7 +356,7 @@ export class MonitorArrangement extends Gtk.Box {
     const newWorldPos = this.canvasToWorld(newCanvasX, newCanvasY);
 
     const cmdParams = [
-      "hyprctl",
+      CMD.hyprctl,
       "keyword",
       "monitor",
       `${monitor.connector},${monitor.geometry.width}x${monitor.geometry.height},${newWorldPos.x}x${newWorldPos.y},${monitor.scale}`,

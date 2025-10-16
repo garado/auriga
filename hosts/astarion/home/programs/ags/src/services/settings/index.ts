@@ -267,7 +267,9 @@ export default class SettingsManager extends GObject.Object {
       this.notify("current-theme");
 
       if (globalThis.GtkVersion == 4) {
-        execAsync(`${CMD.astal} -i lock reload-theme ${themeName}`);
+        execAsync(`${CMD.astal} -i lock reload-theme ${themeName}`).catch(
+          (err) => console.error(err),
+        );
       }
     } catch (error) {
       console.error("Failed to compile SASS:", error);
