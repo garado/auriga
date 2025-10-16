@@ -7,6 +7,7 @@
  * Imports
  *****************************************************************************/
 
+import { CMD } from "@/utils/Commands";
 import { listAllFilesFromDir } from "@/utils/File";
 import { execAsync, GLib, Variable } from "astal";
 import { App, Gdk, Gtk, Widget } from "astal/gtk4";
@@ -52,7 +53,7 @@ const SessionEntry = (sessionName: string) => {
 const launchKittySession = (sessionName: string) => {
   App.toggleWindow("launcher");
   execAsync([
-    "kitty",
+    CMD.kitty,
     "--session",
     `sessions/${sessionName}`,
     `--title`,
