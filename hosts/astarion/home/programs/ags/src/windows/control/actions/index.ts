@@ -12,9 +12,10 @@
  * Imports
  *****************************************************************************/
 
-import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
+import { astalify, Gdk, Gtk, hook, Widget } from "astal/gtk4";
 import { bind, execAsync, Variable } from "astal";
 import Bt from "gi://AstalBluetooth";
+import NmcliService from "@/services/Nmcli";
 
 /*****************************************************************************
  * Module-level variables
@@ -49,7 +50,7 @@ const BluetoothControl = () => {
 };
 
 const WifiControl = () => {
-  return ToggleButton({
+  return Widget.Button({
     cssClasses: ["action-btn"],
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
@@ -60,6 +61,22 @@ const WifiControl = () => {
           iconName: "wifi-high-symbolic",
         }),
       );
+
+      bind(NmcliService.get_default(), "enabled").subscribe((enabled) => {
+        if (enabled) {
+          self.add_css_class("active");
+        } else {
+          self.remove_css_class("active");
+        }
+      });
+    },
+    onClicked: () => {
+      const service = NmcliService.get_default();
+      if (service.enabled) {
+        service.disable();
+      } else {
+        service.enable();
+      }
     },
   });
 };

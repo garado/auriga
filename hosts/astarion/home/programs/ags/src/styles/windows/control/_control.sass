@@ -100,11 +100,11 @@
     background-color: $neutral-700
     border-radius: $border-radius
 
-    &:checked
+    &:checked, &.active
       background-color: $primary-400
 
     &:hover
-      background-color: $primary-400
+      background-color: $primary-200
 
 /**********************************************
  * QUICK SETTINGS
@@ -166,6 +166,12 @@
 
           highlight
             background-color: $primary-500
+
+  .wifi
+    .password-entry
+      padding: 0.2rem 0.2rem 0rem 0.2rem
+      placeholder
+        color: $neutral-300
   
 /**********************************************
  * NOTIFICATIONS
