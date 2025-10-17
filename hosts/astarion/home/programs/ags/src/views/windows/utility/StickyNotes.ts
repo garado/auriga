@@ -16,7 +16,7 @@ import SettingsManager from "@/services/settings";
 import { clearChildren } from "@/utils/BoxUtils";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
 import { readAllFilesFromDir } from "@/utils/File";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 
 /*****************************************************************************
  * Module-level variables
@@ -177,7 +177,7 @@ export const StickyNotes = () => {
       stickyNotesContainer,
     ],
     setup: (self) => {
-      setupEventController({
+      setupKeybinds({
         widget: self,
         binds: {
           [KEYBINDS.REFRESH_DATA]: loadStickies,

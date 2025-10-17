@@ -16,7 +16,7 @@
 
 import { Widget } from "astal/gtk4";
 
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 import MapWidget from "./CustomMap";
 import Sidebar from "./sidebar";
 import { TripResult } from "./sidebar/components/TripResultOption";
@@ -83,7 +83,7 @@ export default () => {
     cssClasses: ["maps"],
     children: [mapContainer, sidebar],
     setup: (self) => {
-      setupEventController({
+      setupKeybinds({
         name: "Map",
         widget: self,
         forwardTarget: sidebar,

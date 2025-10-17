@@ -1,8 +1,9 @@
-/* █▀▀ █░█ █▀▀ █▄░█ ▀█▀   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █▀█ █░░ █░░ █▀▀ █▀█   █▀ █▀▀ ▀█▀ █░█ █▀█ */
-/* ██▄ ▀▄▀ ██▄ █░▀█ ░█░   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █▄█ █▄▄ █▄▄ ██▄ █▀▄   ▄█ ██▄ ░█░ █▄█ █▀▀ */
-
-/* Utility function to automatically add an event controller to a widget with support
- * for forwarding events to specific widgets. */
+/**
+ * █▄▀ █▀▀ █▄█ █▄▄ █ █▄░█ █▀▄   █░█ ▄▀█ █▄░█ █▀▄ █░░ █▀▀ █▀█
+ * █░█ ██▄ ░█░ █▄█ █ █░▀█ █▄▀   █▀█ █▀█ █░▀█ █▄▀ █▄▄ ██▄ █▀▄
+ *
+ * Utility function for easily adding custom keybinds to a widget.
+ */
 
 /*****************************************************************************
  * Imports
@@ -15,33 +16,23 @@ import { log } from "@/globals.js";
  * Types and interfaces
  *****************************************************************************/
 
-/**
- * Widget extended with event controller functionality
- */
-export interface EventControlledWidget extends Gtk.Widget {
+/** Widget extended with event controller functionality for keybinds */
+export interface KeyboundWidget extends Gtk.Widget {
   controller: Gtk.EventControllerKey;
-  _lastKey?: string; // Add this line
+  _lastKey?: string;
 }
 
-/**
- * Key binding handler function type
- */
+/** Key binding handler function type */
 export type KeyBindingHandler = () => void;
 
-/**
- * Key bindings map - maps key names to their handler functions
- */
+/** Key bindings map - maps key names to their handler functions */
 export type KeyBindings = Record<string, KeyBindingHandler>;
 
-/**
- * Function that returns a widget to forward events to
- */
+/** Function that returns a widget to forward events to */
 export type ForwardTargetSelector = () => Gtk.Widget | null;
 
-/**
- * Configuration options for event controller setup
- */
-export interface EventControllerConfig {
+/** Configuration options for keybind setup */
+export interface KeybindConfig {
   name?: string; // Optional name for debugging
   widget: Gtk.Widget; // Widget to attach event controller to
   binds: KeyBindings; // Keybinding map
@@ -51,19 +42,19 @@ export interface EventControllerConfig {
 }
 
 /*****************************************************************************
- * Function definitions
+ * Functions
  *****************************************************************************/
 
 /**
- * Sets up an event controller on a widget with key bindings and optional forwarding
+ * Sets up an event controller on a widget with keybindings and optional forwarding
  *
  * @param config - Configuration object for the event controller
  * @returns The configured widget with event controller attached
  *
  * @example
  * ```typescript
- * const myWidget = new Gtk.Button();
- * setupEventController({
+ * const myWidget = Widget.Button()
+ * setupKeybinds({
  *   name: "MyButton",
  *   widget: myWidget,
  *   binds: {
@@ -74,13 +65,11 @@ export interface EventControllerConfig {
  * });
  * ```
  */
-export function setupEventController(
-  config: EventControllerConfig,
-): EventControlledWidget {
+export function setupKeybinds(config: KeybindConfig): KeyboundWidget {
   const { name, widget, binds, forwardTarget } = config;
 
   // Cast widget to include controller property
-  const controlledWidget = widget as EventControlledWidget;
+  const controlledWidget = widget as KeyboundWidget;
 
   // Create and attach event controller
   controlledWidget.controller = new Gtk.EventControllerKey();

@@ -18,7 +18,7 @@ import { bind } from "astal";
 import { Schedule } from "@/views/windows/dash/calendar/schedule";
 import { DashTabLayout } from "@/views/components/DashTabLayout";
 import { Week } from "./week";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 import Calendar from "@/services/Calendar";
 
 /*****************************************************************************
@@ -92,7 +92,7 @@ export default () => {
     actions: [{ name: "hi", action: () => {} }],
   });
 
-  setupEventController({
+  setupKeybinds({
     widget: calendarTab,
     binds: {
       [KEYBINDS.REFRESH_DATA]: () => {

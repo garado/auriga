@@ -22,7 +22,7 @@ import {
   AnimatedStack,
   AnimatedStackChild,
 } from "@/views/components/AnimatedStack";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 import SettingsManager from "@/services/settings";
 
 /*****************************************************************************
@@ -191,7 +191,7 @@ export default () => {
         };
       }
 
-      setupEventController({
+      setupKeybinds({
         name: "DashWindow",
         widget: self,
         forwardTarget: () => TabStack.get_visible_child(),

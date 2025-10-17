@@ -14,7 +14,7 @@
 
 import { Gtk, Widget, astalify, hook } from "astal/gtk4";
 import { bind } from "astal";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 
 import { GoalBox } from "@/views/windows/dash/goals/GoalBox";
 import Goals, { Goal } from "@/services/Goals";
@@ -156,7 +156,7 @@ export default () => {
     spacing: 12,
     children: [TopBar(), createOverlay()],
     setup: (self) => {
-      setupEventController({
+      setupKeybinds({
         name: "Goals",
         widget: self,
         binds: {

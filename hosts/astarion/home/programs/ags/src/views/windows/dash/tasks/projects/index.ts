@@ -14,7 +14,7 @@
  *****************************************************************************/
 
 import { Widget } from "astal/gtk4";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 import Sidebar from "./sidebar";
 import Tasklist from "./TaskList";
 
@@ -32,7 +32,7 @@ export default () => {
     spacing: 12,
     children: [sidebar, tasklist],
     setup: (self) => {
-      setupEventController({
+      setupKeybinds({
         name: "Projects",
         widget: self,
         forwardTarget: sidebar,

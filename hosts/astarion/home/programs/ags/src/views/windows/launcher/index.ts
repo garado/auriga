@@ -16,7 +16,7 @@ import { App, Astal, Gtk, Gdk, Widget, astalify } from "astal/gtk4";
 import { Variable, bind } from "astal";
 
 import { appResultWidgets, updateAppSearch, launchFirstApp } from "./App";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 import {
   launchFirstSession,
   sessionResultWidgets,
@@ -255,7 +255,7 @@ export default () => {
       // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);
 
-      setupEventController({
+      setupKeybinds({
         name: "launcher",
         widget: self,
         binds: {

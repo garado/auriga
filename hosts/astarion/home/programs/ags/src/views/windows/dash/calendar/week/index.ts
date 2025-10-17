@@ -16,7 +16,7 @@ import {
 } from "@/views/windows/dash/calendar/week/WeekGrid";
 import { Nowline } from "@/views/windows/dash/calendar/week/Nowline";
 import { astalify, Gtk, Widget } from "astal/gtk4";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 import { WeekDateHeaders } from "./WeekDateHeaders";
 import Calendar, { uiVars } from "@/services/Calendar";
 import { GLib } from "astal";
@@ -171,7 +171,7 @@ export const Week = () => {
       weekGridContainer,
     ],
     setup: (self) => {
-      setupEventController({
+      setupKeybinds({
         widget: self,
         forwardTarget: _WeekGridContent,
         binds: {

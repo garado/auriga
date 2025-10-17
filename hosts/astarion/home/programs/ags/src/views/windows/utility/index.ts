@@ -19,7 +19,7 @@ import {
   AnimatedStack,
   AnimatedStackChild,
 } from "@/views/components/AnimatedStack";
-import { setupEventController } from "@/utils/EventControllerKeySetup";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 
 /*****************************************************************************
  * Module-level variables
@@ -128,7 +128,7 @@ export default () => {
       // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);
 
-      setupEventController({
+      setupKeybinds({
         name: "UtilityPanel",
         widget: self,
         forwardTarget: utilityPanel,
