@@ -14,12 +14,12 @@ import { exec } from "astal/process";
 import { timeout } from "astal/time";
 
 import "@/globals.ts";
-import Bar from "@/windows/bar";
-import Dash from "@/windows/dash";
-import Utility from "@/windows/utility";
-import Control from "@/windows/control";
-import Launcher from "@/windows/launcher";
-import Notifications from "@/windows/notifications";
+import Bar from "@/views/windows/bar";
+import Dash from "@/views/windows/dash";
+import Utility from "@/views/windows/utility";
+import Control from "@/views/windows/control";
+import Launcher from "@/views/windows/launcher";
+import Notifications from "@/views/windows/notifications";
 import { CMD } from "@/utils/Commands";
 
 // Required entrypoint config for sharing modules between Gtk3 lock and Gtk4 app
