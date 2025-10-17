@@ -15,7 +15,7 @@
 import { Widget } from "astal/gtk4";
 import { bind } from "astal";
 
-import Ledger from "@/services/Ledger";
+import Ledger from "@/services/ledger";
 import InteractiveGraph from "@/views/components/InteractiveGraph";
 
 /*****************************************************************************

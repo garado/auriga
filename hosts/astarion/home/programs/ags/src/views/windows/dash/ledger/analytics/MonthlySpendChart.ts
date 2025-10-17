@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 import { Gtk, Widget } from "astal/gtk4";
-import Ledger from "@/services/Ledger";
+import Ledger from "@/services/ledger";
 import { bind } from "astal";
 import Bar from "./BarGraphBar";
 

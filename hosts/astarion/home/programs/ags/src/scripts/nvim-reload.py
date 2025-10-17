@@ -7,10 +7,9 @@
 
 # tl; dr:
 # Every nvim instance has a socket located in /run/user/1000
-# (it used to be in /tmp but I don't know why or when that changed)
 # This script sends a command to change the nvim theme to every socket.
 # This is very specifically tailored to MY custom nvim config.
-# The method by which you reload your nvim theme may be different,
+# Your method for reloading your nvim theme may be different,
 # but it should be easy to modify this script to suit your needs.
 
 import os
@@ -33,13 +32,10 @@ def reload_theme(instance, cmd):
     nvim.command(cmd)
 
 def main():
-    # search for neovim instances
   instances = get_all_instances()
-
-  # connect to instances and reload theme
   for instance in instances:
+      # this is a custom function - NOT built into nvchad
       reload_theme(instance, 'ForceReloadNvchadTheme')
 
 if __name__ == '__main__':
     main()
-

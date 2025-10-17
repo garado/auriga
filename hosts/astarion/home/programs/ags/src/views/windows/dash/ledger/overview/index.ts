@@ -19,7 +19,7 @@ import { Debts } from "@/views/windows/dash/ledger/overview/DebtsLiabilities.ts"
 import { SpendingBreakdown } from "@/views/windows/dash/ledger/overview/SpendingBreakdown.ts";
 import { Transactions } from "@/views/windows/dash/ledger/overview/RecentTransactions.ts";
 import { setupKeybinds } from "@/utils/KeybindHandler";
-import Ledger from "@/services/Ledger";
+import Ledger from "@/services/ledger";
 
 /*****************************************************************************
  * Module-level variables

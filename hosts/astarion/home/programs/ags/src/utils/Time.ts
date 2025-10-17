@@ -1,4 +1,11 @@
 /**
+ * ▀█▀ █ █▀▄▀█ █▀▀
+ * ░█░ █ █░▀░█ ██▄
+ *
+ * Utility functions for operations on timestamps.
+ */
+
+/**
  * @function epochToHHMM
  * @param epoch - Unix epoch timestamp (seconds since 1970)
  */

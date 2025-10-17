@@ -1,5 +1,3 @@
-// Reusable hover-to-reveal-child component
-
 import { bind, timeout, Variable } from "astal";
 import { Gtk, Widget } from "astal/gtk4";
 

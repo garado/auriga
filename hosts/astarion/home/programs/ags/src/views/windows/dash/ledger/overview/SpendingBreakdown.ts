@@ -14,7 +14,7 @@ import { Gtk, Widget } from "astal/gtk4";
 import { bind } from "astal";
 
 import PieChart from "@/views/components/PieChart.ts";
-import Ledger from "@/services/Ledger";
+import Ledger from "@/services/ledger";
 
 /*****************************************************************************
  * Module-level variables

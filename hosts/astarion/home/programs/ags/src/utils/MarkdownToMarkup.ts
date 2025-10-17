@@ -1,3 +1,10 @@
+/**
+ * █▀▄▀█ ▄▀█ █▀█ █▄▀ █▀▄ █▀█ █░█░█ █▄░█   ▀█▀ █▀█   █▀▄▀█ ▄▀█ █▀█ █▄▀ █░█ █▀█
+ * █░▀░█ █▀█ █▀▄ █░█ █▄▀ █▄█ ▀▄▀▄▀ █░▀█   ░█░ █▄█   █░▀░█ █▀█ █▀▄ █░█ █▄█ █▀▀
+ *
+ * Markdown -> Pango markup.
+ */
+
 const MARKDOWN_CONFIG = {
   monospaceFonts: "Mononoki",
 } as const;

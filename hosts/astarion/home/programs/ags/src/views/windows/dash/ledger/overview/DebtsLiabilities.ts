@@ -15,7 +15,7 @@ import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 import Pango from "gi://Pango?version=1.0";
 
-import Ledger, { DebtItem } from "@/services/Ledger";
+import Ledger, { DebtItem } from "@/services/ledger";
 import ledger from "..";
 
 /*****************************************************************************
