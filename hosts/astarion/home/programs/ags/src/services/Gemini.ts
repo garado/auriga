@@ -13,6 +13,7 @@ import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
 import SettingsManager from "./settings";
 import { CMD } from "@/utils/Commands";
+import { fetch } from "@/utils/Fetch";
 
 /*****************************************************************************
  * Module-level variables
@@ -129,7 +130,7 @@ export default class Gemini extends GObject.Object {
    * @param {function} callback - Success callback function.
    * @param {function} errorCallback - Optional error callback function.
    */
-  prompt(
+  async prompt(
     id: number,
     promptText: string,
     callback: (id: number, response: string) => void,
@@ -140,74 +141,87 @@ export default class Gemini extends GObject.Object {
       return;
     }
 
-    const cmd = `${CMD.curl} "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}"} \
-                  -H 'Content-Type: application/json' -X POST -d '{ "contents": [{ "parts":[{"text": "Be concise - ${escapeQuotes(promptText)}"}] }] }'`;
+    let result = "";
 
-    execAsync(cmd)
-      .then((result) => {
-        try {
-          const jsonResponse: GeminiResponse = JSON.parse(result);
+    try {
+      result = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: promptText }],
+              },
+            ],
+          }),
+        },
+      );
+    } catch (execError) {
+      const errorMsg = "Failed to execute Gemini API request";
+      console.error(errorMsg, execError);
 
-          // Check if response contains an error
-          if (jsonResponse.error) {
-            const errorMessage = getErrorMessage(jsonResponse.error);
-            console.error(
-              `Gemini API Error ${jsonResponse.error.code}:`,
-              errorMessage,
-            );
+      if (errorCallback) {
+        errorCallback(id, errorMsg);
+      } else {
+        callback(id, `Error: ${errorMsg}`);
+      }
+    }
 
-            if (errorCallback) {
-              errorCallback(id, errorMessage, jsonResponse.error.code);
-            } else {
-              // Fallback: call success callback with error message
-              callback(id, `Error: ${errorMessage}`);
-            }
-            return;
-          }
+    try {
+      const jsonResponse: GeminiResponse = JSON.parse(result);
 
-          // Check if response has the expected structure
-          if (
-            !jsonResponse.candidates ||
-            !jsonResponse.candidates[0] ||
-            !jsonResponse.candidates[0].content ||
-            !jsonResponse.candidates[0].content.parts ||
-            !jsonResponse.candidates[0].content.parts[0]
-          ) {
-            const errorMsg = "Invalid response structure from Gemini API";
-            console.error(errorMsg, jsonResponse);
+      // Check if response contains an error
+      if (jsonResponse.error) {
+        const errorMessage = getErrorMessage(jsonResponse.error);
+        console.error(
+          `Gemini API Error ${jsonResponse.error.code}:`,
+          errorMessage,
+        );
 
-            if (errorCallback) {
-              errorCallback(id, errorMsg);
-            } else {
-              callback(id, `Error: ${errorMsg}`);
-            }
-            return;
-          }
-
-          // Success: extract and return the response
-          const response =
-            jsonResponse.candidates[0].content.parts[0].text.trim();
-          callback(id, response);
-        } catch (parseError) {
-          const errorMsg = "Failed to parse Gemini API response";
-          console.error(errorMsg, parseError, result);
-
-          if (errorCallback) {
-            errorCallback(id, errorMsg);
-          } else {
-            callback(id, `Error: ${errorMsg}`);
-          }
+        if (errorCallback) {
+          errorCallback(id, errorMessage, jsonResponse.error.code);
+        } else {
+          // Fallback: call success callback with error message
+          callback(id, `Error: ${errorMessage}`);
         }
-      })
-      .catch((execError) => {
-        const errorMsg = "Failed to execute Gemini API request";
-        console.error(errorMsg, execError);
+        return;
+      }
+
+      // Check if response has the expected structure
+      if (
+        !jsonResponse.candidates ||
+        !jsonResponse.candidates[0] ||
+        !jsonResponse.candidates[0].content ||
+        !jsonResponse.candidates[0].content.parts ||
+        !jsonResponse.candidates[0].content.parts[0]
+      ) {
+        const errorMsg = "Invalid response structure from Gemini API";
+        console.error(errorMsg, jsonResponse);
 
         if (errorCallback) {
           errorCallback(id, errorMsg);
         } else {
           callback(id, `Error: ${errorMsg}`);
         }
-      });
+        return;
+      }
+
+      // Success: extract and return the response
+      const response = jsonResponse.candidates[0].content.parts[0].text.trim();
+      callback(id, response);
+    } catch (parseError) {
+      const errorMsg = "Failed to parse Gemini API response";
+      console.error(errorMsg, parseError, result);
+
+      if (errorCallback) {
+        errorCallback(id, errorMsg);
+      } else {
+        callback(id, `Error: ${errorMsg}`);
+      }
+    }
   }
 }

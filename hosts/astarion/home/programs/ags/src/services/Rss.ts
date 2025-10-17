@@ -15,6 +15,7 @@ import { GObject, register, property } from "astal/gobject";
 import SettingsManager from "./settings";
 import { fileWrite } from "@/utils/File";
 import { CMD } from "@/utils/Commands";
+import { fetch } from "@/utils/Fetch";
 
 /*****************************************************************************
  * Constants
@@ -110,9 +111,19 @@ export default class TTRSS extends GObject.Object {
 
   async #login() {
     try {
-      const cmd = `${CMD.curl} -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"login","user":"${TTRSS_USER}","password":"${TTRSS_PASS}"}'`;
-      const raw = await execAsync([CMD.bash, "-c", cmd]);
-      const data = JSON.parse(raw);
+      const response = await fetch(`${TTRSS_URL}/api/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          op: "login",
+          user: TTRSS_USER,
+          password: TTRSS_PASS,
+        }),
+      });
+
+      const data = JSON.parse(response);
 
       if (data.content?.session_id) {
         this.sessionId = data.content.session_id;
@@ -131,9 +142,23 @@ export default class TTRSS extends GObject.Object {
     }
 
     try {
-      const cmd = `${CMD.curl} -X POST ${TTRSS_URL}/api/ -H "Content-Type: application/json" -d '{"op":"getHeadlines","sid":"${this.sessionId}","feed_id":${feedId},"limit":${limit},"output_mode":"json","show_excerpt":true,"excerpt_length":500}'`;
-      const raw = await execAsync([CMD.bash, "-c", cmd]);
-      const data = JSON.parse(raw);
+      const response = await fetch(`${TTRSS_URL}/api/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          op: "getHeadlines",
+          sid: this.sessionId,
+          feed_id: feedId,
+          limit: limit,
+          output_mode: "json",
+          show_excerpt: true,
+          excerpt_length: 500,
+        }),
+      });
+
+      const data = JSON.parse(response);
 
       if (data.content) {
         this.headlines = data.content;
