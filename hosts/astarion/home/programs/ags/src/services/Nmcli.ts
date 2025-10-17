@@ -16,6 +16,12 @@ import { GObject, register, property } from "astal/gobject";
 import { execAsync } from "astal/process";
 
 /*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+const DATA_UPDATE_INTERVAL_MS = 2000;
+
+/*****************************************************************************
  * Interfaces
  *****************************************************************************/
 
@@ -66,6 +72,9 @@ export default class NmcliService extends GObject.Object {
   /** dbus subscription references **/
   #subscriptionIds: number[] = [];
 
+  /** dbus is very talkative; debounce updates */
+  #lastUpdated: number = 0;
+
   // Constructor --------------------------------------------------------------
   constructor() {
     super();
@@ -95,7 +104,10 @@ export default class NmcliService extends GObject.Object {
       null,
       Gio.DBusSignalFlags.NONE,
       () => {
-        this.#updateStatus();
+        if (Date.now() - this.#lastUpdated > DATA_UPDATE_INTERVAL_MS) {
+          this.#updateStatus();
+          this.#lastUpdated = Date.now();
+        }
       },
     );
 
@@ -108,7 +120,10 @@ export default class NmcliService extends GObject.Object {
       null,
       Gio.DBusSignalFlags.NONE,
       () => {
-        this.#updateAccessPoints();
+        if (Date.now() - this.#lastUpdated > DATA_UPDATE_INTERVAL_MS) {
+          this.#updateAccessPoints();
+          this.#lastUpdated = Date.now();
+        }
       },
     );
 
