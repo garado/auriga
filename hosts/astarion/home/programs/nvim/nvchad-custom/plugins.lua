@@ -21,6 +21,13 @@ local plugins = {
   -- },
 
   {
+    "L3MON4D3/LuaSnip",
+    config = function()
+      require("custom.configs.luasnip")
+    end,
+  },
+
+  {
     "neovim/nvim-lspconfig",
     config = function()
       require "custom.configs.lspconfig"

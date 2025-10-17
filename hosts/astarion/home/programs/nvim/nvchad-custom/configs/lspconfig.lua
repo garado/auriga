@@ -33,4 +33,4 @@ vim.lsp.config('clangd', {
 })
 
 -- Enable all LSPs
-vim.lsp.enable({'cssls', 'ts_ls', 'html', 'clangd'})
+vim.lsp.enable({'cssls', 'html', 'clangd'})
