@@ -14,6 +14,7 @@ import { astalify, Gtk, Widget } from "astal/gtk4";
 import { Metronome } from "./Metronome";
 import { PaintMixer } from "./PaintMixer";
 import Calculator from "./Calculator";
+import { Timer } from "./Timer";
 
 /*****************************************************************************
  * Widget definition
@@ -34,7 +35,7 @@ export const Tools = () => {
           hexpand: true,
           vertical: true,
           spacing: 20,
-          children: [Metronome(), PaintMixer()],
+          children: [Metronome(), PaintMixer(), Timer()],
         }),
       );
     },
