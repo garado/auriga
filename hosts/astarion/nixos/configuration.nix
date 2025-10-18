@@ -89,6 +89,7 @@ in {
     libnotify
 
     # Essentials
+    framework-tool
     ripgrep zip unzip wget lf mpv
     firefox
     gthumb
@@ -154,6 +155,14 @@ in {
 
   security.rtkit.enable = true;
   security.pam.services.astal-auth = {};
+
+  security.sudo.extraRules = [{
+    users = [ "alexis" ];
+    commands = [{
+      command = "/run/current-system/sw/bin/framework-tool";
+      options = [ "NOPASSWD" ];
+    }];
+  }];
 
   services.pipewire = {
     enable = true;
