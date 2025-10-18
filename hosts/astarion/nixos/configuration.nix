@@ -61,6 +61,37 @@ in {
   system.stateVersion = "24.11";
 
   virtualisation.docker.enable = true;
+
+  security = {
+    rtkit.enable = true;
+    pam.services.astal-auth = {};
+  
+    acme.acceptTerms = true;
+    acme.defaults.email = "alexisgarado@gmail.com";
+
+    sudo.extraRules = [{
+      users = [ "alexis" ];
+      commands = [{
+        command = "/run/current-system/sw/bin/framework-tool";
+        options = [ "NOPASSWD" ];
+      }];
+    }];
+  };
+
+  environment = {
+    variables = {
+        EDITOR = "nvim";
+        VISUAL = "nvim";
+    };
+
+    sessionVariables = rec {
+      ENCHIRIDION = "$HOME/Enchiridion";
+      AGSCFG = "$HOME/Github/dotfiles/hosts/astarion/home/services/ags/";
+      NVCFG = "$HOME/Github/dotfiles/hosts/astarion/home/programs/nvim/nvchad-custom/";
+      DOTS = "$HOME/Github/dotfiles/hosts/astarion/";
+    };
+  };
+
   
   # --------------------------------------------
   # SYSTEM PACKAGES
@@ -153,54 +184,16 @@ in {
     wineWowPackages.stable
   ];
 
-  security.rtkit.enable = true;
-  security.pam.services.astal-auth = {};
-
-  security.sudo.extraRules = [{
-    users = [ "alexis" ];
-    commands = [{
-      command = "/run/current-system/sw/bin/framework-tool";
-      options = [ "NOPASSWD" ];
-    }];
-  }];
-
-  services.pipewire = {
-    enable = true;
-    alsa = {
-      enable = true;
-      support32Bit = true;
-    };
-    pulse.enable = true;
-    wireplumber.enable = false;
-  };
-    
   musnix.enable = true;
 
-  services.tumbler.enable = true;
-
-  environment.variables = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-  };
-
-  environment.sessionVariables = rec {
-    ENCHIRIDION = "$HOME/Enchiridion";
-    AGSCFG = "$HOME/Github/dotfiles/hosts/astarion/home/services/ags/";
-    NVCFG = "$HOME/Github/dotfiles/hosts/astarion/home/programs/nvim/nvchad-custom/";
-    DOTS = "$HOME/Github/dotfiles/hosts/astarion/";
-  };
-
-  
   # --------------------------------------------
   # SYSTEM SERVICES
   # --------------------------------------------
 
-  security.acme.acceptTerms = true;
-  security.acme.defaults.email = "alexisgarado@gmail.com";
-
-
   services = {
     automatic-timezoned.enable = true;
+  
+    tumbler.enable = true;
 
     power-profiles-daemon.enable = true;
 
@@ -208,9 +201,18 @@ in {
 
     upower.enable = true;
 
+    pipewire = {
+      enable = true;
+      alsa = {
+        enable = true;
+        support32Bit = true;
+      };
+      pulse.enable = true;
+      wireplumber.enable = false;
+    };
+
     xserver = {
       enable = true;
-      displayManager.gdm.enable = true; # @TODO
     };
 
     # Connecting iPhone
@@ -238,6 +240,31 @@ in {
     nginx.virtualHosts."localhost" = {
       listen = [{ addr = "127.0.0.1"; port = 8080; }];
     };
+
+    logind = {
+      lidSwitch = "suspend";
+      extraConfig = ''
+        IdleAction=suspend
+        IdleActionSec=10min
+      '';
+    };
+  };
+
+  systemd.services = {
+    lock-on-sleep = {
+      description = "Lock screen before sleep";
+      before = [ "sleep.target" ];
+      wantedBy = [ "sleep.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "alexis";
+        ExecStart = "/etc/profiles/per-user/alexis/bin/astal -i lock lock"; # @TODO install systemwide
+      };
+      environment = {
+        WAYLAND_DISPLAY = "wayland-1";
+        XDG_RUNTIME_DIR = "/run/user/1000";
+      };
+    };
   };
 
   # --------------------------------------------
@@ -255,7 +282,6 @@ in {
       dedicatedServer.openFirewall = true;
     };
   };
-
 
   # --------------------------------------------
   # USER CONFIGURATION
