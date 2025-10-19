@@ -11,6 +11,11 @@
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     swww.url = "github:LGFae/swww";
 
     waveforms.url = "github:liff/waveforms-flake?rev=c6fac3b8694ab95a3f4204b6bf110df9d2594d0f";
@@ -36,6 +41,7 @@
   # then call the `outputs` function below with the results from loading all the
   # flakes above.
   outputs = { 
+    self,
     home-manager,
     nixpkgs,
     nixpkgs-unstable,
@@ -51,7 +57,7 @@
 
         # Set all inputs parameters as special arguments for all submodules,
         # so you can directly use all dependencies in inputs in submodules
-        specialArgs = {inherit inputs nixpkgs-unstable;};
+        specialArgs = {inherit inputs nixpkgs-unstable self;};
 
         modules = [
           ./hosts/astarion/nixos/configuration.nix

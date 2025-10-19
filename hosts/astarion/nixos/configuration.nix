@@ -4,7 +4,7 @@
 
 # Replaces /etc/nixos/configuration.nix
 
-{ inputs, lib, config, pkgs, musnix, ... }: 
+{ self, inputs, lib, config, pkgs, musnix, ... }: 
 let
   unstable = inputs.nixpkgs-unstable;
 in {
@@ -97,6 +97,22 @@ in {
     };
   };
 
+  sops = {
+    defaultSopsFile = "${self}/secrets.yaml";
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    secrets = {
+      gemini_api = {};
+      transit_api = {};
+      locationiq_api = {};
+      pushover_user = {};
+      pushover_api = {};
+      openweather_api = {};
+      ttrss_user = {};
+      ttrss_pass = {};
+      gcalcli_oauth = {};
+    };
+  };
+  
   # --------------------------------------------
   # SYSTEM PACKAGES
   # These will be installed for all users
@@ -138,6 +154,7 @@ in {
     ffmpeg
     shotcut
     obs-studio
+    sops
 
     # GNOME extensions
     gnomeExtensions.bluetooth-battery
