@@ -39,8 +39,7 @@
       misc = {
         disable_hyprland_logo = true;
         disable_splash_rendering = true;
-        enable_swallow = true;
-        swallow_regex = "^(kitty)$";
+        enable_swallow = false;
         mouse_move_focuses_monitor = true;
       };
 
