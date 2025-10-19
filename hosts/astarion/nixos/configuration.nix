@@ -101,15 +101,15 @@ in {
     defaultSopsFile = "${self}/secrets.yaml";
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
-      gemini_api = {};
-      transit_api = {};
-      locationiq_api = {};
-      pushover_user = {};
-      pushover_api = {};
-      openweather_api = {};
-      ttrss_user = {};
-      ttrss_pass = {};
-      gcalcli_oauth = {};
+      gemini_api      = { owner = "alexis"; mode = "0400"; };
+      transit_api     = { owner = "alexis"; mode = "0400"; };
+      locationiq_api  = { owner = "alexis"; mode = "0400"; };
+      pushover_user   = { owner = "alexis"; mode = "0400"; };
+      pushover_api    = { owner = "alexis"; mode = "0400"; };
+      openweather_api = { owner = "alexis"; mode = "0400"; };
+      ttrss_user      = { owner = "alexis"; mode = "0400"; };
+      ttrss_pass      = { owner = "alexis"; mode = "0400"; };
+      gcalcli_oauth   = { owner = "alexis"; mode = "0400"; };
     };
   };
   
