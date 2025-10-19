@@ -15,6 +15,7 @@ import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
 import { CMD } from "@/utils/Commands";
+import { getSecret } from "@/utils/Secrets";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -31,7 +32,11 @@ export interface PushoverMessage {
  * MODULE LEVEL VARIABLES
  **********************************************/
 
-const pushoverConfig = SettingsManager.get_default().config.pushover;
+const PUSHOVER_USER_SECRET =
+  SettingsManager.get_default().config.secrets.pushover.user;
+
+const PUSHOVER_API_SECRET =
+  SettingsManager.get_default().config.secrets.pushover.api;
 
 /** Rate limit: 1 message per RATE_LIMIT_MS */
 const RATE_LIMIT_MS = 2000;
@@ -53,12 +58,6 @@ const makeApiCall = async (
   url?: string,
   url_title?: string,
 ): Promise<void> => {
-  const config = pushoverConfig;
-
-  if (!config?.apiToken || !config?.userKey) {
-    throw new Error("Pushover API token and user key not configured");
-  }
-
   const canSend = checkRateLimit();
 
   if (!canSend) {
@@ -66,8 +65,8 @@ const makeApiCall = async (
   }
 
   const data = {
-    token: config.apiToken,
-    user: config.userKey,
+    user: getSecret(PUSHOVER_USER_SECRET),
+    token: getSecret(PUSHOVER_API_SECRET),
     message,
     ...(title && { title }),
     ...(url && { url }),

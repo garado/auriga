@@ -16,14 +16,19 @@ import SettingsManager from "./settings";
 import { fileWrite } from "@/utils/File";
 import { CMD } from "@/utils/Commands";
 import { fetch } from "@/utils/Fetch";
+import { getSecret } from "@/utils/Secrets";
 
 /*****************************************************************************
  * Constants
  *****************************************************************************/
 
 const TTRSS_URL = SettingsManager.get_default().config.ttrss.url;
-const TTRSS_USER = SettingsManager.get_default().config.ttrss.user;
-const TTRSS_PASS = SettingsManager.get_default().config.ttrss.pass;
+
+const TTRSS_USER_SECRET =
+  SettingsManager.get_default().config.secrets.ttrss.user;
+
+const TTRSS_PASS_SECRET =
+  SettingsManager.get_default().config.secrets.ttrss.pass;
 
 const SESSION_FILE = `${GLib.get_user_cache_dir()}/astal/ttrss/session_id`;
 
@@ -118,8 +123,8 @@ export default class TTRSS extends GObject.Object {
         },
         body: JSON.stringify({
           op: "login",
-          user: TTRSS_USER,
-          password: TTRSS_PASS,
+          user: getSecret(TTRSS_USER_SECRET),
+          password: getSecret(TTRSS_PASS_SECRET),
         }),
       });
 

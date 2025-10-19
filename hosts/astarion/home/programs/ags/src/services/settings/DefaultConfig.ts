@@ -142,13 +142,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
     stickyNotesPath: "",
   },
 
-  misc: {
-    geminiAPI: "",
-  },
-
   transit: {
-    apiKey: "",
-    autocompleteApiKey: "",
     defaultLocation: {
       lat: 37.7749, // SF
       lon: -122.4194,
@@ -156,13 +150,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
     searchRadius: 50,
   },
 
-  pushover: {
-    apiToken: "",
-    userKey: "",
-  },
-
   weather: {
-    apiKey: "",
     units: "imperial",
     lat: 37.7749,
     lon: -122.4194,
@@ -170,7 +158,44 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
 
   ttrss: {
     url: "",
-    user: "",
-    pass: "",
+  },
+
+  secrets: {
+    gemini: {
+      key: "",
+      sopsPath: "",
+    },
+    transit: {
+      key: "",
+      sopsPath: "",
+    },
+    locationiq: {
+      key: "",
+      sopsPath: "",
+    },
+    pushover: {
+      user: {
+        key: "",
+        sopsPath: "",
+      },
+      api: {
+        key: "",
+        sopsPath: "",
+      },
+    },
+    openweather: {
+      key: "",
+      sopsPath: "",
+    },
+    ttrss: {
+      user: {
+        key: "",
+        sopsPath: "",
+      },
+      pass: {
+        key: "",
+        sopsPath: "",
+      },
+    },
   },
 };

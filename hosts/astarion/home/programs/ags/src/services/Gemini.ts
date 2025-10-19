@@ -14,12 +14,13 @@ import { execAsync } from "astal/process";
 import SettingsManager from "./settings";
 import { CMD } from "@/utils/Commands";
 import { fetch } from "@/utils/Fetch";
+import { getSecret } from "@/utils/Secrets";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
 
-const GEMINI_API_KEY = SettingsManager.get_default().config.misc.geminiAPI;
+const GEMINI_SECRET_STORE = SettingsManager.get_default().config.secrets.gemini;
 
 const USE_REAL_API_CALL = true;
 
@@ -145,7 +146,7 @@ export default class Gemini extends GObject.Object {
 
     try {
       result = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getSecret(GEMINI_SECRET_STORE)}`,
         {
           method: "POST",
           headers: {

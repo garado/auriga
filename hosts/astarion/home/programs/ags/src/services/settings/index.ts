@@ -103,25 +103,12 @@ export interface SystemConfig {
     stickyNotesPath: string;
   };
 
-  misc: {
-    /** @TODO use sops instead */
-    geminiAPI: string;
-  };
-
   transit: {
-    apiKey: string;
-    autocompleteApiKey: string;
     defaultLocation: Location;
     searchRadius: number;
   };
 
-  pushover: {
-    apiToken: string;
-    userKey: string;
-  };
-
   weather: {
-    apiKey: string;
     units: string;
     lat: number;
     lon: number;
@@ -129,8 +116,45 @@ export interface SystemConfig {
 
   ttrss: {
     url: string;
-    user: string;
-    pass: string;
+  };
+
+  secrets: {
+    gemini: {
+      key: string;
+      sopsPath: string;
+    };
+    transit: {
+      key: string;
+      sopsPath: string;
+    };
+    locationiq: {
+      key: string;
+      sopsPath: string;
+    };
+    pushover: {
+      user: {
+        key: string;
+        sopsPath: string;
+      };
+      api: {
+        key: string;
+        sopsPath: string;
+      };
+    };
+    openweather: {
+      key: string;
+      sopsPath: string;
+    };
+    ttrss: {
+      user: {
+        key: string;
+        sopsPath: string;
+      };
+      pass: {
+        key: string;
+        sopsPath: string;
+      };
+    };
   };
 }
 

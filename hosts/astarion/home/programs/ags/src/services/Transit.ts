@@ -18,6 +18,7 @@ import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
 import { CMD } from "@/utils/Commands";
+import { getSecret } from "@/utils/Secrets";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -224,6 +225,8 @@ export enum Mode {
 
 const transitConfig = SettingsManager.get_default().config.transit;
 
+const TRANSIT_API_SECRET = SettingsManager.get_default().config.secrets.transit;
+
 /** Use cached fake data for development or make real API requests */
 const USE_REAL_API_CALL = true;
 
@@ -299,7 +302,7 @@ const makeApiCall = async (
   params: Record<string, any> = {},
 ): Promise<any> => {
   const baseUrl = "https://external.transitapp.com/v3";
-  const apiKey = transitConfig.apiKey;
+  const apiKey = getSecret(TRANSIT_API_SECRET);
 
   if (!apiKey) {
     throw new Error("Transit API key not configured");

@@ -11,6 +11,7 @@ import { execAsync } from "astal/process";
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
 import { CMD } from "@/utils/Commands";
+import { getSecret } from "@/utils/Secrets";
 
 /**********************************************
  * PUBLIC TYPEDEFS
@@ -97,6 +98,8 @@ interface SearchCache {
  **********************************************/
 
 const locationConfig = SettingsManager.get_default().config.transit;
+const LOCATIONIQ_SECRET_STORE =
+  SettingsManager.get_default().config.secrets.locationiq;
 
 /**********************************************
  * UTILITY
@@ -111,7 +114,7 @@ async function makeApiCall(
   params: Record<string, any> = {},
 ): Promise<any> {
   const baseUrl = "https://api.locationiq.com/v1";
-  const apiKey = locationConfig.autocompleteApiKey;
+  const apiKey = getSecret(LOCATIONIQ_SECRET_STORE);
 
   if (!apiKey) {
     throw new Error("LocationIQ API key not configured");
