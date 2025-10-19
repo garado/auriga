@@ -16,6 +16,7 @@ in {
   imports = [
     ./hardware-configuration.nix
     ./fonts.nix
+    inputs.sops-nix.nixosModules.sops
   ];
 
   # Networking
@@ -47,6 +48,10 @@ in {
   boot = {
     loader.systemd-boot.enable = true;
     kernelModules = [ "snd-seq" "snd-rawmidi" ];
+    kernelParams = [
+      "amdgpu.abm_level=0" 
+      "amdgpu.dcdebugmask=0x10"
+    ];
   };
 
   # Miscellaneous settings
@@ -92,7 +97,6 @@ in {
     };
   };
 
-  
   # --------------------------------------------
   # SYSTEM PACKAGES
   # These will be installed for all users
