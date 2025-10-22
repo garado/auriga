@@ -9,6 +9,14 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   theme: {
     currentTheme: "mountain",
     themeConfig: {
+      mountain: {
+        displayName: "Mountain",
+        nvim: "mountain",
+        kitty: "Mountain Fuji",
+        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/mountain.jpg`,
+        lockscreen: `${SRC}/assets/defaults/theme/lockscreen/mountain.jpg`,
+        preview: `${SRC}/assets/defaults/theme/preview/mountain.png`,
+      },
       kanagawa: {
         displayName: "Kanagawa",
         nvim: "kanagawa",
@@ -16,6 +24,14 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/kanagawa.jpg`,
         lockscreen: `${SRC}/assets/defaults/theme/lockscreen/kanagawa.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/kanagawa.png`,
+      },
+      nord: {
+        displayName: "Nord",
+        nvim: "onenord",
+        kitty: "Onenord",
+        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/nord.jpg`,
+        lockscreen: `${SRC}/assets/defaults/theme/lockscreen/nord.jpg`,
+        preview: `${SRC}/assets/defaults/theme/preview/nord.png`,
       },
       warning: {
         displayName: "Las Wawas",
@@ -32,22 +48,6 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/nostalgia.jpg`,
         lockscreen: `${SRC}/assets/defaults/theme/lockscreen/nostalgia.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/nostalgia.png`,
-      },
-      mountain: {
-        displayName: "Mountain",
-        nvim: "mountain",
-        kitty: "Mountain Fuji",
-        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/mountain.jpg`,
-        lockscreen: `${SRC}/assets/defaults/theme/lockscreen/mountain.jpg`,
-        preview: `${SRC}/assets/defaults/theme/preview/mountain.png`,
-      },
-      nord: {
-        displayName: "Nord",
-        nvim: "onenord",
-        kitty: "Onenord",
-        wallpaper: `${SRC}/assets/defaults/theme/wallpapers/nord.jpg`,
-        lockscreen: `${SRC}/assets/defaults/theme/lockscreen/nord.jpg`,
-        preview: `${SRC}/assets/defaults/theme/preview/nord.png`,
       },
       yoru: {
         displayName: "Yoru",
