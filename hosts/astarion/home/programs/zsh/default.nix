@@ -18,7 +18,7 @@
 
       # Modify prompt if in nix devshell
       if [ -n "$NIX_DEV_SHELL" ]; then
-        PROMPT="$PROMPT [$NIX_DEV_SHELL]"
+        PROMPT="$PROMPT [$NIX_DEV_SHELL] "
       fi
     '';
 
