@@ -41,6 +41,7 @@
         disable_splash_rendering = true;
         enable_swallow = false;
         mouse_move_focuses_monitor = true;
+        animate_manual_resizes = true;
       };
 
       # Some default env vars
@@ -88,6 +89,7 @@
         animation = [
           "workspaces, 1, 2, default, slidevert"
           "windows, 1, 2, default, slide"
+          "windowsMove, 1, 2, default"
         ];
       };
       
