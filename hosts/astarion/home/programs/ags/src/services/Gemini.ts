@@ -10,9 +10,7 @@
  *****************************************************************************/
 
 import { GObject, register, property } from "astal/gobject";
-import { execAsync } from "astal/process";
 import SettingsManager from "./settings";
-import { CMD } from "@/utils/Commands";
 import { fetch } from "@/utils/Fetch";
 import { getSecret } from "@/utils/Secrets";
 
@@ -155,7 +153,7 @@ export default class Gemini extends GObject.Object {
           body: JSON.stringify({
             contents: [
               {
-                parts: [{ text: promptText }],
+                parts: [{ text: `Respond concisely: ${promptText}` }],
               },
             ],
           }),
