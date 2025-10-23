@@ -4,7 +4,7 @@
 
 # User-specific configurations.
 
-{ inputs, lib, config, pkgs, ... }: {
+{ self, inputs, lib, config, pkgs, ... }: {
 
   imports = [
     # These come from inputs defined in `flake.nix`

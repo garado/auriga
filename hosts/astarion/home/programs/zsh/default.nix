@@ -15,6 +15,11 @@
       bindkey -v
       bindkey -M viins 'jk' vi-cmd-mode
       autoload zmv
+
+      # Modify prompt if in nix devshell
+      if [ -n "$NIX_DEV_SHELL" ]; then
+        PROMPT="$PROMPT [$NIX_DEV_SHELL]"
+      fi
     '';
 
     oh-my-zsh = {

@@ -71,7 +71,7 @@
 
           {
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = {inherit inputs nixpkgs-unstable;};
+            home-manager.extraSpecialArgs = {inherit self inputs nixpkgs-unstable;};
             home-manager.backupFileExtension = "hm-backup";
             home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
           }

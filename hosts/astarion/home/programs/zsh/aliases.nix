@@ -2,7 +2,7 @@
 # ▀█ █▀ █░█   ▄▀█ █░░ █ ▄▀█ █▀ █▀▀ █▀
 # █▄ ▄█ █▀█   █▀█ █▄▄ █ █▀█ ▄█ ██▄ ▄█
 
-{ pkgs, config, ... }: {
+{ self, pkgs, config, ... }: {
   programs.zsh.shellAliases = {
     # Shell commands
     c = "clear";
@@ -48,6 +48,11 @@
     gtp = "git push";
     gds = "git diff --staged";
     gtd = "git diff";
+
+    # Devshells
+    cshell = "nix-shell ${self}/devshell/c-shell.nix";
+    pyshell = "nix-shell ${self}/devshell/python-shell.nix";
+    texshell = "nix-shell ${self}/devshell/latex-shell.nix";
 
     # Development
     py = "python3";
