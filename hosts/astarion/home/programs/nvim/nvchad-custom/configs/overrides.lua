@@ -20,7 +20,7 @@ M.treesitter = {
     -- },
   },
   highlight = {
-    enable = true,
+    enable = false,
   }
 }
 
