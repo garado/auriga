@@ -126,7 +126,7 @@
     enable = true;
     provider = "manual";
     latitude = 37.5485;
-    longitude = 121.9886;
+    longitude = -121.9886;
   };
 
   # Let home-manager install and manage itself
