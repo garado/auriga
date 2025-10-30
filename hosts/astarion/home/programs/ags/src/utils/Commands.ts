@@ -61,4 +61,5 @@ export const CMD = {
   swww: findCmd("swww"),
   systemctl: findCmd("systemctl"),
   task: findCmd("task"),
+  notifysend: findCmd("notify-send"),
 };

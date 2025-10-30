@@ -13,6 +13,9 @@ import { GObject, register, property } from "astal/gobject";
 import SettingsManager from "./settings";
 import { fetch } from "@/utils/Fetch";
 import { getSecret } from "@/utils/Secrets";
+import { utilWinRevealState } from "@/views/windows/utility";
+import { execAsync } from "astal";
+import { CMD } from "@/utils/Commands";
 
 /*****************************************************************************
  * Module-level variables
@@ -120,6 +123,18 @@ export default class Gemini extends GObject.Object {
     this.concise = true;
   }
 
+  private notifyResponse(response: string) {
+    execAsync([
+      CMD.notifysend,
+      "--app-name",
+      "Auriga",
+      "--expire-time",
+      "5000",
+      "Gemini response ready",
+      response,
+    ]);
+  }
+
   // Public functions --------------------------------------------------------
   /**
    * Call Gemini API with user input.
@@ -212,6 +227,10 @@ export default class Gemini extends GObject.Object {
       // Success: extract and return the response
       const response = jsonResponse.candidates[0].content.parts[0].text.trim();
       callback(id, response);
+
+      if (!utilWinRevealState.get()) {
+        this.notifyResponse(response);
+      }
     } catch (parseError) {
       const errorMsg = "Failed to parse Gemini API response";
       console.error(errorMsg, parseError, result);

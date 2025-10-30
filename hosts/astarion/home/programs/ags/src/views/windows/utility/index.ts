@@ -51,6 +51,9 @@ const utilityTabData: any[] = [
   },
 ];
 
+/** @brief Whether this window is revealed or not. */
+export const utilWinRevealState = Variable(false);
+
 /*****************************************************************************
  * Widget definitions
  *****************************************************************************/
@@ -144,6 +147,9 @@ export default () => {
           },
         },
       });
+    },
+    onNotifyVisible: () => {
+      utilWinRevealState.set(!utilWinRevealState.get());
     },
   });
 };

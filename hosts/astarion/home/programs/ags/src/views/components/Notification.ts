@@ -71,6 +71,8 @@ export const Notification = (notif: Nd.Notification) => {
     visible: notif.body != "",
     xalign: 0,
     label: notif.body,
+    wrap: true,
+    lines: 4,
   });
 
   const Content = Widget.Box({
