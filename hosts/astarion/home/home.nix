@@ -89,11 +89,10 @@
     configDir = ./programs/ags;
 
     extraPackages = with pkgs; [
-      # gtksourceview5 // sadge
-      libshumate /* Transit */
-      gvfs /* Needed for fetching cover art */
-      imagemagick /* Cover art color analysis */
-      gtk-session-lock
+      gtksourceview5 libpng /** Source code */
+      libshumate /** Provides map widget for dashboard transit tab */
+      gvfs imagemagick /** Cover art utils for media player */
+      gtk-session-lock /** For lockscreen (written with gtk3) */
       inputs.ags.packages.${pkgs.system}.apps
       inputs.ags.packages.${pkgs.system}.auth
       inputs.ags.packages.${pkgs.system}.battery

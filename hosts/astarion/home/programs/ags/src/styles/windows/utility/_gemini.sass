@@ -24,6 +24,26 @@
     &.response
       margin: 0.4rem
 
+  .sourceview-wrapper
+    .topbar
+      padding: 0.6rem 1rem
+      background-color: $neutral-700
+      border-top-left-radius: $border-radius
+      border-top-right-radius: $border-radius
+
+    .language
+      font-weight: 500
+
+    .codeview // GtkSourceView
+      font-family: $font-stack-mono
+      padding: 0.4rem
+      background-color: $neutral-900
+      border-bottom-left-radius: $border-radius
+      border-bottom-right-radius: $border-radius
+
+      .view text selection
+        background-color: $yellow-500
+
   // Prompt or response text that is being highlighted
   selection
     background-color: $yellow-500

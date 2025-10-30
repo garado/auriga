@@ -13,11 +13,11 @@
 
 import { Astal, Gdk, Gtk, Widget } from "astal/gtk4";
 
-import { CustomSourceView } from "@/views/components/CustomSourceView";
 import GeminiService, { ConversationType } from "@/services/Gemini";
 import SettingsManager from "@/services/settings";
 import { convertMarkdownToPangoMarkup } from "@/utils/MarkdownToMarkup";
 import { clearChildren } from "@/utils/BoxUtils";
+import GtkSource5 from "gi://GtkSource";
 
 /*****************************************************************************
  * Module-level variables
@@ -25,6 +25,18 @@ import { clearChildren } from "@/utils/BoxUtils";
 
 let gemini: InstanceType<typeof GeminiService> | undefined = undefined;
 const settings = SettingsManager.get_default();
+
+// Use just one StyleSchemeManager for all GtkSourceView widgets
+const styleManager = GtkSource5.StyleSchemeManager.get_default();
+styleManager.append_search_path(`${SRC}/assets/defaults/theme/sourceview`);
+
+// Do this instead of having each individual GtkSource buffer manage its own current-theme connection
+const activeBuffers = new Set<GtkSource5.Buffer>();
+settings.connect("notify::current-theme", () => {
+  activeBuffers.forEach((buffer) => {
+    buffer.set_style_scheme(styleManager.get_scheme(settings.currentTheme));
+  });
+});
 
 /*****************************************************************************
  * Constants
@@ -149,7 +161,7 @@ const submitPrompt = (promptText: string, conversationContainer: Astal.Box) => {
 
   // Add user prompt immediately
   conversationContainer.append(
-    createConversationPiece({
+    ConversationPiece({
       id,
       text: promptText,
       conversationType: ConversationType.Prompt,
@@ -158,7 +170,7 @@ const submitPrompt = (promptText: string, conversationContainer: Astal.Box) => {
 
   // Add placeholder for response
   conversationContainer.append(
-    createConversationPiece({
+    ConversationPiece({
       id: id + 1,
       text: UI_LABELS.thinkingMessage,
       conversationType: ConversationType.Response,
@@ -190,6 +202,7 @@ const submitPrompt = (promptText: string, conversationContainer: Astal.Box) => {
 const runSlashCommand = (command: string, conversationContainer: Astal.Box) => {
   if (COMMANDS.clear == command) {
     clearChildren(conversationContainer);
+    activeBuffers.clear();
   }
 };
 
@@ -198,11 +211,55 @@ const runSlashCommand = (command: string, conversationContainer: Astal.Box) => {
  *****************************************************************************/
 
 /**
- * Creates a speaker label for conversation pieces.
- * @param conversationType - Type of conversation (prompt or response)
- * @returns Widget containing speaker identification
+ * @brief Wrapper around GtkSourceView
  */
-const createSpeakerLabel = (conversationType: ConversationType) => {
+const SourceView = (lang: string, code: string) => {
+  const topBar = Widget.Box({
+    cssClasses: ["topbar"],
+    vertical: true,
+    children: [
+      Widget.Label({
+        cssClasses: ["language"],
+        label: lang,
+        xalign: 0,
+      }),
+    ],
+  });
+
+  // Actual code
+  const buffer = new GtkSource5.Buffer();
+  const view = new GtkSource5.View({
+    buffer,
+    cssClasses: ["codeview"],
+    vexpand: true,
+    hexpand: true,
+    showLineNumbers: true,
+    autoIndent: true,
+    monospace: true,
+  });
+
+  // Syntax highlighting
+  const langManager = GtkSource5.LanguageManager.get_default();
+  buffer.set_language(langManager.get_language(lang!));
+  buffer.set_text(code.trim(), -1);
+
+  // Themeing
+  buffer.set_style_scheme(styleManager.get_scheme(settings.currentTheme));
+  activeBuffers.add(buffer);
+
+  return Widget.Box({
+    cssClasses: ["sourceview-wrapper"],
+    vertical: true,
+    children: [topBar, view],
+  });
+};
+
+/**
+ * Creates a label indicating if the message was sent by the user or the LLM.
+ * @param conversationType - Type of conversation (prompt or response)
+ * @returns Widget containing message sender identification
+ */
+const MessageSenderLabel = (conversationType: ConversationType) => {
   const isUserMessage = conversationType === ConversationType.Prompt;
 
   return Widget.Label({
@@ -221,12 +278,9 @@ const createSpeakerLabel = (conversationType: ConversationType) => {
  * @param token - Token containing content and type information
  * @returns Widget appropriate for the token type
  */
-const createTokenWidget = (token: ResponseToken) => {
+const TokenWidget = (token: ResponseToken) => {
   if (token.type === "code") {
-    return CustomSourceView({
-      code: token.content,
-      lang: token.language!,
-    });
+    return SourceView(token.language!, token.content);
   }
 
   if (token.type === "text") {
@@ -255,10 +309,10 @@ const createTokenWidget = (token: ResponseToken) => {
  * @param props - Properties for the conversation piece
  * @returns Extended widget with content update capability
  */
-const createConversationPiece = (
+const ConversationPiece = (
   props: ConversationPieceProps,
 ): ExtendedConversationWidget => {
-  const speakerLabel = createSpeakerLabel(props.conversationType);
+  const speakerLabel = MessageSenderLabel(props.conversationType);
 
   const contentContainer = Widget.Box({
     vertical: true,
@@ -296,7 +350,7 @@ const createConversationPiece = (
     // Tokenize and render new content
     const tokens = tokenizeGeminiResponse(responseText);
     tokens.forEach((token) => {
-      const tokenWidget = createTokenWidget(token);
+      const tokenWidget = TokenWidget(token);
       contentContainer.append(tokenWidget);
     });
   };
@@ -308,7 +362,7 @@ const createConversationPiece = (
  * Creates the scrollable conversation container.
  * @returns Widget containing all conversation pieces
  */
-const createConversationContainer = () =>
+const ConversationContainer = () =>
   Widget.Box({
     vertical: true,
     spacing: LAYOUT.conversationSpacing,
@@ -322,7 +376,7 @@ const createConversationContainer = () =>
  *
  * Note: using TextView to support multiline input.
  */
-const createPromptInputTextView = (conversationContainer: Astal.Box) => {
+const PromptInputTextView = (conversationContainer: Astal.Box) => {
   const promptTextView = new Gtk.TextView({
     cssClasses: [CSS_CLASSES.promptEntryTextbox],
     canFocus: true,
@@ -385,7 +439,7 @@ const createPromptInputTextView = (conversationContainer: Astal.Box) => {
  * @param conversationContainer - The container to make scrollable
  * @returns Scrolled window widget
  */
-const createScrolledConversationWindow = (conversationContainer: Astal.Box) =>
+const ScrolledConversationWindow = (conversationContainer: Astal.Box) =>
   new Gtk.ScrolledWindow({
     vexpand: true,
     hexpand: false,
@@ -406,12 +460,10 @@ const createScrolledConversationWindow = (conversationContainer: Astal.Box) =>
 export const GeminiChat = () => {
   gemini = GeminiService.get_default();
 
-  const conversationContainer = createConversationContainer();
-  const scrolledWindow = createScrolledConversationWindow(
-    conversationContainer,
-  );
+  const conversationContainer = ConversationContainer();
+  const scrolledWindow = ScrolledConversationWindow(conversationContainer);
 
-  const promptInput = createPromptInputTextView(conversationContainer);
+  const promptInput = PromptInputTextView(conversationContainer);
 
   return Widget.CenterBox({
     cssClasses: [CSS_CLASSES.gemini],

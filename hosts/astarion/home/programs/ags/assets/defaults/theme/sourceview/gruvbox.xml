@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<style-scheme id="gruvbox" name="Gruvbox" version="1.0">
+  <author>Converted from nvchad Gruvbox theme</author>
+  <description>Gruvbox theme for GtkSourceView</description>
+
+  <!-- Base colors from base_30 -->
+  <color name="white"                       value="#EBDBB2" />
+  <color name="darker_black"                value="#232323" />
+  <color name="black"                       value="#282828" />
+  <color name="black2"                      value="#2E2E2E" />
+  <color name="one_bg"                      value="#353535" />
+  <color name="one_bg2"                     value="#3F3F3F" />
+  <color name="one_bg3"                     value="#444444" />
+  <color name="grey"                        value="#464646" />
+  <color name="grey_fg"                     value="#4E4E4E" />
+  <color name="grey_fg2"                    value="#505050" />
+  <color name="light_grey"                  value="#565656" />
+  <color name="red"                         value="#FB4934" />
+  <color name="baby_pink"                   value="#CC241D" />
+  <color name="pink"                        value="#FF75A0" />
+  <color name="line"                        value="#36393A" />
+  <color name="green"                       value="#B8BB26" />
+  <color name="vibrant_green"               value="#A9B665" />
+  <color name="nord_blue"                   value="#83A598" />
+  <color name="blue"                        value="#458588" />
+  <color name="yellow"                      value="#D79921" />
+  <color name="sun"                         value="#FABD2F" />
+  <color name="purple"                      value="#B4BBC8" />
+  <color name="dark_purple"                 value="#D3869B" />
+  <color name="teal"                        value="#749689" />
+  <color name="orange"                      value="#E78A4E" />
+  <color name="cyan"                        value="#82B3A8" />
+  <color name="lightbg"                     value="#3D3D3D" />
+  <color name="pmenu_bg"                    value="#83A598" />
+  <color name="folder_bg"                   value="#749689" />
+
+  <!-- Base16 colors -->
+  <color name="base00"                      value="#282828" />
+  <color name="base01"                      value="#3C3836" />
+  <color name="base02"                      value="#504945" />
+  <color name="base03"                      value="#665C54" />
+  <color name="base04"                      value="#BDAE93" />
+  <color name="base05"                      value="#D5C4A1" />
+  <color name="base06"                      value="#EBDBB2" />
+  <color name="base07"                      value="#FBF1C7" />
+  <color name="base08"                      value="#FB4934" />
+  <color name="base09"                      value="#FE8019" />
+  <color name="base0A"                      value="#FABD2F" />
+  <color name="base0B"                      value="#B8BB26" />
+  <color name="base0C"                      value="#8EC07C" />
+  <color name="base0D"                      value="#83A598" />
+  <color name="base0E"                      value="#D3869B" />
+  <color name="base0F"                      value="#D65D0E" />
+
+  <!-- Global Settings -->
+  <style name="text"                        background="base00" foreground="base05"/>
+  <style name="selection"                   background="one_bg3" foreground="base07"/>
+  <style name="cursor"                      foreground="base05" background="base05"/>
+  <style name="current-line"                background="one_bg"/>
+  <style name="current-line-number"         background="one_bg" foreground="base0A" bold="true"/>
+  <style name="line-numbers"                background="base00" foreground="grey_fg"/>
+  <style name="draw-spaces"                 foreground="grey"/>
+  <style name="background-pattern"          background="base01"/>
+  <style name="map-overlay"                 background="one_bg2"/>
+
+  <!-- Bracket Matching -->
+  <style name="bracket-match"               background="base0A" foreground="base00" bold="true"/>
+  <style name="bracket-mismatch"            background="base08" foreground="base00" bold="true"/>
+
+  <!-- Search Matching -->
+  <style name="search-match"                background="base03" foreground="base0A" bold="true"/>
+  <style name="quick-highlight-match"       background="one_bg3"/>
+
+  <!-- Comments -->
+  <style name="def:comment"                 foreground="grey_fg" italic="true"/>
+  <style name="def:shebang"                 foreground="grey_fg" italic="true"/>
+  <style name="def:doc-comment-element"     foreground="grey_fg2" bold="true"/>
+
+  <!-- Constants and Variables -->
+  <style name="def:constant"                foreground="base09"/>
+  <style name="def:string"                  foreground="base0B"/>
+  <style name="def:special-char"            foreground="base0C"/>
+  <style name="def:special-constant"        foreground="base09" bold="true"/>
+  <style name="def:boolean"                 foreground="base09"/>
+  <style name="def:number"                  foreground="base09"/>
+  <style name="def:floating-point"          foreground="base09"/>
+  <style name="def:keyword"                 foreground="base08" bold="true"/>
+  <style name="def:builtin"                 foreground="base0D"/>
+  <style name="def:variable"                foreground="base05"/>
+
+  <!-- Identifiers -->
+  <style name="def:identifier"              foreground="base08"/>
+
+  <!-- Statements -->
+  <style name="def:statement"               foreground="base08" bold="true"/>
+
+  <!-- Types -->
+  <style name="def:type"                    foreground="base0A"/>
+
+  <!-- Functions -->
+  <style name="def:function"                foreground="base0D"/>
+
+  <!-- Markup -->
+  <style name="def:emphasis"                italic="true"/>
+  <style name="def:strong-emphasis"         foreground="base05" bold="true"/>
+  <style name="def:inline-code"             foreground="base0C"/>
+  <style name="def:insertion"               underline="single"/>
+  <style name="def:deletion"                strikethrough="true"/>
+  <style name="def:link-text"               foreground="base0D"/>
+  <style name="def:link-symbol"             foreground="base0C" bold="true"/>
+  <style name="def:link-destination"        foreground="base0D" italic="true" underline="single"/>
+  <style name="def:heading"                 foreground="base0B" bold="true"/>
+  <style name="def:thematic-break"          foreground="grey_fg" bold="true"/>
+  <style name="def:preformatted-section"    foreground="base0C"/>
+  <style name="def:list-marker"             foreground="base08" bold="true"/>
+
+  <!-- Others -->
+  <style name="def:error"                   foreground="base00" background="base08" bold="true"/>
+  <style name="def:warning"                 foreground="base00" background="base09" bold="true"/>
+  <style name="def:note"                    foreground="base0A" bold="true"/>
+  <style name="def:net-address-in-comment"  foreground="base0D" italic="false" underline="single"/>
+  <style name="def:preprocessor"            foreground="base0A"/>
+
+  <!-- Language specific -->
+  <style name="c:preprocessor"              foreground="base0A"/>
+  <style name="c:included-file"             foreground="base0B"/>
+  <style name="c:keyword"                   foreground="base08" bold="true"/>
+  <style name="c:type"                      foreground="base0A"/>
+  <style name="c:storage-class"             foreground="base08" bold="true"/>
+
+  <style name="diff:added-line"             foreground="green"/>
+  <style name="diff:removed-line"           foreground="red"/>
+  <style name="diff:changed-line"           foreground="blue"/>
+  <style name="diff:diff-file"              foreground="base0D" bold="true"/>
+  <style name="diff:location"               foreground="base0A"/>
+
+  <style name="xml:attribute-name"          foreground="base0A"/>
+  <style name="xml:element-name"            foreground="base08"/>
+  <style name="xml:attribute-value"         foreground="base0B"/>
+
+  <style name="js:template-literal"         foreground="base0B"/>
+  <style name="js:built-in-constructor"     foreground="base0D"/>
+
+</style-scheme>

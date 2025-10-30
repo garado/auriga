@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<style-scheme id="warning" name="LasWawas" version="1.0">
+  <!-- Terminal colors -->
+  <color name="background"                  value="#0C0E0F" />
+  <color name="foreground"                  value="#EDEFF0" />
+  <color name="cursor"                      value="#1F2122" />
+  <color name="cursor_text"                 value="#F2F4F5" />
+
+  <!-- ANSI colors -->
+  <color name="color0"                      value="#0C0E0F" />
+  <color name="color1"                      value="#F26E74" />
+  <color name="color2"                      value="#82C29C" />
+  <color name="color3"                      value="#E79881" />
+  <color name="color4"                      value="#709AD2" />
+  <color name="color5"                      value="#C58CEC" />
+  <color name="color6"                      value="#6791C9" />
+  <color name="color7"                      value="#EDEFF0" />
+  <color name="color8"                      value="#1F2122" />
+  <color name="color9"                      value="#F26E74" />
+  <color name="color10"                     value="#82C29C" />
+  <color name="color11"                     value="#E79881" />
+  <color name="color12"                     value="#709AD2" />
+  <color name="color13"                     value="#C58CEC" />
+  <color name="color14"                     value="#6791C9" />
+  <color name="color15"                     value="#E4E6E7" />
+  <color name="color16"                     value="#E8646A" />
+
+  <!-- Semantic color mapping -->
+  <color name="red"                         value="#F26E74" />
+  <color name="green"                       value="#82C29C" />
+  <color name="orange"                      value="#E79881" />
+  <color name="blue"                        value="#709AD2" />
+  <color name="purple"                      value="#C58CEC" />
+  <color name="cyan"                        value="#6791C9" />
+  <color name="grey"                        value="#1F2122" />
+  <color name="light_grey"                  value="#E4E6E7" />
+
+  <!-- UI colors -->
+  <color name="one_bg"                      value="#151719" />
+  <color name="one_bg2"                     value="#1F2122" />
+  <color name="one_bg3"                     value="#292B2D" />
+
+  <!-- Global Settings -->
+  <style name="text"                        background="background" foreground="foreground"/>
+  <style name="selection"                   background="one_bg3" foreground="cursor_text"/>
+  <style name="cursor"                      foreground="cursor_text" background="cursor"/>
+  <style name="current-line"                background="one_bg"/>
+  <style name="current-line-number"         background="one_bg" foreground="orange" bold="true"/>
+  <style name="line-numbers"                background="background" foreground="grey"/>
+  <style name="draw-spaces"                 foreground="grey"/>
+  <style name="background-pattern"          background="one_bg"/>
+  <style name="map-overlay"                 background="one_bg2"/>
+
+  <!-- Bracket Matching -->
+  <style name="bracket-match"               background="orange" foreground="background" bold="true"/>
+  <style name="bracket-mismatch"            background="red" foreground="background" bold="true"/>
+
+  <!-- Search Matching -->
+  <style name="search-match"                background="one_bg3" foreground="orange" bold="true"/>
+  <style name="quick-highlight-match"       background="one_bg2"/>
+
+  <!-- Comments -->
+  <style name="def:comment"                 foreground="grey" italic="true"/>
+  <style name="def:shebang"                 foreground="grey" italic="true"/>
+  <style name="def:doc-comment-element"     foreground="cyan" bold="true"/>
+
+  <!-- Constants and Variables -->
+  <style name="def:constant"                foreground="orange"/>
+  <style name="def:string"                  foreground="green"/>
+  <style name="def:special-char"            foreground="cyan"/>
+  <style name="def:special-constant"        foreground="orange" bold="true"/>
+  <style name="def:boolean"                 foreground="orange"/>
+  <style name="def:number"                  foreground="orange"/>
+  <style name="def:floating-point"          foreground="orange"/>
+  <style name="def:keyword"                 foreground="red" bold="true"/>
+  <style name="def:builtin"                 foreground="blue"/>
+  <style name="def:variable"                foreground="foreground"/>
+
+  <!-- Identifiers -->
+  <style name="def:identifier"              foreground="red"/>
+
+  <!-- Statements -->
+  <style name="def:statement"               foreground="red" bold="true"/>
+
+  <!-- Types -->
+  <style name="def:type"                    foreground="blue"/>
+
+  <!-- Functions -->
+  <style name="def:function"                foreground="blue"/>
+
+  <!-- Markup -->
+  <style name="def:emphasis"                italic="true"/>
+  <style name="def:strong-emphasis"         foreground="foreground" bold="true"/>
+  <style name="def:inline-code"             foreground="cyan"/>
+  <style name="def:insertion"               underline="single"/>
+  <style name="def:deletion"                strikethrough="true"/>
+  <style name="def:link-text"               foreground="blue"/>
+  <style name="def:link-symbol"             foreground="cyan" bold="true"/>
+  <style name="def:link-destination"        foreground="blue" italic="true" underline="single"/>
+  <style name="def:heading"                 foreground="green" bold="true"/>
+  <style name="def:thematic-break"          foreground="grey" bold="true"/>
+  <style name="def:preformatted-section"    foreground="cyan"/>
+  <style name="def:list-marker"             foreground="red" bold="true"/>
+
+  <!-- Others -->
+  <style name="def:error"                   foreground="background" background="red" bold="true"/>
+  <style name="def:warning"                 foreground="background" background="orange" bold="true"/>
+  <style name="def:note"                    foreground="orange" bold="true"/>
+  <style name="def:net-address-in-comment"  foreground="blue" italic="false" underline="single"/>
+  <style name="def:preprocessor"            foreground="purple"/>
+
+  <!-- Language specific -->
+  <style name="c:preprocessor"              foreground="purple"/>
+  <style name="c:included-file"             foreground="green"/>
+  <style name="c:keyword"                   foreground="red" bold="true"/>
+  <style name="c:type"                      foreground="blue"/>
+  <style name="c:storage-class"             foreground="red" bold="true"/>
+
+  <style name="diff:added-line"             foreground="green"/>
+  <style name="diff:removed-line"           foreground="red"/>
+  <style name="diff:changed-line"           foreground="blue"/>
+  <style name="diff:diff-file"              foreground="blue" bold="true"/>
+  <style name="diff:location"               foreground="orange"/>
+
+  <style name="xml:attribute-name"          foreground="orange"/>
+  <style name="xml:element-name"            foreground="red"/>
+  <style name="xml:attribute-value"         foreground="green"/>
+
+  <style name="js:template-literal"         foreground="green"/>
+  <style name="js:built-in-constructor"     foreground="blue"/>
+
+</style-scheme>
