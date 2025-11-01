@@ -1,4 +1,6 @@
 /**
+ * █▀▄▀█ ▄▀█ █▀█ █▀   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █▀█ █░░ █░░ █▀▀ █▀█
+ * █░▀░█ █▀█ █▀▀ ▄█   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █▄█ █▄▄ █▄▄ ██▄ █▀▄
  */
 
 /*****************************************************************************
@@ -24,9 +26,6 @@ export enum MapsState {
   ITINERARY_DISPLAY, // Show details for a specific itinerary
 }
 
-/** All events that can affect the state machine controlling the UI for the maps tab */
-enum MapsEventType {}
-
 export interface MapsControllerInterface {
   currentOrigin: PlacePrediction | undefined;
   currentDestination: PlacePrediction | undefined;
@@ -48,6 +47,7 @@ export type ControllerKey = keyof Pick<
 @register({ GTypeName: "MapsController" })
 export default class MapsController extends GObject.Object {
   // Set up singleton --------------------------------------------------------
+
   static instance: MapsController;
 
   static get_default() {
@@ -70,10 +70,14 @@ export default class MapsController extends GObject.Object {
   }
 
   set currentOrigin(origin: PlacePrediction | undefined) {
+    print("setting current origin");
+
     this._currentOrigin = origin;
     this.bothEndpointsSelected =
       this._currentOrigin !== undefined &&
       this._currentDestination !== undefined;
+
+    this.calculateState();
     this.notify("current-origin");
   }
 
@@ -83,11 +87,17 @@ export default class MapsController extends GObject.Object {
     return this._currentDestination;
   }
 
-  set currentDestination(origin: PlacePrediction | undefined) {
-    this._currentDestination = origin;
+  set currentDestination(destination: PlacePrediction | undefined) {
+    if (this._currentDestination === destination) return;
+
+    print("setting current dest");
+
+    this._currentDestination = destination;
     this.bothEndpointsSelected =
       this._currentOrigin !== undefined &&
       this._currentDestination !== undefined;
+
+    this.calculateState();
     this.notify("current-destination");
   }
 
@@ -117,19 +127,37 @@ export default class MapsController extends GObject.Object {
   }
 
   set currentTripPlan(plan: TripPlanResponse | undefined) {
+    if (plan === this._currentTripPlan) return;
     this._currentTripPlan = plan;
-    this.calculate_state();
+    this.calculateState();
     this.notify("current-trip-plan");
   }
 
   /** The itinerary that the user is currently previewing.
    * Itineraries are previewed on hover. */
   @property(Object)
-  declare previewedItinerary: TripItinerary | undefined;
+  get previewedItinerary(): TripItinerary | undefined {
+    return this._previewedItinerary;
+  }
+
+  set previewedItinerary(itinerary: TripItinerary | undefined) {
+    if (itinerary === this._previewedItinerary) return;
+    this._previewedItinerary = itinerary;
+    this.notify("previewed-itinerary");
+  }
 
   /** The itinerary that is currently selected. */
   @property(Object)
-  declare selectedItinerary: TripItinerary | undefined;
+  get selectedItinerary(): TripItinerary | undefined {
+    return this._selectedItinerary;
+  }
+
+  set selectedItinerary(itinerary: TripItinerary | undefined) {
+    if (itinerary === this._selectedItinerary) return;
+    this._selectedItinerary = itinerary;
+    this.calculateState();
+    this.notify("selected-itinerary");
+  }
 
   /** The current state for the state machine controlling the UI for the maps tab */
   @property(Object)
@@ -140,6 +168,8 @@ export default class MapsController extends GObject.Object {
   private _currentTripPlan: TripPlanResponse | undefined;
   private _currentOrigin: PlacePrediction | undefined;
   private _currentDestination: PlacePrediction | undefined;
+  private _previewedItinerary: TripItinerary | undefined;
+  private _selectedItinerary: TripItinerary | undefined;
 
   // Private functions -------------------------------------------------------
   constructor() {
@@ -150,20 +180,37 @@ export default class MapsController extends GObject.Object {
     this.endpointSearchResults = [];
   }
 
-  /** YEEEEEHAW */
-  private calculate_state = () => {
+  private calculateState = () => {
+    const oldState = this.currentState;
+
     switch (this.currentState) {
-      case MapsState.ENDPOINTS_SELECT: {
-        if (this.currentTripPlan !== undefined) {
-          this.currentState = MapsState.ITINERARY_SELECT;
+      case MapsState.ENDPOINTS_SELECT:
+        {
+          if (this.currentTripPlan !== undefined) {
+            this.currentState = MapsState.ITINERARY_SELECT;
+          }
         }
-      }
+        break;
 
-      case MapsState.ITINERARY_SELECT: {
-      }
+      case MapsState.ITINERARY_SELECT:
+        {
+          if (this.bothEndpointsSelected === false) {
+            this.currentState = MapsState.ENDPOINTS_SELECT;
+          } else if (this.selectedItinerary !== undefined) {
+            this.currentState = MapsState.ITINERARY_DISPLAY;
+          }
+        }
+        break;
 
-      case MapsState.ITINERARY_DISPLAY: {
-      }
+      case MapsState.ITINERARY_DISPLAY:
+        {
+          if (this.bothEndpointsSelected === false) {
+            this.currentState = MapsState.ENDPOINTS_SELECT;
+          } else if (this.selectedItinerary === undefined) {
+            this.currentState = MapsState.ITINERARY_SELECT;
+          }
+        }
+        break;
 
       default:
         break;

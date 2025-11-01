@@ -1,11 +1,14 @@
 /**
- * ▀█▀ █▀█ █ █▀█   █ ▀█▀ █ █▄░█ █▀▀ █▀█ ▄▀█ █▀█ █▄█   █▀ █▀▀ █░░ █▀▀ █▀▀ ▀█▀ █ █▀█ █▄░█
- * ░█░ █▀▄ █ █▀▀   █ ░█░ █ █░▀█ ██▄ █▀▄ █▀█ █▀▄ ░█░   ▄█ ██▄ █▄▄ ██▄ █▄▄ ░█░ █ █▄█ █░▀█
+ * █ ▀█▀ █ █▄░█ █▀▀ █▀█ ▄▀█ █▀█ █▄█   █▀█ █▀█ █▀▀ █░█ █ █▀▀ █░█░█
+ * █ ░█░ █ █░▀█ ██▄ █▀▄ █▀█ █▀▄ ░█░   █▀▀ █▀▄ ██▄ ▀▄▀ █ ██▄ ▀▄▀▄▀
  *
  * After selecting an origin/destination, the Maps tab will provide the user with different
  * itineraries to select from.
  *
- * This file implements the trip itinerary overview.
+ * This file implements the trip itinerary preview, which includes:
+ * - Trip duration
+ * - Start/end time
+ * - All legs of trip and how long they take (transit, walking, etc)
  */
 
 /*****************************************************************************
@@ -15,8 +18,8 @@
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Mode, PlanLeg, TripItinerary } from "@/services/Transit";
 import { epochToDuration, epochToHHMM } from "@/utils/Time";
-import { previewedItinerary, selectedItinerary } from "../../StateManagement";
 import BetterFlowBox from "@/views/components/BetterFlowBox";
+import MapsController from "../../../controller";
 
 /*****************************************************************************
  * Helpers
@@ -150,7 +153,9 @@ const Separator = () =>
     label: ">",
   });
 
-export const TripResult = (itinerary: TripItinerary) => {
+export const ItineraryPreview = (itinerary: TripItinerary) => {
+  const controller = MapsController.get_default();
+
   const childrenWithSeparators: Gtk.Widget[] = [];
   itinerary.legs.forEach((leg, index) => {
     childrenWithSeparators.push(modeHandlers[leg.mode as Mode](leg));
@@ -219,13 +224,13 @@ export const TripResult = (itinerary: TripItinerary) => {
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     hexpand: true,
     onHoverEnter: () => {
-      if (previewedItinerary.get() !== itinerary) {
-        previewedItinerary.set(itinerary);
+      if (controller.previewedItinerary !== itinerary) {
+        controller.previewedItinerary = itinerary;
       }
     },
     onButtonPressed: () => {
-      if (selectedItinerary.get() !== itinerary) {
-        selectedItinerary.set(itinerary);
+      if (controller.selectedItinerary !== itinerary) {
+        controller.selectedItinerary = itinerary;
       }
     },
   });

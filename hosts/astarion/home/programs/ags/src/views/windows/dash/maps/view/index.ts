@@ -3,10 +3,11 @@
  *****************************************************************************/
 
 import { Widget } from "astal/gtk4";
-import { MapWidget } from "@/views/components/Map";
+import MapWidget from "./Map.ts";
 import Sidebar from "./sidebar";
 import { setupKeybinds } from "@/utils/KeybindHandler";
 import MapsController from "../controller";
+import Transit from "@/services/Transit";
 
 /*****************************************************************************
  * Module-level variables
@@ -24,11 +25,7 @@ const KB_SHORTCUTS = {
 
 export default () => {
   const controller = MapsController.get_default();
-
-  const map = new MapWidget({
-    zoom: 12,
-    style: "dark",
-  });
+  const map = MapWidget();
 
   // Overlay a semi-transparent box on top of the map to apply a theme-based tint
   const mapContainer = Widget.Overlay({

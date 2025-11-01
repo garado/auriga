@@ -1,26 +1,27 @@
 /*****************************************************************************
- *
+ * Imports
  *****************************************************************************/
 
 import { Widget } from "astal/gtk4";
-import MapsController, { MapsState } from "../../../controller";
 import { bind } from "astal";
+import { ItineraryPreview } from "../components/ItineraryPreview";
+import MapsController, { MapsState } from "../../../controller";
 
 /*****************************************************************************
- *
- *****************************************************************************/
-
-const controller = MapsController.get_default();
-
-/*****************************************************************************
- *
+ * Widget definition
  *****************************************************************************/
 
 export const itinerarySelectView = () => {
+  const controller = MapsController.get_default();
+
   return Widget.Box({
+    cssClasses: ["section-content"],
+    vertical: true,
     visible: bind(controller, "currentState").as(
       (state) => state === MapsState.ITINERARY_SELECT,
     ),
-    children: [Widget.Label({ label: "itinerary select" })],
+    children: bind(controller, "currentTripPlan").as(
+      (tripPlan) => tripPlan?.plan.itineraries.map(ItineraryPreview) ?? [],
+    ),
   });
 };

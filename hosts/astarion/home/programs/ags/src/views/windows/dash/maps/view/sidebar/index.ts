@@ -20,7 +20,6 @@ import { itinerarySelectView } from "./states/ItinerarySelect";
 import { itineraryDisplayView } from "./states/ItineraryDisplay";
 import { SearchBox } from "./components/SearchBox";
 import { Decoration } from "./components/Decoration";
-import control from "@/views/windows/control";
 import Transit from "@/services/Transit";
 
 /*****************************************************************************

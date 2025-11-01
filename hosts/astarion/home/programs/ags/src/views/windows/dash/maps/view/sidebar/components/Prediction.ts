@@ -9,9 +9,9 @@ import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import MapsController, { ControllerKey } from "../../../controller";
 
-const controller = MapsController.get_default();
-
 export const Prediction = (prediction: PlacePrediction) => {
+  const controller = MapsController.get_default();
+
   const icon = Widget.Image({
     iconName: "map-pin-symbolic",
   });
@@ -49,11 +49,11 @@ export const Prediction = (prediction: PlacePrediction) => {
     children: [icon, info],
   });
 
-  // const setPreviewedLocation = () => {
-  //   if (prediction !== previewedLocation.get()) {
-  //     previewedLocation.set(prediction);
-  //   }
-  // };
+  const setPreviewedLocation = () => {
+    if (prediction !== controller.previewedLocation) {
+      controller.previewedLocation = prediction;
+    }
+  };
 
   return Widget.Button({
     child: predictionWidget,
@@ -65,7 +65,7 @@ export const Prediction = (prediction: PlacePrediction) => {
       const endpoint: ControllerKey = controller.endpointBeingModified;
       controller[endpoint] = prediction;
     },
-    // onFocusEnter: setPreviewedLocation,
-    // onHoverEnter: setPreviewedLocation,
+    onFocusEnter: setPreviewedLocation,
+    onHoverEnter: setPreviewedLocation,
   });
 };

@@ -12,10 +12,7 @@
 import { Widget } from "astal/gtk4";
 
 import MapsController, { ControllerKey } from "../../../controller";
-import LocationAutocomplete, {
-  PlacePrediction,
-} from "@/services/LocationAutocomplete";
-import control from "@/views/windows/control";
+import LocationAutocomplete from "@/services/LocationAutocomplete";
 
 /*****************************************************************************
  * Module-level variables
@@ -37,36 +34,43 @@ export const SearchBox = (
   return Widget.Entry({
     placeholderText: placeholderText,
     hexpand: true,
-    onKeyPressed(self, _keyval, _keycode, _state) {
-      // When the user modifies the search, set currentOrigin/currentDestination to undefined
-      if (
-        controller[targetProp] !== undefined &&
-        self.text !== controller[targetProp].displayPlace
-      ) {
-        controller[targetProp] = undefined;
-      }
-    },
-    onActivate: async (self) => {
-      controller.endpointBeingModified = targetProp;
+    setup: (self) => {
+      // When the search text is modified, set currentOrigin/currentDestination to undefined
+      const changedSignalHandler = self.connect("changed", () => {
+        if (
+          controller[targetProp] !== undefined &&
+          self.text !== controller[targetProp].displayPlace
+        ) {
+          controller[targetProp] = undefined;
+        }
+      });
 
       // Call locationIQ API to autocomplete location
-      try {
-        controller.endpointSearchResults =
-          await LocationAutocomplete.get_default().searchNear(self.text);
-      } catch (error) {
-        console.log(error);
-      }
-    },
-    setup: (self) => {
+      self.connect("activate", async () => {
+        controller.endpointBeingModified = targetProp;
+
+        try {
+          controller.endpointSearchResults =
+            await LocationAutocomplete.get_default().searchNear(self.text);
+        } catch (error) {
+          console.log(error);
+        }
+      });
+
       controller.connect(
         targetProp == "currentOrigin"
           ? "notify::current-origin"
           : "notify::current-destination",
         () => {
+          // Block so that self.text = ...displayPlace doesn't set currentOrigin/Dest to undefined
+          self.block_signal_handler(changedSignalHandler);
+
           const selectionPrediction = controller[targetProp];
           if (selectionPrediction !== undefined) {
             self.text = selectionPrediction.displayPlace ?? "";
           }
+
+          self.unblock_signal_handler(changedSignalHandler);
         },
       );
     },
