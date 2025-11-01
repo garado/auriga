@@ -8,20 +8,146 @@
  * - select a trip itinerary and view its details
  */
 
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { bind } from "astal";
-import { astalify, Gtk, Widget } from "astal/gtk4";
+import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
 import MapsController from "../../controller";
 import { endpointSelectView } from "./states/EndpointsSelect";
 import { itinerarySelectView } from "./states/ItinerarySelect";
 import { itineraryDisplayView } from "./states/ItineraryDisplay";
+import { SearchBox } from "./components/SearchBox";
+import { Decoration } from "./components/Decoration";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
 
 const ScrolledWindow = astalify(Gtk.ScrolledWindow);
 
 const controller = MapsController.get_default();
 
+const Frame = astalify(Gtk.Frame);
+
+const CSS_CLASSES = {
+  ORIGIN_DEST_SWAP: "origin-dest-swap",
+} as const;
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
+
+/**
+ *
+ */
+const SidebarTop = () => {
+  const originContainer = Frame({
+    cssClasses: ["search"],
+    hexpand: true,
+    setup: (self) => {
+      self.set_child(SearchBox("currentOrigin"));
+
+      controller.connect("notify::sidebar-reveal-state", (revealed) => {
+        if (revealed) self.child.grab_focus();
+      });
+    },
+  });
+
+  const destinationContainer = Frame({
+    cssClasses: ["search"],
+    hexpand: true,
+    setup: (self) => {
+      self.set_child(SearchBox("currentDestination"));
+
+      controller.connect("notify::current-origin", (origin) => {
+        if (origin !== undefined) self.child.grab_focus();
+      });
+    },
+  });
+
+  // Button to swap origin <-> destination contents
+  const swapOriginDestinationBtn = Widget.Button({
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    valign: Gtk.Align.CENTER,
+    cssClasses: [CSS_CLASSES.ORIGIN_DEST_SWAP],
+    iconName: "arrow-down-up-symbolic",
+    onButtonPressed: () => {
+      const oldOrigin = controller.currentOrigin;
+      const oldDestination = controller.currentDestination;
+      controller.currentOrigin = oldDestination;
+      controller.currentDestination = oldOrigin;
+    },
+  });
+
+  // Button to trigger Transit API call to start trip
+  const fetchTripPlanBtn = Widget.Button({
+    cssClasses: ["plan-trip-btn"],
+    hexpand: true,
+    cursor: Gdk.Cursor.new_from_name("pointer", null),
+    child: Widget.Label({
+      label: "Plan trip",
+    }),
+    onButtonPressed: async () => {
+      // if (origin.get() === undefined || destination.get() === undefined) return;
+      //
+      // try {
+      //   const _tripPlan = await transit!.planTrip(
+      //     origin.get()!.lat,
+      //     origin.get()!.lon,
+      //     destination.get()!.lat,
+      //     destination.get()!.lon,
+      //   );
+      //
+      //   tripPlan.set(_tripPlan);
+      // } catch (error) {
+      //   console.error(error);
+      // }
+    },
+  });
+
+  return Widget.Box({
+    cssClasses: ["top-section"],
+    vexpand: false,
+    hexpand: true,
+    vertical: true,
+    children: [
+      Widget.Label({
+        cssClasses: ["trip-planning-header"],
+        label: "Where to?",
+      }),
+      Widget.Box({
+        cssClasses: ["top-section"],
+        vertical: false,
+        spacing: 16,
+        children: [
+          Decoration(),
+          Widget.Box({
+            vertical: true,
+            hexpand: true,
+            spacing: 8,
+            children: [originContainer, destinationContainer],
+          }),
+          swapOriginDestinationBtn,
+        ],
+      }),
+      Widget.Revealer({
+        child: fetchTripPlanBtn,
+        revealChild: bind(controller, "bothEndpointsSelected"),
+      }),
+    ],
+  });
+};
+
 export default () => {
   const sidebarContent = Widget.Box({
+    vertical: true,
     children: [
+      SidebarTop(),
+
+      // Only one view is displayed at any given time
+      // The visibility of each view depends on the current MapsState
       endpointSelectView(),
       itinerarySelectView(),
       itineraryDisplayView(),

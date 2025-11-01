@@ -27,6 +27,16 @@ export enum MapsState {
 /** All events that can affect the state machine controlling the UI for the maps tab */
 enum MapsEventType {}
 
+export interface MapsControllerInterface {
+  currentOrigin: PlacePrediction | undefined;
+  currentDestination: PlacePrediction | undefined;
+}
+
+export type ControllerKey = keyof Pick<
+  MapsController,
+  "currentOrigin" | "currentDestination"
+>;
+
 /*****************************************************************************
  * Helper functions
  *****************************************************************************/
@@ -55,15 +65,43 @@ export default class MapsController extends GObject.Object {
 
   /** Selected origin for trip */
   @property(Object)
-  declare currentOrigin: PlacePrediction | undefined;
+  get currentOrigin(): PlacePrediction | undefined {
+    return this._currentOrigin;
+  }
+
+  set currentOrigin(origin: PlacePrediction | undefined) {
+    this._currentOrigin = origin;
+    this.bothEndpointsSelected =
+      this._currentOrigin !== undefined &&
+      this._currentDestination !== undefined;
+    this.notify("current-origin");
+  }
 
   /** Selected destination for trip */
   @property(Object)
-  declare currentDestination: PlacePrediction | undefined;
+  get currentDestination(): PlacePrediction | undefined {
+    return this._currentDestination;
+  }
 
-  /** Are both the origin and destination selected */
+  set currentDestination(origin: PlacePrediction | undefined) {
+    this._currentDestination = origin;
+    this.bothEndpointsSelected =
+      this._currentOrigin !== undefined &&
+      this._currentDestination !== undefined;
+    this.notify("current-destination");
+  }
+
+  /** ugh */
+  @property(String)
+  declare endpointBeingModified: ControllerKey;
+
+  /** ugh */
+  @property(Object)
+  declare endpointSearchResults: PlacePrediction[];
+
+  /** Are both the origin and destination selected? */
   @property(Boolean)
-  declare endpointsSelected: boolean;
+  declare bothEndpointsSelected: boolean;
 
   /**
    * The PlacePrediction to preview.
@@ -91,11 +129,16 @@ export default class MapsController extends GObject.Object {
 
   // Private variables -------------------------------------------------------
 
+  private _currentOrigin: PlacePrediction | undefined;
+  private _currentDestination: PlacePrediction | undefined;
+
   // Private functions -------------------------------------------------------
   constructor() {
     super();
+    this.endpointBeingModified = "currentOrigin";
     this.currentState = MapsState.ENDPOINTS_SELECT;
     this.sidebarRevealState = false;
+    this.endpointSearchResults = [];
   }
 
   private run_state_machine = () => {};

@@ -9,55 +9,66 @@
  * Imports
  *****************************************************************************/
 
-// import { Gdk, Widget } from "astal/gtk4";
-// import { Variable } from "astal";
+import { Widget } from "astal/gtk4";
 
-// import { Prediction } from "./Prediction";
-// import LocationAutocomplete, {
-//   PlacePrediction,
-// } from "@/services/LocationAutocomplete";
-// import { sidebarContent, tripPlan } from "../../StateManagement";
+import MapsController, { ControllerKey } from "../../../controller";
+import LocationAutocomplete, {
+  PlacePrediction,
+} from "@/services/LocationAutocomplete";
+import control from "@/views/windows/control";
+
+/*****************************************************************************
+ * Module-level variables
+ *****************************************************************************/
+
+const controller = MapsController.get_default();
 
 /*****************************************************************************
  * Widget definition
  *****************************************************************************/
 
-// export const SearchBox = (props: {
-//   /** Placeholder text for the search box */
-//   placeholder: string;
-//
-//   /** The PlacePrediction that this search box is for (either Origin or Destination) */
-//   selectionTarget: Variable<PlacePrediction | undefined>;
-// }) => {
-//   return Widget.Entry({
-//     placeholderText: props.placeholder,
-//     onNotifyText: (self) => {
-//       if (self.text !== props.selectionTarget.get()?.displayPlace) {
-//         props.selectionTarget.set(undefined);
-//       }
-//     },
-//     onActivate: async (self) => {
-//       // Call locationIQ API to autocomplete location
-//       try {
-//         const responses = await LocationAutocomplete.get_default().searchNear(
-//           self.text,
-//         );
-//         sidebarContent.children = responses.map((resp) => {
-//           tripPlan.set(undefined);
-//           return Prediction(resp, props.selectionTarget);
-//         });
-//       } catch (error) {
-//         console.log(error);
-//       }
-//     },
-//     setup: (self) => {
-//       props.selectionTarget.subscribe(
-//         (selectionPrediction: PlacePrediction | undefined) => {
-//           if (selectionPrediction !== undefined) {
-//             self.text = selectionPrediction.displayPlace ?? "";
-//           }
-//         },
-//       );
-//     },
-//   });
-// };
+export const SearchBox = (
+  /** The controller property that this search box is for ("currentOrigin" or "currentDestination") */
+  targetProp: ControllerKey,
+) => {
+  const placeholderText =
+    targetProp === "currentOrigin" ? "Select origin" : "Select destination";
+
+  return Widget.Entry({
+    placeholderText: placeholderText,
+    hexpand: true,
+    onKeyPressed(self, _keyval, _keycode, _state) {
+      // When the user modifies the search, set currentOrigin/currentDestination to undefined
+      if (
+        controller[targetProp] !== undefined &&
+        self.text !== controller[targetProp].displayPlace
+      ) {
+        controller[targetProp] = undefined;
+      }
+    },
+    onActivate: async (self) => {
+      controller.endpointBeingModified = targetProp;
+
+      // Call locationIQ API to autocomplete location
+      try {
+        controller.endpointSearchResults =
+          await LocationAutocomplete.get_default().searchNear(self.text);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    setup: (self) => {
+      controller.connect(
+        targetProp == "currentOrigin"
+          ? "notify::current-origin"
+          : "notify::current-destination",
+        () => {
+          const selectionPrediction = controller[targetProp];
+          if (selectionPrediction !== undefined) {
+            self.text = selectionPrediction.displayPlace ?? "";
+          }
+        },
+      );
+    },
+  });
+};
