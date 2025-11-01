@@ -20,10 +20,14 @@ import { itinerarySelectView } from "./states/ItinerarySelect";
 import { itineraryDisplayView } from "./states/ItineraryDisplay";
 import { SearchBox } from "./components/SearchBox";
 import { Decoration } from "./components/Decoration";
+import control from "@/views/windows/control";
+import Transit from "@/services/Transit";
 
 /*****************************************************************************
  * Module-level variables
  *****************************************************************************/
+
+let transit: InstanceType<typeof Transit> | undefined = undefined;
 
 const ScrolledWindow = astalify(Gtk.ScrolledWindow);
 
@@ -81,8 +85,8 @@ const SidebarTop = () => {
     },
   });
 
-  // Button to trigger Transit API call to start trip
-  const fetchTripPlanBtn = Widget.Button({
+  // Button to trigger Transit API call to get trip information
+  const startTripPlanBtn = Widget.Button({
     cssClasses: ["plan-trip-btn"],
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
@@ -90,20 +94,21 @@ const SidebarTop = () => {
       label: "Plan trip",
     }),
     onButtonPressed: async () => {
-      // if (origin.get() === undefined || destination.get() === undefined) return;
-      //
-      // try {
-      //   const _tripPlan = await transit!.planTrip(
-      //     origin.get()!.lat,
-      //     origin.get()!.lon,
-      //     destination.get()!.lat,
-      //     destination.get()!.lon,
-      //   );
-      //
-      //   tripPlan.set(_tripPlan);
-      // } catch (error) {
-      //   console.error(error);
-      // }
+      if (controller.bothEndpointsSelected === false) return;
+
+      const origin = controller.currentOrigin!;
+      const destination = controller.currentDestination!;
+
+      try {
+        controller.currentTripPlan = await transit!.planTrip(
+          origin.lat,
+          origin.lon,
+          destination.lat,
+          destination.lon,
+        );
+      } catch (error) {
+        console.error(error);
+      }
     },
   });
 
@@ -133,7 +138,7 @@ const SidebarTop = () => {
         ],
       }),
       Widget.Revealer({
-        child: fetchTripPlanBtn,
+        child: startTripPlanBtn,
         revealChild: bind(controller, "bothEndpointsSelected"),
       }),
     ],
@@ -141,6 +146,8 @@ const SidebarTop = () => {
 };
 
 export default () => {
+  transit = Transit.get_default();
+
   const sidebarContent = Widget.Box({
     vertical: true,
     children: [

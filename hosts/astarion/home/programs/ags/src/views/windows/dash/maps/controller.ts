@@ -112,7 +112,15 @@ export default class MapsController extends GObject.Object {
 
   /** The trip plan that the user has selected. */
   @property(Object)
-  declare currentTripPlan: TripPlanResponse | undefined;
+  get currentTripPlan(): TripPlanResponse | undefined {
+    return this._currentTripPlan;
+  }
+
+  set currentTripPlan(plan: TripPlanResponse | undefined) {
+    this._currentTripPlan = plan;
+    this.calculate_state();
+    this.notify("current-trip-plan");
+  }
 
   /** The itinerary that the user is currently previewing.
    * Itineraries are previewed on hover. */
@@ -129,6 +137,7 @@ export default class MapsController extends GObject.Object {
 
   // Private variables -------------------------------------------------------
 
+  private _currentTripPlan: TripPlanResponse | undefined;
   private _currentOrigin: PlacePrediction | undefined;
   private _currentDestination: PlacePrediction | undefined;
 
@@ -141,10 +150,25 @@ export default class MapsController extends GObject.Object {
     this.endpointSearchResults = [];
   }
 
-  private run_state_machine = () => {};
+  /** YEEEEEHAW */
+  private calculate_state = () => {
+    switch (this.currentState) {
+      case MapsState.ENDPOINTS_SELECT: {
+        if (this.currentTripPlan !== undefined) {
+          this.currentState = MapsState.ITINERARY_SELECT;
+        }
+      }
 
-  /** */
-  private state_idle = () => {};
+      case MapsState.ITINERARY_SELECT: {
+      }
+
+      case MapsState.ITINERARY_DISPLAY: {
+      }
+
+      default:
+        break;
+    }
+  };
 
   // Public functions --------------------------------------------------------
 }
