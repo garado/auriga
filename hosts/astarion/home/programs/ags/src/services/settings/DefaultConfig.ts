@@ -12,7 +12,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
       yorha: {
         displayName: "YoRHa",
         nvim: "mountain",
-        kitty: "Mountain Fuji",
+        kitty: "Yorha",
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/yorha.png`,
         lockscreen: `${SRC}/assets/defaults/theme/lockscreen/mountain.jpg`,
         preview: `${SRC}/assets/defaults/theme/preview/mountain.png`,
