@@ -14,8 +14,8 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
         nvim: "yorha",
         kitty: "Yorha",
         wallpaper: `${SRC}/assets/defaults/theme/wallpapers/yorha.png`,
-        lockscreen: `${SRC}/assets/defaults/theme/lockscreen/mountain.jpg`,
-        preview: `${SRC}/assets/defaults/theme/preview/mountain.png`,
+        lockscreen: `${SRC}/assets/defaults/theme/lockscreen/yorha.png`,
+        preview: `${SRC}/assets/defaults/theme/preview/yorha.png`,
       },
       mountain: {
         displayName: "Mountain",
