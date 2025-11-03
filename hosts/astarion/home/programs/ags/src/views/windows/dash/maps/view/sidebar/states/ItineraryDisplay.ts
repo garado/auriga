@@ -9,6 +9,7 @@ import {
   Mode,
   PlanLeg,
   PlanLeg_Transit,
+  Stop,
   TripItinerary,
 } from "@/services/Transit";
 import MapsController, { MapsState } from "../../../controller";
@@ -116,22 +117,35 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
    * the selected transit line. (The Transit API provides this information. Cool!)
    */
   const container = Widget.Box({
-    cssClasses: [`route-${planLeg.routeShortName}` || "", "transit-leg"],
+    cssClasses: ["transit-leg"],
     vertical: true,
     halign: Gtk.Align.FILL,
     children: [routeSummary, startStop, endStop],
     setup: (self) => {
-      // Custom CSS provider needed to modify styles at runtime
+      // Set up custom CSS provider for modifying styles at runtime
       const cssProvider = new Gtk.CssProvider();
-      const styleContext = self.get_style_context();
-      styleContext.add_provider(cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+      const className = `route-${planLeg.routeShortName}`;
 
-      cssProvider.load_from_string(`
-        .route-${planLeg.routeShortName} {
+      const routeCss = `
+        .${className} {
           background-color: #${planLeg.routeColor};
+        }
+
+        .${className} label,
+        .${className} image {
           color: #${planLeg.routeTextColor};
         }
-      `);
+      `;
+
+      cssProvider.load_from_string(routeCss);
+
+      Gtk.StyleContext.add_provider_for_display(
+        self.get_display(),
+        cssProvider,
+        Gtk.STYLE_PROVIDER_PRIORITY_USER,
+      );
+
+      self.add_css_class(className);
     },
   });
 
@@ -367,9 +381,10 @@ export const itineraryDisplayView = () => {
       (state) => state === MapsState.ITINERARY_DISPLAY,
     ),
     cssClasses: ["section-content"],
-    children: bind(controller, "selectedItinerary").as((selectedItinerary) => {
-      if (selectedItinerary === undefined) return [];
-      return [DisplayView(selectedItinerary)];
-    }),
+    children: bind(controller, "selectedItinerary").as(
+      (selectedItinerary): Gtk.Widget[] => {
+        return selectedItinerary ? [DisplayView(selectedItinerary)!] : [];
+      },
+    ),
   });
 };
