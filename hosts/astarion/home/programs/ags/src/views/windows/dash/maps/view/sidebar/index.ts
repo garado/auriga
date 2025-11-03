@@ -12,9 +12,9 @@
  * Imports
  *****************************************************************************/
 
-import { bind } from "astal";
+import { bind, Variable } from "astal";
 import { astalify, Gdk, Gtk, Widget } from "astal/gtk4";
-import MapsController from "../../controller";
+import MapsController, { MapsState } from "../../controller";
 import { endpointSelectView } from "./states/EndpointsSelect";
 import { itinerarySelectView } from "./states/ItinerarySelect";
 import { itineraryDisplayView } from "./states/ItineraryDisplay";
@@ -37,6 +37,11 @@ const Frame = astalify(Gtk.Frame);
 const CSS_CLASSES = {
   ORIGIN_DEST_SWAP: "origin-dest-swap",
 } as const;
+
+const tripReadyToPlan = Variable.derive(
+  [bind(controller, "bothEndpointsSelected"), bind(controller, "currentState")],
+  (endpoints, state) => endpoints && state === MapsState.ENDPOINTS_SELECT,
+);
 
 /*****************************************************************************
  * Widget definition
@@ -114,9 +119,14 @@ const SidebarTop = () => {
     hexpand: true,
     vertical: true,
     children: [
-      Widget.Label({
-        cssClasses: ["trip-planning-header"],
-        label: "Where to?",
+      Widget.Revealer({
+        child: Widget.Label({
+          cssClasses: ["trip-planning-header"],
+          label: "Where to?",
+        }),
+        revealChild: bind(controller, "currentState").as(
+          (state) => state === MapsState.ENDPOINTS_SELECT,
+        ),
       }),
       Widget.Box({
         cssClasses: ["top-section"],
@@ -135,7 +145,7 @@ const SidebarTop = () => {
       }),
       Widget.Revealer({
         child: startTripPlanBtn,
-        revealChild: bind(controller, "bothEndpointsSelected"),
+        revealChild: bind(tripReadyToPlan),
       }),
     ],
   });

@@ -219,6 +219,7 @@ export default class MapsController extends GObject.Object {
     switch (newState) {
       case MapsState.ENDPOINTS_SELECT:
         {
+          this.currentTripPlan = undefined;
           this.endpointSearchResults = [];
         }
         break;
