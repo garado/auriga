@@ -79,6 +79,21 @@ export default () => {
     map.centerOnRoute(allCoordinates);
   });
 
+  // Update map when a location needs to be previewed
+  // (Happens in ENDPOINTS_SELECT)
+  controller.connect("notify::previewed-location", () => {
+    const location = controller.previewedLocation;
+    if (location === undefined) return;
+
+    map.clearMarkers();
+
+    const lat = Number(location.lat);
+    const lon = Number(location.lon);
+
+    map.addMarker(lat, lon, "map-pin-symbolic", 32);
+    map.centerOnRoute([{ lat: lat, lon: lon }]);
+  });
+
   // Update map widget when the controller state changes
   controller.connect("notify::current-state", () => {
     const state = controller.currentState;

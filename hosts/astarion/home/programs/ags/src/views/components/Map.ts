@@ -236,6 +236,11 @@ export const MapWidget = GObject.registerClass(
     centerOnRoute(coordinates: Array<{ lat: number; lon: number }>): void {
       if (coordinates.length === 0) return;
 
+      if (coordinates.length === 1) {
+        this.animateTo(coordinates[0].lat, coordinates[0].lon, 14, 1000);
+        return;
+      }
+
       let minLat = coordinates[0].lat;
       let maxLat = coordinates[0].lat;
       let minLon = coordinates[0].lon;
