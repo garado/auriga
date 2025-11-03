@@ -6,7 +6,7 @@ export default () => {
   const controller = MapsController.get_default();
 
   const map = new MapWidget({
-    zoom: 12,
+    zoom: 13,
     style: "dark",
   });
 
@@ -90,7 +90,7 @@ export default () => {
     const lat = Number(location.lat);
     const lon = Number(location.lon);
 
-    map.addMarker(lat, lon, "map-pin-symbolic", 32);
+    map.addMarker(lat, lon, "map-pin-symbolic", 48);
     map.centerOnRoute([{ lat: lat, lon: lon }]);
   });
 
