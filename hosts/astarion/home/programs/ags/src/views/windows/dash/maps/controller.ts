@@ -247,13 +247,7 @@ export default class MapsController extends GObject.Object {
   swapOriginDestination = () => {
     const oldOrigin = this.currentOrigin;
     const oldDestination = this.currentDestination;
-
-    this._currentOrigin = oldDestination;
-    this._currentDestination = oldOrigin;
-
-    this.currentState = MapsState.ENDPOINTS_SELECT;
-
-    this.notify("current-origin");
-    this.notify("current-destination");
+    this.currentOrigin = oldDestination;
+    this.currentDestination = oldOrigin;
   };
 }

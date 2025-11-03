@@ -71,6 +71,7 @@ export const SearchBox = (
             self.text = selectionPrediction.displayPlace ?? "";
             self.add_css_class("is-valid-endpoint");
           } else {
+            self.text = "";
             self.remove_css_class("is-valid-endpoint");
           }
 
