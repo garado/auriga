@@ -42,9 +42,9 @@ interface MapWidgetProps {
  *****************************************************************************/
 
 const MAP_STYLES: Record<MapStyle, string | null> = {
-  dark: "https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}{scale}.png",
+  dark: "http://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}{scale}.png",
   light:
-    "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}{scale}.png",
+    "http://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}{scale}.png",
   osm: null,
 };
 
@@ -202,14 +202,15 @@ export const MapWidget = GObject.registerClass(
       const tileDownloader = new Shumate.TileDownloader({
         urlTemplate: url,
         minZoomLevel: 0,
+        maxZoomLevel: 18,
       });
 
       const renderer = new Shumate.RasterRenderer({
-        id: "positron",
-        name: "Positron",
-        license: "CartoDB",
+        id: "cartodb-dark",
+        name: "CartoDB Dark",
+        license: "",
         dataSource: tileDownloader,
-        maxZoomLevel: 16,
+        maxZoomLevel: 18,
       });
 
       this.mapView.set_map_source(renderer);
