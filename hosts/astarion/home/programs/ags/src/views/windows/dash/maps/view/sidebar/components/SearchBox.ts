@@ -42,6 +42,7 @@ export const SearchBox = (
           self.text !== controller[targetProp].displayPlace
         ) {
           controller[targetProp] = undefined;
+          self.remove_css_class("is-valid-endpoint");
         }
       });
 
@@ -68,6 +69,9 @@ export const SearchBox = (
           const selectionPrediction = controller[targetProp];
           if (selectionPrediction !== undefined) {
             self.text = selectionPrediction.displayPlace ?? "";
+            self.add_css_class("is-valid-endpoint");
+          } else {
+            self.remove_css_class("is-valid-endpoint");
           }
 
           self.unblock_signal_handler(changedSignalHandler);
