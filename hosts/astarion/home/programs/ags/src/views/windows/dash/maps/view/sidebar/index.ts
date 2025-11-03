@@ -77,10 +77,7 @@ const SidebarTop = () => {
     cssClasses: [CSS_CLASSES.ORIGIN_DEST_SWAP],
     iconName: "arrow-down-up-symbolic",
     onButtonPressed: () => {
-      const oldOrigin = controller.currentOrigin;
-      const oldDestination = controller.currentDestination;
-      controller.currentOrigin = oldDestination;
-      controller.currentDestination = oldOrigin;
+      controller.swapOriginDestination();
     },
   });
 

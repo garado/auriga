@@ -70,8 +70,6 @@ export default class MapsController extends GObject.Object {
   }
 
   set currentOrigin(origin: PlacePrediction | undefined) {
-    print("setting current origin");
-
     this._currentOrigin = origin;
     this.bothEndpointsSelected =
       this._currentOrigin !== undefined &&
@@ -89,8 +87,6 @@ export default class MapsController extends GObject.Object {
 
   set currentDestination(destination: PlacePrediction | undefined) {
     if (this._currentDestination === destination) return;
-
-    print("setting current dest");
 
     this._currentDestination = destination;
     this.bothEndpointsSelected =
@@ -182,12 +178,13 @@ export default class MapsController extends GObject.Object {
 
   private calculateState = () => {
     const oldState = this.currentState;
+    let newState = oldState;
 
     switch (this.currentState) {
       case MapsState.ENDPOINTS_SELECT:
         {
           if (this.currentTripPlan !== undefined) {
-            this.currentState = MapsState.ITINERARY_SELECT;
+            newState = MapsState.ITINERARY_SELECT;
           }
         }
         break;
@@ -195,9 +192,9 @@ export default class MapsController extends GObject.Object {
       case MapsState.ITINERARY_SELECT:
         {
           if (this.bothEndpointsSelected === false) {
-            this.currentState = MapsState.ENDPOINTS_SELECT;
+            newState = MapsState.ENDPOINTS_SELECT;
           } else if (this.selectedItinerary !== undefined) {
-            this.currentState = MapsState.ITINERARY_DISPLAY;
+            newState = MapsState.ITINERARY_DISPLAY;
           }
         }
         break;
@@ -205,9 +202,9 @@ export default class MapsController extends GObject.Object {
       case MapsState.ITINERARY_DISPLAY:
         {
           if (this.bothEndpointsSelected === false) {
-            this.currentState = MapsState.ENDPOINTS_SELECT;
+            newState = MapsState.ENDPOINTS_SELECT;
           } else if (this.selectedItinerary === undefined) {
-            this.currentState = MapsState.ITINERARY_SELECT;
+            newState = MapsState.ITINERARY_SELECT;
           }
         }
         break;
@@ -215,7 +212,48 @@ export default class MapsController extends GObject.Object {
       default:
         break;
     }
+
+    if (oldState == newState) return;
+
+    // Initialization for entering a new state
+    switch (newState) {
+      case MapsState.ENDPOINTS_SELECT:
+        {
+          this.endpointSearchResults = [];
+        }
+        break;
+
+      case MapsState.ITINERARY_SELECT:
+        {
+          this.endpointSearchResults = [];
+        }
+        break;
+
+      case MapsState.ITINERARY_DISPLAY:
+        {
+          this.endpointSearchResults = [];
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    this.currentState = newState;
   };
 
   // Public functions --------------------------------------------------------
+
+  swapOriginDestination = () => {
+    const oldOrigin = this.currentOrigin;
+    const oldDestination = this.currentDestination;
+
+    this._currentOrigin = oldDestination;
+    this._currentDestination = oldOrigin;
+
+    this.currentState = MapsState.ENDPOINTS_SELECT;
+
+    this.notify("current-origin");
+    this.notify("current-destination");
+  };
 }

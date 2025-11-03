@@ -1,5 +1,6 @@
 import { MapWidget } from "@/views/components/Map";
-import MapsController from "../controller";
+import MapsController, { MapsState } from "../controller";
+import { Stop } from "@/services/Transit";
 
 export default () => {
   const controller = MapsController.get_default();
@@ -9,8 +10,14 @@ export default () => {
     style: "dark",
   });
 
+  // Update map on entering ENDPOINTS_SELECT state
+  const mapUpdate_endpointsSelect = () => {
+    map.clearRoutes();
+    map.clearMarkers();
+  };
+
   // Update map on entering ITINERARY_SELECT state
-  controller.connect("notify::current-trip-plan", () => {
+  const mapUpdate_itinerarySelect = () => {
     const tripPlan = controller.currentTripPlan;
     if (tripPlan === undefined) return;
 
@@ -28,15 +35,29 @@ export default () => {
     map.addMarker(coords[1].lat, coords[1].lon, "map-pin-symbolic");
 
     controller.previewedItinerary = tripPlan.plan.itineraries[0];
-  });
+  };
 
-  // Update map with itinerary preview
+  // Update map on entering ITINERARY_DISPLAY state
+  const mapUpdate_itineraryDisplay = () => {
+    const itinerary = controller.selectedItinerary;
+    if (itinerary === undefined) return;
+
+    // Focus map on starting point of trip
+    const startPoint = itinerary.legs[0].from;
+    map.animateTo(startPoint.lat, startPoint.lon, 12);
+  };
+
+  // Update map when an itinerary needs to be previewed
+  // (Happens in ITINERARY_SELECT)
   controller.connect("notify::previewed-itinerary", () => {
     const itinerary = controller.previewedItinerary;
     if (itinerary === undefined) return;
 
     map.clearRoutes();
 
+    const allCoordinates = [];
+
+    // Display individual legs of the trip
     for (let index = 0; index < itinerary.legs.length; index++) {
       const leg = itinerary.legs[index];
       const color = leg.routeColor ? `#${leg.routeColor}` : undefined;
@@ -56,17 +77,34 @@ export default () => {
       coordinates.push({ lat: leg.to.lat, lon: leg.to.lon });
 
       map.addRoute(coordinates, color);
+      allCoordinates.push(...coordinates);
     }
+
+    map.centerOnRoute(allCoordinates);
   });
 
-  // When itinerary is selected, show detailed itinerary on map
-  controller.connect("notify::selected-itinerary", () => {
-    const itinerary = controller.selectedItinerary;
-    if (itinerary === undefined) return;
+  // Update map widget when the controller state changes
+  controller.connect("notify::current-state", () => {
+    const state = controller.currentState;
 
-    // Focus map on starting point of trip
-    const startPoint = itinerary.legs[0].from;
-    map.animateTo(startPoint.lat, startPoint.lon, 12);
+    switch (state) {
+      case MapsState.ENDPOINTS_SELECT: {
+        mapUpdate_endpointsSelect();
+        break;
+      }
+      case MapsState.ITINERARY_SELECT: {
+        mapUpdate_itinerarySelect();
+        break;
+      }
+
+      case MapsState.ITINERARY_DISPLAY: {
+        mapUpdate_itineraryDisplay();
+        break;
+      }
+
+      default:
+        break;
+    }
   });
 
   return map;
