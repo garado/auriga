@@ -246,6 +246,11 @@ export default class MapsController extends GObject.Object {
   // Public functions --------------------------------------------------------
 
   swapOriginDestination = () => {
+    // Unconditional transition
+    this.currentState = MapsState.ENDPOINTS_SELECT;
+    this.currentTripPlan = undefined;
+    this.endpointSearchResults = [];
+
     const oldOrigin = this.currentOrigin;
     const oldDestination = this.currentDestination;
     this.currentOrigin = oldDestination;
