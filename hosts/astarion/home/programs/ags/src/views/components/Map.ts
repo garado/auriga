@@ -3,6 +3,8 @@
  * █░▀░█ █▀█ █▀▀
  *
  * Custom map widget made with libshumate.
+ * This is a base map widget that can be extended for any use case (it is Auriga-independent).
+ * For the map widget that is used in the dashboard, see: `src/views/windows/dash/maps/view/Map.ts`
  */
 
 /*****************************************************************************
