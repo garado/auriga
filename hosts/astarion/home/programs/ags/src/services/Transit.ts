@@ -269,7 +269,7 @@ const incrementApiCallCounter = async (): Promise<boolean> => {
     const currentCountStr = await execAsync(`${CMD.cat} ${apiCountFile}`);
     const currentCountNum = parseInt(currentCountStr.trim()) || 0;
 
-    print(currentCountNum);
+    console.log(`Transit API calls this month: ${currentCountNum}`);
 
     if (currentCountNum > TRANSIT_API_MONTHLY_HARD_STOP) {
       console.warn(
