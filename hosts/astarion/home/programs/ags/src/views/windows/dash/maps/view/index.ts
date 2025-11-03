@@ -7,7 +7,6 @@ import MapWidget from "./Map.ts";
 import Sidebar from "./sidebar";
 import { setupKeybinds } from "@/utils/KeybindHandler";
 import MapsController from "../controller";
-import Transit from "@/services/Transit";
 
 /*****************************************************************************
  * Module-level variables
@@ -62,9 +61,9 @@ export default () => {
           [KB_SHORTCUTS.CLOSE_SIDEBAR]: () => {
             controller.sidebarRevealState = false;
           },
-          // [KB_SHORTCUTS.RETURN_TO_TRIP_SELECT]: () => {
-          //   returnToTripSelectPressed.set(!returnToTripSelectPressed.get());
-          // },
+          [KB_SHORTCUTS.RETURN_TO_TRIP_SELECT]: () => {
+            controller.returnToTripSelect();
+          },
         },
       });
     },

@@ -216,6 +216,9 @@ export default class MapsController extends GObject.Object {
     if (oldState == newState) return;
 
     // Initialization for entering a new state
+    this.endpointSearchResults = [];
+
+    // Initialization for entering a new state
     switch (newState) {
       case MapsState.ENDPOINTS_SELECT:
         {
@@ -255,5 +258,13 @@ export default class MapsController extends GObject.Object {
     const oldDestination = this.currentDestination;
     this.currentOrigin = oldDestination;
     this.currentDestination = oldOrigin;
+  };
+
+  returnToTripSelect = () => {
+    // Transition from ITINERARY_DISPLAY => ITINERARY_SELECT
+    if (this.currentState == MapsState.ITINERARY_DISPLAY) {
+      this.previewedItinerary = undefined;
+      this.selectedItinerary = undefined;
+    }
   };
 }

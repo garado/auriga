@@ -33,8 +33,6 @@ export default () => {
 
     map.addMarker(coords[0].lat, coords[0].lon, "map-pin-symbolic");
     map.addMarker(coords[1].lat, coords[1].lon, "map-pin-symbolic");
-
-    controller.previewedItinerary = tripPlan.plan.itineraries[0];
   };
 
   // Update map on entering ITINERARY_DISPLAY state

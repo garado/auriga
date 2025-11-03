@@ -5,9 +5,17 @@
  * Widget displaying a location autocomplete result
  */
 
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import MapsController, { ControllerKey } from "../../../controller";
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export const Prediction = (prediction: PlacePrediction) => {
   const controller = MapsController.get_default();
