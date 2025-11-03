@@ -52,8 +52,8 @@ const SidebarTop = () => {
     setup: (self) => {
       self.set_child(SearchBox("currentOrigin"));
 
-      controller.connect("notify::sidebar-reveal-state", (revealed) => {
-        if (revealed) self.child.grab_focus();
+      controller.connect("notify::sidebar-reveal-state", () => {
+        if (controller.sidebarRevealState) self.child.grab_focus();
       });
     },
   });
@@ -64,8 +64,8 @@ const SidebarTop = () => {
     setup: (self) => {
       self.set_child(SearchBox("currentDestination"));
 
-      controller.connect("notify::current-origin", (origin) => {
-        if (origin !== undefined) self.child.grab_focus();
+      controller.connect("notify::current-origin", () => {
+        if (controller.currentOrigin !== undefined) self.child.grab_focus();
       });
     },
   });
