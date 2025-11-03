@@ -41,10 +41,6 @@ export default () => {
   const mapUpdate_itineraryDisplay = () => {
     const itinerary = controller.selectedItinerary;
     if (itinerary === undefined) return;
-
-    // Focus map on starting point of trip
-    const startPoint = itinerary.legs[0].from;
-    map.animateTo(startPoint.lat, startPoint.lon, 12);
   };
 
   // Update map when an itinerary needs to be previewed
