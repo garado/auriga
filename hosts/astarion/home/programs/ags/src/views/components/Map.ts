@@ -251,15 +251,10 @@ export const MapWidget = GObject.registerClass(
 
       const latDiff = maxLat - minLat;
       const lonDiff = maxLon - minLon;
-      const maxDiff = Math.max(latDiff, lonDiff);
+      const adjustedLonDiff = lonDiff * Math.cos((centerLat * Math.PI) / 180);
+      const maxDiff = Math.max(latDiff, adjustedLonDiff);
 
-      let zoom = 18;
-      if (maxDiff > 0.01) zoom = 15;
-      if (maxDiff > 0.05) zoom = 13;
-      if (maxDiff > 0.1) zoom = 11;
-      if (maxDiff > 0.5) zoom = 9;
-      if (maxDiff > 1.0) zoom = 7;
-      if (maxDiff > 5.0) zoom = 5;
+      const zoom = Math.max(5, Math.min(18, 18 - Math.log2(maxDiff * 300)));
 
       this.animateTo(centerLat, centerLon, zoom, 1000);
     }
