@@ -17,7 +17,11 @@
 
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Mode, PlanLeg, TripItinerary } from "@/services/Transit";
-import { epochToDuration, epochToHHMM } from "@/utils/Time";
+import {
+  epochToDuration,
+  epochToHHMM,
+  epochToRelativeTime,
+} from "@/utils/Time";
 import BetterFlowBox from "@/views/components/BetterFlowBox";
 import MapsController from "../../../controller";
 
@@ -197,7 +201,7 @@ export const ItineraryPreview = (itinerary: TripItinerary) => {
 
   const tripTimes = Widget.Label({
     cssClasses: ["trip-times"],
-    hexpand: true,
+    hexpand: false,
     halign: Gtk.Align.START,
     justify: Gtk.Justification.LEFT,
     setup: (self) => {
@@ -205,6 +209,14 @@ export const ItineraryPreview = (itinerary: TripItinerary) => {
       const end = epochToHHMM(itinerary.endTime);
       self.set_text(`${start} - ${end}`);
     },
+  });
+
+  const timeUntilDeparture = Widget.Label({
+    cssClasses: ["time-until-departure"],
+    hexpand: false,
+    halign: Gtk.Align.START,
+    justify: Gtk.Justification.LEFT,
+    label: `(${epochToRelativeTime(itinerary.startTime / 1000)})`,
   });
 
   return Widget.Button({
@@ -217,7 +229,15 @@ export const ItineraryPreview = (itinerary: TripItinerary) => {
         Widget.Box({
           vertical: true,
           hexpand: true,
-          children: [tripTimes, tripDetails],
+          children: [
+            Widget.Box({
+              vertical: false,
+              hexpand: true,
+              spacing: 4,
+              children: [tripTimes, timeUntilDeparture],
+            }),
+            tripDetails,
+          ],
         }),
       ],
     }),
