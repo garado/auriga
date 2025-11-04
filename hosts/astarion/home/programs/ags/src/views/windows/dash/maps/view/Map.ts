@@ -1,6 +1,21 @@
+/**
+ * ▀█▀ █▀█ ▄▀█ █▄░█ █▀ █ ▀█▀   █▀▄▀█ ▄▀█ █▀█   █░█░█ █ █▀▄ █▀▀ █▀▀ ▀█▀
+ * ░█░ █▀▄ █▀█ █░▀█ ▄█ █ ░█░   █░▀░█ █▀█ █▀▀   ▀▄▀▄▀ █ █▄▀ █▄█ ██▄ ░█░
+ *
+ * Map widget extended to work with dashboard maps tab
+ */
+
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { MapWidget } from "@/views/components/Map";
 import MapsController, { MapsState } from "../controller";
 import { Stop } from "@/services/Transit";
+
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
 
 export default () => {
   const controller = MapsController.get_default();

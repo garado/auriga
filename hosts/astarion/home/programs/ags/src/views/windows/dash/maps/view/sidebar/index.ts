@@ -27,17 +27,22 @@ import Transit from "@/services/Transit";
  *****************************************************************************/
 
 let transit: InstanceType<typeof Transit> | undefined = undefined;
-
-const ScrolledWindow = astalify(Gtk.ScrolledWindow);
-
 const controller = MapsController.get_default();
 
+const ScrolledWindow = astalify(Gtk.ScrolledWindow);
 const Frame = astalify(Gtk.Frame);
 
 const CSS_CLASSES = {
+  SIDEBAR: "sidebar",
+  SIDEBAR_CONTAINER: "sidebar-container",
+  SIDEBAR_TOP_SECTION: "top-section",
   ORIGIN_DEST_SWAP: "origin-dest-swap",
+  SEARCH_CONTAINER: "search",
+  PLAN_TRIP_BTN: "plan-trip-btn",
+  TRIP_PLANNING_HEADER: "trip-planning-header",
 } as const;
 
+// Controls visibility of the "Plan trip" button
 const tripReadyToPlan = Variable.derive(
   [bind(controller, "bothEndpointsSelected"), bind(controller, "currentState")],
   (endpoints, state) => endpoints && state === MapsState.ENDPOINTS_SELECT,
@@ -48,11 +53,11 @@ const tripReadyToPlan = Variable.derive(
  *****************************************************************************/
 
 /**
- *
+ * Top section of the sidebar containing the origin/destination search boxes
  */
 const SidebarTop = () => {
   const originContainer = Frame({
-    cssClasses: ["search"],
+    cssClasses: [CSS_CLASSES.SEARCH_CONTAINER],
     hexpand: true,
     setup: (self) => {
       self.set_child(SearchBox("currentOrigin"));
@@ -64,7 +69,7 @@ const SidebarTop = () => {
   });
 
   const destinationContainer = Frame({
-    cssClasses: ["search"],
+    cssClasses: [CSS_CLASSES.SEARCH_CONTAINER],
     hexpand: true,
     setup: (self) => {
       self.set_child(SearchBox("currentDestination"));
@@ -88,7 +93,7 @@ const SidebarTop = () => {
 
   // Button to trigger Transit API call to get trip information
   const startTripPlanBtn = Widget.Button({
-    cssClasses: ["plan-trip-btn"],
+    cssClasses: [CSS_CLASSES.PLAN_TRIP_BTN],
     hexpand: true,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     child: Widget.Label({
@@ -114,14 +119,14 @@ const SidebarTop = () => {
   });
 
   return Widget.Box({
-    cssClasses: ["top-section"],
+    cssClasses: [CSS_CLASSES.SIDEBAR_TOP_SECTION],
     vexpand: false,
     hexpand: true,
     vertical: true,
     children: [
       Widget.Revealer({
         child: Widget.Label({
-          cssClasses: ["trip-planning-header"],
+          cssClasses: [CSS_CLASSES.TRIP_PLANNING_HEADER],
           label: "Where to?",
         }),
         revealChild: bind(controller, "currentState").as(
@@ -129,7 +134,7 @@ const SidebarTop = () => {
         ),
       }),
       Widget.Box({
-        cssClasses: ["top-section"],
+        cssClasses: [CSS_CLASSES.SIDEBAR_TOP_SECTION],
         vertical: false,
         spacing: 16,
         children: [
@@ -168,7 +173,7 @@ export default () => {
   });
 
   const sidebar = Widget.Box({
-    cssClasses: ["sidebar"],
+    cssClasses: [CSS_CLASSES.SIDEBAR],
     vexpand: true,
     hexpand: false,
     halign: Gtk.Align.START,
@@ -200,7 +205,7 @@ export default () => {
   });
 
   return Widget.Box({
-    cssClasses: ["sidebar-container"],
+    cssClasses: [CSS_CLASSES.SIDEBAR_CONTAINER],
     halign: Gtk.Align.END,
     vertical: false,
     hexpand: false,

@@ -1,6 +1,8 @@
 /**
  * █▀▄▀█ ▄▀█ █▀█ █▀   █▀▀ █▀█ █▄░█ ▀█▀ █▀█ █▀█ █░░ █░░ █▀▀ █▀█
  * █░▀░█ █▀█ █▀▀ ▄█   █▄▄ █▄█ █░▀█ ░█░ █▀▄ █▄█ █▄▄ █▄▄ ██▄ █▀▄
+ *
+ * Manages states and state variables for the dashboard maps tab.
  */
 
 /*****************************************************************************
@@ -10,10 +12,6 @@
 import { GObject, register, property } from "astal/gobject";
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { TripPlanResponse, TripItinerary } from "@/services/Transit";
-
-/*****************************************************************************
- * Module-level variables
- *****************************************************************************/
 
 /*****************************************************************************
  * Types/interfaces
@@ -35,10 +33,6 @@ export type ControllerKey = keyof Pick<
   MapsController,
   "currentOrigin" | "currentDestination"
 >;
-
-/*****************************************************************************
- * Helper functions
- *****************************************************************************/
 
 /*****************************************************************************
  * Class definition
@@ -97,11 +91,15 @@ export default class MapsController extends GObject.Object {
     this.notify("current-destination");
   }
 
-  /** ugh */
+  /**
+   * Track the endpoint that the user is currently selecting
+   */
   @property(String)
   declare endpointBeingModified: ControllerKey;
 
-  /** ugh */
+  /**
+   * Endpoint search results from LocationIQ API call
+   */
   @property(Object)
   declare endpointSearchResults: PlacePrediction[];
 
@@ -116,7 +114,7 @@ export default class MapsController extends GObject.Object {
   @property(Object)
   declare previewedLocation: PlacePrediction | undefined;
 
-  /** The trip plan that the user has selected. */
+  /** The trip plan that the user has selected */
   @property(Object)
   get currentTripPlan(): TripPlanResponse | undefined {
     return this._currentTripPlan;
@@ -155,7 +153,7 @@ export default class MapsController extends GObject.Object {
     this.notify("selected-itinerary");
   }
 
-  /** The current state for the state machine controlling the UI for the maps tab */
+  /** The current state of the maps tab UI state machine */
   @property(Object)
   declare currentState: MapsState;
 
@@ -168,6 +166,7 @@ export default class MapsController extends GObject.Object {
   private _selectedItinerary: TripItinerary | undefined;
 
   // Private functions -------------------------------------------------------
+
   constructor() {
     super();
     this.endpointBeingModified = "currentOrigin";
@@ -176,10 +175,15 @@ export default class MapsController extends GObject.Object {
     this.endpointSearchResults = [];
   }
 
+  /**
+   * Determine state machine state
+   * This is called in custom property setter functions
+   */
   private calculateState = () => {
     const oldState = this.currentState;
     let newState = oldState;
 
+    // Determine new state
     switch (this.currentState) {
       case MapsState.ENDPOINTS_SELECT:
         {
@@ -215,32 +219,11 @@ export default class MapsController extends GObject.Object {
 
     if (oldState == newState) return;
 
-    // Initialization for entering a new state
+    // Initialization for entering new states
     this.endpointSearchResults = [];
 
-    // Initialization for entering a new state
-    switch (newState) {
-      case MapsState.ENDPOINTS_SELECT:
-        {
-          this.currentTripPlan = undefined;
-          this.endpointSearchResults = [];
-        }
-        break;
-
-      case MapsState.ITINERARY_SELECT:
-        {
-          this.endpointSearchResults = [];
-        }
-        break;
-
-      case MapsState.ITINERARY_DISPLAY:
-        {
-          this.endpointSearchResults = [];
-        }
-        break;
-
-      default:
-        break;
+    if (newState == MapsState.ENDPOINTS_SELECT) {
+      this.currentTripPlan = undefined;
     }
 
     this.currentState = newState;
@@ -249,7 +232,7 @@ export default class MapsController extends GObject.Object {
   // Public functions --------------------------------------------------------
 
   swapOriginDestination = () => {
-    // Unconditional transition
+    // Unconditional transition to ENDPOINTS_SELECT
     this.currentState = MapsState.ENDPOINTS_SELECT;
     this.currentTripPlan = undefined;
     this.endpointSearchResults = [];

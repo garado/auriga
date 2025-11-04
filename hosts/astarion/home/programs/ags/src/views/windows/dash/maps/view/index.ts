@@ -1,12 +1,28 @@
+/*
+ * █▀▄▀█ ▄▀█ █▀█ █▀   ▀█▀ ▄▀█ █▄▄
+ * █░▀░█ █▀█ █▀▀ ▄█   ░█░ █▀█ █▄█
+ *
+ * Entrypoint for dashboard maps tab.
+ * This tab is like Google Maps, but specifically for transit + walking/biking.
+ *
+ * It uses the following (all free):
+ * - libshumate: builtin gtk map widget
+ * - LocationIQ API: autocomplete location during search
+ * - The incredible Transit API: for planning trips
+ *
+ * I hate American car dependency. We could have had high speed rail by now!
+ */
+
 /*****************************************************************************
  * Imports
  *****************************************************************************/
 
 import { Widget } from "astal/gtk4";
+
 import MapWidget from "./Map.ts";
 import Sidebar from "./sidebar";
-import { setupKeybinds } from "@/utils/KeybindHandler";
 import MapsController from "../controller";
+import { setupKeybinds } from "@/utils/KeybindHandler";
 
 /*****************************************************************************
  * Module-level variables
