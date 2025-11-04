@@ -173,7 +173,7 @@ export default () => {
   });
 
   const sidebar = Widget.Box({
-    cssClasses: [CSS_CLASSES.SIDEBAR],
+    cssClasses: [CSS_CLASSES.SIDEBAR_CONTAINER],
     vexpand: true,
     hexpand: false,
     halign: Gtk.Align.START,
