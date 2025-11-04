@@ -64,7 +64,10 @@ export default class MapsController extends GObject.Object {
   }
 
   set currentOrigin(origin: PlacePrediction | undefined) {
+    if (this._currentOrigin === origin) return;
+
     this._currentOrigin = origin;
+    this.endpointSearchResults = [];
     this.bothEndpointsSelected =
       this._currentOrigin !== undefined &&
       this._currentDestination !== undefined;
@@ -83,6 +86,7 @@ export default class MapsController extends GObject.Object {
     if (this._currentDestination === destination) return;
 
     this._currentDestination = destination;
+    this.endpointSearchResults = [];
     this.bothEndpointsSelected =
       this._currentOrigin !== undefined &&
       this._currentDestination !== undefined;
