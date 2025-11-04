@@ -9,7 +9,10 @@
  * @function epochToHHMM
  * @param epoch - Unix epoch timestamp (seconds since 1970)
  */
-export const epochToHHMM = (epoch: number): string => {
+export const epochToHHMM = (
+  epoch: number,
+  trailingZero: boolean = false, // Trailing zero on HH?
+): string => {
   const date = new Date(epoch);
   const hours24 = date.getHours();
   const minutes = date.getMinutes();
@@ -17,7 +20,13 @@ export const epochToHHMM = (epoch: number): string => {
   const hours12 = hours24 % 12 || 12;
   const ampm = hours24 >= 12 ? "PM" : "AM";
 
-  const hoursStr = hours12.toString().padStart(2, "0");
+  let hoursStr;
+  if (trailingZero) {
+    hoursStr = hours12.toString().padStart(2, "0");
+  } else {
+    hoursStr = hours12.toString();
+  }
+
   const minutesStr = minutes.toString().padStart(2, "0");
 
   return `${hoursStr}:${minutesStr} ${ampm}`;
