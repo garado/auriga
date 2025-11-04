@@ -85,12 +85,12 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
         halign: Gtk.Align.START,
         hexpand: false,
         vexpand: false,
-        cssClasses: [`route-${planLeg.routeShortName}` || "", "route-id"],
+        cssClasses: ["route-id"],
         children: [Widget.Label({ label: planLeg.routeShortName })],
         setup: (self) => {
           // Set up custom CSS provider for modifying styles at runtime
           const cssProvider = new Gtk.CssProvider();
-          const className = `route-${planLeg.routeShortName}`;
+          const className = `route-${planLeg.routeShortName?.replaceAll(" ", "-")}`;
 
           const routeCss = `
             .${className} {
