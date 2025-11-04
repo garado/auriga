@@ -162,8 +162,6 @@ export default () => {
   const sidebarContent = Widget.Box({
     vertical: true,
     children: [
-      SidebarTop(),
-
       // Only one view is displayed at any given time
       // The visibility of each view depends on the current MapsState
       endpointSelectView(),
@@ -181,6 +179,7 @@ export default () => {
     vertical: true,
     spacing: 8,
     children: [
+      SidebarTop(),
       ScrolledWindow({
         hscrollbarPolicy: Gtk.PolicyType.NEVER,
         vscrollbarPolicy: Gtk.PolicyType.AUTOMATIC,
