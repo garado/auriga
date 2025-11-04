@@ -88,19 +88,30 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
         cssClasses: [`route-${planLeg.routeShortName}` || "", "route-id"],
         children: [Widget.Label({ label: planLeg.routeShortName })],
         setup: (self) => {
+          // Set up custom CSS provider for modifying styles at runtime
           const cssProvider = new Gtk.CssProvider();
-          const styleContext = self.get_style_context();
-          styleContext.add_provider(
+          const className = `route-${planLeg.routeShortName}`;
+
+          const routeCss = `
+            .${className} {
+              background-color: #${planLeg.routeColor};
+            }
+
+            .${className} label,
+            .${className} image {
+              color: #${planLeg.routeTextColor};
+            }
+          `;
+
+          cssProvider.load_from_string(routeCss);
+
+          Gtk.StyleContext.add_provider_for_display(
+            self.get_display(),
             cssProvider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER,
           );
 
-          cssProvider.load_from_string(`
-            .route-${planLeg.routeShortName} {
-              background-color: #${planLeg.routeColor};
-              color: #${planLeg.routeTextColor};
-            }
-          `);
+          self.add_css_class(className);
         },
       }),
     ],
