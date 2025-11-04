@@ -5,15 +5,21 @@
  * Widget displaying a location autocomplete result
  */
 
+/*****************************************************************************
+ * Imports
+ *****************************************************************************/
+
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { Gdk, Gtk, Widget } from "astal/gtk4";
-import { Variable } from "astal";
-import { previewedLocation } from "../../StateManagement";
+import MapsController, { ControllerKey } from "../../../controller";
 
-export const Prediction = (
-  prediction: PlacePrediction,
-  selectionTarget: Variable<PlacePrediction | undefined>,
-) => {
+/*****************************************************************************
+ * Widget definition
+ *****************************************************************************/
+
+export const Prediction = (prediction: PlacePrediction) => {
+  const controller = MapsController.get_default();
+
   const icon = Widget.Image({
     iconName: "map-pin-symbolic",
   });
@@ -52,8 +58,8 @@ export const Prediction = (
   });
 
   const setPreviewedLocation = () => {
-    if (prediction !== previewedLocation.get()) {
-      previewedLocation.set(prediction);
+    if (prediction !== controller.previewedLocation) {
+      controller.previewedLocation = prediction;
     }
   };
 
@@ -64,7 +70,8 @@ export const Prediction = (
     halign: Gtk.Align.FILL,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     onButtonPressed: () => {
-      selectionTarget.set(prediction);
+      const endpoint: ControllerKey = controller.endpointBeingModified;
+      controller[endpoint] = prediction;
     },
     onFocusEnter: setPreviewedLocation,
     onHoverEnter: setPreviewedLocation,

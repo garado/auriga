@@ -3,6 +3,8 @@
  * █░▀░█ █▀█ █▀▀
  *
  * Custom map widget made with libshumate.
+ * This is a base map widget that can be extended for any use case
+ * For the Auriga-specific map widget used in the dashboard, see: `src/views/windows/dash/maps/view/Map.ts`
  */
 
 /*****************************************************************************
@@ -21,6 +23,11 @@ import { Gdk, Widget } from "astal/gtk4";
 const DEFAULT_LATITUDE = 37.7749;
 const DEFAULT_LONGITUDE = -122.4194;
 
+const DEFAULT_ZOOM_LEVEL = 12;
+const MAX_ZOOM_LEVEL = 20;
+
+const DEFAULT_ANIMATION_TIME_MS = 1000;
+
 /*****************************************************************************
  * Types
  *****************************************************************************/
@@ -28,9 +35,9 @@ const DEFAULT_LONGITUDE = -122.4194;
 type MapStyle = "dark" | "light" | "osm";
 
 interface MapWidgetProps {
-  latitude?: number;
-  longitude?: number;
-  zoom?: number;
+  latitude?: number; // Starting latitude
+  longitude?: number; // Starting longitude
+  zoom?: number; // Starting zoom
   style?: MapStyle;
   showZoomButtons?: boolean;
 }
@@ -40,9 +47,9 @@ interface MapWidgetProps {
  *****************************************************************************/
 
 const MAP_STYLES: Record<MapStyle, string | null> = {
-  dark: "https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}{scale}.png",
+  dark: "http://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}{scale}.png",
   light:
-    "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}{scale}.png",
+    "http://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}{scale}.png",
   osm: null,
 };
 
@@ -91,6 +98,10 @@ export const MapWidget = GObject.registerClass(
     },
   },
   class extends Gtk.Box {
+    /*****************************************************************************
+     * Private variables
+     *****************************************************************************/
+
     private registry: Shumate.MapSourceRegistry;
     private referenceSource: Shumate.MapSource;
     private mapView: Shumate.SimpleMap;
@@ -99,44 +110,12 @@ export const MapWidget = GObject.registerClass(
     private markerLayers: Shumate.MarkerLayer[] = [];
     private _latitude: number = DEFAULT_LATITUDE;
     private _longitude: number = DEFAULT_LONGITUDE;
-    private _zoom: number = 12;
+    private _zoom: number = DEFAULT_ZOOM_LEVEL;
     private _style: MapStyle;
 
-    constructor(props: MapWidgetProps = {}) {
-      super(props as any);
-
-      this.registry = Shumate.MapSourceRegistry.new_with_defaults();
-
-      this.referenceSource = this.registry.get_by_id(
-        Shumate.MAP_SOURCE_OSM_MAPNIK,
-      )!;
-
-      this.mapView = new Shumate.SimpleMap({
-        vexpand: true,
-        hexpand: true,
-        cssClasses: ["map"],
-        showZoomButtons: props.showZoomButtons ?? false,
-        mapSource: this.referenceSource,
-        canFocus: false,
-      });
-
-      this.viewport = this.mapView.get_viewport();
-      this.viewport.set_reference_map_source(this.referenceSource);
-
-      this.append(this.mapView);
-
-      if (props.latitude !== undefined) this.latitude = props.latitude;
-      if (props.longitude !== undefined) this.longitude = props.longitude;
-      if (props.zoom !== undefined) this.zoom = props.zoom;
-
-      this._style = props.style ?? "dark";
-
-      if (props.style !== undefined && props.style !== "osm") {
-        this.updateStyle();
-      }
-
-      this.updateLocation();
-    }
+    /*****************************************************************************
+     * Property getters/setters
+     *****************************************************************************/
 
     get latitude(): number {
       return this._latitude;
@@ -186,6 +165,49 @@ export const MapWidget = GObject.registerClass(
       }
     }
 
+    /*****************************************************************************
+     * Private functions
+     *****************************************************************************/
+
+    constructor(props: MapWidgetProps = {}) {
+      super(props as any);
+
+      this.registry = Shumate.MapSourceRegistry.new_with_defaults();
+
+      this.referenceSource = this.registry.get_by_id(
+        Shumate.MAP_SOURCE_OSM_MAPNIK,
+      )!;
+
+      this.mapView = new Shumate.SimpleMap({
+        vexpand: true,
+        hexpand: true,
+        cssClasses: ["map"],
+        showZoomButtons: props.showZoomButtons ?? false,
+        mapSource: this.referenceSource,
+        canFocus: false,
+      });
+
+      this.viewport = this.mapView.get_viewport();
+      this.viewport.set_reference_map_source(this.referenceSource);
+
+      this.append(this.mapView);
+
+      if (props.latitude !== undefined) this.latitude = props.latitude;
+      if (props.longitude !== undefined) this.longitude = props.longitude;
+      if (props.zoom !== undefined) this.zoom = props.zoom;
+
+      this._style = props.style ?? "dark";
+
+      if (props.style !== undefined && props.style !== "osm") {
+        this.updateStyle();
+      }
+
+      this.updateLocation();
+    }
+
+    /**
+     * Carry out setting map style after a map style has been selected
+     */
     private updateStyle(): void {
       if (this.mapView === undefined) return;
 
@@ -200,27 +222,34 @@ export const MapWidget = GObject.registerClass(
       const tileDownloader = new Shumate.TileDownloader({
         urlTemplate: url,
         minZoomLevel: 0,
+        maxZoomLevel: MAX_ZOOM_LEVEL,
       });
 
       const renderer = new Shumate.RasterRenderer({
-        id: "positron",
-        name: "Positron",
-        license: "CartoDB",
+        id: "cartodb-dark",
+        name: "CartoDB Dark",
+        license: "",
         dataSource: tileDownloader,
-        maxZoomLevel: 16,
+        maxZoomLevel: MAX_ZOOM_LEVEL,
       });
 
       this.mapView.set_map_source(renderer);
     }
 
+    /**
+     * Move map to current lat/lon
+     */
     private updateLocation(): void {
-      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+      GLib.timeout_add(GLib.PRIORITY_DEFAULT, DEFAULT_ANIMATION_TIME_MS, () => {
         this.viewport.set_location(this._latitude, this._longitude);
         this.viewport.set_zoom_level(this._zoom);
         return false;
       });
     }
 
+    /**
+     * Set new lat/lon
+     * */
     setLocation(latitude: number, longitude: number, zoom?: number): void {
       this.latitude = latitude;
       this.longitude = longitude;
@@ -231,9 +260,23 @@ export const MapWidget = GObject.registerClass(
       return this.viewport;
     }
 
+    /**
+     * Position map around a set of coordinates
+     */
     centerOnRoute(coordinates: Array<{ lat: number; lon: number }>): void {
       if (coordinates.length === 0) return;
 
+      if (coordinates.length === 1) {
+        this.animateTo(
+          coordinates[0].lat,
+          coordinates[0].lon,
+          16,
+          DEFAULT_ANIMATION_TIME_MS,
+        );
+        return;
+      }
+
+      // Quick maths to find appropriate zoom level
       let minLat = coordinates[0].lat;
       let maxLat = coordinates[0].lat;
       let minLon = coordinates[0].lon;
@@ -251,24 +294,22 @@ export const MapWidget = GObject.registerClass(
 
       const latDiff = maxLat - minLat;
       const lonDiff = maxLon - minLon;
-      const maxDiff = Math.max(latDiff, lonDiff);
+      const adjustedLonDiff = lonDiff * Math.cos((centerLat * Math.PI) / 180);
+      const maxDiff = Math.max(latDiff, adjustedLonDiff);
 
-      let zoom = 18;
-      if (maxDiff > 0.01) zoom = 15;
-      if (maxDiff > 0.05) zoom = 13;
-      if (maxDiff > 0.1) zoom = 11;
-      if (maxDiff > 0.5) zoom = 9;
-      if (maxDiff > 1.0) zoom = 7;
-      if (maxDiff > 5.0) zoom = 5;
+      const zoom = Math.max(5, Math.min(18, 18 - Math.log2(maxDiff * 300)));
 
-      this.animateTo(centerLat, centerLon, zoom, 1000);
+      this.animateTo(centerLat, centerLon, zoom, DEFAULT_ANIMATION_TIME_MS);
     }
 
+    /**
+     * Animate moving the map to a certain position + zoom level
+     */
     animateTo(
       latitude: number,
       longitude: number,
       zoom?: number,
-      duration: number = 1000,
+      duration: number = DEFAULT_ANIMATION_TIME_MS,
     ): void {
       const startLat = this._latitude;
       const startLng = this._longitude;
@@ -308,10 +349,16 @@ export const MapWidget = GObject.registerClass(
       animate();
     }
 
+    /**
+     * Add a new route to the map
+     * Each route consists of an array of coordinates
+     * It will be drawn as a line connecting each of the coordinates given
+     */
     addRoute(
       coordinates: Array<{ lat: number; lon: number }>,
       color: string = "#ffffff",
     ): void {
+      // Each route is added to its own separate path layer
       const pathLayer = new Shumate.PathLayer({
         viewport: this.viewport,
       });
@@ -336,6 +383,9 @@ export const MapWidget = GObject.registerClass(
       this.pathLayers.push(pathLayer);
     }
 
+    /**
+     * Clear all of the routes on the map
+     */
     clearRoutes(): void {
       for (let index = 0; index < this.pathLayers.length; index++) {
         const layer = this.pathLayers[index];
@@ -345,23 +395,26 @@ export const MapWidget = GObject.registerClass(
       this.pathLayers = [];
     }
 
+    /**
+     * Add a map marker
+     */
     addMarker(
       latitude: number,
       longitude: number,
       icon: string,
       size: number = 40,
     ): void {
+      // Each marker is added to a new separate marker layer
+      // @TODO is this performant? does it matter?
       const markerLayer = new Shumate.MarkerLayer({
         viewport: this.viewport,
       });
 
-      const iconWidget = Widget.Image({
-        iconName: icon,
-        pixelSize: size,
-      });
-
       const marker = new Shumate.Marker({
-        child: iconWidget,
+        child: Widget.Image({
+          iconName: icon,
+          pixelSize: size,
+        }),
       });
 
       marker.set_location(latitude, longitude);
@@ -371,6 +424,9 @@ export const MapWidget = GObject.registerClass(
       this.markerLayers.push(markerLayer);
     }
 
+    /**
+     * Remove all markers from the map
+     */
     clearMarkers(): void {
       for (let index = 0; index < this.markerLayers.length; index++) {
         const layer = this.markerLayers[index];

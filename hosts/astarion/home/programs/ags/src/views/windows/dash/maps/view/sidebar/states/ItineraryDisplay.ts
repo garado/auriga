@@ -1,15 +1,17 @@
 /**
- * ▀█▀ █▀█ █ █▀█   █▀▄ █▀▀ ▀█▀ ▄▀█ █ █░░ █▀
- * ░█░ █▀▄ █ █▀▀   █▄▀ ██▄ ░█░ █▀█ █ █▄▄ ▄█
+ * █ ▀█▀ █ █▄░█ █▀▀ █▀█ ▄▀█ █▀█ █▄█   █▀▄ █ █▀ █▀█ █░░ ▄▀█ █▄█
+ * █ ░█░ █ █░▀█ ██▄ █▀▄ █▀█ █▀▄ ░█░   █▄▀ █ ▄█ █▀▀ █▄▄ █▀█ ░█░
  *
- * Shows detailed trip itinerary.
+ * Sidebar contents during itinerary display state
  */
 
 /*****************************************************************************
  * Imports
  *****************************************************************************/
 
-import { Gdk, Gtk, Widget } from "astal/gtk4";
+import { Gtk, Gdk, Widget } from "astal/gtk4";
+import { bind } from "astal";
+
 import {
   Mode,
   PlanLeg,
@@ -17,15 +19,9 @@ import {
   Stop,
   TripItinerary,
 } from "@/services/Transit";
+import MapsController, { MapsState } from "../../../controller";
 import { epochToHHMM, epochToRelativeTime } from "@/utils/Time";
 import { ExpansionPanel } from "@/views/components/ExpansionPanel";
-import Astalified from "@/views/components/astalified";
-import {
-  destination,
-  origin,
-  returnToTripSelectPressed,
-  tripPlan,
-} from "../../StateManagement";
 import Pushover from "@/services/Pushover";
 
 /*****************************************************************************
@@ -36,7 +32,7 @@ const durationInMinutes = (planLeg: PlanLeg) =>
   `${Math.round(planLeg.duration / 60)}m`;
 
 /*****************************************************************************
- * Widgets
+ * Widget definitions: PlanLegs
  *****************************************************************************/
 
 /**
@@ -78,6 +74,7 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
       }),
       Widget.Label({
         label: planLeg.routeShortName,
+        wrap: true,
       }),
     ],
   });
@@ -86,10 +83,10 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
    * Display the starting point of the transit trip
    * "Get on at this stop"
    */
-  const startStop = Astalified.CenterBox({
+  const startStop = Widget.CenterBox({
     cssClasses: ["stop-endpoint"],
-    vertical: false,
-    hexpand: false,
+    orientation: Gtk.Orientation.HORIZONTAL,
+    hexpand: true,
     startWidget: Widget.Label({
       cssClasses: ["location"],
       label: `${planLeg.from.name}`,
@@ -106,9 +103,9 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
    * Display the ending point of the transit trip
    * "Get off at this stop"
    */
-  const endStop = Astalified.CenterBox({
+  const endStop = Widget.CenterBox({
     cssClasses: ["stop-endpoint"],
-    vertical: false,
+    orientation: Gtk.Orientation.HORIZONTAL,
     hexpand: false,
     startWidget: Widget.Label({
       label: `${planLeg.to.name}`,
@@ -128,22 +125,35 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
    * the selected transit line. (The Transit API provides this information. Cool!)
    */
   const container = Widget.Box({
-    cssClasses: [`route-${planLeg.routeShortName}` || "", "transit-leg"],
+    cssClasses: ["transit-leg"],
     vertical: true,
     halign: Gtk.Align.FILL,
     children: [routeSummary, startStop, endStop],
     setup: (self) => {
-      // Custom CSS provider needed to modify styles at runtime
+      // Set up custom CSS provider for modifying styles at runtime
       const cssProvider = new Gtk.CssProvider();
-      const styleContext = self.get_style_context();
-      styleContext.add_provider(cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+      const className = `route-${planLeg.routeShortName?.replaceAll(" ", "-")}`;
 
-      cssProvider.load_from_string(`
-        .route-${planLeg.routeShortName} {
+      const routeCss = `
+        .${className} {
           background-color: #${planLeg.routeColor};
+        }
+
+        .${className} label,
+        .${className} image {
           color: #${planLeg.routeTextColor};
         }
-      `);
+      `;
+
+      cssProvider.load_from_string(routeCss);
+
+      Gtk.StyleContext.add_provider_for_display(
+        self.get_display(),
+        cssProvider,
+        Gtk.STYLE_PROVIDER_PRIORITY_USER,
+      );
+
+      self.add_css_class(className);
     },
   });
 
@@ -212,14 +222,22 @@ const modeHandlers: Record<Mode, (planLeg: PlanLeg) => Gtk.Widget> = {
   [Mode.TROLLEYBUS]: PlanLegWidget_Default,
 };
 
-export const TripResultDetails = (selectedItinerary: TripItinerary) => {
-  const leaveTime = epochToHHMM(selectedItinerary.startTime);
-  const arriveTime = epochToHHMM(selectedItinerary.endTime);
-  const timeUntilDeparture = epochToRelativeTime(
-    selectedItinerary.startTime / 1000,
-  );
-  const destinationName = destination.get()?.displayPlace;
-  const destinationAddress = destination.get()?.displayAddress;
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
+
+const DisplayView = (itinerary: TripItinerary) => {
+  const controller = MapsController.get_default();
+  const origin = controller.currentOrigin;
+  const destination = controller.currentDestination;
+
+  if (destination === undefined || origin === undefined) return;
+
+  const leaveTime = epochToHHMM(itinerary.startTime);
+  const arriveTime = epochToHHMM(itinerary.endTime);
+  const timeUntilDeparture = epochToRelativeTime(itinerary.startTime / 1000);
+  const destinationName = destination.displayPlace;
+  const destinationAddress = destination.displayAddress;
 
   const returnToTripSelect = Widget.Button({
     cursor: Gdk.Cursor.new_from_name("pointer", null),
@@ -236,7 +254,7 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
       ],
     }),
     onClicked: () => {
-      returnToTripSelectPressed.set(!returnToTripSelectPressed.get());
+      controller.selectedItinerary = undefined;
     },
   });
 
@@ -260,15 +278,11 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
       sendToPhoneText.revealChild = false;
     },
     onClicked: () => {
-      const _origin = origin.get();
-      const _dest = destination.get();
-      if (_origin === undefined || _dest === undefined) return;
-
-      const from = `${_origin.displayPlace}, ${_origin.displayAddress}`;
-      const to = `${_dest.displayPlace}, ${_dest.displayAddress}`;
+      const from = `${origin.displayPlace}, ${origin.displayAddress}`;
+      const to = `${destination.displayPlace}, ${destination.displayAddress}`;
 
       Pushover.get_default().sendWithUrl(
-        `Transit: ${_origin.displayPlace} -> ${_dest.displayPlace}`,
+        `Transit: ${origin.displayPlace} -> ${destination.displayPlace}`,
         `transit://directions?from=${from}&to=${to}?utm_campaign=trip-planner`,
         "Transit",
       );
@@ -302,9 +316,7 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
   const legs = Widget.Box({
     vertical: true,
     spacing: 12,
-    children: selectedItinerary.legs.map((leg) =>
-      modeHandlers[leg.mode as Mode](leg),
-    ),
+    children: itinerary.legs.map((leg) => modeHandlers[leg.mode as Mode](leg)),
   });
 
   /** Destination name/address */
@@ -366,5 +378,21 @@ export const TripResultDetails = (selectedItinerary: TripItinerary) => {
       legs,
       destinationSummary,
     ],
+  });
+};
+
+export const itineraryDisplayView = () => {
+  const controller = MapsController.get_default();
+
+  return Widget.Box({
+    visible: bind(controller, "currentState").as(
+      (state) => state === MapsState.ITINERARY_DISPLAY,
+    ),
+    cssClasses: ["section-content"],
+    children: bind(controller, "selectedItinerary").as(
+      (selectedItinerary): Gtk.Widget[] => {
+        return selectedItinerary ? [DisplayView(selectedItinerary)!] : [];
+      },
+    ),
   });
 };

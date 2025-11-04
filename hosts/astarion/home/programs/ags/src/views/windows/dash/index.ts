@@ -17,7 +17,7 @@ import Ledger from "@/views/windows/dash/ledger";
 import Calendar from "@/views/windows/dash/calendar";
 import Goals from "@/views/windows/dash/goals";
 import Tasks from "@/views/windows/dash/tasks";
-import Maps from "@/views/windows/dash/maps";
+import Maps from "@/views/windows/dash/maps/view";
 import {
   AnimatedStack,
   AnimatedStackChild,

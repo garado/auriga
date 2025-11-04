@@ -1,11 +1,14 @@
 /**
- * ▀█▀ █▀█ █ █▀█   █ ▀█▀ █ █▄░█ █▀▀ █▀█ ▄▀█ █▀█ █▄█   █▀ █▀▀ █░░ █▀▀ █▀▀ ▀█▀ █ █▀█ █▄░█
- * ░█░ █▀▄ █ █▀▀   █ ░█░ █ █░▀█ ██▄ █▀▄ █▀█ █▀▄ ░█░   ▄█ ██▄ █▄▄ ██▄ █▄▄ ░█░ █ █▄█ █░▀█
+ * █ ▀█▀ █ █▄░█ █▀▀ █▀█ ▄▀█ █▀█ █▄█   █▀█ █▀█ █▀▀ █░█ █ █▀▀ █░█░█
+ * █ ░█░ █ █░▀█ ██▄ █▀▄ █▀█ █▀▄ ░█░   █▀▀ █▀▄ ██▄ ▀▄▀ █ ██▄ ▀▄▀▄▀
  *
  * After selecting an origin/destination, the Maps tab will provide the user with different
  * itineraries to select from.
  *
- * This file implements the trip itinerary overview.
+ * This file implements the trip itinerary preview, which includes:
+ * - Trip duration
+ * - Start/end time
+ * - All legs of trip and how long they take (transit, walking, etc)
  */
 
 /*****************************************************************************
@@ -14,9 +17,13 @@
 
 import { Gdk, Gtk, Widget } from "astal/gtk4";
 import { Mode, PlanLeg, TripItinerary } from "@/services/Transit";
-import { epochToDuration, epochToHHMM } from "@/utils/Time";
-import { previewedItinerary, selectedItinerary } from "../../StateManagement";
+import {
+  epochToDuration,
+  epochToHHMM,
+  epochToRelativeTime,
+} from "@/utils/Time";
 import BetterFlowBox from "@/views/components/BetterFlowBox";
+import MapsController from "../../../controller";
 
 /*****************************************************************************
  * Helpers
@@ -78,22 +85,33 @@ const PlanLegWidget_Transit = (planLeg: PlanLeg): Gtk.Widget => {
         halign: Gtk.Align.START,
         hexpand: false,
         vexpand: false,
-        cssClasses: [`route-${planLeg.routeShortName}` || "", "route-id"],
+        cssClasses: ["route-id"],
         children: [Widget.Label({ label: planLeg.routeShortName })],
         setup: (self) => {
+          // Set up custom CSS provider for modifying styles at runtime
           const cssProvider = new Gtk.CssProvider();
-          const styleContext = self.get_style_context();
-          styleContext.add_provider(
+          const className = `route-${planLeg.routeShortName?.replaceAll(" ", "-")}`;
+
+          const routeCss = `
+            .${className} {
+              background-color: #${planLeg.routeColor};
+            }
+
+            .${className} label,
+            .${className} image {
+              color: #${planLeg.routeTextColor};
+            }
+          `;
+
+          cssProvider.load_from_string(routeCss);
+
+          Gtk.StyleContext.add_provider_for_display(
+            self.get_display(),
             cssProvider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER,
           );
 
-          cssProvider.load_from_string(`
-            .route-${planLeg.routeShortName} {
-              background-color: #${planLeg.routeColor};
-              color: #${planLeg.routeTextColor};
-            }
-          `);
+          self.add_css_class(className);
         },
       }),
     ],
@@ -150,7 +168,9 @@ const Separator = () =>
     label: ">",
   });
 
-export const TripResult = (itinerary: TripItinerary) => {
+export const ItineraryPreview = (itinerary: TripItinerary) => {
+  const controller = MapsController.get_default();
+
   const childrenWithSeparators: Gtk.Widget[] = [];
   itinerary.legs.forEach((leg, index) => {
     childrenWithSeparators.push(modeHandlers[leg.mode as Mode](leg));
@@ -192,7 +212,7 @@ export const TripResult = (itinerary: TripItinerary) => {
 
   const tripTimes = Widget.Label({
     cssClasses: ["trip-times"],
-    hexpand: true,
+    hexpand: false,
     halign: Gtk.Align.START,
     justify: Gtk.Justification.LEFT,
     setup: (self) => {
@@ -200,6 +220,14 @@ export const TripResult = (itinerary: TripItinerary) => {
       const end = epochToHHMM(itinerary.endTime);
       self.set_text(`${start} - ${end}`);
     },
+  });
+
+  const timeUntilDeparture = Widget.Label({
+    cssClasses: ["time-until-departure"],
+    hexpand: false,
+    halign: Gtk.Align.START,
+    justify: Gtk.Justification.LEFT,
+    label: `(${epochToRelativeTime(itinerary.startTime / 1000)})`,
   });
 
   return Widget.Button({
@@ -212,20 +240,28 @@ export const TripResult = (itinerary: TripItinerary) => {
         Widget.Box({
           vertical: true,
           hexpand: true,
-          children: [tripTimes, tripDetails],
+          children: [
+            Widget.Box({
+              vertical: false,
+              hexpand: true,
+              spacing: 4,
+              children: [tripTimes, timeUntilDeparture],
+            }),
+            tripDetails,
+          ],
         }),
       ],
     }),
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     hexpand: true,
     onHoverEnter: () => {
-      if (previewedItinerary.get() !== itinerary) {
-        previewedItinerary.set(itinerary);
+      if (controller.previewedItinerary !== itinerary) {
+        controller.previewedItinerary = itinerary;
       }
     },
     onButtonPressed: () => {
-      if (selectedItinerary.get() !== itinerary) {
-        selectedItinerary.set(itinerary);
+      if (controller.selectedItinerary !== itinerary) {
+        controller.selectedItinerary = itinerary;
       }
     },
   });

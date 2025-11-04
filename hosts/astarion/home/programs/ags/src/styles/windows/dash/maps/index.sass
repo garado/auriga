@@ -4,12 +4,10 @@
 .maps
   // Sidebar that pops out with options for the user
   .sidebar
+    min-width: 28rem 
     background-color: $neutral-800
     border-top-right-radius: $border-radius
     border-bottom-right-radius: $border-radius
-
-    // Little slidey-out thing
-    .handle
 
     .top-section
       background-color: $primary-500
@@ -31,17 +29,27 @@
         font-size: 1.4rem
 
       // Where the user enters start/end destination
-      .search
+      .search 
         border-color: transparent
-        background-color: $primary-300
-
-        placeholder
-          color: $primary-700
 
         &:focus-within
+          background-color: $primary-900
+
+          placeholder
+            color: rgba($neutral-100, 0.5)
+
+        &:not(:focus-within)
           background-color: $primary-700
 
           placeholder
+            color: rgba($neutral-100, 0.5)
+
+        entry
+          text
+            color: rgba($neutral-100, 0.5)
+
+        entry.is-valid-endpoint
+          text
             color: $neutral-100
 
       // Button to swap origin/destination text
@@ -56,10 +64,10 @@
       .plan-trip-btn
         padding: 0.4rem 0.2rem
         border-radius: $border-radius
-        background-color: $primary-300
+        background-color: $primary-700
 
         &:hover
-          background-color: $primary-700
+          background-color: $primary-900
 
     .section-content
       padding: 1rem
@@ -108,8 +116,11 @@
 
     .little-text
 
-  .trip-times
+  .trip-times, .time-until-departure
     margin-bottom: 0.4rem
+
+  .time-until-departure
+    color: $neutral-300
 
   .trip-itinerary-overview
     .plan-leg
@@ -127,6 +138,8 @@
 
 // Detailed itinerary view
 .maps .trip-details
+  padding: 0.8rem
+
   // Return to itinerary selection
   .back-btn
     -gtk-icon-size: 0.8rem

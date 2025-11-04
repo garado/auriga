@@ -15,6 +15,8 @@
 
 import { GObject, register, property, GLib } from "astal/gobject";
 import { execAsync } from "astal/process";
+import { programArgs } from "system";
+
 import { log } from "@/globals.js";
 import SettingsManager from "./settings";
 import { CMD } from "@/utils/Commands";
@@ -227,19 +229,21 @@ const transitConfig = SettingsManager.get_default().config.transit;
 
 const TRANSIT_API_SECRET = SettingsManager.get_default().config.secrets.transit;
 
-/** Use cached fake data for development or make real API requests */
-const USE_REAL_API_CALL = true;
+/**
+ * Use cached fake data for development or make real API requests
+ * To set this through CLI:
+ * > ags run app.ts --gtk4 --arg "TRANSIT_API_DEBUG""
+ */
+const USE_REAL_API_CALL = !programArgs.includes("TRANSIT_API_DEBUG");
 
 /** Maximum API calls per calendar month on Transit API free tier */
 const TRANSIT_API_MONTHLY_LIMIT_MAX = 1500;
 
 /** Limit at which to warn user of Transit API usage */
 const TRANSIT_API_MONTHLY_WARN = 1000;
-// const TRANSIT_API_MONTHLY_WARN = 13;
 
 /** Limit at which to abort all API calls, so they don't flag my account for reaching the usage limit */
 const TRANSIT_API_MONTHLY_HARD_STOP = 1400;
-// const TRANSIT_API_MONTHLY_HARD_STOP = 15;
 
 /**********************************************
  * UTILITY
@@ -269,7 +273,7 @@ const incrementApiCallCounter = async (): Promise<boolean> => {
     const currentCountStr = await execAsync(`${CMD.cat} ${apiCountFile}`);
     const currentCountNum = parseInt(currentCountStr.trim()) || 0;
 
-    print(currentCountNum);
+    console.log(`Transit API calls this month: ${currentCountNum}`);
 
     if (currentCountNum > TRANSIT_API_MONTHLY_HARD_STOP) {
       console.warn(
