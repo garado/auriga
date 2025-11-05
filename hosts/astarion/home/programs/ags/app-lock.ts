@@ -85,6 +85,8 @@ let auth: AstalAuth.Pam | null = new AstalAuth.Pam();
 
 let sessionLock = Lock.prepare_lock();
 
+let isLocked: boolean = false;
+
 let windows: LockWindowInfo[] = [];
 
 // For clock widget
@@ -119,6 +121,9 @@ interval(1000, () => {
  * Lock session.
  */
 const lockSession = () => {
+  if (isLocked) return;
+  isLocked = true;
+
   sessionLock = Lock.prepare_lock();
 
   auth = new AstalAuth.Pam();
@@ -152,6 +157,8 @@ const lockSession = () => {
  * Unlock session.
  */
 const unlockSession = () => {
+  isLocked = false;
+
   sessionLock.unlock_and_destroy();
   windows.forEach((w) => {
     w.window.destroy();
