@@ -14,6 +14,7 @@ import { Variable, bind, interval, timeout } from "astal";
 import Battery from "gi://AstalBattery";
 import Hyprland from "gi://AstalHyprland";
 import Wp from "gi://AstalWp";
+import MapsController from "../dash/maps/controller";
 
 /*****************************************************************************
  * Module-level variables
@@ -252,6 +253,39 @@ const VolumeSlider = () => {
   });
 };
 
+/**
+ * For use with dashboard transit tab.
+ * Displays time in minutes until user needs to leave for currently active trip
+ */
+const TransitDepartureTime = () => {
+  const controller = MapsController.get_default();
+
+  const widget = Widget.Box({
+    cssClasses: ["transit-departure-time"],
+    vertical: true,
+    spacing: 0,
+    children: [
+      Widget.Image({
+        cssClasses: ["icon"],
+        iconName: "bus-symbolic",
+      }),
+      Widget.Label({
+        cssClasses: ["time"],
+        label: bind(controller, "timeUntilDeparture").as((time) => `${time}`),
+      }),
+    ],
+  });
+
+  return Widget.Revealer({
+    revealChild: bind(controller, "selectedItinerary").as(
+      (itin) => itin !== undefined,
+    ),
+    transitionType: Gtk.RevealerTransitionType.SLIDE_UP,
+    vexpand: false,
+    child: widget,
+  });
+};
+
 /*****************************************************************************
  * Final composition
  *****************************************************************************/
@@ -275,7 +309,12 @@ const Bottom = () =>
     halign: Gtk.Align.CENTER,
     cssClasses: ["bottom"],
     orientation: 1,
-    children: [VolumeSlider(), BatteryIndicator(), Time()],
+    children: [
+      VolumeSlider(),
+      TransitDepartureTime(),
+      BatteryIndicator(),
+      Time(),
+    ],
   });
 
 export default (monitor: Gdk.Monitor) => {

@@ -19,6 +19,9 @@
         color: var(--bar-workspace-focused-color)
 
   .bottom
+    *:not(:last-child)  // default padding
+      padding-bottom: 0.5rem
+
     .volume
       scale
         trough
@@ -46,5 +49,6 @@
       .low
         color: var(--bar-battery-low-color)
 
-    *:not(:last-child) 
-      padding-bottom: 0.5rem
+    .transit-departure-time
+      .icon
+        padding-bottom: 0.1rem

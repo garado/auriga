@@ -12,6 +12,7 @@
 import { GObject, register, property } from "astal/gobject";
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { TripPlanResponse, TripItinerary } from "@/services/Transit";
+import { AstalIO, timeout } from "astal";
 
 /*****************************************************************************
  * Types/interfaces
@@ -152,6 +153,16 @@ export default class MapsController extends GObject.Object {
 
   set selectedItinerary(itinerary: TripItinerary | undefined) {
     if (itinerary === this._selectedItinerary) return;
+
+    if (itinerary !== undefined) {
+      this.timeUntilDeparture = Math.round(
+        (itinerary.startTime - Date.now()) / 60_000,
+      );
+      this.startDepartureTimer();
+    } else {
+      this.stopDepartureTimer();
+    }
+
     this._selectedItinerary = itinerary;
     this.calculateState();
     this.notify("selected-itinerary");
@@ -161,6 +172,13 @@ export default class MapsController extends GObject.Object {
   @property(Object)
   declare currentState: MapsState;
 
+  /**
+   * Time in minutes until user must depart on the currently active trip.
+   * Used to send reminders to leave on time.
+   */
+  @property(Number)
+  declare timeUntilDeparture: number;
+
   // Private variables -------------------------------------------------------
 
   private _currentTripPlan: TripPlanResponse | undefined;
@@ -168,6 +186,9 @@ export default class MapsController extends GObject.Object {
   private _currentDestination: PlacePrediction | undefined;
   private _previewedItinerary: TripItinerary | undefined;
   private _selectedItinerary: TripItinerary | undefined;
+
+  // 1-minute timer to repeatedly update timeUntilDeparture property
+  private _departureTimer: AstalIO.Time | undefined;
 
   // Private functions -------------------------------------------------------
 
@@ -231,6 +252,17 @@ export default class MapsController extends GObject.Object {
     }
 
     this.currentState = newState;
+  };
+
+  private startDepartureTimer = () => {
+    this._departureTimer = timeout(1000, () => {
+      this.timeUntilDeparture--;
+    });
+  };
+
+  private stopDepartureTimer = () => {
+    this._departureTimer?.cancel();
+    this._departureTimer = undefined;
   };
 
   // Public functions --------------------------------------------------------
