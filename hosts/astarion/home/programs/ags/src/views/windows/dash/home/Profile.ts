@@ -24,15 +24,15 @@ const profileConfig = SettingsManager.get_default().config.dashHome.profile;
  *****************************************************************************/
 
 export const Profile = () => {
-  const Picture = astalify(Gtk.Picture);
+  const Image = astalify(Gtk.Image);
 
   const Pfp = () =>
-    Picture({
-      hexpand: false,
-      vexpand: false,
+    Image({
       cssClasses: ["pfp"],
-      contentFit: Gtk.ContentFit.COVER,
-      file: Gio.File.new_for_path(profileConfig.pfp),
+      overflow: Gtk.Overflow.HIDDEN,
+      setup: (self) => {
+        self.set_from_file(profileConfig.pfp);
+      },
     });
 
   const Username = () =>
@@ -52,7 +52,7 @@ export const Profile = () => {
 
   return Widget.Box({
     vertical: true,
-    hexpand: false,
+    hexpand: true,
     vexpand: false,
     halign: Gtk.Align.CENTER,
     valign: Gtk.Align.CENTER,

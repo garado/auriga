@@ -13,7 +13,6 @@ import { bind, Binding } from "astal";
 import { Gtk, Widget, astalify } from "astal/gtk4";
 import { exec } from "astal/process";
 import Battery from "gi://AstalBattery";
-import Gio from "gi://Gio";
 
 import SettingsManager from "@/services/settings";
 import { CMD } from "@/utils/Commands";
@@ -23,7 +22,7 @@ import { CMD } from "@/utils/Commands";
  *****************************************************************************/
 
 const homeConfig = SettingsManager.get_default().config.dashHome;
-const Picture = astalify(Gtk.Picture);
+const Image = astalify(Gtk.Image);
 const bat = Battery.get_default();
 
 /*****************************************************************************
@@ -87,11 +86,11 @@ const Fetch = () =>
   });
 
 const Profile = () =>
-  Picture({
+  Image({
     cssClasses: ["pfp"],
+    overflow: Gtk.Overflow.HIDDEN,
     setup: (self) => {
-      self.set_content_fit(Gtk.ContentFit.COVER);
-      self.set_file(Gio.File.new_for_path(homeConfig.profile.pfp));
+      self.set_from_file(homeConfig.profile.pfp);
     },
   });
 
@@ -99,9 +98,11 @@ export const SysFetch = () =>
   Widget.Box({
     name: "sysinfo",
     cssClasses: ["sysinfo"],
+    halign: Gtk.Align.CENTER,
+    valign: Gtk.Align.CENTER,
     vertical: false,
     vexpand: false,
+    hexpand: false,
     spacing: 20,
-    halign: Gtk.Align.BASELINE_CENTER,
     children: [Profile(), Fetch()],
   });
