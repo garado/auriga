@@ -13,7 +13,8 @@
 import { Gtk, Widget, astalify } from "astal/gtk4";
 import { bind } from "astal";
 
-import Ledger, { TransactionData } from "@/services/ledger";
+import Ledger from "@/services/ledger";
+import { TransactionData } from "@/services/ledger/Types";
 
 /*****************************************************************************
  * Module-level variables
@@ -80,6 +81,7 @@ const processTransactionAmount = (rawAmount: string) => {
  */
 const createTransactionIcon = (transactionData: TransactionData) =>
   Widget.CenterBox({
+    vexpand: false,
     cssClasses: [CSS_CLASSES.iconBox],
     centerWidget: Widget.Image({
       // @TODO Implement icon mapping based on transaction description
