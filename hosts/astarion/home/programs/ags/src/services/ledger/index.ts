@@ -22,6 +22,7 @@ import {
   CashFlow,
 } from "./Types";
 import { CMD } from "@/utils/Commands";
+import { dummyLedgerData } from "./DummyData";
 
 /*****************************************************************************
  * Module-level variables
@@ -34,6 +35,23 @@ const BALANCE_TREND_CACHEFILE = `${GLib.get_user_cache_dir()}/astal/ledgerbal`;
 const INCLUDES = ledgerConfig.includes
   .map((file: string) => `-f "${file.replace(/"/g, '\\"')}"`)
   .join(" ");
+
+/*****************************************************************************
+ * Enums/interfaces
+ *****************************************************************************/
+
+/** All data used by the ledger interface. */
+interface LedgerData {
+  balancesOverTime: number[];
+  accountData: Account[];
+  recentTransactions: TransactionData[];
+  debtsAndLoans: Record<string, DebtItem[]>;
+  recentCategorySpending: CategorySpending[];
+  recentIncome: number;
+  recentExpenses: number;
+  netWorth: number;
+  monthlySpendingByCategory: Object;
+}
 
 /*****************************************************************************
  * Class definition
@@ -52,7 +70,39 @@ export default class Ledger extends GObject.Object {
     return this.instance;
   }
 
+  // Private variables ---------------------------------------------------------
+  #hledgerCmd: string = `${CMD.hledger} ${INCLUDES} `;
+
+  // Real and fake ledger data
+  private realData: LedgerData;
+  private fakeData: LedgerData;
+
+  private _obfuscate: boolean = true;
+
   // Properties ----------------------------------------------------------------
+
+  /** Whether to obfuscate ledger data */
+  @property(Boolean)
+  get obfuscate() {
+    return this._obfuscate;
+  }
+
+  set obfuscate(doObfuscate: boolean) {
+    const target = doObfuscate ? this.fakeData : this.realData;
+
+    this.accountData = target.accountData;
+    this.netWorth = target.netWorth;
+    this.recentIncome = target.recentIncome;
+    this.recentExpenses = target.recentExpenses;
+    this.debtsAndLoans = target.debtsAndLoans;
+    this.recentTransactions = target.recentTransactions;
+    this.recentCategorySpending = target.recentCategorySpending;
+    this.balancesOverTime = target.balancesOverTime;
+    this.monthlySpendingByCategory = target.monthlySpendingByCategory;
+
+    this._obfuscate = doObfuscate;
+    this.notify("obfuscate");
+  }
 
   /**
    * Array of historical net worth values over time.
@@ -111,33 +161,38 @@ export default class Ledger extends GObject.Object {
   @property(Object)
   declare monthlySpendingByCategory: Object;
 
-  // Private variables ---------------------------------------------------------
-  #hledgerCmd: string = `${CMD.hledger} ${INCLUDES} `;
-
   // Private functions ---------------------------------------------------------
   constructor() {
     super();
 
-    // Default values
-    this.accountData = [];
-    this.netWorth = 0;
-    this.recentIncome = 0;
-    this.recentExpenses = 0;
-    this.debtsAndLoans = {};
-    this.recentCategorySpending = [];
-    this.balancesOverTime = [];
-    this.monthlySpendingByCategory = {
-      subcategories: {},
-      subtotal: [0],
+    // Default values for real data
+    this.realData = {
+      accountData: [],
+      netWorth: 0,
+      recentIncome: 0,
+      recentExpenses: 0,
+      debtsAndLoans: {},
+      recentTransactions: [],
+      recentCategorySpending: [],
+      balancesOverTime: [],
+      monthlySpendingByCategory: {
+        subcategories: {},
+        subtotal: [0],
+      },
     };
 
-    this.initAll();
+    // Default values for fake data
+    this.fakeData = dummyLedgerData;
+
+    // Display obfuscated ledger data on startup
+    // A keybind toggles obfuscate state (obfusc-state?)
+    this.obfuscate = true;
+
+    this.initRealData();
   }
 
-  /**
-   * Initialize the service's data.
-   */
-  async initAll() {
+  /** Initialize the service's data. */
+  async initRealData() {
     // Check if hledger files are even there. If not, skip all of init
     if (!(await this.#testIncludeFilesExist())) {
       console.warn(
@@ -169,14 +224,14 @@ export default class Ledger extends GObject.Object {
   }
 
   async #initAccountData() {
-    this.accountData = await LedgerQuery.accountData(
+    this.realData.accountData = await LedgerQuery.accountData(
       this.#hledgerCmd,
       ledgerConfig.accountList,
     );
   }
 
   async #initNetWorth() {
-    this.netWorth = await LedgerQuery.netWorth(this.#hledgerCmd);
+    this.realData.netWorth = await LedgerQuery.netWorth(this.#hledgerCmd);
   }
 
   async #initMonthlyCashFlow() {
@@ -184,35 +239,36 @@ export default class Ledger extends GObject.Object {
       this.#hledgerCmd,
     );
 
-    this.recentIncome = monthlyCashFlow.income;
-    this.recentExpenses = monthlyCashFlow.expenses;
+    this.realData.recentIncome = monthlyCashFlow.income;
+    this.realData.recentExpenses = monthlyCashFlow.expenses;
   }
 
   async #initDebts() {
-    this.debtsAndLoans = await LedgerQuery.debtsLoans(this.#hledgerCmd);
+    this.realData.debtsAndLoans = await LedgerQuery.debtsLoans(
+      this.#hledgerCmd,
+    );
   }
 
   async #initRecentCategorySpending() {
-    this.recentCategorySpending = await LedgerQuery.categorySpending(
+    this.realData.recentCategorySpending = await LedgerQuery.categorySpending(
       this.#hledgerCmd,
     );
   }
 
   async #initBalanceTrends() {
-    this.balancesOverTime = await LedgerQuery.balanceTrends(
+    this.realData.balancesOverTime = await LedgerQuery.balanceTrends(
       this.#hledgerCmd,
       BALANCE_TREND_CACHEFILE,
     );
   }
 
   async #initSpendingAnalysis() {
-    this.monthlySpendingByCategory = await LedgerQuery.spendingAnalysis(
-      this.#hledgerCmd,
-    );
+    this.realData.monthlySpendingByCategory =
+      await LedgerQuery.spendingAnalysis(this.#hledgerCmd);
   }
 
   async #initRecentTransactions() {
-    this.recentTransactions = await LedgerQuery.recentTransactions(
+    this.realData.recentTransactions = await LedgerQuery.recentTransactions(
       this.#hledgerCmd,
     );
   }

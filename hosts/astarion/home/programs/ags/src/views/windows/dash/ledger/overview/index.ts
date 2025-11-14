@@ -58,7 +58,7 @@ export const Overview = () => {
         widget: self,
         binds: {
           [KEYBOARD_SHORTCUTS.REFRESH_LEDGER]: () =>
-            Ledger.get_default().initAll(),
+            Ledger.get_default().initRealData(),
         },
       });
     },
