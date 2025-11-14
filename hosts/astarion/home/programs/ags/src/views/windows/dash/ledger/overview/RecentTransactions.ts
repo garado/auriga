@@ -55,7 +55,7 @@ const AMOUNT_INDICATORS = {
 } as const;
 
 /*****************************************************************************
- * Widget definitions
+ * Helper functions
  *****************************************************************************/
 
 /**
@@ -74,12 +74,16 @@ const processTransactionAmount = (rawAmount: string) => {
   };
 };
 
+/*****************************************************************************
+ * Widget definitions
+ *****************************************************************************/
+
 /**
  * Creates an icon widget for the transaction.
  * @param transactionData - The transaction data
  * @returns Widget containing transaction icon
  */
-const createTransactionIcon = (transactionData: TransactionData) =>
+const TransactionIcon = (transactionData: TransactionData) =>
   Widget.CenterBox({
     vexpand: false,
     cssClasses: [CSS_CLASSES.iconBox],
@@ -94,7 +98,7 @@ const createTransactionIcon = (transactionData: TransactionData) =>
  * @param date - The transaction date string
  * @returns Widget displaying transaction date
  */
-const createDateLabel = (date: string) =>
+const DateLabel = (date: string) =>
   Widget.Label({
     cssClasses: [CSS_CLASSES.date],
     halign: Gtk.Align.START,
@@ -106,7 +110,7 @@ const createDateLabel = (date: string) =>
  * @param description - The transaction description
  * @returns Widget displaying transaction description
  */
-const createDescriptionLabel = (description: string) =>
+const DescriptionLabel = (description: string) =>
   Widget.Label({
     cssClasses: [CSS_CLASSES.description],
     halign: Gtk.Align.START,
@@ -119,7 +123,7 @@ const createDescriptionLabel = (description: string) =>
  * @param isIncome - Whether this is an income transaction
  * @returns Widget displaying transaction amount
  */
-const createAmountLabel = (amount: string, isIncome: boolean) =>
+const AmountLabel = (amount: string, isIncome: boolean) =>
   Widget.Label({
     cssClasses: [isIncome ? CSS_CLASSES.amountIncome : CSS_CLASSES.amount],
     halign: Gtk.Align.END,
@@ -131,10 +135,10 @@ const createAmountLabel = (amount: string, isIncome: boolean) =>
  * @param transactionData - The transaction data
  * @returns Widget containing transaction details
  */
-const createTransactionStartSection = (transactionData: TransactionData) => {
-  const icon = createTransactionIcon(transactionData);
-  const dateLabel = createDateLabel(transactionData.date);
-  const descriptionLabel = createDescriptionLabel(transactionData.desc);
+const TransactionStartSection = (transactionData: TransactionData) => {
+  const icon = TransactionIcon(transactionData);
+  const dateLabel = DateLabel(transactionData.date);
+  const descriptionLabel = DescriptionLabel(transactionData.desc);
 
   const textContainer = Widget.Box({
     orientation: Gtk.Orientation.VERTICAL,
@@ -154,13 +158,10 @@ const createTransactionStartSection = (transactionData: TransactionData) => {
  * @param isIncome - Whether this is an income transaction
  * @returns Widget containing transaction amount
  */
-const createTransactionEndSection = (
-  displayAmount: string,
-  isIncome: boolean,
-) =>
+const TransactionEndSection = (displayAmount: string, isIncome: boolean) =>
   Widget.Box({
     vertical: true,
-    children: [createAmountLabel(displayAmount, isIncome)],
+    children: [AmountLabel(displayAmount, isIncome)],
   });
 
 /**
@@ -168,13 +169,13 @@ const createTransactionEndSection = (
  * @param transactionData - The transaction data to display
  * @returns Widget containing complete transaction row
  */
-const createTransactionWidget = (transactionData: TransactionData) => {
+const TransactionWidget = (transactionData: TransactionData) => {
   const { isIncome, displayAmount } = processTransactionAmount(
     transactionData.amount,
   );
 
-  const startSection = createTransactionStartSection(transactionData);
-  const endSection = createTransactionEndSection(displayAmount, isIncome);
+  const startSection = TransactionStartSection(transactionData);
+  const endSection = TransactionEndSection(displayAmount, isIncome);
 
   return Widget.CenterBox({
     cssClasses: [CSS_CLASSES.transaction],
@@ -188,7 +189,7 @@ const createTransactionWidget = (transactionData: TransactionData) => {
  * Creates the container that holds all transaction widgets.
  * @returns Widget containing list of transactions
  */
-const createTransactionContainer = () =>
+const TransactionContainer = () =>
   Widget.Box({
     cssClasses: [CSS_CLASSES.transactions],
     vexpand: true,
@@ -206,7 +207,7 @@ const createTransactionContainer = () =>
       return transactions
         .slice() // Create a copy to avoid mutating original array
         .reverse()
-        .map(createTransactionWidget);
+        .map(TransactionWidget);
     }),
   });
 
@@ -214,7 +215,7 @@ const createTransactionContainer = () =>
  * Creates the header widget for the transactions section.
  * @returns Widget containing section header
  */
-const createTransactionsHeader = () =>
+const TransactionsHeader = () =>
   Widget.Label({
     label: "Recent Transactions",
     cssClasses: [CSS_CLASSES.widgetHeader],
@@ -224,9 +225,9 @@ const createTransactionsHeader = () =>
  * Creates a scrollable container for the transactions list.
  * @returns Widget containing scrollable transactions container
  */
-const createScrollableTransactionsContainer = () =>
+const ScrollableTransactionsContainer = () =>
   ScrollableWindow({
-    child: createTransactionContainer(),
+    child: TransactionContainer(),
     vscrollbar_policy: Gtk.PolicyType.ALWAYS,
     hscrollbar_policy: Gtk.PolicyType.NEVER,
   });
@@ -242,9 +243,6 @@ export const Transactions = () => {
   return Widget.Box({
     vertical: true,
     cssClasses: [CSS_CLASSES.widgetContainer],
-    children: [
-      createTransactionsHeader(),
-      createScrollableTransactionsContainer(),
-    ],
+    children: [TransactionsHeader(), ScrollableTransactionsContainer()],
   });
 };
