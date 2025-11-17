@@ -75,9 +75,7 @@
 
 <h3>Paint mixer</h3>
 <p>
-  I like to paint (watercolor/gouache). I use this to help me match a specific
-  color from a reference image. It supports multiple palettes and caches results
-  so they're available next time I want to paint.
+  I like to paint (watercolor/gouache). I made this tool to help me mix a specific color from a reference image using the colors I have in my paint palettes.
 </p>
 <div align="center">
   <table>
