@@ -57,35 +57,24 @@ export const Prediction = (prediction: PlacePrediction) => {
     children: [icon, info],
   });
 
-  const locationPinned = Widget.Revealer({
-    revealChild: false,
-    transitionType: Gtk.RevealerTransitionType.SWING_LEFT,
-    child: Widget.Button({
-      child: Widget.Image({
-        iconName: "push-pin-symbolic",
-      }),
-    }),
-  });
-
   const setPreviewedLocation = () => {
     if (prediction !== controller.previewedLocation) {
       controller.previewedLocation = prediction;
     }
   };
 
-  const widget = Widget.CenterBox({
-    startWidget: predictionWidget,
-    endWidget: locationPinned,
+  return Widget.Button({
+    child: predictionWidget,
     cssClasses: ["place-prediction"],
     hexpand: true,
     halign: Gtk.Align.FILL,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
     onButtonPressed: (_self, event) => {
       if (event && event.get_modifier_state() & Gdk.ModifierType.CONTROL_MASK) {
-        // Ctrl+Click to toggle pin
-        locationPinned.revealChild = !locationPinned.revealChild;
+        // Ctrl+Click to pin this location
+        controller.pinLocation(prediction);
       } else {
-        // Click to set as endpoint
+        // Click to set this location as endpoint
         const endpoint: ControllerKey = controller.endpointBeingModified;
         controller[endpoint] = prediction;
       }
@@ -93,6 +82,4 @@ export const Prediction = (prediction: PlacePrediction) => {
     onFocusEnter: setPreviewedLocation,
     onHoverEnter: setPreviewedLocation,
   });
-
-  return widget;
 };
