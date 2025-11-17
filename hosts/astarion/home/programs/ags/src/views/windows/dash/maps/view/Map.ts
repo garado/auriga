@@ -12,10 +12,14 @@
 import { MapWidget } from "@/views/components/Map";
 import MapsController, { MapsState } from "../controller";
 import { Stop } from "@/services/Transit";
+import { astalify, Gtk, Widget } from "astal/gtk4";
+import { Gio } from "astal";
 
 /*****************************************************************************
  * Widget definition
  *****************************************************************************/
+
+const Picture = astalify(Gtk.Picture);
 
 export default () => {
   const controller = MapsController.get_default();
@@ -131,5 +135,34 @@ export default () => {
     }
   });
 
-  return map;
+  // Thank you to the Transit team for powering this part of the dash!
+  // https://transitapp.com/
+  const badgePath = `${SRC}/assets/transit-api-badge.svg`;
+  const PoweredByTransit = Widget.Box({
+    halign: Gtk.Align.END,
+    valign: Gtk.Align.END,
+    cssClasses: ["powered-by-transit"],
+    children: [
+      Picture({
+        vexpand: false,
+        hexpand: false,
+        setup: (self) => {
+          self.set_file(Gio.File.new_for_path(badgePath));
+          self.set_content_fit(Gtk.ContentFit.CONTAIN);
+          self.set_can_shrink(true);
+        },
+      }),
+    ],
+  });
+
+  const mapContainer = Widget.Overlay({
+    hexpand: true,
+    vexpand: true,
+    child: map,
+    setup: (self) => {
+      self.add_overlay(PoweredByTransit);
+    },
+  });
+
+  return mapContainer;
 };
