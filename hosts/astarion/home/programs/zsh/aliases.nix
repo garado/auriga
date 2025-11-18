@@ -17,6 +17,7 @@
     desk = "cd ~/Desktop";
     dots = "cd ~/Github/dotfiles/";
     docs = "cd ~/Documents";
+    mus  = "cd ~/Music";
     pics = "cd ~/Pictures";
     vids = "cd ~/Videos";
     gh   = "cd ~/Github";
@@ -28,7 +29,7 @@
     ench = "cd $ENCHIRIDION";
 
     # Quick edit
-    edl = "nvim $ENCHIRIDION/self/ledger/2024/2024.ledger";
+    edl = "cd $ENCHIRIDION/self/ledger ; nvim 2024/2024.ledger";
     todo = "cd ~/Documents/stickynotes/ ; nvim todo.md";
     
     # Nix

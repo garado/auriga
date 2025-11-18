@@ -193,6 +193,7 @@ in {
     python3 poetry
 
     # Misc
+    yt-dlp id3v2  # Music library management
     libimobiledevice ifuse  # iPhone mounting
 
     # Guitar
