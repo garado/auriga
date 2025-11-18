@@ -444,52 +444,6 @@ export default class LocationAutocomplete extends GObject.Object {
    * PUBLIC FUNCTIONS
    **************************************************/
 
-  /** Save a location */
-  savePinnedLocation = async (location: PlacePrediction) => {
-    try {
-      const pinned = await this.queryPinnedLocations();
-
-      // Avoid duplicates based on placeId
-      if (!pinned.some((p) => p.placeId === location.placeId)) {
-        pinned.push(location);
-        const data = JSON.stringify(pinned);
-        GLib.file_set_contents(this.pinnedLocationsCachePath, data);
-        log(
-          "locationService",
-          `Saved pinned location: ${location.displayName}`,
-        );
-      }
-    } catch (error) {
-      log("locationService", `Failed to save pinned location: ${error}`);
-    }
-  };
-
-  /** Query all pinned locations */
-  queryPinnedLocations = async (): Promise<PlacePrediction[]> => {
-    try {
-      const content = await execAsync(
-        `${CMD.bash} -c 'test -f "${this.pinnedLocationsCachePath}" && cat "${this.pinnedLocationsCachePath}" || echo "[]"'`,
-      );
-      return JSON.parse(content);
-    } catch (error) {
-      log("locationService", `Failed to load pinned locations: ${error}`);
-      return [];
-    }
-  };
-
-  /** Delete a pinned location */
-  deletePinnedLocation = async (placeId: string) => {
-    try {
-      const pinned = await this.queryPinnedLocations();
-      const filtered = pinned.filter((p) => p.placeId !== placeId);
-      const data = JSON.stringify(filtered);
-      GLib.file_set_contents(this.pinnedLocationsCachePath, data);
-      log("locationService", `Deleted pinned location: ${placeId}`);
-    } catch (error) {
-      log("locationService", `Failed to delete pinned location: ${error}`);
-    }
-  };
-
   /**
    * @function search
    * @brief Perform an autocomplete search and update properties.

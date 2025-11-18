@@ -24,6 +24,39 @@ const controller = MapsController.get_default();
  * Widget
  *****************************************************************************/
 
+const PinnedLocations = () => {
+  return Widget.Box({
+    vexpand: true,
+    hexpand: true,
+    vertical: true,
+    visible: bind(controller, "endpointSearchResults").as(
+      (results) => results.length == 0,
+    ),
+    children: [
+      Widget.Label({
+        cssClasses: ["pinned-locations-header"],
+        label: "Pinned Locations",
+      }),
+      Widget.Box({
+        vertical: true,
+        children: bind(controller, "pinnedLocations").as((pinned_hashmap) => {
+          const pinned = Object.values(pinned_hashmap);
+          if (pinned.length == 0) {
+            return [
+              Widget.Label({
+                cssClasses: ["pinned-placeholder"],
+                label: "Ctrl+Click a location to pin/unpin",
+              }),
+            ];
+          } else {
+            return Object.values(pinned).map(Prediction);
+          }
+        }),
+      }),
+    ],
+  });
+};
+
 const EndpointSearchResults = () => {
   return Widget.Box({
     vexpand: true,
@@ -43,6 +76,6 @@ export const endpointSelectView = () => {
     visible: bind(controller, "currentState").as(
       (state) => state === MapsState.ENDPOINTS_SELECT,
     ),
-    children: [EndpointSearchResults()],
+    children: [PinnedLocations(), EndpointSearchResults()],
   });
 };

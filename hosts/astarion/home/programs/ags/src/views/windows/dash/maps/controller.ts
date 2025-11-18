@@ -79,6 +79,8 @@ export default class MapsController extends GObject.Object {
       this._currentOrigin !== undefined &&
       this._currentDestination !== undefined;
 
+    this.endpointBeingModified = "currentDestination";
+
     this.calculateState();
     this.notify("current-origin");
   }
@@ -282,7 +284,7 @@ export default class MapsController extends GObject.Object {
   };
 
   /** Update pinned locations cachefile */
-  private updatePinnedLocations = () => {
+  private updatePinnedLocationsCache = () => {
     const json = JSON.stringify(this.pinnedLocations);
     writeFileAsync(PINNED_LOCATION_CACHEFILE, json);
   };
@@ -301,14 +303,17 @@ export default class MapsController extends GObject.Object {
 
   // Public functions --------------------------------------------------------
 
-  pinLocation = (location: PlacePrediction) => {
-    this.pinnedLocations[location.placeId] = location;
-    this.updatePinnedLocations();
-  };
+  togglePinLocation = (location: PlacePrediction) => {
+    if (Object.keys(this.pinnedLocations).includes(location.placeId)) {
+      // Unpin
+      delete this.pinnedLocations[location.placeId];
+    } else {
+      // Pin
+      this.pinnedLocations[location.placeId] = location;
+    }
 
-  unpinLocation = (location: PlacePrediction) => {
-    delete this.pinnedLocations[location.placeId];
-    this.updatePinnedLocations();
+    this.notify("pinned-locations");
+    this.updatePinnedLocationsCache();
   };
 
   swapOriginDestination = () => {
