@@ -69,9 +69,15 @@ export const Prediction = (prediction: PlacePrediction) => {
     hexpand: true,
     halign: Gtk.Align.FILL,
     cursor: Gdk.Cursor.new_from_name("pointer", null),
-    onButtonPressed: () => {
-      const endpoint: ControllerKey = controller.endpointBeingModified;
-      controller[endpoint] = prediction;
+    onButtonPressed: (_self, event) => {
+      if (event && event.get_modifier_state() & Gdk.ModifierType.CONTROL_MASK) {
+        // Ctrl+Click toggle pinning/unpinning this location
+        controller.togglePinLocation(prediction);
+      } else {
+        // Click to set this location as endpoint
+        const endpoint: ControllerKey = controller.endpointBeingModified;
+        controller[endpoint] = prediction;
+      }
     },
     onFocusEnter: setPreviewedLocation,
     onHoverEnter: setPreviewedLocation,

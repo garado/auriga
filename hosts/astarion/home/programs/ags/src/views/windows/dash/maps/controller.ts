@@ -9,10 +9,16 @@
  * Imports
  *****************************************************************************/
 
-import { GObject, register, property } from "astal/gobject";
+import { GObject, register, property, GLib } from "astal/gobject";
 import { PlacePrediction } from "@/services/LocationAutocomplete";
 import { TripPlanResponse, TripItinerary } from "@/services/Transit";
-import { AstalIO, timeout } from "astal";
+import { AstalIO, Gio, readFileAsync, timeout, writeFileAsync } from "astal";
+
+/*****************************************************************************
+ * Constants
+ *****************************************************************************/
+
+const PINNED_LOCATION_CACHEFILE = `${GLib.get_user_cache_dir()}/astal/transit/pinned_locations.json`;
 
 /*****************************************************************************
  * Types/interfaces
@@ -72,6 +78,8 @@ export default class MapsController extends GObject.Object {
     this.bothEndpointsSelected =
       this._currentOrigin !== undefined &&
       this._currentDestination !== undefined;
+
+    this.endpointBeingModified = "currentDestination";
 
     this.calculateState();
     this.notify("current-origin");
@@ -179,6 +187,13 @@ export default class MapsController extends GObject.Object {
   @property(Number)
   declare timeUntilDeparture: number;
 
+  /**
+   * Pinned locations appear while searching trip endpoints
+   * The key for this record is the PlacePrediction's placeId (a unique string)
+   */
+  @property(Object)
+  declare pinnedLocations: Record<string, PlacePrediction>;
+
   // Private variables -------------------------------------------------------
 
   private _currentTripPlan: TripPlanResponse | undefined;
@@ -197,7 +212,10 @@ export default class MapsController extends GObject.Object {
     this.endpointBeingModified = "currentOrigin";
     this.currentState = MapsState.ENDPOINTS_SELECT;
     this.sidebarRevealState = false;
+    this.pinnedLocations = {};
     this.endpointSearchResults = [];
+
+    this.fetchPinnedLocations();
   }
 
   /**
@@ -265,7 +283,38 @@ export default class MapsController extends GObject.Object {
     this._departureTimer = undefined;
   };
 
+  /** Update pinned locations cachefile */
+  private updatePinnedLocationsCache = () => {
+    const json = JSON.stringify(this.pinnedLocations);
+    writeFileAsync(PINNED_LOCATION_CACHEFILE, json);
+  };
+
+  /** Read pinned locations cachefile */
+  private fetchPinnedLocations = async () => {
+    const fileExists = Gio.File.new_for_path(
+      PINNED_LOCATION_CACHEFILE,
+    ).query_exists(null);
+
+    if (fileExists) {
+      const content = await readFileAsync(PINNED_LOCATION_CACHEFILE);
+      this.pinnedLocations = JSON.parse(content);
+    }
+  };
+
   // Public functions --------------------------------------------------------
+
+  togglePinLocation = (location: PlacePrediction) => {
+    if (Object.keys(this.pinnedLocations).includes(location.placeId)) {
+      // Unpin
+      delete this.pinnedLocations[location.placeId];
+    } else {
+      // Pin
+      this.pinnedLocations[location.placeId] = location;
+    }
+
+    this.notify("pinned-locations");
+    this.updatePinnedLocationsCache();
+  };
 
   swapOriginDestination = () => {
     // Unconditional transition to ENDPOINTS_SELECT
