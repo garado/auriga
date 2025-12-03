@@ -9,9 +9,10 @@
  * Imports
  *****************************************************************************/
 
-import { Gtk, App } from "astal/gtk4";
+import { Gtk, App, Gdk, Widget } from "astal/gtk4";
 import { exec } from "astal/process";
 import { timeout } from "astal/time";
+import AstalHyprland from "gi://AstalHyprland?version=0.1";
 
 import "@/globals.ts";
 import Bar from "@/views/windows/bar";
@@ -39,6 +40,10 @@ export const WINDOW_NAMES = {
   CONTROL: "control",
   LAUNCHER: "launcher",
 } as const;
+
+const hypr = AstalHyprland.get_default();
+
+const monitorToWindowMap: Record<number, Gtk.Window[]> = {};
 
 /*****************************************************************************
  * Helper functions
@@ -107,8 +112,23 @@ App.start({
   },
   main() {
     // One instance per monitor
-    App.get_monitors().map(Bar);
-    App.get_monitors().map(Notifications);
+    hypr.get_monitors().map(Bar);
+    hypr.get_monitors().map(Notifications);
+
+    hypr.connect("monitor-added", (_disp, monitor) => {
+      const bar = Bar(monitor);
+      const notif = Notifications(monitor);
+      monitorToWindowMap[monitor.id] = [bar, notif];
+    });
+
+    hypr.connect("monitor-removed", (_disp, monitorId) => {
+      monitorToWindowMap[monitorId]?.forEach((window) => {
+        window.close();
+        window.destroy();
+      });
+
+      delete monitorToWindowMap[monitorId];
+    });
 
     // These pop up on the same monitor as the cursor
     Dash();

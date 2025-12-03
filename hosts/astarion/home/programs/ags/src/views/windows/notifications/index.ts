@@ -10,9 +10,10 @@
  *****************************************************************************/
 
 import { bind, timeout } from "astal";
-import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
+import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Notification } from "@/views/components/Notification";
 import Nd from "gi://AstalNotifd";
+import AstalHyprland from "gi://AstalHyprland?version=0.1";
 
 /*****************************************************************************
  * Module-level variables
@@ -87,7 +88,7 @@ const Notifications = () =>
  * Export
  *****************************************************************************/
 
-export default (monitor: Gdk.Monitor) => {
+export default (monitor: AstalHyprland.Monitor) => {
   const { TOP, RIGHT } = Astal.WindowAnchor;
 
   return Widget.Window({
@@ -98,11 +99,11 @@ export default (monitor: Gdk.Monitor) => {
     anchor: TOP | RIGHT,
     visible: bind(nd, "notifications").as((n) => n.length > 0),
     child: Notifications(),
-    gdkmonitor: monitor,
+    monitor: monitor.id,
     setup: (self) => {
       // Set to full monitor height to prevent window resizing when new notifs are added,
       // which causes weird UI behavior
-      self.set_default_size(1, monitor.get_geometry().height);
+      self.set_default_size(1, monitor.height);
     },
   });
 };

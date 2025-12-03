@@ -9,12 +9,13 @@
  * Imports
  *****************************************************************************/
 
-import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk4";
+import { App, Astal, Gtk, Widget } from "astal/gtk4";
 import { Variable, bind, interval, timeout } from "astal";
 import Battery from "gi://AstalBattery";
 import Hyprland from "gi://AstalHyprland";
 import Wp from "gi://AstalWp";
 import MapsController from "../dash/maps/controller";
+import AstalHyprland from "gi://AstalHyprland?version=0.1";
 
 /*****************************************************************************
  * Module-level variables
@@ -317,7 +318,7 @@ const Bottom = () =>
     ],
   });
 
-export default (monitor: Gdk.Monitor) => {
+export default (monitor: AstalHyprland.Monitor) => {
   barInstances += 1;
 
   const { TOP, LEFT, BOTTOM } = Astal.WindowAnchor;
@@ -328,7 +329,7 @@ export default (monitor: Gdk.Monitor) => {
     exclusivity: Astal.Exclusivity.EXCLUSIVE,
     application: App,
     name: "bar",
-    gdkmonitor: monitor,
+    monitor: monitor.id,
 
     child: Widget.CenterBox({
       orientation: 1,
