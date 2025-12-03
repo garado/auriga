@@ -129,7 +129,7 @@ export default class Tasks extends GObject.Object {
    * @brief Parse projects from TaskWarrior and use them to build a tree.
    */
   #initProjectTree = () => {
-    const cmd = `${CMD.task} rc.data.location='${this.dataDirectory}' _unique project`;
+    const cmd = `${CMD.task} rc.data.location='${this.dataDirectory}' -goals _unique project`;
 
     execAsync(`${CMD.bash} -c "${cmd}"`)
       .then((out) => {
@@ -178,7 +178,7 @@ export default class Tasks extends GObject.Object {
       (project.hierarchy.length > 0 ? "." : "") +
       project.name;
 
-    const cmd = `${CMD.task} rc.data.location='${this.dataDirectory}' project:${projectPath} export`;
+    const cmd = `${CMD.task} rc.data.location='${this.dataDirectory}' project:${projectPath} -goals export`;
 
     execAsync(`${CMD.bash} -c "${cmd}"`)
       .then((out) => {
