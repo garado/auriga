@@ -15,6 +15,7 @@ import { bind } from "astal";
 
 import Ledger from "@/services/ledger";
 import { TransactionData } from "@/services/ledger/Types";
+import Pango from "gi://Pango?version=1.0";
 
 /*****************************************************************************
  * Module-level variables
@@ -114,6 +115,7 @@ const DescriptionLabel = (description: string) =>
   Widget.Label({
     cssClasses: [CSS_CLASSES.description],
     halign: Gtk.Align.START,
+    ellipsize: Pango.EllipsizeMode.END,
     label: description,
   });
 
