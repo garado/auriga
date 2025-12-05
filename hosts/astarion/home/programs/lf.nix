@@ -16,19 +16,15 @@
     };
 
     keybindings = {
-      # ee = "editor-open";
       "<enter>" = "open";
       "x" = "cut";
       "d" = "delete";
       "c" = "copyPath";
-      "s" = "playkill";
+      "s" = "play";
       "m" = "mkdir";
-      "b" = "bulkrename";
     };
 
     commands = {
-      editor-open = ''$$EDITOR $f'';
-
       mkdir = ''
       ''${{
         printf "New directory name: "
@@ -42,10 +38,14 @@
         echo -n $fx | xclip -selection clipboard 
       }}
       '';
-      
-      playkill = ''
-      ''${{
-        pkill -f "play"
+
+      play =
+      ''
+      %{{
+        (pkill -9 "play" 2>/dev/null || true) &
+        if [[ "$( ${pkgs.file}/bin/file -Lb --mime-type "$f")" =~ ^audio ]]; then
+          ${pkgs.sox}/bin/play "$f" </dev/null >/dev/null 2>&1 & disown
+        fi
       }}
       '';
     };
@@ -64,10 +64,6 @@
         if [[ "$( ${pkgs.file}/bin/file -Lb --mime-type "$file")" =~ ^image ]]; then
             ${pkgs.kitty}/bin/kitty +kitten icat --silent --stdin no --transfer-mode file --place "''${w}x''${h}@''${x}x''${y}" "$file" < /dev/null > /dev/tty
             exit 1
-        elif [[ "$( ${pkgs.file}/bin/file -Lb --mime-type "$file")" =~ ^audio ]]; then
-            pkill play
-            play "$file" & disown
-            exit 0
         fi
 
         ${pkgs.pistol}/bin/pistol "$file"
