@@ -21,15 +21,18 @@
       "d" = "delete";
       "c" = "copyPath";
       "s" = "play";
+      "S" = "playkill";
       "m" = "mkdir";
     };
 
     commands = {
       mkdir = ''
       ''${{
-        printf "New directory name: "
-        read DIR
-        mkdir $DIR
+        dir="$(lf -remote 'read "New directory:"')"
+        if [ -n "$dir" ]; then
+          mkdir -p "$dir"
+          lf -remote "send reload"
+        fi
       }}
       '';
 
@@ -39,6 +42,7 @@
       }}
       '';
 
+      # Preview audio files with `play`
       play =
       ''
       %{{
@@ -46,6 +50,40 @@
         if [[ "$( ${pkgs.file}/bin/file -Lb --mime-type "$f")" =~ ^audio ]]; then
           ${pkgs.sox}/bin/play "$f" </dev/null >/dev/null 2>&1 & disown
         fi
+      }}
+      '';
+
+      # Kill audio preview
+      playkill =
+      ''
+      %{{
+        (pkill -9 "play" 2>/dev/null || true) &
+      }}
+      '';
+
+      # Override lf's default file opening behavior
+      open = ''
+      ''${{
+        case "$f" in
+          # text files: open in editor
+          *.txt|*.md|*.nix|*.json|*.yaml|*.yml|*.log|*.c|*.cpp|*.py|*.sh)
+            $EDITOR "$f"
+            ;;
+          
+          # pdf: open in zathura
+          *.pdf)
+            ${pkgs.zathura}/bin/zathura "$f"
+            ;;
+
+          # audio files: do nothing (prevent opening)
+          *.mp3|*.flac|*.wav|*.ogg|*.m4a)
+            ;;
+
+          # everything else: use xdg-open (NixOS-safe)
+          *)
+            xdg-open "$f" >/dev/null 2>&1 &
+            ;;
+        esac
       }}
       '';
     };
@@ -61,9 +99,15 @@
         x=$4
         y=$5
 
+        # TODO: pdf, video
         if [[ "$( ${pkgs.file}/bin/file -Lb --mime-type "$file")" =~ ^image ]]; then
-            ${pkgs.kitty}/bin/kitty +kitten icat --silent --stdin no --transfer-mode file --place "''${w}x''${h}@''${x}x''${y}" "$file" < /dev/null > /dev/tty
-            exit 1
+          # images: native kitty img rendering
+          ${pkgs.kitty}/bin/kitty +kitten icat --silent --stdin no --transfer-mode file --place "''${w}x''${h}@''${x}x''${y}" "$file" < /dev/null > /dev/tty
+          exit 1
+        elif [[ "$(file -b --mime-type "$file")" =~ ^audio ]]; then
+          # audio: preview metadata
+          eyeD3 "$file" | head -n 10
+          exit 1
         fi
 
         ${pkgs.pistol}/bin/pistol "$file"
