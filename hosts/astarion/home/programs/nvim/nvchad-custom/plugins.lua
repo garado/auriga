@@ -128,13 +128,13 @@ local plugins = {
       vim.g.taskwiki_dont_fold = 'yes'
       vim.g.taskwiki_dont_preserve_folds = 'yes'
 
-      vim.g.taskwiki_data_location = "~/Enchiridion/self/todo/.taskwiki/"
-
-      vim.g.taskwiki_extra_warriors = {
-        T = {
-          data_location = '/home/alexis/Enchiridion/self/todo/.taskwiki/',
-        }
-      }
+      -- vim.g.taskwiki_data_location = "~/Enchiridion/self/todo/.taskwiki/"
+      --
+      -- vim.g.taskwiki_extra_warriors = {
+      --   T = {
+      --     data_location = '/home/alexis/Enchiridion/self/todo/.taskwiki/',
+      --   }
+      -- }
 
       -- vim.g.taskwiki_extra_warriors = [
       --   'H' = [

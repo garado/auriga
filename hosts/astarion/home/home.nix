@@ -37,6 +37,7 @@
       (python3.withPackages (ps: with ps; [
         # Packages from nixpkgs
         pynvim
+        pip
 
         # Build a package from PyPI
         (buildPythonPackage rec {
@@ -112,6 +113,11 @@
     enable = true;
     userName = "garado";
     userEmail = "alexisgarado@gmail.com";
+    extraConfig = {
+      core.quotepath = false;
+      i18n.commitencoding = "utf-8";
+      i18n.logoutputencoding = "utf-8";
+    };
   };
 
   programs.ledger = {

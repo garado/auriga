@@ -6,7 +6,8 @@
   programs.zsh.shellAliases = {
     # Shell commands
     c = "clear";
-    lsa = "ls -la";
+    l = "ls -X --group-directories-first";
+    lsa = "ls -laX --group-directories-first";
     p = "pwd";
     pclip = "pwd | wl-copy";
     
@@ -56,7 +57,20 @@
     texshell = "nix-shell ${self}/devshell/latex-shell.nix";
 
     # Development
-    py = "python3";
+    py = "python3.11";
     m = "make";
   };
+
+  programs.zsh.initContent = ''
+    lfcd() {
+      tmp="$(mktemp)"
+      lf -last-dir-path="$tmp" "$@"
+      if [ -f "$tmp" ]; then
+        dir="$(cat "$tmp")"
+        rm -f "$tmp"
+        [ -d "$dir" ] && cd "$dir"
+      fi
+    }
+    alias lf="lfcd"
+  '';
 }

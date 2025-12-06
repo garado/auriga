@@ -95,6 +95,7 @@ in {
       AGSCFG = "$HOME/Github/dotfiles/hosts/astarion/home/services/ags/";
       NVCFG = "$HOME/Github/dotfiles/hosts/astarion/home/programs/nvim/nvchad-custom/";
       DOTS = "$HOME/Github/dotfiles/hosts/astarion/";
+      MUSIC = "$HOME/Music/Library/";
     };
   };
 
@@ -190,10 +191,14 @@ in {
     go hugo
 
     # Python dev
-    python3 poetry
+    poetry
+    (python311.withPackages (ps: with ps; [
+      pyyaml
+    ]))
+
 
     # Misc
-    yt-dlp id3v2  # Music library management
+    yt-dlp id3v2 eyed3  # Music library management
     libimobiledevice ifuse  # iPhone mounting
 
     # Guitar
