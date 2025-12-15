@@ -109,10 +109,6 @@
         preserve_split = "yes";
       };
      
-      gestures = {
-        workspace_swipe = "on";
-      };
-      
       "$mainMod" = "SUPER";
 
       # Keybinds: Press and hold

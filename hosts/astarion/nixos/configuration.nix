@@ -198,7 +198,8 @@ in {
 
 
     # Misc
-    yt-dlp id3v2 eyed3  # Music library management
+    yt-dlp id3v2 cmus cmusfm # Music library
+    pkgs.python311Packages.mutagen # Or another desired Python version, e.g., python312Packages.mutagen
     libimobiledevice ifuse  # iPhone mounting
 
     # Guitar
@@ -210,6 +211,7 @@ in {
 
     # *gag*
     wineWowPackages.stable
+
   ];
 
   musnix.enable = true;
