@@ -9,6 +9,44 @@ require('lze').load {
   require('plugins.treesitter'),
 
   {
+    "telescope.nvim",
+    enabled = true,
+    cmd = { "Telescope" },
+    load = function(name)
+      vim.cmd.packadd(name)
+      require("telescope").setup({
+        defaults = {
+          prompt_prefix = "   ",
+          selection_caret = " ",
+          entry_prefix = " ",
+          sorting_strategy = "ascending",
+          layout_strategy = "horizontal",
+          layout_config = {
+            horizontal = {
+              prompt_position = "top",
+              preview_width = 0.55,
+            },
+            width = 0.87,
+            height = 0.80,
+          },
+          border = true,
+          borderchars = {
+            prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
+            results = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
+            preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+          },
+          mappings = {
+            i = {
+              ["<Tab>"] = "move_selection_next",
+              ["<S-Tab>"] = "move_selection_previous",
+            },
+          },
+        },
+      })
+    end,
+  },
+
+  {
     "nvim-numbertoggle",
     enabled = true,
     event = "BufReadPre",
@@ -25,10 +63,11 @@ require('lze').load {
       vim.cmd.packadd(name)
       require("bufferline").setup({
         options = {
+          show_buffer_icons = false,
           offsets = {
             {
               filetype = "NvimTree",
-              text = "File Explorer",
+              text = "",
               highlight = "Directory",
               text_align = "left"
             }
@@ -40,19 +79,37 @@ require('lze').load {
 
   {
     "lualine.nvim",
-    dependencies = "nvim-tree/nvim-web-devicons",
-    event = "BufReadPost",
-    load = function(name)
-      vim.cmd.packadd(name)
-      require('lualine').setup({
-        options = {
-          theme = 'auto',
-          section_separators = { left = '', right = '' },
-          component_separators = { left = '', right = '' },
-        },
-      })
-    end,
-  },
+     enabled = nixCats('general') or false,
+     event = "DeferredUIEnter",
+     load = function (name)
+       vim.cmd.packadd(name)
+     end,
+     after = function (plugin)
+       require('lualine').setup({
+         options = {
+           icons_enabled = false,
+           theme = 'auto',
+           component_separators = '|',
+           section_separators = '',
+         },
+         sections = {
+           lualine_c = {
+             {
+               'filename', path = 1, status = true,
+             },
+           },
+         },
+         inactive_sections = {
+           lualine_b = {
+             {
+               'filename', path = 3, status = true,
+             },
+           },
+           lualine_x = {'filetype'},
+         },
+       })
+     end,
+   },
 
   {
     "nvim-tree.lua",

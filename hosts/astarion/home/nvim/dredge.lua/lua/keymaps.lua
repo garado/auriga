@@ -9,9 +9,6 @@ map('n', '<leader>x', function()
   vim.cmd('bd ' .. buf)
 end)
 
--- Reload config
--- map('n', '<leader>r', '<cmd>source $MYVIMRC<cr>', { desc = 'Reload config' })
-
 -- Switch to next/prev buffers
 map('n', '<Tab>', '<cmd>BufferLineCycleNext<cr>')
 map('n', '<S-Tab>', '<cmd>BufferLineCyclePrev<cr>')
