@@ -79,6 +79,7 @@ in {
             better-escape-nvim  # jk to escape
             lualine-nvim        # statusline
             snacks-nvim         # qol improvements
+            comment-nvim        # comments
 
             mini-nvim
             nvim-lspconfig
