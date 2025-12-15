@@ -9,6 +9,15 @@ require('lze').load {
   require('plugins.treesitter'),
 
   {
+    "comment.nvim",
+    enabled = true,
+    event = "BufReadPre",
+    load = function(name)
+      vim.cmd.packadd(name)
+    end,
+  },
+
+  {
     "telescope.nvim",
     enabled = true,
     cmd = { "Telescope" },
