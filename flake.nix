@@ -6,6 +6,7 @@
 
   # The `inputs` attribute lists other flakes you would like to use.
   inputs = {
+    nixCats.url = "github:BirdeeHub/nixCats-nvim";
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
 

@@ -19,4 +19,8 @@ M.plugins = "custom.plugins"
 -- check core.mappings for table structure
 M.mappings = require "custom.mappings"
 
+M.lazy_nvim = {
+  lockfile = vim.fn.stdpath("data") .. "/lazy-lock.json",
+}
+
 return M
