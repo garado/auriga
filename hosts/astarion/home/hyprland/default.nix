@@ -18,7 +18,7 @@
       # Execute these programs at launch
       exec-once = [
         "sleep 1 && swww-daemon &"
-        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags/ ; ags run app-lock.ts & sleep 1 ; ags run app.ts --gtk4"
+        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/shell/ags-ts/ ; ags run app-lock.ts & sleep 1 ; ags run app.ts --gtk4"
       ];
 
       # Plugin options
@@ -132,7 +132,7 @@
         "ALT_L SHIFT, L, exec, astal -i lock lock"
 
         # Restart desktop shell
-        "ALT_L SHIFT, r, exec, cd /home/alexis/Github/dotfiles/hosts/astarion/home/programs/ags ; ags quit -i app ; ags run app.ts --gtk4"
+        "ALT_L SHIFT, r, exec, cd /home/alexis/Github/dotfiles/hosts/astarion/home/shell/ags-ts ; ags quit -i app ; ags run app.ts --gtk4"
 
         # Screenshot
         "$mainMod SHIFT, s, exec, grimblast copy area"

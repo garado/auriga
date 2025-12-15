@@ -1,0 +1,11 @@
+new_tab ts
+cd $HOME/Github/dotfiles/hosts/astarion/home/shell/ags-ts/
+launch nvim
+
+new_tab sass
+cd $HOME/Github/dotfiles/hosts/astarion/home/shell/ags-ts/src/styles/
+launch nvim
+
+new_tab ags
+cd $HOME/Github/dotfiles/hosts/astarion/home/shell/ags-ts/
+launch zsh

@@ -7,12 +7,18 @@
 { self, inputs, lib, config, pkgs, ... }: {
 
   imports = [
-    # These come from inputs defined in `flake.nix`
+    # Defined in flake.nix
     inputs.ags.homeManagerModules.default
 
     # Import other pieces of config
-    ./programs
-    ./services/kanshi.nix
+    ./gtk
+    ./hyprland
+    ./kitty
+    ./lf
+    ./nvim
+    # ./qutebrowser
+    ./taskwarrior
+    ./zsh
   ];
 
   # Explicitly define allowed unfree packages
@@ -87,7 +93,7 @@
     enable = true;
 
     # symlinked to ~/.config/ags
-    configDir = ./programs/ags;
+    configDir = ./shell/ags-ts;
 
     extraPackages = with pkgs; [
       gtksourceview5 libpng /** Source code */

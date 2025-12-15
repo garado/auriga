@@ -26,7 +26,7 @@
     tabs = "cd ~/Documents/Music/guitar/";
 
     cfg = "cd ~/.config";
-    cfgags = "cd ~/Github/dotfiles/hosts/astarion/home/programs/ags/";
+    cfgags = "cd ~/Github/dotfiles/hosts/astarion/home/shell/ags-ts/";
     ench = "cd $ENCHIRIDION";
 
     # Quick edit
