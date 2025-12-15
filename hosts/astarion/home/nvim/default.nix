@@ -56,13 +56,17 @@ in {
         # Plugins loaded at startup (without packadd)
         startupPlugins = {
           general = with pkgs.vimPlugins; [
-            # lazy loading isnt required with a config this small
-            # but as a demo, we do it anyway.
-            lze
-            lzextras
-            snacks-nvim
-            onedark-nvim
-            vim-sleuth
+            alpha-nvim          # aesthetic startup screen
+            nvim-numbertoggle   # auto switch between relative/absolute line numbers
+            nvim-tree-lua       # sidebar file browser
+            base46              # themes
+            telescope-nvim      # find, filter, preview, pick
+            better-escape-nvim  # jk to escape
+            bufferline-nvim     # tab buffer
+
+            lze lzextras    # lazy loading
+            snacks-nvim     # qol improvements
+            vim-sleuth      # autoset buffer options
           ];
         };
 
