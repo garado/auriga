@@ -1,5 +1,5 @@
 
--- Hide statusbar when alpha is visible
+-- Hide statusbar, tabline, ruler when alpha is visible
 vim.api.nvim_create_autocmd("User", {
   pattern = "AlphaReady",
   callback = function()
@@ -7,7 +7,7 @@ vim.api.nvim_create_autocmd("User", {
   end,
 })
 
--- Restore statusbar when alpha exits
+-- Restore statusbar, tabline, ruler when alpha exits
 vim.api.nvim_create_autocmd("BufEnter", {
   callback = function()
     if vim.bo.filetype ~= "alpha" then
@@ -15,23 +15,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
     end
   end,
 })
-
--- -- Hide tabline when alpha is visible
--- vim.api.nvim_create_autocmd("FileType", {
---   pattern = "alpha",
---   callback = function()
---     vim.opt_local.showtabline = 0
---   end,
--- })
--- 
--- -- Restore tabline when alpha exits
--- vim.api.nvim_create_autocmd("BufEnter", {
---   callback = function()
---     if vim.bo.filetype ~= "alpha" then
---       vim.opt.showtabline = 2  -- or 1 for auto
---     end
---   end,
--- })
 
 config = {
   "goolord/alpha-nvim",

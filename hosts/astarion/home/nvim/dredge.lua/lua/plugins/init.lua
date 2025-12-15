@@ -6,18 +6,23 @@
 
 require('lze').load {
   require('plugins.alpha-nvim'),
+  require('plugins.treesitter'),
 
   {
     "nvim-numbertoggle",
     enabled = true,
     event = "BufReadPre",
+    load = function(name)
+      vim.cmd.packadd(name)
+    end,
   },
 
   {
-    "bufferline.nvim",
+    "bufferline-nvim",
     enabled = true,
     event = "BufEnter",
-    load = function()
+    load = function(name)
+      vim.cmd.packadd(name)
       require("bufferline").setup({
         options = {
           offsets = {
@@ -34,10 +39,27 @@ require('lze').load {
   },
 
   {
+    "lualine.nvim",
+    dependencies = "nvim-tree/nvim-web-devicons",
+    event = "BufReadPost",
+    load = function(name)
+      vim.cmd.packadd(name)
+      require('lualine').setup({
+        options = {
+          theme = 'auto',
+          section_separators = { left = '', right = '' },
+          component_separators = { left = '', right = '' },
+        },
+      })
+    end,
+  },
+
+  {
     "nvim-tree.lua",
     enabled = true,
-    event = "BufEnter",
-    load = function()
+    cmd = { "NvimTreeToggle", "NvimTreeFocus" },
+    load = function(name)
+      vim.cmd.packadd(name)
       require("nvim-tree").setup({
         renderer = {
           root_folder_label = false,
@@ -53,7 +75,8 @@ require('lze').load {
     "better-escape.nvim",
     enabled = true,
     event = "InsertEnter",
-    load = function()
+    load = function(name)
+      vim.cmd.packadd(name)
       require("better_escape").setup({
         mapping = {"jk"},
         timeout = 200,

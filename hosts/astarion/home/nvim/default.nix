@@ -57,16 +57,10 @@ in {
         startupPlugins = {
           general = with pkgs.vimPlugins; [
             alpha-nvim          # aesthetic startup screen
-            nvim-numbertoggle   # auto switch between relative/absolute line numbers
-            nvim-tree-lua       # sidebar file browser
-            base46              # themes
-            telescope-nvim      # find, filter, preview, pick
-            better-escape-nvim  # jk to escape
-            bufferline-nvim     # tab buffer
-
-            lze lzextras    # lazy loading
-            snacks-nvim     # qol improvements
-            vim-sleuth      # autoset buffer options
+            bufferline-nvim     # tab bar
+            nvim-web-devicons   # small dependency needed by other plugins
+            vim-sleuth          # small utility plugin
+            lze lzextras        # lazy loading
           ];
         };
 
@@ -79,12 +73,17 @@ in {
             lazydev-nvim
           ];
           general = with pkgs.vimPlugins; [
+            nvim-numbertoggle   # auto switch between relative/absolute line numbers
+            nvim-tree-lua       # sidebar file browser
+            telescope-nvim      # find, filter, preview, pick
+            better-escape-nvim  # jk to escape
+            lualine-nvim        # statusline
+            snacks-nvim         # qol improvements
+
             mini-nvim
             nvim-lspconfig
             vim-startuptime
             blink-cmp
-            nvim-treesitter.withAllGrammars
-            lualine-nvim
             lualine-lsp-progress
             gitsigns-nvim
             which-key-nvim
@@ -93,6 +92,28 @@ in {
             nvim-dap
             nvim-dap-ui
             nvim-dap-virtual-text
+
+            nvim-treesitter
+            # nvim-treesitter-parsers.zsh  # in 25.11
+            nvim-treesitter-parsers.xml
+            nvim-treesitter-parsers.vim
+            nvim-treesitter-parsers.typescript
+            nvim-treesitter-parsers.tsv
+            nvim-treesitter-parsers.scss
+            nvim-treesitter-parsers.regex
+            nvim-treesitter-parsers.nix
+            nvim-treesitter-parsers.python
+            nvim-treesitter-parsers.markdown
+            nvim-treesitter-parsers.lua
+            nvim-treesitter-parsers.ledger
+            nvim-treesitter-parsers.javascript
+            nvim-treesitter-parsers.css
+            nvim-treesitter-parsers.diff
+            nvim-treesitter-parsers.cpp
+            nvim-treesitter-parsers.cmake
+            nvim-treesitter-parsers.c
+            nvim-treesitter-parsers.bash
+            nvim-treesitter-parsers.awk
           ];
         };
 
@@ -121,7 +142,7 @@ in {
             wrapRc = false;
             unwrappedCfgPath = "/home/alexis/Github/dotfiles/hosts/astarion/home/nvim/dredge.lua";
 
-            aliases = [ "vim" "homeVim" "nvim" "dredge" ];
+            aliases = [ "vim" "nvim" "dredge" ];
 
             suffix-path = true;
             suffix-LD = true;
