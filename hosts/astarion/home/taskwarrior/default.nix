@@ -6,7 +6,7 @@
   programs.taskwarrior = {
     enable = true;
     
-    package = pkgs.taskwarrior;
+    package = pkgs.taskwarrior2;
 
     dataLocation = "/home/alexis/Documents/tasks/";
 
