@@ -14,7 +14,7 @@
       # (nerdfonts.override { fonts = [ "DroidSansMono" "NerdFontsSymbolsOnly"]; })
     
       noto-fonts
-      noto-fonts-emoji
+      noto-fonts-color-emoji
 
       # Monospace
       monocraft

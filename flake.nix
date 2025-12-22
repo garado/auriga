@@ -8,7 +8,8 @@
   inputs = {
     nixCats.url = "github:BirdeeHub/nixCats-nvim";
 
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs-2505.url = "github:nixos/nixpkgs/nixos-25.05";
 
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
@@ -19,10 +20,10 @@
 
     swww.url = "github:LGFae/swww";
 
-    waveforms.url = "github:liff/waveforms-flake?rev=c6fac3b8694ab95a3f4204b6bf110df9d2594d0f";
+    # waveforms.url = "github:liff/waveforms-flake?rev=c6fac3b8694ab95a3f4204b6bf110df9d2594d0f";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -33,7 +34,7 @@
     # Widgets
     ags = {
       url = "github:Aylur/ags/v2.3.0";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-2505";  # ags v2 needs nixpkgs 25.05
     };
 
     # Real-time audio
@@ -48,8 +49,9 @@
     self,
     home-manager,
     nixpkgs,
+    nixpkgs-2505,
     nixpkgs-unstable,
-    waveforms,
+    # waveforms,
     ... 
   } @ inputs: {
 
@@ -66,7 +68,7 @@
         modules = [
           ./hosts/astarion/nixos/configuration.nix
 
-          waveforms.nixosModule
+          # waveforms.nixosModule
           ({ users.users.alexis.extraGroups = [ "plugdev" ]; })
 
           inputs.musnix.nixosModules.musnix
@@ -75,7 +77,10 @@
 
           {
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = {inherit self inputs nixpkgs-unstable;};
+            home-manager.extraSpecialArgs = {
+              inherit self inputs nixpkgs-unstable;
+              pkgs-2505 = import nixpkgs-2505 { system = "x86_64-linux"; };
+            };
             home-manager.backupFileExtension = "hm-backup";
             home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
           }

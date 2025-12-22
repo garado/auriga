@@ -7,7 +7,12 @@
 { self, inputs, lib, config, pkgs, musnix, ... }: 
 let
   unstable = inputs.nixpkgs-unstable;
-in {
+
+  pkgs-2511 = import (fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/nixos-25.11.tar.gz";
+    sha256 ="0gwxhs3j1nglyymbaqyqg8miz0rk84n4ijag5s4bx6yfb6vrd4lv";
+  }) { inherit (pkgs) system; };
+in }
 
   # --------------------------------------------
   # BASIC SYSTEM CONFIGURATION
@@ -109,8 +114,6 @@ in {
       pushover_user   = { owner = "alexis"; mode = "0400"; };
       pushover_api    = { owner = "alexis"; mode = "0400"; };
       openweather_api = { owner = "alexis"; mode = "0400"; };
-      ttrss_user      = { owner = "alexis"; mode = "0400"; };
-      ttrss_pass      = { owner = "alexis"; mode = "0400"; };
       gcalcli_oauth   = { owner = "alexis"; mode = "0400"; };
     };
   };
@@ -134,9 +137,12 @@ in {
   ];
 
   environment.systemPackages = with pkgs; [
+    # 25.11
+    pkgs-2511.signal-desktop
+
     # DE/WM
-    inputs.swww.packages.${pkgs.system}.swww
-    unstable.legacyPackages."${pkgs.system}".hyprpicker # v0.4.2
+    inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
+    unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".hyprpicker # v0.4.2
     brightnessctl playerctl
     wl-clipboard
     libnotify
@@ -167,7 +173,7 @@ in {
     vim
 
     # CLI tools
-    unstable.legacyPackages."${pkgs.system}".gcalcli
+    unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".gcalcli
     hledger reckon
     cava
     tree
@@ -211,10 +217,14 @@ in {
 
     # *gag*
     wineWowPackages.stable
-
   ];
 
   musnix.enable = true;
+
+  # FlatPak
+  services.flatpak.enable = true;
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   # --------------------------------------------
   # SYSTEM SERVICES
@@ -255,16 +265,10 @@ in {
       enable = true;
       settings = {
         default_session = {
-          command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd Hyprland";
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd Hyprland";
           user = "greeter";
         };
       };
-    };
-
-    tt-rss = {
-      enable = true;
-      virtualHost = "localhost";
-      selfUrlPath = "http://localhost:8080";
     };
 
     nginx.virtualHosts."localhost" = {
@@ -272,11 +276,15 @@ in {
     };
 
     logind = {
-      lidSwitch = "suspend";
-      extraConfig = ''
-        IdleAction=suspend
-        IdleActionSec=10min
-      '';
+      settings = {
+        Login = {
+          handleLidSwitch = "suspend";
+          extraConfig = ''
+            IdleAction=suspend
+            IdleActionSec=10min
+            '';
+        };
+      };
     };
   };
 

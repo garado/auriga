@@ -4,7 +4,7 @@
 
 # User-specific configurations.
 
-{ self, inputs, lib, config, pkgs, ... }: {
+{ self, inputs, lib, config, pkgs, pkgs-2505, ... }: {
 
   imports = [
     # Defined in flake.nix
@@ -38,7 +38,7 @@
       # Productivity
       obsidian
 
-      inputs.ags.packages.${pkgs.system}.io
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.io
 
       (python3.withPackages (ps: with ps; [
         # Packages from nixpkgs
@@ -46,25 +46,25 @@
         pip
 
         # Build a package from PyPI
-        (buildPythonPackage rec {
-          pname = "quote";
-          version = "3.0";
-          src = fetchPypi {
-            inherit pname version;
-            sha256 = "06873dfed9200cb2e88f98c562080938b42c88d4a37dcf89542cff3a210b6287";
-          };
-          # Add any build inputs required by your package
-          buildInputs = [];
-        })
+        # (buildPythonPackage rec {
+        #   pname = "quote";
+        #   version = "3.0";
+        #   src = fetchPypi {
+        #     inherit pname version;
+        #     sha256 = "06873dfed9200cb2e88f98c562080938b42c88d4a37dcf89542cff3a210b6287";
+        #   };
+        #   # Add any build inputs required by your package
+        #   buildInputs = [];
+        # })
 
-        (buildPythonPackage rec {
-          pname = "gazpacho";
-          version = "1.1";
-          src = fetchPypi {
-            inherit pname version;
-            sha256 = "1579c1be2de05b5ded0a97107b179d12491392fb095aeab185b283ea48cd7010";
-          };
-        })
+        # (buildPythonPackage rec {
+        #   pname = "gazpacho";
+        #   version = "1.1";
+        #   src = fetchPypi {
+        #     inherit pname version;
+        #     sha256 = "1579c1be2de05b5ded0a97107b179d12491392fb095aeab185b283ea48cd7010";
+        #   };
+        # })
 
       ]))
 
@@ -89,37 +89,38 @@
     font.size = 14;
   };
 
+
   programs.ags = {
     enable = true;
 
     # symlinked to ~/.config/ags
     configDir = ./shell/ags-ts;
 
-    extraPackages = with pkgs; [
+    extraPackages = with pkgs-2505; [
       gtksourceview5 libpng /** Source code */
       libshumate /** Provides map widget for dashboard transit tab */
       gvfs imagemagick /** Cover art utils for media player */
       gtk-session-lock /** For lockscreen (written with gtk3) */
-      inputs.ags.packages.${pkgs.system}.apps
-      inputs.ags.packages.${pkgs.system}.auth
-      inputs.ags.packages.${pkgs.system}.battery
-      inputs.ags.packages.${pkgs.system}.bluetooth
-      inputs.ags.packages.${pkgs.system}.cava
-      inputs.ags.packages.${pkgs.system}.greet
-      inputs.ags.packages.${pkgs.system}.hyprland
-      inputs.ags.packages.${pkgs.system}.mpris
-      inputs.ags.packages.${pkgs.system}.network
-      inputs.ags.packages.${pkgs.system}.notifd
-      inputs.ags.packages.${pkgs.system}.powerprofiles
-      inputs.ags.packages.${pkgs.system}.wireplumber
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.apps
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.auth
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.battery
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.bluetooth
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.cava
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.greet
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.hyprland
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.mpris
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.network
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.notifd
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.powerprofiles
+      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.wireplumber
     ];
   };
 
   programs.git = {
     enable = true;
-    userName = "garado";
-    userEmail = "alexisgarado@gmail.com";
-    extraConfig = {
+    settings = {
+      user.name = "garado";
+      user.email = "alexisgarado@gmail.com";
       core.quotepath = false;
       i18n.commitencoding = "utf-8";
       i18n.logoutputencoding = "utf-8";
