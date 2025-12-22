@@ -13,6 +13,9 @@ highlights.setup(colors, colors.overrides)
 
 vim.opt.fillchars = { eob = " " }
 
+-- Always show sign column
+vim.opt.signcolumn = "yes"
+
 vim.opt.showtabline = 0
 
 vim.opt.ruler = false
@@ -34,8 +37,8 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
 
--- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+-- Minimal number of screen lines to keep above and below the cursor
+vim.opt.scrolloff = 0
 
 -- Enable mouse mode
 vim.o.mouse = 'a'

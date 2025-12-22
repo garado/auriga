@@ -1,6 +1,6 @@
 
-# █▀▄ █▀█ █▀▀ █▀▄ █▀▀ █▀▀   █▄░█ █░█ █ █▀▄▀█
-# █▄▀ █▀▄ ██▄ █▄▀ █▄█ ██▄ ▄ █░▀█ ▀▄▀ █ █░▀░█
+# █▄░█ █░█ █ █▀▄▀█
+# █░▀█ ▀▄▀ █ █░▀░█
 
 # A neovim configuration managed with NixCats.
 # https://nixcats.org/
@@ -10,8 +10,18 @@
 # dependencies (plugins, LSPs, etc.) while letting you configure everything
 # else in Lua.
 
-{ config, lib, inputs, ... }: let
+{ config, lib, inputs, pkgs, ... }: let
   utils = inputs.nixCats.utils;
+
+  pythonEnv = pkgs.python313.withPackages (ps: with ps; [
+    pygobject3
+    pygobject-stubs
+  ]);
+
+  gtkEnv = pkgs.buildEnv {
+    name = "gtk-env";
+    paths = [ pkgs.gtk4 pkgs.gobject-introspection ];
+  };
 in {
   imports = [
     inputs.nixCats.homeModule
@@ -33,6 +43,15 @@ in {
         lspsAndRuntimeDeps = {
           general = with pkgs; [
             lazygit
+          ];
+          python = with pkgs; [
+            (basedpyright.overrideAttrs (old: {
+              buildInputs = old.buildInputs or [] ++ [ pythonEnv ];
+            }))
+            ruff
+            gobject-introspection
+            gtk4
+            clang-tools
           ];
           lua = with pkgs; [
             lua-language-server
@@ -61,6 +80,8 @@ in {
             nvim-web-devicons   # small dependency needed by other plugins
             vim-sleuth          # small utility plugin
             lze lzextras        # lazy loading
+            nvim-lspconfig
+            trouble-nvim        # better diagnostics viewing
           ];
         };
 
@@ -82,9 +103,9 @@ in {
             comment-nvim        # comments
 
             mini-nvim
-            nvim-lspconfig
             vim-startuptime
             blink-cmp
+            blink-pairs
             lualine-lsp-progress
             gitsigns-nvim
             which-key-nvim
@@ -94,45 +115,32 @@ in {
             nvim-dap-ui
             nvim-dap-virtual-text
 
-            nvim-treesitter
-            # nvim-treesitter-parsers.zsh  # in 25.11
-            nvim-treesitter-parsers.xml
-            nvim-treesitter-parsers.vim
-            nvim-treesitter-parsers.typescript
-            nvim-treesitter-parsers.tsv
-            nvim-treesitter-parsers.scss
-            nvim-treesitter-parsers.regex
-            nvim-treesitter-parsers.nix
-            nvim-treesitter-parsers.python
-            nvim-treesitter-parsers.markdown
-            nvim-treesitter-parsers.lua
-            nvim-treesitter-parsers.ledger
-            nvim-treesitter-parsers.javascript
-            nvim-treesitter-parsers.css
-            nvim-treesitter-parsers.diff
-            nvim-treesitter-parsers.cpp
-            nvim-treesitter-parsers.cmake
-            nvim-treesitter-parsers.c
-            nvim-treesitter-parsers.bash
-            nvim-treesitter-parsers.awk
+            nvim-treesitter.withAllGrammars
           ];
         };
 
         # Shared libraries to be added to LD_LIBRARY_PATH
         sharedLibraries = {
-          general = with pkgs; [ ];
+          general = with pkgs; [
+            gobject-introspection
+            gtk4
+          ];
         };
 
         # Environment variables available at runtime for plugins
         environmentVariables = {
-          # test = {
-          #   CATTESTVAR = "It worked!";
-          # };
+          saturn = {
+            PYGOBJECT_STUB_CONFIG = "Gtk4";
+            GI_TYPELIB_PATH = "${gtkEnv}/lib/girepository-1.0";
+          };
         };
 
         # categories of the function you would have passed to withPackages
         python3.libraries = {
-          # test = [ (_:[]) ];
+          saturn = ps: with ps; [
+            pygobject3
+            pygobject-stubs
+          ];
         };
       });
 
@@ -155,6 +163,8 @@ in {
           };
           categories = {
             general = true;
+            python = true;
+            saturn = true;
             lua = true;
             nix = true;
             go = false;

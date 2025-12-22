@@ -1,14 +1,24 @@
+
+-- ▀█▀ █▀█ █▀▀ █▀▀ █▀ █ ▀█▀ ▀█▀ █▀▀ █▀█
+-- ░█░ █▀▄ ██▄ ██▄ ▄█ █ ░█░ ░█░ ██▄ █▀▄
+
 return {
   "nvim-treesitter",
-   enabled = nixCats('general') or false,
+  enabled = nixCats('general') or false,
   event = "DeferredUIEnter",
   load = function (name)
       vim.cmd.packadd(name)
       vim.cmd.packadd("nvim-treesitter-textobjects")
+      require('nvim-treesitter.configs').setup({
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
+      })
   end,
   after = function (plugin)
     require('nvim-treesitter.configs').setup {
-      highlight = { enable = false, },
+      highlight = { enable = true, },
       indent = { enable = false, },
       incremental_selection = {
         enable = true,
@@ -22,7 +32,7 @@ return {
       textobjects = {
         select = {
           enable = true,
-          lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+          lookahead = true,
           keymaps = {
             -- You can use the capture groups defined in textobjects.scm
             ['aa'] = '@parameter.outer',

@@ -1,4 +1,8 @@
 
+-- ▄▀█ █░░ █▀█ █░█ ▄▀█   █▄░█ █░█ █ █▀▄▀█
+-- █▀█ █▄▄ █▀▀ █▀█ █▀█ ▄ █░▀█ ▀▄▀ █ █░▀░█
+
+
 -- Hide statusbar, tabline, ruler when alpha is visible
 vim.api.nvim_create_autocmd("User", {
   pattern = "AlphaReady",
@@ -16,7 +20,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
-config = {
+local config = {
   "goolord/alpha-nvim",
   event = 'VimEnter',
   after = function()
@@ -43,7 +47,7 @@ config = {
     "      ⢻⣿⣿⣄   ⠈⠻⣿⣿⣿⣷⣿⣿⣿⣿⣿⡟ ⠫⢿⣿⡆     ",
     "       ⠻⣿⣿⣿⣿⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⡟⢀⣀⣤⣾⡿⠃     ",
     "                                   ",
-    "       ▐▌ ▄▄▄ ▗▞▀▚▖   ▐▌  ▗▞▀▚▖    ", 
+    "       ▐▌ ▄▄▄ ▗▞▀▚▖   ▐▌  ▗▞▀▚▖    ",
     "       ▐▌█    ▐▛▀▀▘   ▐▌  ▐▛▀▀▘    ",
     "    ▗▞▀▜▌█    ▝▚▄▄▖▗▞▀▜▌  ▝▚▄▄▖    ",
     "    ▝▚▄▟▌          ▝▚▄▟▌▗▄▖        ",
