@@ -39,7 +39,7 @@
       misc = {
         disable_hyprland_logo = true;
         disable_splash_rendering = true;
-        enable_swallow = false;
+        enable_swallow = true;
         mouse_move_focuses_monitor = true;
         animate_manual_resizes = true;
       };
@@ -81,6 +81,8 @@
           color = "rgba(1a1a1aee)";
         };
       };
+
+     layerrule = "animation slide, gtk4-layer-shell";
       
       animations = {
         enabled = "yes";
