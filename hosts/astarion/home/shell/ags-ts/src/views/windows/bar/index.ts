@@ -41,8 +41,6 @@ interval(1000, () => {
   time.set(newTime);
 });
 
-let barInstances = 0;
-
 /*****************************************************************************
  * Widget definitions
  *****************************************************************************/
@@ -57,14 +55,14 @@ const DistroIcon = () =>
 /**
  * Container for all workspace indicators
  */
-const Workspaces = () => {
+const Workspaces = (monitorIndex: Number) => {
   // @TODO Find out how to get the number of workspaces programatically
   const wsIndices = [...Array(NUM_WORKSPACES).keys()];
 
   return Widget.Box({
     cssClasses: ["workspaces"],
     vertical: true,
-    children: wsIndices.map(WorkspaceIndicator),
+    children: wsIndices.map((i) => WorkspaceIndicator(i, monitorIndex)),
   });
 };
 
@@ -73,17 +71,18 @@ const Workspaces = () => {
  * Clicking focuses the respective workspace.
  *
  * @param {number} workspaceIndex - The 0-indexed workspace number (0-8 for workspaces 1-9)
+ * @param {number} monitorIndex - The index of the monitor that this component is being created for
  */
-const WorkspaceIndicator = (workspaceIndex: number) => {
+const WorkspaceIndicator = (workspaceIndex: number, monitorIndex: number) => {
   // Convert 0-indexed to 1-indexed workspace ID
   const localWorkspaceId = workspaceIndex + 1;
 
   // Calculate actual workspace ID for multi-monitor setup
-  // If barInstances = 1 (first monitor): workspaces 1-9
-  // If barInstances = 2 (second monitor): workspaces 10-18
-  // If barInstances = 3 (third monitor): workspaces 19-27
+  // If monitorIndex = 1 (first monitor): workspaces 1-9
+  // If monitorIndex = 2 (second monitor): workspaces 10-18
+  // If monitorIndex = 3 (third monitor): workspaces 19-27
   const actualWorkspaceId =
-    (barInstances - 1) * NUM_WORKSPACES + localWorkspaceId;
+    (monitorIndex) * NUM_WORKSPACES + localWorkspaceId;
 
   const isFocused = bind(hypr, "focusedWorkspace").as((focused) => {
     return focused?.id === actualWorkspaceId; // Use === for comparison
@@ -169,6 +168,9 @@ const Time = () =>
 /**
  * Volume slider
  * Note: wireplumber does cubic root volumes for some fucking reason
+ * Addendum like 2 years later: wireplumber does cubic root volumes because the
+ * human ear has logarithmic, not linear, volume perception
+ * TIL and today you learned too
  * @TODO this is so confusingly written. however, i do not care
  */
 const VolumeSlider = () => {
@@ -298,11 +300,11 @@ const Top = () =>
     children: [DistroIcon()],
   });
 
-const Center = () =>
+const Center = (monitorIndex: number) =>
   Widget.Box({
     halign: Gtk.Align.CENTER,
     cssClasses: ["center"],
-    children: [Workspaces()],
+    children: [Workspaces(monitorIndex)],
   });
 
 const Bottom = () =>
@@ -318,9 +320,7 @@ const Bottom = () =>
     ],
   });
 
-export default (monitor: AstalHyprland.Monitor) => {
-  barInstances += 1;
-
+export default (monitor: AstalHyprland.Monitor, monitorIndex: number) => {
   const { TOP, LEFT, BOTTOM } = Astal.WindowAnchor;
 
   return Widget.Window({
@@ -330,13 +330,15 @@ export default (monitor: AstalHyprland.Monitor) => {
     application: App,
     name: "bar",
     monitor: monitor.id,
+    namespace: "bar",
+    layer: Astal.Layer.OVERLAY,
 
     child: Widget.CenterBox({
       orientation: 1,
       halign: Gtk.Align.CENTER,
       cssClasses: ["bar"],
       startWidget: Top(),
-      centerWidget: Center(),
+      centerWidget: Center(monitorIndex),
       endWidget: Bottom(),
     }),
   });

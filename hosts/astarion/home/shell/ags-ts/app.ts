@@ -67,8 +67,14 @@ export const toggleWindow = (windowName: string) => {
  */
 const closeWindow = (windowName: string) => {
   const win = App.get_window(windowName);
-  (win!.child as Gtk.Revealer).revealChild = false;
-  timeout(260, () => win!.hide());
+
+  if (windowName !== "dash" && windowName !== "launcher") {
+    (win!.child as Gtk.Revealer).revealChild = false;
+    timeout(260, () => win!.hide());
+  } else {
+    win!.hide();
+  }
+
   if (win.onClose) win.onClose();
 };
 
@@ -112,7 +118,7 @@ App.start({
   },
   main() {
     // One instance per monitor
-    hypr.get_monitors().map(Bar);
+    hypr.get_monitors().map((monitor) => { return Bar(monitor, monitor.get_id()) });
     hypr.get_monitors().map(Notifications);
 
     hypr.connect("monitor-added", (_disp, monitor) => {
