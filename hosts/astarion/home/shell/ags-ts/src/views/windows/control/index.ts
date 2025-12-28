@@ -63,6 +63,8 @@ export default () => {
 
   return Widget.Window({
     application: App,
+    namespace: "utility",
+    layer: Astal.Layer.OVERLAY,
     name: "control",
     cssName: "control",
     keymode: Astal.Keymode.ON_DEMAND,

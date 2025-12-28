@@ -242,15 +242,12 @@ export default () => {
 
   return Widget.Window({
     application: App,
+    namespace: "launcher",
+    layer: Astal.Layer.OVERLAY,
     name: "launcher",
     cssName: "launcher",
     keymode: Astal.Keymode.EXCLUSIVE,
-    child: Widget.Revealer({
-      revealChild: false,
-      transitionDuration: 100,
-      transitionType: Gtk.RevealerTransitionType.SLIDE_UP,
-      child: Launcher(),
-    }),
+    child: Launcher(),
     setup: (self) => {
       // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
       self.set_default_size(1, 1);

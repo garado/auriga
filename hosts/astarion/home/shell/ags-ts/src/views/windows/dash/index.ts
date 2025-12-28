@@ -165,18 +165,16 @@ export default () => {
 
   return Widget.Window({
     application: App,
+    namespace: "dashboard",
+    layer: Astal.Layer.OVERLAY,
     name: "dash",
     cssName: "dash",
     visible: false,
     keymode: Astal.Keymode.ON_DEMAND,
-    child: Widget.Revealer({
-      revealChild: false,
-      transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
-      child: Widget.Box({
-        orientation: 0,
-        cssClasses: ["dash"],
-        children: [TabBar, TabStack],
-      }),
+    child: Widget.Box({
+      orientation: 0,
+      cssClasses: ["dash", "dash-wrapper"],
+      children: [TabBar, TabStack],
     }),
     setup: (self) => {
       // Workaround for revealer bug. https://github.com/wmww/gtk4-layer-shell/issues/60
