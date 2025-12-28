@@ -320,7 +320,7 @@ export default class SettingsManager extends GObject.Object {
   applyTheme(themeName: string) {
     this.updateConfig(themeName);
     this.applyKittyTheme(themeName);
-    this.applyNeovimTheme(themeName);
+    // this.applyNeovimTheme(themeName);
     this.applyWallpaper(themeName);
 
     if (globalThis.GtkVersion == 4) {
