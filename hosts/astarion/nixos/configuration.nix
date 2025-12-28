@@ -12,7 +12,7 @@ let
     url = "https://github.com/NixOS/nixpkgs/archive/nixos-25.11.tar.gz";
     sha256 ="0gwxhs3j1nglyymbaqyqg8miz0rk84n4ijag5s4bx6yfb6vrd4lv";
   }) { inherit (pkgs) system; };
-in }
+in {
 
   # --------------------------------------------
   # BASIC SYSTEM CONFIGURATION
