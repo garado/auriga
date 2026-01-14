@@ -7,12 +7,19 @@
 { self, inputs, lib, config, pkgs, musnix, ... }: 
 let
   unstable = inputs.nixpkgs-unstable;
-
-  pkgs-2511 = import (fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/nixos-25.11.tar.gz";
-    sha256 ="0gwxhs3j1nglyymbaqyqg8miz0rk84n4ijag5s4bx6yfb6vrd4lv";
-  }) { inherit (pkgs) system; };
 in {
+  
+  # --------------------------------------------
+  # OVERLAYS
+  # --------------------------------------------
+
+  nixpkgs = { 
+    overlays = [
+      (final: prev: {
+        nvchad = inputs.nix4nvchad.packages."${pkgs.system}".nvchad;
+      })
+    ];
+  };
 
   # --------------------------------------------
   # BASIC SYSTEM CONFIGURATION
@@ -115,6 +122,8 @@ in {
       pushover_api    = { owner = "alexis"; mode = "0400"; };
       openweather_api = { owner = "alexis"; mode = "0400"; };
       gcalcli_oauth   = { owner = "alexis"; mode = "0400"; };
+      lastfm_user     = { owner = "alexis"; mode = "0400"; };
+      lastfm_pass     = { owner = "alexis"; mode = "0400"; };
     };
   };
   
@@ -137,8 +146,7 @@ in {
   ];
 
   environment.systemPackages = with pkgs; [
-    # 25.11
-    pkgs-2511.signal-desktop
+    signal-desktop
 
     # DE/WM
     inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
