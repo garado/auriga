@@ -32,8 +32,8 @@
     homeDirectory = "/home/alexis";
 
     packages = with pkgs; [
-      # Entertainment
-      ncspot
+      # Music
+      ncspot mpc
 
       # Productivity
       obsidian
@@ -139,6 +139,54 @@
     provider = "manual";
     latitude = 37.5485;
     longitude = -121.9886;
+  };
+
+  services.mpd = {
+    enable = true;
+    musicDirectory = "/home/alexis/Music/Library";
+    playlistDirectory = "/home/alexis/Music/Playlists/cmus-playlist-defs/playlists";
+    extraConfig = ''
+      audio_output {
+        type "pipewire"  # or "pulse" depending on your audio
+        name "PipeWire Output"
+      }
+    '';
+  };
+
+  services.mpdris2.enable = true; # mpris <-> mpd bridge
+  
+  programs.ncmpcpp = {
+    enable = true;
+    settings = {
+      mpd_host = "localhost";
+      mpd_port = 6600;
+      mpd_music_dir = "/home/alexis/Music/Library";
+    };
+
+    bindings = [
+      { key = "j"; command = "scroll_down"; }
+      { key = "k"; command = "scroll_up"; }
+      { key = "h"; command = "previous_column"; }
+      { key = "l"; command = "next_column"; }
+      { key = "ctrl-u"; command = "page_up"; }
+      { key = "ctrl-d"; command = "page_down"; }
+      { key = "g"; command = "move_home"; }
+      { key = "G"; command = "move_end"; }
+      { key = "/"; command = "find"; }
+      { key = "n"; command = "next_found_item"; }
+      { key = "N"; command = "previous_found_item"; }
+    ];
+  };
+
+  # Enable last.fm scrobbling from mpd
+  services.mpdscribble = {
+    enable = true;
+    endpoints = {
+      "last.fm" = {
+        username = "gyar-ados";
+        passwordFile = "/run/secrets/lastfm_pass";
+      };
+    };
   };
 
   # Let home-manager install and manage itself
