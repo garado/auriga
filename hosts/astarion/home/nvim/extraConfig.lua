@@ -1,29 +1,25 @@
+
 local autocmd = vim.api.nvim_create_autocmd
 
--- Auto resize panes when resizing nvim window
-autocmd("VimResized", {
-  pattern = "*",
-  command = "tabdo wincmd =",
-})
+---------------------------------------------------------
+-- OPTIONS
+---------------------------------------------------------
 
 -- Hide command bar
 vim.o.cmdheight = 0
 
-local enable_providers = {
-  "python3_provider",
-}
+---------------------------------------------------------
+-- KEYBINDS
+---------------------------------------------------------
 
-vim.diagnostic.config({
-  virtual_text = true,  -- Enable inline diagnostics
-})
+vim.keymap.set("n", "<leader>q", "<cmd>bd<cr>", { desc = "Close buffer" })
 
-for _, plugin in pairs(enable_providers) do
-  vim.g["loaded_" .. plugin] = nil
-  vim.cmd("runtime " .. plugin)
-end
+---------------------------------------------------------
+-- MISCELLANEOUS
+---------------------------------------------------------
 
--- Custom command to help integrate nvim with AwesomeWM theme switcher
--- I have a script that'll execute this command in all running instances
+-- Custom command to help integrate NvChad with system theme switcher
+-- A script will execute this command in all running instances
 vim.api.nvim_create_user_command("ForceReloadNvchadTheme", function()
   require("plenary.reload").reload_module "base46"
   require("plenary.reload").reload_module "custom.chadrc"
