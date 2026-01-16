@@ -2,7 +2,7 @@
 # █░█ █▀█ █▀▄▀█ █▀▀   █▀▄▀█ ▄▀█ █▄░█ ▄▀█ █▀▀ █▀▀ █▀█
 # █▀█ █▄█ █░▀░█ ██▄   █░▀░█ █▀█ █░▀█ █▀█ █▄█ ██▄ █▀▄
 
-# User-specific configurations.
+# Home manager configuration for astarion (FW13).
 
 { self, inputs, lib, config, pkgs, pkgs-2505, ... }: {
 
@@ -14,11 +14,11 @@
     ./gtk
     ./hyprland
     ./kitty
-    ./lf
-    ./nvim
-    # ./qutebrowser
     ./taskwarrior
     ./zsh
+    # ./lf
+    # ./nvim
+    # ./qutebrowser
   ];
 
   # Explicitly define allowed unfree packages

@@ -1,10 +1,6 @@
 {
-  description = "Alexis's NixOS configuration";
+  description = "AURIGA";
 
-  # A flake.nix file is an attribute set with two attributes
-  # called `inputs` and `outputs`.
-
-  # The `inputs` attribute lists other flakes you would like to use.
   inputs = {
     nixCats.url = "github:BirdeeHub/nixCats-nvim";
 
@@ -60,25 +56,28 @@
     ... 
   } @ inputs: {
 
-    nixosConfigurations = {
+    homeModules.common = import ./modules/home;
 
-      # Framework 13
+    nixosConfigurations = {
+      
+      # ----------------------------------------------------------------------
+      # PERSONAL DEVICES
+      # All personal devices run NixOS.
+      # ----------------------------------------------------------------------
+
+      # Framework 13 (daily driver)
       astarion = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
-        # Set all inputs parameters as special arguments for all submodules,
-        # so you can directly use all dependencies in inputs in submodules
         specialArgs = {inherit inputs nixpkgs-unstable self;};
 
         modules = [
           ./hosts/astarion/nixos/configuration.nix
-
-          # waveforms.nixosModule
-          ({ users.users.alexis.extraGroups = [ "plugdev" ]; })
-
           inputs.musnix.nixosModules.musnix
-
           home-manager.nixosModules.home-manager
+          # waveforms.nixosModule
+
+          ({ users.users.alexis.extraGroups = [ "plugdev" ]; })
 
           {
             home-manager.useUserPackages = true;
@@ -87,7 +86,12 @@
               pkgs-2505 = import nixpkgs-2505 { system = "x86_64-linux"; };
             };
             home-manager.backupFileExtension = "hm-backup";
-            home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
+            home-manager.users.alexis = {
+              imports = [
+                self.homeModules.common
+                ./hosts/astarion/home/home.nix
+              ];
+            };
           }
         ];
 
@@ -97,8 +101,6 @@
       archaea = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
-        # Set all inputs parameters as special arguments for all submodules,
-        # so you can directly use all dependencies in inputs in submodules
         specialArgs = {inherit inputs;};
 
         modules = [
@@ -115,6 +117,33 @@
           }
         ];
 
+      };
+
+      # ----------------------------------------------------------------------
+      # WORK DEVICES
+      # Work devices typically run Ubuntu with Nix as a package manager.
+      # ----------------------------------------------------------------------
+
+      homeConfigurations = {
+        "aurora-vdesk" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages."x86_64-linux";
+
+          extraSpecialArgs = {
+            inherit inputs self;
+            hostname = "agarado-vdesk";
+          };
+
+          modules = [
+            self.homeModules.common
+            {
+              home = {
+                username = "agarado";
+                homeDirectory = "/home/agarado";
+                stateVersion = "25.11";
+              };
+            }
+          ];
+        };
       };
 
     };
