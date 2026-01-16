@@ -125,12 +125,12 @@
     # ----------------------------------------------------------------------
 
     homeConfigurations = {
-      "aurora-vdesk" = home-manager.lib.homeManagerConfiguration {
+      "aurora" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages."x86_64-linux";
 
         extraSpecialArgs = {
           inherit inputs self;
-          hostname = "agarado-vdesk";
+          hostname = "agarado-";
         };
 
         modules = [
