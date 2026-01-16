@@ -58,13 +58,12 @@
 
     homeModules.common = import ./modules/home;
 
-    nixosConfigurations = {
-      
-      # ----------------------------------------------------------------------
-      # PERSONAL DEVICES
-      # All personal devices run NixOS.
-      # ----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+    # PERSONAL DEVICES
+    # All personal devices run NixOS.
+    # ----------------------------------------------------------------------
 
+    nixosConfigurations = {
       # Framework 13 (daily driver)
       astarion = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -118,34 +117,33 @@
         ];
 
       };
+    };
 
-      # ----------------------------------------------------------------------
-      # WORK DEVICES
-      # Work devices typically run Ubuntu with Nix as a package manager.
-      # ----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+    # WORK DEVICES
+    # Work devices typically run Ubuntu with Nix as a package manager.
+    # ----------------------------------------------------------------------
 
-      homeConfigurations = {
-        "aurora-vdesk" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages."x86_64-linux";
+    homeConfigurations = {
+      "aurora-vdesk" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages."x86_64-linux";
 
-          extraSpecialArgs = {
-            inherit inputs self;
-            hostname = "agarado-vdesk";
-          };
-
-          modules = [
-            self.homeModules.common
-            {
-              home = {
-                username = "agarado";
-                homeDirectory = "/home/agarado";
-                stateVersion = "25.11";
-              };
-            }
-          ];
+        extraSpecialArgs = {
+          inherit inputs self;
+          hostname = "agarado-vdesk";
         };
-      };
 
+        modules = [
+          self.homeModules.common
+          {
+            home = {
+              username = "agarado";
+              homeDirectory = "/home/agarado";
+              stateVersion = "25.11";
+            };
+          }
+        ];
+      };
     };
   };
 }
