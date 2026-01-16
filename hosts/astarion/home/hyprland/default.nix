@@ -117,8 +117,8 @@
       binde = [
         ", XF86MonBrightnessUp, exec, brightnessctl set 10+"
         ", XF86MonBrightnessDown, exec, brightnessctl set 10-"
-        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%- --limit 1.2"
-        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%+ --limit 1.2"
+        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%- --limit 1"
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%+ --limit 1"
       ];
 
       # Keybinds: Press
@@ -141,10 +141,14 @@
 
         # Launchers, etc
         "$mainMod, RETURN, exec, kitty"
-        "$mainMod, J, exec, astal -i app toggle-window dash"
-        "$mainMod, H, exec, astal -i app toggle-window utility"
-        "$mainMod, L, exec, astal -i app toggle-window control"
-        "$mainMod, R, exec, astal -i app toggle-window launcher"
+        # "$mainMod, J, exec, astal -i app toggle-window dash"
+        # "$mainMod, H, exec, astal -i app toggle-window utility"
+        # "$mainMod, L, exec, astal -i app toggle-window control"
+        # "$mainMod, R, exec, astal -i app toggle-window launcher"
+        "$mainMod, J, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle dash"
+        "$mainMod, H, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle utility"
+        "$mainMod, L, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle control"
+        "$mainMod, R, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle launcher"
 
         # Move focus between windows
         "ALT_L, TAB, cyclenext"
