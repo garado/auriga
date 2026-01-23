@@ -102,10 +102,10 @@
           {
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit self inputs nixpkgs-unstable; };
-            home-manager.users.alexis = {
+            home-manager.users.vessel = {
               imports = [
                 self.homeModules.common
-                  # ./hosts/gethsemane/home/home.nix 
+                  ./hosts/gethsemane/home/home.nix 
               ];
             };
           }
