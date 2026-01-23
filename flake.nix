@@ -42,10 +42,6 @@
     musnix.url = "github:musnix/musnix";
   };
 
-  # The `outputs` attribute is a function.
-  # Nix will fetch all the inputs (flakes) above, load *their* flake.nix files, and
-  # then call the `outputs` function below with the results from loading all the
-  # flakes above.
   outputs = { 
     self,
     home-manager,
@@ -59,8 +55,7 @@
     homeModules.common = import ./modules/home;
 
     # ----------------------------------------------------------------------
-    # PERSONAL DEVICES
-    # All personal devices run NixOS.
+    # NIXOS CONFIGURATIONS
     # ----------------------------------------------------------------------
 
     nixosConfigurations = {
@@ -96,6 +91,27 @@
 
       };
 
+      # Lenovo Ideapad Flex 5 14" 2-in-1 (home server)
+      gethsemane = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs self nixpkgs-unstable; };
+        modules = [
+          ./hosts/gethsemane/nixos/configuration.nix
+
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = { inherit self inputs nixpkgs-unstable; };
+            home-manager.users.alexis = {
+              imports = [
+                self.homeModules.common
+                  # ./hosts/gethsemane/home/home.nix 
+              ];
+            };
+          }
+        ];
+      };
+
       # Surface Go 2
       archaea = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -120,8 +136,7 @@
     };
 
     # ----------------------------------------------------------------------
-    # WORK DEVICES
-    # Work devices typically run Ubuntu with Nix as a package manager.
+    # HOMEMANAGER CONFIGURATIONS
     # ----------------------------------------------------------------------
 
     homeConfigurations = {
