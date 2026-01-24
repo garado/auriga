@@ -26,6 +26,7 @@ in {
   # --------------------------------------------
 
   imports = [
+    ../../../modules/syncthing
     ./hardware-configuration.nix
     ./fonts.nix
     inputs.sops-nix.nixosModules.sops
@@ -34,12 +35,25 @@ in {
   # Networking
   networking = {
     hostName = "astarion";
+    firewall.allowedTCPPorts = [ 22 ];
+    firewall.allowedUDPPorts = [ 5353 ];
     networkmanager.enable = true;
 
     hosts = {
       # Temp fix for upstream librespot issues causing ncspot to stop working
       # https://github.com/hrkfdn/ncspot/issues/1676#issuecomment-3168197941
       "0.0.0.0" = ["apresolve.spotify.com"];
+    };
+  };
+
+  # Enable mdns
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    publish = {
+      enable = true;
+      addresses = true;
+      workstation = true;
     };
   };
 
@@ -125,6 +139,12 @@ in {
       lastfm_user     = { owner = "alexis"; mode = "0400"; };
       lastfm_pass     = { owner = "alexis"; mode = "0400"; };
     };
+  };
+
+  services.auriga-syncthing = {
+    enable = true;
+    user = "alexis";
+    musicPath = /home/alexis/Music/Library;
   };
   
   # --------------------------------------------

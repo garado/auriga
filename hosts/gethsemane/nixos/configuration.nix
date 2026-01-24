@@ -1,7 +1,10 @@
 { config, pkgs, inputs, ... }:
 
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    ../../../modules/syncthing
+  ];
 
   users.users.vessel = {
     isNormalUser = true;
@@ -50,4 +53,10 @@
   # Power management
   powerManagement.enable = true;
   services.thermald.enable = true;
+
+  services.auriga-syncthing = {
+    enable = true;
+    user = "vessel";
+    musicPath = /home/vessel/Vault/Music/Library;
+  };
 }
