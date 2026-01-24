@@ -27,7 +27,7 @@
 
   # Networking and ssh access
   networking.hostName = "gethsemane";
-  networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall.allowedTCPPorts = [ 22 2283 ];
   networking.firewall.allowedUDPPorts = [ 5353 ];
   services.openssh = {
     enable = true;
@@ -77,6 +77,12 @@
   services.tailscale = {
     enable = true;
     authKeyFile = config.sops.secrets.tailscale_key.path;
+  };
+
+  services.immich = {
+    enable = true;
+    mediaLocation = "/var/lib/immich";
+    host = "0.0.0.0"; # needed for tailscale access
   };
 
   # Cloud backups
