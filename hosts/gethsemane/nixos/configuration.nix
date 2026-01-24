@@ -137,7 +137,7 @@
     # WD 5TB Elements Portable (WDBU6Y0050BBK-WESN) 2022-03
     "/mnt/blackreach" = {
       device = "/dev/disk/by-label/blackreach";
-      fsType = "ntfs";
+      fsType = "ntfs3";
       options = [ "defaults" ];
     };
   };
