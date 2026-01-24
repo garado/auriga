@@ -1,7 +1,7 @@
 { config, pkgs, inputs, ... }:
 
 {
-  # imports = [ ./hardware-configuration.nix ];
+  imports = [ ./hardware-configuration.nix ];
 
   users.users.vessel = {
     isNormalUser = true;
@@ -18,6 +18,7 @@
   # Networking and ssh access
   networking.hostName = "gethsemane";
   networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall.allowedUDPPorts = [ 5353 ];
   services.openssh = {
     enable = true;
     settings = {
