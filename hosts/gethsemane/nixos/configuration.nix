@@ -67,9 +67,16 @@
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
     secrets = {
-      restic_pass = { owner = "root"; };
-      b2_env = { owner = "root"; };
+      tailscale_key = { owner = "root"; };
+      restic_pass   = { owner = "root"; };
+      b2_env        = { owner = "root"; };
     };
+  };
+
+  # VPN
+  services.tailscale = {
+    enable = true;
+    authKeyFile = config.sops.secrets.tailscale_key.path;
   };
 
   # Cloud backups

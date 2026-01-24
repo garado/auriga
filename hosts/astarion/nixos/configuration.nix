@@ -129,6 +129,7 @@ in {
     defaultSopsFile = "${self}/secrets.yaml";
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
+      tailscale_key   = { owner = "root"; };
       gemini_api      = { owner = "alexis"; mode = "0400"; };
       transit_api     = { owner = "alexis"; mode = "0400"; };
       locationiq_api  = { owner = "alexis"; mode = "0400"; };
@@ -139,6 +140,11 @@ in {
       lastfm_user     = { owner = "alexis"; mode = "0400"; };
       lastfm_pass     = { owner = "alexis"; mode = "0400"; };
     };
+  };
+
+  services.tailscale = {
+    enable = true;
+    authKeyFile = config.sops.secrets.tailscale_key.path;
   };
 
   services.auriga-syncthing = {
