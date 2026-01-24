@@ -29,8 +29,11 @@ in {
 
     # Set these to null by default
     # If these are null, then their corresponding dirs don't get synced
-    musicPath = mkOption { type = types.nullOr types.path; default = null; };
-    docsPath = mkOption { type = types.nullOr types.path; default = null; };
+    musicPath         = mkOption { type = types.nullOr types.path; default = null; };
+    playlistPath      = mkOption { type = types.nullOr types.path; default = null; };
+    playlistMetaPath  = mkOption { type = types.nullOr types.path; default = null; };
+    docsPath          = mkOption { type = types.nullOr types.path; default = null; };
+    ledgerPath        = mkOption { type = types.nullOr types.path; default = null; };
   };
 
   config = mkIf cfg.enable {
@@ -62,8 +65,25 @@ in {
               path = toString cfg.docsPath;
               devices = builtins.attrNames config.services.syncthing.settings.devices;
             };
+          }) //
+          (optionalAttrs (cfg.ledgerPath != null) {
+            "Ledger" = {
+              path = toString cfg.ledgerPath;
+              devices = builtins.attrNames config.services.syncthing.settings.devices;
+            };
+          }) //
+          (optionalAttrs (cfg.playlistPath != null) {
+            "Playlists" = {
+              path = toString cfg.playlistPath;
+              devices = builtins.attrNames config.services.syncthing.settings.devices;
+            };
+          }) //
+          (optionalAttrs (cfg.playlistMetaPath != null) {
+            "PlaylistMetadata" = {
+              path = toString cfg.playlistMetaPath;
+              devices = builtins.attrNames config.services.syncthing.settings.devices;
+            };
           });
-
       };
     };
 

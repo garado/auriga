@@ -136,6 +136,9 @@
     enable = true;
     user = "vessel";
     musicPath = /home/vessel/Vault/Music/Library;
+    playlistPath = /home/vessel/Vault/Music/Playlists;
+    playlistMetaPath = /home/vessel/Vault/Music/PlaylistMetadata;
+    ledgerPath = /home/vessel/Vault/Ledger;
   };
 
   # Local storage

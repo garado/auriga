@@ -151,6 +151,9 @@ in {
     enable = true;
     user = "alexis";
     musicPath = /home/alexis/Music/Library;
+    playlistPath = /home/alexis/Music/Playlists/cmus-playlist-defs/playlists;
+    playlistMetaPath = /home/alexis/.config/labyrinthine/playlists;
+    ledgerPath = /home/alexis/Documents/ledger/data;
   };
   
   # --------------------------------------------
