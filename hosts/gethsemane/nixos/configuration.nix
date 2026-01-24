@@ -19,6 +19,7 @@
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
       sops
+      restic
     ];
   };
 
