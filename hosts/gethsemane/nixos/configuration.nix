@@ -1,17 +1,24 @@
-{ config, pkgs, inputs, ... }:
+{ self, config, pkgs, inputs, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
     ../../../modules/syncthing
+    inputs.sops-nix.nixosModules.sops
   ];
+
+  # Misc Nix settings
+  nix.settings = {
+    experimental-features = "nix-command flakes";
+    auto-optimise-store = true;
+  };
 
   users.users.vessel = {
     isNormalUser = true;
     description = "vessel";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
-
+      sops
     ];
   };
 
@@ -54,6 +61,43 @@
   powerManagement.enable = true;
   services.thermald.enable = true;
 
+  # Super secret secrets
+  sops = {
+    defaultSopsFile = "${self}/secrets.yaml";
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+
+    secrets = {
+      restic_pass = { owner = "root"; };
+      b2_env = { owner = "root"; };
+    };
+  };
+
+  # Cloud backups
+  services.restic.backups = {
+    daily-cloud = {
+      initialize = true;
+      passwordFile = config.sops.secrets.restic_pass.path;
+      environmentFile = config.sops.secrets.b2_env.path;
+      repository = "b2:gethsemane";
+
+      paths = [
+        "/home/vessel/Vault/"
+      ];
+
+      timerConfig = {
+        OnCalendar = "03:00";
+        Persistent = true;
+      };
+
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+    };
+  };
+
+  # Sync files between devices
   services.auriga-syncthing = {
     enable = true;
     user = "vessel";
