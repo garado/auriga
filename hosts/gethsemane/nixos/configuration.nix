@@ -1,11 +1,14 @@
-{ self, config, pkgs, inputs, ... }:
 
+{ self, config, pkgs, inputs, nixpkgs-unstable, ... }:
 {
   imports = [
+    "${nixpkgs-unstable}/nixos/modules/services/web-apps/homebox.nix"
     ./hardware-configuration.nix
     ../../../modules/syncthing
     inputs.sops-nix.nixosModules.sops
   ];
+
+  disabledModules = [ "services/web-apps/homebox.nix" ];
 
   # Misc Nix settings
   nix.settings = {
@@ -81,10 +84,21 @@
     authKeyFile = config.sops.secrets.tailscale_key.path;
   };
 
+  # Google Photos alternative
   services.immich = {
     enable = true;
     mediaLocation = "/var/lib/immich";
     host = "0.0.0.0"; # needed for tailscale access
+  };
+
+  # Home inventory management
+  services.homebox = {
+    enable = true;
+    settings = {
+      HBOX_WEB_MAX_UPLOAD_SIZE = "10";
+      HBOX_OPTIONS_ALLOW_REGISTRATION = "true";
+      HBOX_STORAGE_CONN_STRING = "file:///home/vessel/Vault/Inventory";
+    };
   };
 
   # Cloud backups
