@@ -26,7 +26,7 @@
     dl   = "cd ~/Downloads";
 
     # Nix
-    # rebuild = "sudo nixos-rebuild switch --flake .#${config.networking.hostname}";
+    rebuild = "sudo nixos-rebuild switch --flake .#$(hostname)";
     re = "rebuild";
     ndev = "nix develop --command zsh";
 

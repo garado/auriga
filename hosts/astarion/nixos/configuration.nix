@@ -2,8 +2,6 @@
 # █▀▀ █▀█ █▄░█ █▀▀ █ █▀▀ █░█ █▀█ ▄▀█ ▀█▀ █ █▀█ █▄░█
 # █▄▄ █▄█ █░▀█ █▀░ █ █▄█ █▄█ █▀▄ █▀█ ░█░ █ █▄█ █░▀█
 
-# Replaces /etc/nixos/configuration.nix
-
 { self, inputs, lib, config, pkgs, musnix, ... }: 
 let
   unstable = inputs.nixpkgs-unstable;
@@ -38,12 +36,6 @@ in {
     firewall.allowedTCPPorts = [ 22 ];
     firewall.allowedUDPPorts = [ 5353 ];
     networkmanager.enable = true;
-
-    hosts = {
-      # Temp fix for upstream librespot issues causing ncspot to stop working
-      # https://github.com/hrkfdn/ncspot/issues/1676#issuecomment-3168197941
-      "0.0.0.0" = ["apresolve.spotify.com"];
-    };
   };
 
   # Enable mdns

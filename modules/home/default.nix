@@ -1,4 +1,8 @@
-# home-manager configurations that can be globally applied to every machine
+
+# █░█ █▀█ █▀▄▀█ █▀▀   █▀▄▀█ ▄▀█ █▄░█ ▄▀█ █▀▀ █▀▀ █▀█   █▀▀ █░░ █▀█ █▄▄ ▄▀█ █░░   █▀▀ █▀▀ █▀▀
+# █▀█ █▄█ █░▀░█ ██▄   █░▀░█ █▀█ █░▀█ █▀█ █▄█ ██▄ █▀▄   █▄█ █▄▄ █▄█ █▄█ █▀█ █▄▄   █▄▄ █▀░ █▄█
+
+# HomeManager configurations that can be applied to every machine.
 
 { pkgs, ... }:
 {
@@ -10,8 +14,10 @@
 
   programs.git = {
     enable = true;
-    userName = "garado";
-    userEmail = "alexisgarado@gmail.com";
+    settings = {
+      user.name = "garado";
+      user.email = "alexisgarado@gmail.com";
+    };
   };
 
   home.packages = [ pkgs.git ];

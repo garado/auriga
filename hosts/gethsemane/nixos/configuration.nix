@@ -1,4 +1,9 @@
 
+# █▀▀ █▀▀ ▀█▀ █░█ █▀ █▀▀ █▀▄▀█ ▄▀█ █▄░█ █▀▀
+# █▄█ ██▄ ░█░ █▀█ ▄█ ██▄ █░▀░█ █▀█ █░▀█ ██▄
+
+# Nix config for gethsemane (home server).
+
 { self, config, pkgs, inputs, nixpkgs-unstable, ... }:
 {
   imports = [
@@ -26,6 +31,9 @@
       immich-cli immich-go
     ];
   };
+    
+  users.users.vessel.shell = pkgs.zsh;
+  programs.zsh.enable = true;
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -44,7 +52,7 @@
   };
   networking.networkmanager.enable = true;
 
-  # Access with `ssh@vessel.gethsemane`
+  # Access with `ssh vessel@gethsemane`
   services.avahi = {
     enable = true;
     nssmdns4 = true;
@@ -68,10 +76,10 @@
   };
 
   # No sleeping
-  services.logind = {
-    lidSwitch = "ignore";
-    lidSwitchExternalPower = "ignore";
-    lidSwitchDocked = "ignore";
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
   };
 
   # Power management
@@ -178,4 +186,7 @@
       options = [ "defaults" ];
     };
   };
+
+  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+  system.stateVersion = "25.11";
 }
