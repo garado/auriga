@@ -20,6 +20,7 @@
     packages = with pkgs; [
       sops
       restic
+      immich-cli immich-go
     ];
   };
 
