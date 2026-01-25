@@ -55,6 +55,18 @@
     };
   };
 
+  services.nginx = {
+    enable = true;
+    virtualHosts."gethsemane" = {
+      locations."/photos" = {
+        return = "301 http://gethsemane:2283";
+      };
+      locations."/inventory" = {
+        return = "301 http://gethsemane:7745";
+      };
+    };
+  };
+
   # No sleeping
   services.logind = {
     lidSwitch = "ignore";
