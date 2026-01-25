@@ -1,0 +1,3 @@
+[submodule "hosts/astarion/home/shell/ags-ts"]
+	path = hosts/astarion/home/shell/ags-ts
+	url = git@github.com:garado/ags-shell.git

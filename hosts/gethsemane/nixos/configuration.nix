@@ -1,14 +1,29 @@
-{ config, pkgs, inputs, ... }:
 
+{ self, config, pkgs, inputs, nixpkgs-unstable, ... }:
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    "${nixpkgs-unstable}/nixos/modules/services/web-apps/homebox.nix"
+    ./hardware-configuration.nix
+    ../../../modules/syncthing
+    inputs.sops-nix.nixosModules.sops
+  ];
+
+  disabledModules = [ "services/web-apps/homebox.nix" ];
+
+  # Misc Nix settings
+  nix.settings = {
+    experimental-features = "nix-command flakes";
+    auto-optimise-store = true;
+  };
 
   users.users.vessel = {
     isNormalUser = true;
     description = "vessel";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
-
+      sops
+      restic
+      immich-cli immich-go
     ];
   };
 
@@ -17,7 +32,7 @@
 
   # Networking and ssh access
   networking.hostName = "gethsemane";
-  networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall.allowedTCPPorts = [ 22 2283 ];
   networking.firewall.allowedUDPPorts = [ 5353 ];
   services.openssh = {
     enable = true;
@@ -40,6 +55,18 @@
     };
   };
 
+  services.nginx = {
+    enable = true;
+    virtualHosts."gethsemane" = {
+      locations."/photos" = {
+        return = "301 http://gethsemane:2283";
+      };
+      locations."/inventory" = {
+        return = "301 http://gethsemane:7745";
+      };
+    };
+  };
+
   # No sleeping
   services.logind = {
     lidSwitch = "ignore";
@@ -50,4 +77,105 @@
   # Power management
   powerManagement.enable = true;
   services.thermald.enable = true;
+
+  # Super secret secrets
+  sops = {
+    defaultSopsFile = "${self}/secrets.yaml";
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+
+    secrets = {
+      tailscale_key = { owner = "root"; };
+      restic_pass   = { owner = "root"; };
+      b2_env        = { owner = "root"; };
+    };
+  };
+
+  # VPN
+  services.tailscale = {
+    enable = true;
+    authKeyFile = config.sops.secrets.tailscale_key.path;
+  };
+
+  # Google Photos alternative
+  services.immich = {
+    enable = true;
+    mediaLocation = "/var/lib/immich";
+    host = "0.0.0.0"; # needed for tailscale access
+  };
+
+  # Home inventory management
+  services.homebox = {
+    enable = true;
+    settings = {
+      HBOX_WEB_MAX_UPLOAD_SIZE = "10";
+      HBOX_OPTIONS_ALLOW_REGISTRATION = "true";
+      HBOX_STORAGE_CONN_STRING = "file:///home/vessel/Vault/Inventory";
+    };
+  };
+
+  # Cloud backups
+  services.restic.backups = {
+    daily-cloud = {
+      initialize = true;
+      repository = "b2:gethsemane";
+      passwordFile = config.sops.secrets.restic_pass.path;
+      environmentFile = config.sops.secrets.b2_env.path;
+
+      paths = [
+        "/home/vessel/Vault/"
+      ];
+
+      timerConfig = {
+        OnCalendar = "03:00";
+        Persistent = true;
+      };
+
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+    };
+
+    daily-blackreach = {
+      initialize = true;
+      repository = "/mnt/blackreach/Vault";
+      passwordFile = config.sops.secrets.restic_pass.path;
+
+      paths = [
+        "/home/vessel/Vault"
+      ];
+
+      timerConfig = {
+        OnCalendar = "02:00";
+        Persistent = true;
+      };
+
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+    };
+  };
+
+  # Sync files between devices
+  services.auriga-syncthing = {
+    enable = true;
+    user = "vessel";
+    musicPath = /home/vessel/Vault/Music/Library;
+    playlistPath = /home/vessel/Vault/Music/Playlists;
+    playlistMetaPath = /home/vessel/Vault/Music/PlaylistMetadata;
+    ledgerPath = /home/vessel/Vault/Ledger;
+  };
+
+  # Local storage
+  fileSystems = {
+    # WD 5TB Elements Portable (WDBU6Y0050BBK-WESN) 2022-03
+    "/mnt/blackreach" = {
+      device = "/dev/disk/by-label/blackreach";
+      fsType = "ntfs3";
+      options = [ "defaults" ];
+    };
+  };
 }

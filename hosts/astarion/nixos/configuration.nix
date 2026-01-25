@@ -26,6 +26,7 @@ in {
   # --------------------------------------------
 
   imports = [
+    ../../../modules/syncthing
     ./hardware-configuration.nix
     ./fonts.nix
     inputs.sops-nix.nixosModules.sops
@@ -34,12 +35,25 @@ in {
   # Networking
   networking = {
     hostName = "astarion";
+    firewall.allowedTCPPorts = [ 22 ];
+    firewall.allowedUDPPorts = [ 5353 ];
     networkmanager.enable = true;
 
     hosts = {
       # Temp fix for upstream librespot issues causing ncspot to stop working
       # https://github.com/hrkfdn/ncspot/issues/1676#issuecomment-3168197941
       "0.0.0.0" = ["apresolve.spotify.com"];
+    };
+  };
+
+  # Enable mdns
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    publish = {
+      enable = true;
+      addresses = true;
+      workstation = true;
     };
   };
 
@@ -115,6 +129,7 @@ in {
     defaultSopsFile = "${self}/secrets.yaml";
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
+      tailscale_key   = { owner = "root"; };
       gemini_api      = { owner = "alexis"; mode = "0400"; };
       transit_api     = { owner = "alexis"; mode = "0400"; };
       locationiq_api  = { owner = "alexis"; mode = "0400"; };
@@ -125,6 +140,20 @@ in {
       lastfm_user     = { owner = "alexis"; mode = "0400"; };
       lastfm_pass     = { owner = "alexis"; mode = "0400"; };
     };
+  };
+
+  services.tailscale = {
+    enable = true;
+    authKeyFile = config.sops.secrets.tailscale_key.path;
+  };
+
+  services.auriga-syncthing = {
+    enable = true;
+    user = "alexis";
+    musicPath = /home/alexis/Music/Library;
+    playlistPath = /home/alexis/Music/Playlists/cmus-playlist-defs/playlists;
+    playlistMetaPath = /home/alexis/.config/labyrinthine/playlists;
+    ledgerPath = /home/alexis/Documents/ledger/data;
   };
   
   # --------------------------------------------
