@@ -109,9 +109,8 @@ in {
     };
 
     sessionVariables = rec {
-      ENCHIRIDION = "$HOME/Enchiridion";
-      AGSCFG = "$HOME/Github/dotfiles/hosts/astarion/home/shell/ags-ts/";
-      NVCFG = "$HOME/Github/dotfiles/hosts/astarion/home/nvim/nvchad-custom/";
+      ENCHIRIDION = "$HOME/Documents/Enchiridion";
+      NVCFG = "$HOME/Github/dotfiles/modules/home/nvim/";
       DOTS = "$HOME/Github/dotfiles/hosts/astarion/";
       MUSIC = "$HOME/Music/Library/";
     };
