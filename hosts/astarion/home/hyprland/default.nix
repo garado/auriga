@@ -18,7 +18,8 @@
       # Execute these programs at launch
       exec-once = [
         "sleep 1 && swww-daemon &"
-        "cd /home/alexis/Github/dotfiles/hosts/astarion/home/shell/ags-ts/ ; ags run app-lock.ts & sleep 1 ; ags run app.ts --gtk4"
+        "labyrinthine &"
+        # "cd /home/alexis/Github/dotfiles/hosts/astarion/home/shell/ags-ts/ ; ags run app-lock.ts & sleep 1 ; ags run app.ts --gtk4"
       ];
 
       # Plugin options
@@ -134,7 +135,7 @@
         "ALT_L SHIFT, L, exec, astal -i lock lock"
 
         # Restart desktop shell
-        "ALT_L SHIFT, r, exec, cd /home/alexis/Github/dotfiles/hosts/astarion/home/shell/ags-ts ; ags quit -i app ; ags run app.ts --gtk4"
+        "ALT_L SHIFT, r, exec, pkill labyrinthine ; labyrinthine"
 
         # Screenshot
         "$mainMod SHIFT, s, exec, grimblast copy area"
@@ -145,10 +146,10 @@
         # "$mainMod, H, exec, astal -i app toggle-window utility"
         # "$mainMod, L, exec, astal -i app toggle-window control"
         # "$mainMod, R, exec, astal -i app toggle-window launcher"
-        "$mainMod, J, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle dash"
-        "$mainMod, H, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle utility"
-        "$mainMod, L, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle control"
-        "$mainMod, R, exec, $HOME/Github/labyrinthine/build/labyrinthine-ctl toggle launcher"
+        "$mainMod, J, exec, labyrinthine-ctl toggle dash"
+        "$mainMod, H, exec, labyrinthine-ctl toggle utility"
+        "$mainMod, L, exec, labyrinthine-ctl toggle control"
+        "$mainMod, R, exec, labyrinthine-ctl toggle launcher"
 
         # Move focus between windows
         "ALT_L, TAB, cyclenext"

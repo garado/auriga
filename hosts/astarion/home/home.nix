@@ -7,9 +7,6 @@
 { self, inputs, lib, config, pkgs, pkgs-2505, ... }: {
 
   imports = [
-    # Defined in flake.nix
-    inputs.ags.homeManagerModules.default
-
     # Import other pieces of config
     ./gtk
     ./hyprland
@@ -32,13 +29,33 @@
     homeDirectory = "/home/alexis";
 
     packages = with pkgs; [
+      # Labyrinthine
+      (pkgs.writeShellScriptBin "labyrinthine" ''
+        cd "$HOME/Github/labyrinthine"
+
+        # If binary already exists, enter devshell and run it. Otherwise, enter devshell, compile, then run
+        if [[ -x "./build/labyrinthine" ]]; then
+          exec nix develop --command ./build/labyrinthine
+        else
+          exec nix develop --command bash -c "cmake -B build && cmake --build build && ./build/labyrinthine"
+        fi
+      '')
+
+      (pkgs.writeShellScriptBin "labyrinthine-ctl" ''
+        cd "$HOME/Github/labyrinthine"
+      
+        if [[ -x "./build/labyrinthine-ctl" ]]; then
+          exec ./build/labyrinthine-ctl "$@"
+        else
+          exec nix develop --command bash -c "cmake -B build && cmake --build build && ./build/labyrinthine-ctl $*"
+        fi
+      '')
+
       # Music
-      ncspot mpc
+      mpc
 
       # Productivity
       obsidian
-
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.io
 
       (python3.withPackages (ps: with ps; [
         # Packages from nixpkgs
@@ -89,33 +106,6 @@
     font.size = 14;
   };
 
-
-  programs.ags = {
-    enable = true;
-
-    # symlinked to ~/.config/ags
-    configDir = ./shell/ags-ts;
-
-    extraPackages = with pkgs-2505; [
-      gtksourceview5 libpng /** Source code */
-      libshumate /** Provides map widget for dashboard transit tab */
-      gvfs imagemagick /** Cover art utils for media player */
-      gtk-session-lock /** For lockscreen (written with gtk3) */
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.apps
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.auth
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.battery
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.bluetooth
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.cava
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.greet
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.hyprland
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.mpris
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.network
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.notifd
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.powerprofiles
-      inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.wireplumber
-    ];
-  };
-
   programs.git = {
     enable = true;
     settings = {
@@ -160,7 +150,7 @@
     settings = {
       mpd_host = "localhost";
       mpd_port = 6600;
-      mpd_music_dir = "/home/alexis/Music/Library";
+      mpdMusicDir = "/home/alexis/Music/Library";
     };
 
     bindings = [

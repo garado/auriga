@@ -12,7 +12,6 @@
     tabs = "cd ~/Documents/Music/guitar/";
 
     cfg = "cd ~/.config";
-    cfgags = "cd ~/Github/dotfiles/hosts/astarion/home/shell/ags-ts/";
     ench = "cd $ENCHIRIDION";
 
     # Quick edit
@@ -25,8 +24,5 @@
     # Development
     py = "python3.11";
     m = "make";
-
-    # Nix
-    rebuild = "sudo nixos-rebuild switch --flake .#astarion";
   };
 }

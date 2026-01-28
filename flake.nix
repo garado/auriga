@@ -32,12 +32,6 @@
 
     hardware.url = "github:nixos/nixos-hardware";
 
-    # Widgets
-    ags = {
-      url = "github:Aylur/ags/v2.3.0";
-      inputs.nixpkgs.follows = "nixpkgs-2505";  # ags v2 needs nixpkgs 25.05
-    };
-
     # Real-time audio
     musnix.url = "github:musnix/musnix";
   };
