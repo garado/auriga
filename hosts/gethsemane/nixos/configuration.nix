@@ -5,15 +5,18 @@
 # Nix config for gethsemane (home server).
 
 { self, config, pkgs, inputs, nixpkgs-unstable, ... }:
+let
+  pkgs-unstable = import nixpkgs-unstable {
+    system = pkgs.system;
+    config.allowUnfree = true;
+  };
+in
 {
   imports = [
-    "${nixpkgs-unstable}/nixos/modules/services/web-apps/homebox.nix"
     ./hardware-configuration.nix
     ../../../modules/syncthing
     inputs.sops-nix.nixosModules.sops
   ];
-
-  disabledModules = [ "services/web-apps/homebox.nix" ];
 
   # Misc Nix settings
   nix.settings = {
@@ -114,6 +117,7 @@
   # Home inventory management
   services.homebox = {
     enable = true;
+    package = pkgs-unstable.homebox;
     settings = {
       HBOX_WEB_MAX_UPLOAD_SIZE = "10";
       HBOX_OPTIONS_ALLOW_REGISTRATION = "true";
