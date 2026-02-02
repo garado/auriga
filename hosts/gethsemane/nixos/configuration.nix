@@ -4,7 +4,7 @@
 
 # Nix config for gethsemane (home server).
 
-{ self, config, pkgs, inputs, nixpkgs-unstable, ... }:
+{ self, config, pkgs, lib, inputs, nixpkgs-unstable, ... }:
 let
   pkgs-unstable = import nixpkgs-unstable {
     system = pkgs.system;
@@ -43,7 +43,7 @@ in
 
   # Networking and ssh access
   networking.hostName = "gethsemane";
-  networking.firewall.allowedTCPPorts = [ 22 2283 ];
+  networking.firewall.allowedTCPPorts = [ 22 2283 443 8443 ];
   networking.firewall.allowedUDPPorts = [ 5353 ];
   services.openssh = {
     enable = true;
@@ -55,6 +55,11 @@ in
   };
   networking.networkmanager.enable = true;
 
+  security.acme = {
+    acceptTerms = true;
+    defaults.email = "alexisgarado@gmail.com";
+  };
+
   # Access with `ssh vessel@gethsemane`
   services.avahi = {
     enable = true;
@@ -63,18 +68,6 @@ in
       enable = true;
       addresses = true;
       workstation = true;
-    };
-  };
-
-  services.nginx = {
-    enable = true;
-    virtualHosts."gethsemane" = {
-      locations."/photos" = {
-        return = "301 http://gethsemane:2283";
-      };
-      locations."/inventory" = {
-        return = "301 http://gethsemane:7745";
-      };
     };
   };
 
@@ -105,6 +98,7 @@ in
   services.tailscale = {
     enable = true;
     authKeyFile = config.sops.secrets.tailscale_key.path;
+    useRoutingFeatures = "client";
   };
 
   # Google Photos alternative
@@ -121,8 +115,14 @@ in
     settings = {
       HBOX_WEB_MAX_UPLOAD_SIZE = "10";
       HBOX_OPTIONS_ALLOW_REGISTRATION = "true";
-      HBOX_STORAGE_CONN_STRING = "file:///home/vessel/Vault/Inventory";
     };
+  };
+  
+  systemd.services.homebox.environment.TMPDIR = "/var/lib/homebox/tmp";
+
+  services.jellyfin = {
+    enable = true;
+    openFirewall = true;
   };
 
   # Cloud backups
