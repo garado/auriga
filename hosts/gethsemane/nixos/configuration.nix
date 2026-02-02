@@ -134,7 +134,7 @@ in
       environmentFile = config.sops.secrets.b2_env.path;
 
       paths = [
-        "/home/vessel/Vault/"
+        "/var/Vault/"
       ];
 
       timerConfig = {
@@ -155,7 +155,7 @@ in
       passwordFile = config.sops.secrets.restic_pass.path;
 
       paths = [
-        "/home/vessel/Vault"
+        "/var/Vault/"
       ];
 
       timerConfig = {
@@ -175,10 +175,10 @@ in
   services.auriga-syncthing = {
     enable = true;
     user = "vessel";
-    musicPath = /home/vessel/Vault/Music/Library;
-    playlistPath = /home/vessel/Vault/Music/Playlists;
-    playlistMetaPath = /home/vessel/Vault/Music/PlaylistMetadata;
-    ledgerPath = /home/vessel/Vault/Ledger;
+    musicPath = /var/Vault/Music/Library;
+    playlistPath = /var/Vault/Music/Playlists;
+    playlistMetaPath = /var/Vault/Music/PlaylistMetadata;
+    ledgerPath = /var/Vault/Ledger;
   };
 
   # Local storage
