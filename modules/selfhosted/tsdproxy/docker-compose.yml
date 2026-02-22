@@ -4,7 +4,8 @@ services:
     volumes:
       - /run/podman/podman.sock:/var/run/docker.sock
       - datadir:/data
-      - /etc/tsdproxy:/config
+      - /etc/tsdproxy/tsdproxy.yaml:/config/tsdproxy.yaml:ro
+      - /etc/tsdproxy/proxies.yaml:/config/proxies.yaml:ro
       - /run/secrets/tailscale_key:/run/secrets/tailscale_key:ro # so it can see my sops secrets
     environment:
       HOME: /data

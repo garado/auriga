@@ -5,9 +5,8 @@ docker:
     targetHostname: 10.88.0.1 # hostname or IP of docker server
     defaultProxyProvider: default # name of which proxy provider to use
 files:
-  immich:
-    targetUrl: "http://10.88.0.1:2283"
-    hostname: "photos"
+  services:
+    filename: /config/proxies.yaml
     defaultProxyProvider: default
 tailscale:
   providers:

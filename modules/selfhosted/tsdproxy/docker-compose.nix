@@ -26,7 +26,8 @@
       "HOME" = "/data";
     };
     volumes = [
-      "/etc/tsdproxy:/config:rw"
+      "/etc/tsdproxy/proxies.yaml:/config/proxies.yaml:ro"
+      "/etc/tsdproxy/tsdproxy.yaml:/config/tsdproxy.yaml:ro"
       "/run/podman/podman.sock:/var/run/docker.sock:rw"
       "/run/secrets/tailscale_key:/run/secrets/tailscale_key:ro"
       "tsdproxy_datadir:/data:rw"
