@@ -23,7 +23,7 @@
   virtualisation.oci-containers.containers."dawarich_app" = {
     image = "freikin/dawarich:latest";
     environment = {
-      "APPLICATION_HOSTS" = "localhost,::1,127.0.0.1";
+      "APPLICATION_HOSTS" = "gethsemane,localhost,::1,127.0.0.1";
       "APPLICATION_PROTOCOL" = "http";
       "DATABASE_HOST" = "dawarich_db";
       "DATABASE_NAME" = "dawarich_development";
@@ -39,7 +39,7 @@
       "SECRET_KEY_BASE" = "\"CHANGE_ME\"";
       "SELF_HOSTED" = "true";
       "STORE_GEODATA" = "true";
-      "TIME_ZONE" = "Europe/London";
+      "TIME_ZONE" = "America/Los_Angeles";
     };
     volumes = [
       "dawarich_dawarich_db_data:/dawarich_db_data:rw"
@@ -48,7 +48,7 @@
       "dawarich_dawarich_watched:/var/app/tmp/imports/watched:rw"
     ];
     ports = [
-      "3000:3000/tcp"
+      "2999:3000/tcp"
     ];
     cmd = [ "bin/rails" "server" "-p" "3000" "-b" "::" ];
     dependsOn = [
@@ -177,7 +177,7 @@
   virtualisation.oci-containers.containers."dawarich_sidekiq" = {
     image = "freikin/dawarich:latest";
     environment = {
-      "APPLICATION_HOSTS" = "localhost,::1,127.0.0.1";
+      "APPLICATION_HOSTS" = "gethsemane,localhost,::1,127.0.0.1";
       "APPLICATION_PROTOCOL" = "http";
       "BACKGROUND_PROCESSING_CONCURRENCY" = "10";
       "DATABASE_HOST" = "dawarich_db";

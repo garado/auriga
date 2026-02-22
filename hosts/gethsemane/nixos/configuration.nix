@@ -15,6 +15,7 @@ in
   imports = [
     ./hardware-configuration.nix
     ../../../modules/syncthing
+    ../../../modules/selfhosted/dawarich
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -35,7 +36,6 @@ in
       immich-cli immich-go
       qbittorrent-nox
       pkgs-unstable.silverbullet
-      dawarich
     ];
   };
     
