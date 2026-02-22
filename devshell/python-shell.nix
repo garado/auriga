@@ -5,14 +5,17 @@
 
 { pkgs ? import <nixpkgs> {} }:
 pkgs.mkShell {
-  buildInputs = with pkgs; [
-    python3
-    python3Packages.numpy
-    python3Packages.requests
-  ];
+  buildInputs = [
+      (pkgs.python3.withPackages (ps: with ps; [
+        numpy
+        requests
+        pyyaml
+      ]))
+    ];
 
   shellHook = ''
     export NIX_DEV_SHELL="Python"
-    exec zsh
+    # if [ -n "$ZSH_VERSION" ]; then return; fi
+    # exec zsh
   '';
 }
