@@ -29,9 +29,13 @@ in
     description = "vessel";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
+      compose2nix
       sops
       restic
       immich-cli immich-go
+      qbittorrent-nox
+      pkgs-unstable.silverbullet
+      dawarich
     ];
   };
     
@@ -43,8 +47,13 @@ in
 
   # Networking and ssh access
   networking.hostName = "gethsemane";
-  networking.firewall.allowedTCPPorts = [ 22 2283 443 8443 ];
+  networking.firewall.allowedTCPPorts = [
+    22 2283 443 8443 80
+    3000 # enchiridion
+  ];
   networking.firewall.allowedUDPPorts = [ 5353 ];
+  networking.firewall.checkReversePath = "loose";
+
   services.openssh = {
     enable = true;
     settings = {
@@ -187,7 +196,7 @@ in
     "/mnt/blackreach" = {
       device = "/dev/disk/by-label/blackreach";
       fsType = "ntfs3";
-      options = [ "defaults" ];
+      options = [ "defaults" "nofail" "x-systemd.device-timeout=5s" ];
     };
   };
 
