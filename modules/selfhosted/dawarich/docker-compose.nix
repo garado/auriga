@@ -23,7 +23,7 @@
   virtualisation.oci-containers.containers."dawarich_app" = {
     image = "freikin/dawarich:latest";
     environment = {
-      "APPLICATION_HOSTS" = "gethsemane,localhost,::1,127.0.0.1";
+      "APPLICATION_HOSTS" = "gethsemane,gethsemane.dinosaur-frog.ts.net:2999,localhost,::1,127.0.0.1";
       "APPLICATION_PROTOCOL" = "http";
       "DATABASE_HOST" = "dawarich_db";
       "DATABASE_NAME" = "dawarich_development";
@@ -57,14 +57,12 @@
     ];
     log-driver = "journald";
     extraOptions = [
-      "--cpus=0.5"
       "--entrypoint=[\"web-entrypoint.sh\"]"
       "--health-cmd=wget -qO - http://127.0.0.1:3000/api/v1/health | grep -q '\"status\"\\s*:\\s*\"ok\"'"
       "--health-interval=10s"
       "--health-retries=30"
       "--health-start-period=30s"
       "--health-timeout=10s"
-      "--memory=4294967296b"
       "--network-alias=dawarich_app"
       "--network=dawarich_dawarich"
     ];
@@ -177,7 +175,7 @@
   virtualisation.oci-containers.containers."dawarich_sidekiq" = {
     image = "freikin/dawarich:latest";
     environment = {
-      "APPLICATION_HOSTS" = "gethsemane,localhost,::1,127.0.0.1";
+      "APPLICATION_HOSTS" = "gethsemane,gethsemane.dinosaur-frog.ts.net:2999,localhost,::1,127.0.0.1";
       "APPLICATION_PROTOCOL" = "http";
       "BACKGROUND_PROCESSING_CONCURRENCY" = "10";
       "DATABASE_HOST" = "dawarich_db";

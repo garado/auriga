@@ -96,11 +96,11 @@ services:
       dawarich_redis:
         condition: service_healthy
         restart: true
-    deploy:
-      resources:
-        limits:
-          cpus: ${APP_CPU_LIMIT:-0.50}
-          memory: ${APP_MEMORY_LIMIT:-4G}
+    # deploy:
+      # resources:
+        # limits:
+          # cpus: ${APP_CPU_LIMIT:-0.50}
+          # memory: ${APP_MEMORY_LIMIT:-4G}
 
   dawarich_sidekiq:
     image: freikin/dawarich:latest
