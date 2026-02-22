@@ -18,6 +18,7 @@ in
     ../../../modules/selfhosted/tsdproxy
     ../../../modules/selfhosted/dawarich
     ../../../modules/selfhosted/silverbullet
+    ../../../modules/selfhosted/jellyfin
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -130,10 +131,10 @@ in
   
   systemd.services.homebox.environment.TMPDIR = "/var/lib/homebox/tmp";
 
-  services.jellyfin = {
-    enable = true;
-    openFirewall = true;
-  };
+  # services.jellyfin = {
+  #   enable = true;
+  #   openFirewall = true;
+  # };
 
   # Cloud backups
   services.restic.backups = {
