@@ -140,6 +140,7 @@ in {
   services.tailscale = {
     enable = true;
     authKeyFile = config.sops.secrets.tailscale_key.path;
+    useRoutingFeatures = "client";
   };
 
   services.auriga-syncthing = {

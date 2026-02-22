@@ -4,16 +4,19 @@
 
 # Nix config for gethsemane (home server).
 
-{ self, config, pkgs, inputs, nixpkgs-unstable, ... }:
+{ self, config, pkgs, lib, inputs, nixpkgs-unstable, ... }:
+let
+  pkgs-unstable = import nixpkgs-unstable {
+    system = pkgs.system;
+    config.allowUnfree = true;
+  };
+in
 {
   imports = [
-    "${nixpkgs-unstable}/nixos/modules/services/web-apps/homebox.nix"
     ./hardware-configuration.nix
     ../../../modules/syncthing
     inputs.sops-nix.nixosModules.sops
   ];
-
-  disabledModules = [ "services/web-apps/homebox.nix" ];
 
   # Misc Nix settings
   nix.settings = {
@@ -26,9 +29,13 @@
     description = "vessel";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
+      compose2nix
       sops
       restic
       immich-cli immich-go
+      qbittorrent-nox
+      pkgs-unstable.silverbullet
+      dawarich
     ];
   };
     
@@ -40,8 +47,13 @@
 
   # Networking and ssh access
   networking.hostName = "gethsemane";
-  networking.firewall.allowedTCPPorts = [ 22 2283 ];
+  networking.firewall.allowedTCPPorts = [
+    22 2283 443 8443 80
+    3000 # enchiridion
+  ];
   networking.firewall.allowedUDPPorts = [ 5353 ];
+  networking.firewall.checkReversePath = "loose";
+
   services.openssh = {
     enable = true;
     settings = {
@@ -52,6 +64,11 @@
   };
   networking.networkmanager.enable = true;
 
+  security.acme = {
+    acceptTerms = true;
+    defaults.email = "alexisgarado@gmail.com";
+  };
+
   # Access with `ssh vessel@gethsemane`
   services.avahi = {
     enable = true;
@@ -60,18 +77,6 @@
       enable = true;
       addresses = true;
       workstation = true;
-    };
-  };
-
-  services.nginx = {
-    enable = true;
-    virtualHosts."gethsemane" = {
-      locations."/photos" = {
-        return = "301 http://gethsemane:2283";
-      };
-      locations."/inventory" = {
-        return = "301 http://gethsemane:7745";
-      };
     };
   };
 
@@ -102,6 +107,7 @@
   services.tailscale = {
     enable = true;
     authKeyFile = config.sops.secrets.tailscale_key.path;
+    useRoutingFeatures = "client";
   };
 
   # Google Photos alternative
@@ -114,11 +120,18 @@
   # Home inventory management
   services.homebox = {
     enable = true;
+    package = pkgs-unstable.homebox;
     settings = {
       HBOX_WEB_MAX_UPLOAD_SIZE = "10";
       HBOX_OPTIONS_ALLOW_REGISTRATION = "true";
-      HBOX_STORAGE_CONN_STRING = "file:///home/vessel/Vault/Inventory";
     };
+  };
+  
+  systemd.services.homebox.environment.TMPDIR = "/var/lib/homebox/tmp";
+
+  services.jellyfin = {
+    enable = true;
+    openFirewall = true;
   };
 
   # Cloud backups
@@ -130,7 +143,7 @@
       environmentFile = config.sops.secrets.b2_env.path;
 
       paths = [
-        "/home/vessel/Vault/"
+        "/var/Vault/"
       ];
 
       timerConfig = {
@@ -151,7 +164,7 @@
       passwordFile = config.sops.secrets.restic_pass.path;
 
       paths = [
-        "/home/vessel/Vault"
+        "/var/Vault/"
       ];
 
       timerConfig = {
@@ -171,10 +184,10 @@
   services.auriga-syncthing = {
     enable = true;
     user = "vessel";
-    musicPath = /home/vessel/Vault/Music/Library;
-    playlistPath = /home/vessel/Vault/Music/Playlists;
-    playlistMetaPath = /home/vessel/Vault/Music/PlaylistMetadata;
-    ledgerPath = /home/vessel/Vault/Ledger;
+    musicPath = /var/Vault/Music/Library;
+    playlistPath = /var/Vault/Music/Playlists;
+    playlistMetaPath = /var/Vault/Music/PlaylistMetadata;
+    ledgerPath = /var/Vault/Ledger;
   };
 
   # Local storage
@@ -183,7 +196,7 @@
     "/mnt/blackreach" = {
       device = "/dev/disk/by-label/blackreach";
       fsType = "ntfs3";
-      options = [ "defaults" ];
+      options = [ "defaults" "nofail" "x-systemd.device-timeout=5s" ];
     };
   };
 
