@@ -17,6 +17,7 @@ in
     ../../../modules/syncthing
     ../../../modules/selfhosted/tsdproxy
     ../../../modules/selfhosted/dawarich
+    ../../../modules/selfhosted/silverbullet
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -36,7 +37,6 @@ in
       restic
       immich-cli immich-go
       qbittorrent-nox
-      pkgs-unstable.silverbullet
     ];
   };
     

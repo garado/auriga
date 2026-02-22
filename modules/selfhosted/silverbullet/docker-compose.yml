@@ -1,0 +1,13 @@
+services:
+  silverbullet:
+    image: zefhemel/silverbullet
+    container_name: silverbullet
+    volumes:
+      - /home/vessel/Enchiridion:/space
+    ports:
+      - "3000:3000"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "enchiridion"
+      tsdproxy.container_port: "3000"
+    restart: unless-stopped
