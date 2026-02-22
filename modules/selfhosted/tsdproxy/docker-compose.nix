@@ -25,6 +25,7 @@
     volumes = [
       "/etc/tsdproxy:/config:rw"
       "/run/podman/podman.sock:/var/run/docker.sock:rw"
+      "/run/secrets/tailscale_key:/run/secrets/tailscale_key:ro"
       "tsdproxy_datadir:/data:rw"
     ];
     ports = [
