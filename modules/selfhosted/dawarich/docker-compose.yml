@@ -44,6 +44,9 @@ services:
 
   dawarich_app:
     image: freikin/dawarich:latest
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "dawarich"
     container_name: dawarich_app
     volumes:
       - dawarich_public:/var/app/public

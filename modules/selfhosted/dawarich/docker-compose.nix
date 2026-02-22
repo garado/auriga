@@ -51,6 +51,10 @@
       "2999:3000/tcp"
     ];
     cmd = [ "bin/rails" "server" "-p" "3000" "-b" "::" ];
+    labels = {
+      "tsdproxy.enable" = "true";
+      "tsdproxy.name" = "dawarich";
+    };
     dependsOn = [
       "dawarich_db"
       "dawarich_redis"
