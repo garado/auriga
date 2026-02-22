@@ -4,7 +4,11 @@ docker:
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
     targetHostname: 10.88.0.1 # hostname or IP of docker server
     defaultProxyProvider: default # name of which proxy provider to use
-files: {}
+files:
+  immich:
+    targetUrl: "http://10.88.0.1:2283"
+    hostname: "photos"
+    defaultProxyProvider: default
 tailscale:
   providers:
     default: # name of the provider

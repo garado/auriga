@@ -19,6 +19,7 @@ in
     ../../../modules/selfhosted/dawarich
     ../../../modules/selfhosted/silverbullet
     ../../../modules/selfhosted/jellyfin
+    ../../../modules/selfhosted/immich
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -113,11 +114,11 @@ in
   };
 
   # Google Photos alternative
-  services.immich = {
-    enable = true;
-    mediaLocation = "/var/lib/immich";
-    host = "0.0.0.0"; # needed for tailscale access
-  };
+  # services.immich = {
+  #   enable = true;
+  #   mediaLocation = "/var/lib/immich";
+  #   host = "0.0.0.0"; # needed for tailscale access
+  # };
 
   # Home inventory management
   services.homebox = {
