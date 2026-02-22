@@ -150,7 +150,7 @@
     settings = {
       mpd_host = "localhost";
       mpd_port = 6600;
-      mpdMusicDir = "/home/alexis/Music/Library";
+      mpd_music_dir = "/home/alexis/Music/Library";
     };
 
     bindings = [

@@ -33,9 +33,13 @@ in {
   # Networking
   networking = {
     hostName = "astarion";
+    networkmanager.enable = true;
     firewall.allowedTCPPorts = [ 22 ];
     firewall.allowedUDPPorts = [ 5353 ];
-    networkmanager.enable = true;
+
+    # fixes no internet after mullvad vpn exit node
+    # https://github.com/tailscale/tailscale/issues/10319
+    firewall.checkReversePath = "loose"; 
   };
 
   # Enable mdns
@@ -168,6 +172,9 @@ in {
   environment.systemPackages = with pkgs; [
     signal-desktop
 
+    xournalpp
+    spotdl
+
     # DE/WM
     inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
     unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".hyprpicker # v0.4.2
@@ -245,6 +252,8 @@ in {
 
     # *gag*
     wineWowPackages.stable
+
+    inputs.zen-browser.packages."${system}".default
   ];
 
   musnix.enable = true;

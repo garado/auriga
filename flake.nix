@@ -2,11 +2,8 @@
   description = "AURIGA";
 
   inputs = {
-    nixCats.url = "github:BirdeeHub/nixCats-nvim";
-
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-2505.url = "github:nixos/nixpkgs/nixos-25.05";
-
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     sops-nix = {
@@ -34,6 +31,14 @@
 
     # Real-time audio
     musnix.url = "github:musnix/musnix";
+
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
   };
 
   outputs = { 
