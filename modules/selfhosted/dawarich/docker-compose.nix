@@ -23,7 +23,7 @@
   virtualisation.oci-containers.containers."dawarich_app" = {
     image = "freikin/dawarich:latest";
     environment = {
-      "APPLICATION_HOSTS" = "gethsemane,gethsemane.dinosaur-frog.ts.net:2999,localhost,::1,127.0.0.1";
+      "APPLICATION_HOSTS" = "gethsemane,gethsemane.dinosaur-frog.ts.net:2999,dawarich.dinosaur-frog.ts.net,localhost,::1,127.0.0.1";
       "APPLICATION_PROTOCOL" = "http";
       "DATABASE_HOST" = "dawarich_db";
       "DATABASE_NAME" = "dawarich_development";
@@ -52,6 +52,7 @@
     ];
     cmd = [ "bin/rails" "server" "-p" "3000" "-b" "::" ];
     labels = {
+      "tsdproxy.container_port" = "3000";
       "tsdproxy.enable" = "true";
       "tsdproxy.name" = "dawarich";
     };
@@ -179,7 +180,7 @@
   virtualisation.oci-containers.containers."dawarich_sidekiq" = {
     image = "freikin/dawarich:latest";
     environment = {
-      "APPLICATION_HOSTS" = "gethsemane,gethsemane.dinosaur-frog.ts.net:2999,localhost,::1,127.0.0.1";
+      "APPLICATION_HOSTS" = "gethsemane,gethsemane.dinosaur-frog.ts.net:2999,dawarich.dinosaur-frog.ts.net,localhost,::1,127.0.0.1";
       "APPLICATION_PROTOCOL" = "http";
       "BACKGROUND_PROCESSING_CONCURRENCY" = "10";
       "DATABASE_HOST" = "dawarich_db";

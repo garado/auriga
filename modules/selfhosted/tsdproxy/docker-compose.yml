@@ -7,7 +7,7 @@ services:
       - /etc/tsdproxy:/config
       - /run/secrets/tailscale_key:/run/secrets/tailscale_key:ro # so it can see my sops secrets
     environment:
-      -HOME: /data
+      HOME: /data
     restart: unless-stopped
     ports:
       - "8080:8080"

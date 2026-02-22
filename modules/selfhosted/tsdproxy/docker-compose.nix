@@ -23,7 +23,7 @@
   virtualisation.oci-containers.containers."tsdproxy-tsdproxy" = {
     image = "almeidapaulopt/tsdproxy:1";
     environment = {
-      "-HOME" = "/data";
+      "HOME" = "/data";
     };
     volumes = [
       "/etc/tsdproxy:/config:rw"
