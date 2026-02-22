@@ -2,7 +2,7 @@ defaultProxyProvider: default
 docker:
   local: # name of the docker target provider
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
-    targetHostname: 10.88.0.1 # hostname or IP of docker server
+    targetHostname: 10.0.0.95 # hostname or IP of docker server
     defaultProxyProvider: default # name of which proxy provider to use
 files:
   services:

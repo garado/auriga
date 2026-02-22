@@ -11,6 +11,10 @@
 
   networking.firewall.allowedTCPPorts = [ 8080 ];
 
+  networking.firewall.interfaces."podman+" = {
+    allowedTCPPorts = [ 2283 ];
+  };
+
   # create docker-compatible socket so tsdproxy can talk to podman as if it were docker
   virtualisation.podman.dockerSocket.enable = true;
 
