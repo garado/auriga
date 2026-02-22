@@ -37,6 +37,7 @@
     log-driver = "journald";
     extraOptions = [
       "--network-alias=tsdproxy"
+      "--network=dawarich_dawarich"
       "--network=tsdproxy_default"
     ];
   };

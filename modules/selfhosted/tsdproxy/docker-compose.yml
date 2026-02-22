@@ -11,6 +11,14 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    networks:
+      - default
+      - dawarich_net
+
+networks:
+  dawarich_net:
+    external: true
+    name: dawarich_dawarich
 
 volumes:
   datadir:
