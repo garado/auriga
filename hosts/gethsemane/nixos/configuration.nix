@@ -15,6 +15,7 @@ in
   imports = [
     ./hardware-configuration.nix
     ../../../modules/syncthing
+    ../../../modules/selfhosted/tsdproxy
     ../../../modules/selfhosted/dawarich
     inputs.sops-nix.nixosModules.sops
   ];
