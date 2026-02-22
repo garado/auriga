@@ -24,7 +24,7 @@
     image = "almeidapaulopt/tsdproxy:1";
     volumes = [
       "/etc/tsdproxy:/config:rw"
-      "/var/run/docker.sock:/var/run/docker.sock:rw"
+      "/run/podman/podman.sock:/var/run/docker.sock:rw"
       "tsdproxy_datadir:/data:rw"
     ];
     ports = [
