@@ -22,6 +22,9 @@
   # Containers
   virtualisation.oci-containers.containers."tsdproxy-tsdproxy" = {
     image = "almeidapaulopt/tsdproxy:1";
+    environment = {
+      "-HOME" = "/data";
+    };
     volumes = [
       "/etc/tsdproxy:/config:rw"
       "/run/podman/podman.sock:/var/run/docker.sock:rw"
