@@ -21,6 +21,7 @@ in
     ../../../modules/selfhosted/jellyfin
     ../../../modules/selfhosted/immich
     ../../../modules/selfhosted/homebox
+    ../../../modules/selfhosted/paperless
     inputs.sops-nix.nixosModules.sops
   ];
 
