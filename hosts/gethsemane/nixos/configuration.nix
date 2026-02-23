@@ -100,9 +100,10 @@ in
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
     secrets = {
-      tailscale_key = { owner = "root"; };
-      restic_pass   = { owner = "root"; };
-      b2_env        = { owner = "root"; };
+      tailscale_key   = { owner = "root"; };
+      restic_pass     = { owner = "root"; };
+      b2_env          = { owner = "root"; };
+      cloudflare_api  = { owner = "root" };
     };
   };
 
