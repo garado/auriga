@@ -22,6 +22,7 @@ in
     ../../../modules/selfhosted/immich
     ../../../modules/selfhosted/homebox
     ../../../modules/selfhosted/paperless
+    ../../../modules/selfhosted/arr
     inputs.sops-nix.nixosModules.sops
   ];
 

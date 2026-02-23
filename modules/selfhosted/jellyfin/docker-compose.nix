@@ -39,6 +39,7 @@
     extraOptions = [
       "--network-alias=jellyfin"
       "--network=jellyfin_default"
+      "--network=tsdproxy_default"
     ];
   };
   systemd.services."podman-jellyfin" = {
