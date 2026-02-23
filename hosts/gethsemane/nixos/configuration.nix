@@ -64,7 +64,8 @@ in
     enable = true;
     settings = {
       PermitRootLogin = "no";
-      PasswordAuthentication = true; # TODO set to false after ssh
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
     };
     ports = [ 22 ];
   };
