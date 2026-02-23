@@ -20,6 +20,9 @@ in
     ../../../modules/selfhosted/silverbullet
     ../../../modules/selfhosted/jellyfin
     ../../../modules/selfhosted/immich
+    ../../../modules/selfhosted/homebox
+    ../../../modules/selfhosted/paperless
+    ../../../modules/selfhosted/arr
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -61,7 +64,8 @@ in
     enable = true;
     settings = {
       PermitRootLogin = "no";
-      PasswordAuthentication = true; # TODO set to false after ssh
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
     };
     ports = [ 22 ];
   };
@@ -113,30 +117,6 @@ in
     authKeyFile = config.sops.secrets.tailscale_key.path;
     useRoutingFeatures = "client";
   };
-
-  # Google Photos alternative
-  # services.immich = {
-  #   enable = true;
-  #   mediaLocation = "/var/lib/immich";
-  #   host = "0.0.0.0"; # needed for tailscale access
-  # };
-
-  # Home inventory management
-  services.homebox = {
-    enable = true;
-    package = pkgs-unstable.homebox;
-    settings = {
-      HBOX_WEB_MAX_UPLOAD_SIZE = "10";
-      HBOX_OPTIONS_ALLOW_REGISTRATION = "true";
-    };
-  };
-  
-  systemd.services.homebox.environment.TMPDIR = "/var/lib/homebox/tmp";
-
-  # services.jellyfin = {
-  #   enable = true;
-  #   openFirewall = true;
-  # };
 
   # Cloud backups
   services.restic.backups = {

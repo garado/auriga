@@ -1,0 +1,100 @@
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Los_Angeles
+      WEBUI_PORT: 9090
+    volumes:
+      - /var/lib/qbittorrent/config:/config
+      - /var/lib/jellyfin/media:/media
+    ports:
+      - "9090:9090"
+      - "6881:6881"
+      - "6881:6881/udp"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "qbittorrent"
+      tsdproxy.container_port: "9090"
+    restart: unless-stopped
+    networks:
+      - default
+      - tsdproxy_net
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Los_Angeles
+    volumes:
+      - /var/lib/prowlarr/config:/config
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "prowlarr"
+      tsdproxy.container_port: "9696"
+    restart: unless-stopped
+    networks:
+      - default
+      - tsdproxy_net
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Los_Angeles
+    volumes:
+      - /var/lib/sonarr/config:/config
+      - /var/lib/jellyfin/media:/media
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "sonarr"
+      tsdproxy.container_port: "8989"
+    restart: unless-stopped
+    networks:
+      - default
+      - tsdproxy_net
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Los_Angeles
+    volumes:
+      - /var/lib/radarr/config:/config
+      - /var/lib/jellyfin/media:/media
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "radarr"
+      tsdproxy.container_port: "7878"
+    restart: unless-stopped
+    networks:
+      - default
+      - tsdproxy_net
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      TZ: America/Los_Angeles
+    volumes:
+      - /var/lib/jellyseerr/config:/app/config
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "requests"
+      tsdproxy.container_port: "5055"
+    restart: unless-stopped
+    networks:
+      - default
+      - tsdproxy_net
+
+networks:
+  tsdproxy_net:
+    external: true
+    name: tsdproxy_default

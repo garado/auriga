@@ -13,3 +13,11 @@ services:
       tsdproxy.name: "tv"
       tsdproxy.container_port: "8096"
     restart: unless-stopped
+    networks:
+      - default
+      - tsdproxy_net
+
+networks:
+  tsdproxy_net:
+    external: true
+    name: tsdproxy_default
