@@ -23,6 +23,7 @@ in
     ../../../modules/selfhosted/homebox
     ../../../modules/selfhosted/paperless
     ../../../modules/selfhosted/arr
+    ../../../modules/caddy
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -107,7 +108,7 @@ in
       tailscale_key   = { owner = "root"; };
       restic_pass     = { owner = "root"; };
       b2_env          = { owner = "root"; };
-      cloudflare_api  = { owner = "root" };
+      cloudflare_api  = { owner = "root"; };
     };
   };
 
