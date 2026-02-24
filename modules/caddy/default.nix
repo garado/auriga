@@ -30,7 +30,8 @@ in
         bind 10.0.0.95
         tls {
           dns cloudflare {env.CLOUDFLARE_API_TOKEN}
-          resolvers 1.1.1.1
+          resolvers 1.1.1.1 1.0.0.1
+          propagation_timeout 5m
         }
         reverse_proxy localhost:3000
       '';
