@@ -21,7 +21,7 @@
 
   # Containers
   virtualisation.oci-containers.containers."silverbullet" = {
-    image = "zefhemel/silverbullet";
+    image = "zefhemel/silverbullet:2.6.1";
     volumes = [
       "/home/vessel/Enchiridion:/space:rw"
     ];
