@@ -21,7 +21,7 @@
 
   # Containers
   virtualisation.oci-containers.containers."silverbullet" = {
-    image = "zefhemel/silverbullet:2.6.1";
+    image = "zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f";
     volumes = [
       "/home/vessel/Enchiridion:/space:rw"
     ];
@@ -29,6 +29,7 @@
       "3000:3000/tcp"
     ];
     labels = {
+      "tsdproxy.container_port" = "3000";
       "tsdproxy.enable" = "true";
       "tsdproxy.name" = "enchiridion";
     };
@@ -40,7 +41,41 @@
   };
   systemd.services."podman-silverbullet" = {
     serviceConfig = {
-      Restart = lib.mkOverride 90 "no";
+      Restart = lib.mkOverride 90 "always";
+    };
+    after = [
+      "podman-network-silverbullet_default.service"
+    ];
+    requires = [
+      "podman-network-silverbullet_default.service"
+    ];
+    partOf = [
+      "podman-compose-silverbullet-root.target"
+    ];
+    wantedBy = [
+      "podman-compose-silverbullet-root.target"
+    ];
+  };
+  virtualisation.oci-containers.containers."silverbullet-read" = {
+    image = "zefhemel/silverbullet:2.6.1";
+    environment = {
+      "SB_READ_ONLY" = "true";
+    };
+    volumes = [
+      "/home/vessel/Enchiridion:/space:ro"
+    ];
+    ports = [
+      "3001:3000/tcp"
+    ];
+    log-driver = "journald";
+    extraOptions = [
+      "--network-alias=silverbullet-read"
+      "--network=silverbullet_default"
+    ];
+  };
+  systemd.services."podman-silverbullet-read" = {
+    serviceConfig = {
+      Restart = lib.mkOverride 90 "always";
     };
     after = [
       "podman-network-silverbullet_default.service"
