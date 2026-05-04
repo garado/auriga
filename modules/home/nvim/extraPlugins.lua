@@ -89,6 +89,7 @@ local plugins = {
           html = { "prettierd" },
           cpp = { "clang" },
           c = { "clang" },
+          python =  { "black" },
 
           sh = { "shfmt" },
         },
@@ -213,6 +214,7 @@ local plugins = {
           cmd = { "clangd" },
         },
         qmlls = {},
+        basedpyright = {},
       }
       
       for server, opts in pairs(servers) do
