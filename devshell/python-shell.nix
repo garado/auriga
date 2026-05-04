@@ -10,6 +10,9 @@ pkgs.mkShell {
         numpy
         requests
         pyyaml
+        wn
+        pillow
+        shapely
       ]))
     ];
 
