@@ -42,6 +42,9 @@ in {
     firewall.checkReversePath = "loose"; 
   };
 
+  services.resolved.enable = true;
+  networking.networkmanager.dns = "systemd-resolved";
+
   # Enable mdns
   services.avahi = {
     enable = true;
@@ -71,9 +74,11 @@ in {
   boot = {
     loader.systemd-boot.enable = true;
     kernelModules = [ "snd-seq" "snd-rawmidi" ];
+    blacklistedKernelModules = [ "snd_pci_ps" "snd_rn_pci_acp3x" "snd_pci_acp3x" ];
     kernelParams = [
-      "amdgpu.abm_level=0" 
+      "amdgpu.abm_level=0"
       "amdgpu.dcdebugmask=0x10"
+      "snd_hda_intel.dmic_detect=0"
     ];
   };
 
@@ -106,6 +111,10 @@ in {
     }];
   };
 
+  # Keyring
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.greetd.enableGnomeKeyring = true;
+
   environment = {
     variables = {
         EDITOR = "nvim";
@@ -134,6 +143,9 @@ in {
       gcalcli_oauth   = { owner = "alexis"; mode = "0400"; };
       lastfm_user     = { owner = "alexis"; mode = "0400"; };
       lastfm_pass     = { owner = "alexis"; mode = "0400"; };
+      light_email     = { owner = "alexis"; mode = "0400"; };
+      light_password  = { owner = "alexis"; mode = "0400"; };
+      light_device_id = { owner = "alexis"; mode = "0400"; };
     };
   };
 
@@ -246,6 +258,8 @@ in {
 
     # Guitar
     guitarix qjackctl libjack2 jack2 jack_capture
+    tuxguitar
+    lmms
 
     # Gaming
     steamcmd
@@ -262,7 +276,8 @@ in {
   # FlatPak
   services.flatpak.enable = true;
   xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
+  xdg.portal.config.common.default = "*";
 
   # --------------------------------------------
   # SYSTEM SERVICES
@@ -281,12 +296,13 @@ in {
 
     pipewire = {
       enable = true;
+      package = unstable.legacyPackages."${pkgs.system}".pipewire;
+      wireplumber.package = unstable.legacyPackages."${pkgs.system}".wireplumber;
       alsa = {
         enable = true;
         support32Bit = true;
       };
       pulse.enable = true;
-      wireplumber.enable = false;
     };
 
     xserver = {
