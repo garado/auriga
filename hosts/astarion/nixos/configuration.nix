@@ -2,7 +2,7 @@
 # █▀▀ █▀█ █▄░█ █▀▀ █ █▀▀ █░█ █▀█ ▄▀█ ▀█▀ █ █▀█ █▄░█
 # █▄▄ █▄█ █░▀█ █▀░ █ █▄█ █▄█ █▀▄ █▀█ ░█░ █ █▄█ █░▀█
 
-{ self, inputs, lib, config, pkgs, musnix, ... }: 
+{ self, inputs, lib, config, pkgs, musnix, light, ... }: 
 let
   unstable = inputs.nixpkgs-unstable;
 in {
@@ -183,6 +183,9 @@ in {
   ];
 
   environment.systemPackages = with pkgs; [
+    light.packages.x86_64-linux.light-phone-cli-tui
+    light.packages.x86_64-linux.light-phone-api
+
     signal-desktop
 
     xournalpp

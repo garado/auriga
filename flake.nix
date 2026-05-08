@@ -11,6 +11,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    light.url = "github:garado/light";
+
     swww.url = "github:LGFae/swww";
 
     # waveforms.url = "github:liff/waveforms-flake?rev=c6fac3b8694ab95a3f4204b6bf110df9d2594d0f";
@@ -48,6 +50,7 @@
     nixpkgs-2505,
     nixpkgs-unstable,
     # waveforms,
+    light,
     ... 
   } @ inputs: {
 
@@ -62,7 +65,7 @@
       astarion = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
-        specialArgs = {inherit inputs nixpkgs-unstable self;};
+        specialArgs = {inherit inputs nixpkgs-unstable light self;};
 
         modules = [
           ./hosts/astarion/nixos/configuration.nix
