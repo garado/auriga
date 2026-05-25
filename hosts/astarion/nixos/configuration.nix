@@ -368,7 +368,11 @@ in {
   # --------------------------------------------
 
   programs = {
-    git.enable = true;
+    git = {
+      enable = true;
+      lfs.enable = true;
+    };
+
     hyprland.enable = true;
     thunar.enable = true;
     zsh.enable = true;
