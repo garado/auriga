@@ -118,19 +118,17 @@
       archaea = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
-        specialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs self;};
 
         modules = [
-          ./hosts/astarion/nixos/configuration.nix
+          ./hosts/archaea/nixos/configuration.nix
 
-          inputs.musnix.nixosModules.musnix
-        
           home-manager.nixosModules.home-manager
 
           {
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {inherit inputs;};
-            home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
+            home-manager.users.alexis = import ./hosts/archaea/home/home.nix;
           }
         ];
 
