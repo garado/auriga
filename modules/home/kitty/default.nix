@@ -1,6 +1,5 @@
-
-# █▄▀ █ ▀█▀ ▀█▀ █▄█
-# █░█ █ ░█░ ░█░ ░█░
+# █▄▀ █ ▀█▀ ▀█▀ █▄█
+# █░█ █ ░█░ ░█░ ░█░
 
 { pkgs, ... }: {
   programs.kitty = {
@@ -25,9 +24,5 @@
       '';
   };
 
-  # Symlink custom themes
   xdg.configFile."kitty/themes".source = ./themes;
-  
-  # Symlink sessions
-  xdg.configFile."kitty/sessions".source = ./sessions;
 }

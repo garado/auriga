@@ -6,6 +6,25 @@
 
 { inputs, lib, config, pkgs, ... }: {
 
+  imports = [
+    ./zsh
+  ];
+
+  # Hyprland: host-specific display and startup config
+  wayland.windowManager.hyprland.settings = {
+    monitor = [
+      "eDP-1,1920x1280@60,0x0,1"
+    ];
+    exec-once = [
+      "sleep 1 && swww-daemon &"
+    ];
+    cursor = {
+      no_warps = false;
+      warp_on_change_workspace = true;
+      default_monitor = "eDP-1";
+    };
+  };
+
   home = {
     username = "alexis";
     homeDirectory = "/home/alexis";

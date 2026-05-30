@@ -10,6 +10,10 @@
     ./nvim/default.nix
     ./lf/default.nix
     ./zsh/default.nix
+    ./gtk/default.nix
+    ./kitty/default.nix
+    ./taskwarrior/default.nix
+    ./hyprland/default.nix
   ];
 
   programs.git = {

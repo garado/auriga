@@ -127,8 +127,14 @@
 
           {
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = {inherit inputs;};
-            home-manager.users.alexis = import ./hosts/archaea/home/home.nix;
+            home-manager.extraSpecialArgs = {inherit self inputs nixpkgs-unstable;};
+            home-manager.backupFileExtension = "hm-backup";
+            home-manager.users.alexis = {
+              imports = [
+                self.homeModules.common
+                ./hosts/archaea/home/home.nix
+              ];
+            };
           }
         ];
 
