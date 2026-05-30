@@ -13,6 +13,7 @@ pkgs.mkShell {
         wn
         pillow
         shapely
+        piexif
       ]))
     ];
 
