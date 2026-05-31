@@ -113,7 +113,7 @@
     zathura
     ffmpeg
     sops
-    xournalpp
+    xournalpp drawing
 
     # Terminal
     kitty
