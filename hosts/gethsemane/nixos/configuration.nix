@@ -27,6 +27,15 @@ in
     inputs.sops-nix.nixosModules.sops
   ];
 
+  # valkey's build-time test suite (specifically the dual-channel-replication
+  # integration test) is flaky under the Nix build sandbox and repeatedly
+  # fails the build for immich-machine-learning's aiocache dependency.
+  nixpkgs.overlays = [
+    (final: prev: {
+      valkey = prev.valkey.overrideAttrs (_: { doCheck = false; });
+    })
+  ];
+
   # Misc Nix settings
   nix.settings = {
     experimental-features = "nix-command flakes";
