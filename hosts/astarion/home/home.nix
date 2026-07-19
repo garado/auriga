@@ -7,15 +7,7 @@
 { self, inputs, lib, config, pkgs, pkgs-2505, ... }: {
 
   imports = [
-    # Import other pieces of config
-    ./gtk
-    ./hyprland
-    ./kitty
-    ./taskwarrior
     ./zsh
-    # ./lf
-    # ./nvim
-    # ./qutebrowser
   ];
 
   # Explicitly define allowed unfree packages
@@ -178,6 +170,26 @@
       };
     };
   };
+
+  # Hyprland: host-specific display and startup config
+  wayland.windowManager.hyprland.settings = {
+    monitor = [
+      "DP-11,1920x1080@75.00200,0x0,1"
+      "eDP-1,2256x1504@59.99900,0x1080,1"
+    ];
+    exec-once = [
+      "sleep 1 && swww-daemon &"
+      "labyrinthine &"
+    ];
+    cursor = {
+      no_warps = false;
+      warp_on_change_workspace = true;
+      default_monitor = "eDP-1";
+    };
+  };
+
+  # Kitty: astarion-specific sessions
+  xdg.configFile."kitty/sessions".source = ./kitty/sessions;
 
   # Let home-manager install and manage itself
   programs.home-manager = {

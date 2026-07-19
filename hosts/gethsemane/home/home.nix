@@ -6,6 +6,7 @@
 
 { self, inputs, lib, config, pkgs, ... }: {
   imports = [
+    ./zsh/aliases.nix
   ];
 
   home.username = "vessel";

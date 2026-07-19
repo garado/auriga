@@ -1,28 +1,16 @@
-
-# █░█ █▄█ █▀█ █▀█ █░░ ▄▀█ █▄░█ █▀▄
-# █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
+# █░█ █▄█ █▀█ █▀█ █░░ ▄▀█ █▄░█ █▀▄
+# █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
 
 { inputs, lib, config, pkgs, nixpkgs-unstable, ... }: {
   wayland.windowManager.hyprland = {
     enable = true;
-
-    # Start on startup
     systemd.enable = true;
 
-    # Plugins
     plugins = with pkgs.hyprlandPlugins; [
       hyprsplit
     ];
 
     settings = {
-      # Execute these programs at launch
-      exec-once = [
-        "sleep 1 && swww-daemon &"
-        "labyrinthine &"
-        # "cd /home/alexis/Github/dotfiles/hosts/astarion/home/shell/ags-ts/ ; ags run app-lock.ts & sleep 1 ; ags run app.ts --gtk4"
-      ];
-
-      # Plugin options
       plugin = {
         hyprsplit = {
           num_workspaces = 9;
@@ -30,13 +18,6 @@
         };
       };
 
-      cursor = {
-        no_warps = false;
-        warp_on_change_workspace = true;
-        default_monitor = "eDP-1";
-      };
-
-      # Miscellaneous options
       misc = {
         disable_hyprland_logo = true;
         disable_splash_rendering = true;
@@ -45,7 +26,6 @@
         animate_manual_resizes = true;
       };
 
-      # Some default env vars
       env = [
         "XCURSOR_THEME,Bibata-Modern-Classic"
         "XCURSOR_SIZE,24"
@@ -53,7 +33,6 @@
         "HYPRCURSOR_SIZE,24"
       ];
 
-      # Input settings
       input = {
         kb_layout = "us";
         follow_mouse = 1;
@@ -62,8 +41,7 @@
         };
         sensitivity = 0;
       };
-      
-      # WM and aesthetic settings
+
       general = {
         gaps_in = 5;
         gaps_out = 15;
@@ -72,7 +50,7 @@
         "col.inactive_border" = "rgba(141414aa)";
         layout = "dwindle";
       };
-      
+
       decoration = {
         rounding = 10;
         shadow = {
@@ -83,38 +61,29 @@
         };
       };
 
-     layerrule = "animation slide, gtk4-layer-shell";
-      
+      layerrule = "animation slide, gtk4-layer-shell";
+
       animations = {
         enabled = "yes";
-
-        # NAME,ONOFF,SPEED,CURVE,STYLE
         animation = [
           "workspaces, 1, 2, default, slidevert"
           "windows, 1, 2, default, slide"
           "windowsMove, 1, 2, default"
         ];
       };
-      
+
       windowrule = [
-        # Window layout
         "float, class:^(thunar)$"
         "float, class:^(mpv)$"
-      ];
-
-      monitor = [
-        "DP-11,1920x1080@75.00200,0x0,1"
-        "eDP-1,2256x1504@59.99900,0x1080,1"
       ];
 
       dwindle = {
         pseudotile = "yes";
         preserve_split = "yes";
       };
-     
+
       "$mainMod" = "SUPER";
 
-      # Keybinds: Press and hold
       binde = [
         ", XF86MonBrightnessUp, exec, brightnessctl set 10+"
         ", XF86MonBrightnessDown, exec, brightnessctl set 10-"
@@ -122,7 +91,6 @@
         ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_SINK@ 5%+ --limit 1"
       ];
 
-      # Keybinds: Press
       bind = [
         ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_SINK@ toggle"
         ", XF86AudioPrev, exec, playerctl previous"
@@ -131,27 +99,17 @@
 
         "CTRL SHIFT, w, killactive"
 
-        # Lock
         "ALT_L SHIFT, L, exec, astal -i lock lock"
-
-        # Restart desktop shell
         "ALT_L SHIFT, r, exec, pkill labyrinthine ; labyrinthine"
 
-        # Screenshot
         "$mainMod SHIFT, s, exec, grimblast copy area"
 
-        # Launchers, etc
         "$mainMod, RETURN, exec, kitty"
-        # "$mainMod, J, exec, astal -i app toggle-window dash"
-        # "$mainMod, H, exec, astal -i app toggle-window utility"
-        # "$mainMod, L, exec, astal -i app toggle-window control"
-        # "$mainMod, R, exec, astal -i app toggle-window launcher"
         "$mainMod, J, exec, labyrinthine-ctl toggle dash"
         "$mainMod, H, exec, labyrinthine-ctl toggle utility"
         "$mainMod, L, exec, labyrinthine-ctl toggle control"
         "$mainMod, R, exec, labyrinthine-ctl toggle launcher"
 
-        # Move focus between windows
         "ALT_L, TAB, cyclenext"
         "ALT_L SHIFT, TAB, cyclenext, prev"
         "ALT_L, h, movefocus, l"
@@ -159,7 +117,6 @@
         "ALT_L, j, movefocus, u"
         "ALT_L, k, movefocus, d"
 
-        # Switch workspaces
         "ALT_L, 1, split:workspace, 1"
         "ALT_L, 2, split:workspace, 2"
         "ALT_L, 3, split:workspace, 3"
@@ -169,12 +126,10 @@
         "ALT_L, 7, split:workspace, 7"
         "ALT_L, 8, split:workspace, 8"
         "ALT_L, 9, split:workspace, 9"
-        
-        # Switch to next/previous workspace
+
         "$mainMod, TAB, workspace, +1"
         "$mainMod SHIFT, TAB, workspace, -1"
 
-        # Move active window to a workspace with mainMod + SHIFT + [0-9]
         "ALT_L SHIFT, 1, split:movetoworkspace, 1"
         "ALT_L SHIFT, 2, split:movetoworkspace, 2"
         "ALT_L SHIFT, 3, split:movetoworkspace, 3"
@@ -184,40 +139,32 @@
         "ALT_L SHIFT, 7, split:movetoworkspace, 7"
         "ALT_L SHIFT, 8, split:movetoworkspace, 8"
         "ALT_L SHIFT, 9, split:movetoworkspace, 9"
-       
-        # Vimlinke resize
+
         "ALT_L CTRL, h, resizeactive, -90 0"
         "ALT_L CTRL, l, resizeactive, 90 0"
         "ALT_L CTRL, j, resizeactive, 0 90"
         "ALT_L CTRL, k, resizeactive, 0 -90"
-       
-        # Vimlike move
+
         "ALT_L SHIFT, h, movewindow, l"
         "ALT_L SHIFT, l, movewindow, r"
         "ALT_L SHIFT, j, movewindow, u"
         "ALT_L SHIFT, k, movewindow, d"
 
-        # More resizing
-        "$mainMod, f, fullscreen"     # Fullscreen
-        "$mainMod, m, fullscreen, 1"  # Maximize
-        "$mainMod, v, togglefloating" # Floating
-        "$mainMod, s, pin"            # Sticky (for floating windows)
+        "$mainMod, f, fullscreen"
+        "$mainMod, m, fullscreen, 1"
+        "$mainMod, v, togglefloating"
+        "$mainMod, s, pin"
 
-        # Vimlike monitor focusing
         "$mainMod SHIFT, h, focusmonitor, l"
         "$mainMod SHIFT, j, focusmonitor, d"
         "$mainMod SHIFT, k, focusmonitor, u"
         "$mainMod SHIFT, l, focusmonitor, r"
       ];
 
-      # Mouse binds
       bindm = [
-        # Move/resize windows with mainMod + LMB/RMB and dragging
         "$mainMod, mouse:272, movewindow"
         "$mainMod, mouse:273, resizewindow"
       ];
-
     };
   };
 }
-

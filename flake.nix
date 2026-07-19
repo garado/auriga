@@ -11,6 +11,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    light.url = "github:garado/light";
+
     swww.url = "github:LGFae/swww";
 
     # waveforms.url = "github:liff/waveforms-flake?rev=c6fac3b8694ab95a3f4204b6bf110df9d2594d0f";
@@ -48,6 +50,7 @@
     nixpkgs-2505,
     nixpkgs-unstable,
     # waveforms,
+    light,
     ... 
   } @ inputs: {
 
@@ -62,7 +65,7 @@
       astarion = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
-        specialArgs = {inherit inputs nixpkgs-unstable self;};
+        specialArgs = {inherit inputs nixpkgs-unstable light self;};
 
         modules = [
           ./hosts/astarion/nixos/configuration.nix
@@ -115,19 +118,23 @@
       archaea = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
 
-        specialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs self;};
 
         modules = [
-          ./hosts/astarion/nixos/configuration.nix
+          ./hosts/archaea/nixos/configuration.nix
 
-          inputs.musnix.nixosModules.musnix
-        
           home-manager.nixosModules.home-manager
 
           {
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = {inherit inputs;};
-            home-manager.users.alexis = import ./hosts/astarion/home/home.nix;
+            home-manager.extraSpecialArgs = {inherit self inputs nixpkgs-unstable;};
+            home-manager.backupFileExtension = "hm-backup";
+            home-manager.users.alexis = {
+              imports = [
+                self.homeModules.common
+                ./hosts/archaea/home/home.nix
+              ];
+            };
           }
         ];
 

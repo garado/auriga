@@ -168,6 +168,32 @@ in
     };
   };
 
+  # Nightly wiki PR script
+  systemd.services.auto-wiki-pr = {
+    description = "Nightly garado.github.io script";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    path = [ pkgs.nix ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = "vessel";
+      WorkingDirectory = "/home/vessel/Github/garado.github.io";
+    };
+    script = ''
+      nix develop --command \
+        nix-shell /home/vessel/Auriga/devshell/python-shell.nix --run "python scripts/preprocess.py wiki publish --src ~/Enchiridion/"
+    '';
+  };
+
+  systemd.timers.auto-wiki-pr = {
+    description = "Nightly timer for garado.github.io script";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "03:00";
+      Persistent = true;
+    };
+  };
+
   # Sync files between devices
   services.auriga-syncthing = {
     enable = true;
