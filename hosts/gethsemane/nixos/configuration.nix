@@ -88,6 +88,8 @@ in
     };
   };
 
+  environment.pathsToLink = [ "/share/applications" "/share/xdg-desktop-portal" ];
+
   # No sleeping
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
