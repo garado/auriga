@@ -59,7 +59,7 @@
   virtualisation.oci-containers.containers."silverbullet-read" = {
     image = "zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f";
     environment = {
-      "SB_INDEX_PAGE" = "\"Welcome\"";
+      "SB_INDEX_PAGE" = "Welcome";
       "SB_READ_ONLY" = "true";
     };
     volumes = [
