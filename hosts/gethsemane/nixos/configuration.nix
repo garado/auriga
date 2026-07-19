@@ -38,11 +38,12 @@ in
     description = "vessel";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
+      qbittorrent-nox
       compose2nix
       sops
       restic
       immich-cli immich-go
-      qbittorrent-nox
+      timewarrior
     ];
   };
     
@@ -56,7 +57,6 @@ in
   networking.hostName = "gethsemane";
   networking.firewall.allowedTCPPorts = [
     22 2283 443 8443 80
-    3000 # enchiridion
   ];
   networking.firewall.allowedUDPPorts = [ 5353 ];
   networking.firewall.checkReversePath = "loose";
@@ -118,6 +118,9 @@ in
     authKeyFile = config.sops.secrets.tailscale_key.path;
     useRoutingFeatures = "client";
   };
+
+  # Required for Tailscale MagicDNS to work
+  services.resolved.enable = true;
 
   # Cloud backups
   services.restic.backups = {

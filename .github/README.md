@@ -51,6 +51,7 @@ Personal Nix configuration.
 <ul>
   <li>Immich (photo management)</li>
   <li>Homebox (home inventory)</li>
+  <li>Paperless-ngx (documents)</li>
   <li>Syncthing for music/ledger files</li>
   <li>Nightly Restic backups to B2 + local</li>
   <li>TODO: TaskWarrior server</li>
