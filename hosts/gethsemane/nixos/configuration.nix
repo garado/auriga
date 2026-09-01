@@ -97,11 +97,6 @@
     "/share/xdg-desktop-portal"
   ];
 
-  security.acme = {
-    acceptTerms = true;
-    defaults.email = "alexisgarado@gmail.com";
-  };
-
   # Access with `ssh vessel@gethsemane`
   services.avahi = {
     enable = true;

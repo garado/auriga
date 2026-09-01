@@ -101,8 +101,6 @@
     user = "alexis";
   };
 
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ ];
-
   # --------------------------------------------
   # SYSTEM PACKAGES
   # --------------------------------------------

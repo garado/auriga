@@ -18,6 +18,9 @@
   systemd.services."podman-tsdproxy-tsdproxy" = {
     after = [ "podman.socket" ];
     requires = [ "podman.socket" ];
+    serviceConfig.Environment = [
+      "TSNET_FORCE_LOGIN=1"
+    ];
   };
 
   # create docker-compatible socket so tsdproxy can talk to podman as if it were docker
@@ -26,11 +29,4 @@
   # copy yaml configs to correct location
   environment.etc."tsdproxy/tsdproxy.yaml".source = ./tsdproxy.yaml;
   environment.etc."tsdproxy/proxies.yaml".source = ./proxies.yaml;
-
-  # always force login attempt
-  systemd.services."podman-tsdproxy-tsdproxy" = {
-    serviceConfig.Environment = [
-      "TSNET_FORCE_LOGIN=1"
-    ];
-  };
 }

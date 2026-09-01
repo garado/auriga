@@ -100,9 +100,6 @@
     rtkit.enable = true;
     pam.services.astal-auth = { };
 
-    acme.acceptTerms = true;
-    acme.defaults.email = "alexisgarado@gmail.com";
-
     sudo.extraRules = [
       {
         users = [ "alexis" ];
@@ -293,7 +290,6 @@
     radeontop
     acpi
     grimblast
-    obs-studio
     exiftool
 
     # Embedded dev (C/C++)
@@ -403,15 +399,6 @@
           user = "greeter";
         };
       };
-    };
-
-    nginx.virtualHosts."localhost" = {
-      listen = [
-        {
-          addr = "127.0.0.1";
-          port = 8080;
-        }
-      ];
     };
 
     logind = {
