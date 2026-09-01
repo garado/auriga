@@ -107,7 +107,7 @@
 
   environment.systemPackages = with pkgs; [
     # DE/WM
-    inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
+    swww
     brightnessctl
     playerctl
     wl-clipboard
