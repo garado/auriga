@@ -1,4 +1,3 @@
-
 # ▄▀█ █▀ ▀█▀ ▄▀█ █▀█ █ █▀█ █▄░█
 # █▀█ ▄█ ░█░ █▀█ █▀▄ █ █▄█ █░▀█
 
@@ -9,7 +8,11 @@
   flake.modules.nixos."hosts/astarion" = {
     imports = [
       ../../pre-dendritic/hosts/astarion/nixos/hardware-configuration.nix
-    ];
+    ]
+    ++ (with config.flake.modules.nixos; [
+      mdns
+    ]);
+
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
     networking.hostName = "astarion";
