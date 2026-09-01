@@ -7,7 +7,7 @@
 pkgs.mkShell {
   buildInputs = [
       pkgs.typst
-      pkgs.poppler_utils
+      pkgs.poppler-utils
       pkgs.noto-fonts-color-emoji
       (pkgs.python3.withPackages (ps: with ps; [
         numpy
