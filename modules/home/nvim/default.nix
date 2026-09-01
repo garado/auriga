@@ -1,11 +1,18 @@
-
 # █▄░█ █ ▀▄▀ █░█ █▄░█ █░█ █▀▀ █░█ ▄▀█ █▀▄
 # █░▀█ █ █░█ ▀▀█ █░▀█ ▀▄▀ █▄▄ █▀█ █▀█ █▄▀
 
 # https://github.com/nix-community/nix4nvchad
 
-{ config, lib, inputs, pkgs, ... }: let
-in {
+{
+  config,
+  lib,
+  inputs,
+  pkgs,
+  ...
+}:
+let
+in
+{
   imports = [
     inputs.nix4nvchad.homeManagerModule
   ];

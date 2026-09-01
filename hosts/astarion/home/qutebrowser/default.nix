@@ -1,8 +1,8 @@
-
 # █▀█ █░█ ▀█▀ █▀▀ █▄▄ █▀█ █▀█ █░█░█ █▀ █▀▀ █▀█
 # ▀▀█ █▄█ ░█░ ██▄ █▄█ █▀▄ █▄█ ▀▄▀▄▀ ▄█ ██▄ █▀▄
 
-{...}: {
+{ ... }:
+{
   programs.qutebrowser = {
     enable = true;
 
@@ -41,8 +41,8 @@
         'th': 'https://www.thingiverse.com/search?q={}&page=1'
       }
     '';
-      # TODO fix stupid flicker
-      # c.colors.webpage.bg = 'black'
-      # c.colors.webpage.darkmode.enabled = True
+    # TODO fix stupid flicker
+    # c.colors.webpage.bg = 'black'
+    # c.colors.webpage.darkmode.enabled = True
   };
 }

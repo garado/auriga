@@ -3,7 +3,9 @@
 #
 # General purpose C/C++ devshell for quick work
 
-{ pkgs ? import <nixpkgs> {} }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 pkgs.mkShell {
   buildInputs = with pkgs; [
     gcc

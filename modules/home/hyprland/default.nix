@@ -1,7 +1,14 @@
 # █░█ █▄█ █▀█ █▀█ █░░ ▄▀█ █▄░█ █▀▄
 # █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
 
-{ inputs, lib, config, pkgs, ... }: {
+{
+  inputs,
+  lib,
+  config,
+  pkgs,
+  ...
+}:
+{
   wayland.windowManager.hyprland = {
     enable = true;
     systemd.enable = true;
@@ -46,7 +53,7 @@
         gaps_in = 5;
         gaps_out = 15;
         border_size = 2;
-        "col.active_border"   = "rgba(7d6a4faa)";
+        "col.active_border" = "rgba(7d6a4faa)";
         "col.inactive_border" = "rgba(141414aa)";
         layout = "dwindle";
       };

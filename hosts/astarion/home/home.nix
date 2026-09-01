@@ -1,19 +1,29 @@
-
 # █░█ █▀█ █▀▄▀█ █▀▀   █▀▄▀█ ▄▀█ █▄░█ ▄▀█ █▀▀ █▀▀ █▀█
 # █▀█ █▄█ █░▀░█ ██▄   █░▀░█ █▀█ █░▀█ █▀█ █▄█ ██▄ █▀▄
 
 # Home manager configuration for astarion (FW13).
 
-{ self, inputs, lib, config, pkgs, pkgs-2505, ... }: {
+{
+  self,
+  inputs,
+  lib,
+  config,
+  pkgs,
+  pkgs-2505,
+  ...
+}:
+{
 
   imports = [
     ./zsh
   ];
 
   # Explicitly define allowed unfree packages
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "obsidian"
-  ];
+  nixpkgs.config.allowUnfreePredicate =
+    pkg:
+    builtins.elem (lib.getName pkg) [
+      "obsidian"
+    ];
 
   home = {
     username = "alexis";
@@ -35,7 +45,7 @@
 
       (pkgs.writeShellScriptBin "labyrinthine-ctl" ''
         cd "$HOME/Github/labyrinthine"
-      
+
         if [[ -x "./build/labyrinthine-ctl" ]]; then
           exec ./build/labyrinthine-ctl "$@"
         else
@@ -49,33 +59,35 @@
       # Productivity
       obsidian
 
-      (python3.withPackages (ps: with ps; [
-        # Packages from nixpkgs
-        pynvim
-        pip
+      (python3.withPackages (
+        ps: with ps; [
+          # Packages from nixpkgs
+          pynvim
+          pip
 
-        # Build a package from PyPI
-        # (buildPythonPackage rec {
-        #   pname = "quote";
-        #   version = "3.0";
-        #   src = fetchPypi {
-        #     inherit pname version;
-        #     sha256 = "06873dfed9200cb2e88f98c562080938b42c88d4a37dcf89542cff3a210b6287";
-        #   };
-        #   # Add any build inputs required by your package
-        #   buildInputs = [];
-        # })
+          # Build a package from PyPI
+          # (buildPythonPackage rec {
+          #   pname = "quote";
+          #   version = "3.0";
+          #   src = fetchPypi {
+          #     inherit pname version;
+          #     sha256 = "06873dfed9200cb2e88f98c562080938b42c88d4a37dcf89542cff3a210b6287";
+          #   };
+          #   # Add any build inputs required by your package
+          #   buildInputs = [];
+          # })
 
-        # (buildPythonPackage rec {
-        #   pname = "gazpacho";
-        #   version = "1.1";
-        #   src = fetchPypi {
-        #     inherit pname version;
-        #     sha256 = "1579c1be2de05b5ded0a97107b179d12491392fb095aeab185b283ea48cd7010";
-        #   };
-        # })
+          # (buildPythonPackage rec {
+          #   pname = "gazpacho";
+          #   version = "1.1";
+          #   src = fetchPypi {
+          #     inherit pname version;
+          #     sha256 = "1579c1be2de05b5ded0a97107b179d12491392fb095aeab185b283ea48cd7010";
+          #   };
+          # })
 
-      ]))
+        ]
+      ))
 
     ];
 
@@ -125,7 +137,7 @@
   };
 
   services.mpdris2.enable = true; # mpris <-> mpd bridge
-  
+
   programs.ncmpcpp = {
     enable = true;
     mpdMusicDir = "/home/alexis/Music/Library";
@@ -135,17 +147,50 @@
     };
 
     bindings = [
-      { key = "j"; command = "scroll_down"; }
-      { key = "k"; command = "scroll_up"; }
-      { key = "h"; command = "previous_column"; }
-      { key = "l"; command = "next_column"; }
-      { key = "ctrl-u"; command = "page_up"; }
-      { key = "ctrl-d"; command = "page_down"; }
-      { key = "g"; command = "move_home"; }
-      { key = "G"; command = "move_end"; }
-      { key = "/"; command = "find"; }
-      { key = "n"; command = "next_found_item"; }
-      { key = "N"; command = "previous_found_item"; }
+      {
+        key = "j";
+        command = "scroll_down";
+      }
+      {
+        key = "k";
+        command = "scroll_up";
+      }
+      {
+        key = "h";
+        command = "previous_column";
+      }
+      {
+        key = "l";
+        command = "next_column";
+      }
+      {
+        key = "ctrl-u";
+        command = "page_up";
+      }
+      {
+        key = "ctrl-d";
+        command = "page_down";
+      }
+      {
+        key = "g";
+        command = "move_home";
+      }
+      {
+        key = "G";
+        command = "move_end";
+      }
+      {
+        key = "/";
+        command = "find";
+      }
+      {
+        key = "n";
+        command = "next_found_item";
+      }
+      {
+        key = "N";
+        command = "previous_found_item";
+      }
     ];
   };
 

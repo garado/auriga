@@ -1,4 +1,3 @@
-
 # █▀▀ ▄▀█ █▀▄ █▀▄ █▄█
 # █▄▄ █▀█ █▄▀ █▄▀ ░█░
 
@@ -40,5 +39,8 @@ in
 
   systemd.services.caddy.serviceConfig.EnvironmentFile = config.sops.templates."caddy-env".path;
 
-  networking.firewall.allowedTCPPorts = [ 80 443 ];
+  networking.firewall.allowedTCPPorts = [
+    80
+    443
+  ];
 }

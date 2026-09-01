@@ -1,5 +1,5 @@
-
-{ ... }: {
+{ ... }:
+{
   imports = [ ./docker-compose.nix ];
 
   networking.firewall.allowedTCPPorts = [ 6881 ];

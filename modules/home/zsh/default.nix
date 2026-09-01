@@ -1,15 +1,15 @@
-
 # ▀█ █▀ █░█
 # █▄ ▄█ █▀█
 
-{ pkgs, config, ... }: {
+{ pkgs, config, ... }:
+{
   imports = [
     ./aliases.nix
   ];
 
   programs.zsh = {
     enable = true;
-    
+
     # Extra commands to add to .zshrc
     initContent = ''
       bindkey -v

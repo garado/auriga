@@ -1,10 +1,15 @@
-
 # ▀█ █▀ █░█   ▄▀█ █░░ █ ▄▀█ █▀ █▀▀ █▀
 # █▄ ▄█ █▀█   █▀█ █▄▄ █ █▀█ ▄█ ██▄ ▄█
 
 # zsh aliases that can be globally copied to any machine.
 
-{ self, pkgs, config, ... }: {
+{
+  self,
+  pkgs,
+  config,
+  ...
+}:
+{
   programs.zsh.shellAliases = {
     # Shell commands
     c = "clear";
@@ -12,18 +17,18 @@
     lsa = "ls -laX --group-directories-first";
     p = "pwd";
     pclip = "pwd | wl-copy";
-    
+
     # Quick navigation
-    ".."   = "cd ..";
-    "..."  = "cd ../..";
+    ".." = "cd ..";
+    "..." = "cd ../..";
     "...." = "cd ../../..";
     desk = "cd ~/Desktop";
     docs = "cd ~/Documents";
-    mus  = "cd ~/Music";
+    mus = "cd ~/Music";
     pics = "cd ~/Pictures";
     vids = "cd ~/Videos";
-    gh   = "cd ~/Github";
-    dl   = "cd ~/Downloads";
+    gh = "cd ~/Github";
+    dl = "cd ~/Downloads";
 
     # Nix
     rebuild = "sudo nixos-rebuild switch --flake .#$(hostname)";

@@ -1,7 +1,8 @@
 # █▄▀ █ ▀█▀ ▀█▀ █▄█
 # █░█ █ ░█░ ░█░ ░█░
 
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   programs.kitty = {
     enable = true;
 
@@ -21,7 +22,7 @@
       enable_audio_bell no
       include current-theme.conf
       sync_to_monitor no
-      '';
+    '';
   };
 
   xdg.configFile."kitty/themes".source = ./themes;

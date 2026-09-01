@@ -1,4 +1,3 @@
-
 # ▄▀█ █░█ █▀█ █ █▀▀ ▄▀█   █▀ █▄█ █▄░█ █▀▀ ▀█▀ █░█ █ █▄░█ █▀▀
 # █▀█ █▄█ █▀▄ █ █▄█ █▀█   ▄█ ░█░ █░▀█ █▄▄ ░█░ █▀█ █ █░▀█ █▄█
 
@@ -17,23 +16,47 @@
 # This requires quite a bit of manual setup still
 # TODO Store syncthing cert/key in sops to ensure a consistent device id?
 
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 let
   cfg = config.services.auriga-syncthing;
-in {
+in
+{
   options.services.auriga-syncthing = {
     enable = mkEnableOption "custom syncthing wrapper";
-    user = mkOption { type = types.str; default = "vessel"; };
+    user = mkOption {
+      type = types.str;
+      default = "vessel";
+    };
 
     # Set these to null by default
     # If these are null, then their corresponding dirs don't get synced
-    musicPath         = mkOption { type = types.nullOr types.path; default = null; };
-    playlistPath      = mkOption { type = types.nullOr types.path; default = null; };
-    playlistMetaPath  = mkOption { type = types.nullOr types.path; default = null; };
-    docsPath          = mkOption { type = types.nullOr types.path; default = null; };
-    ledgerPath        = mkOption { type = types.nullOr types.path; default = null; };
+    musicPath = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+    };
+    playlistPath = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+    };
+    playlistMetaPath = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+    };
+    docsPath = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+    };
+    ledgerPath = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -48,37 +71,41 @@ in {
 
       settings = {
         devices = {
-          "astarion"    = { id = "PSNQSUZ-NIRMICH-VJJABTE-WEBWRTF-KPUIX4Y-XP2F7LK-OTGEUHD-RT5KFAT"; };
-          "gethsemane"  = { id = "77K3CD7-4BU5KJ5-HVNMEO6-PQK7UE5-I337CMW-TPQHXSY-ZN6S57W-OOV2PAL"; };
+          "astarion" = {
+            id = "PSNQSUZ-NIRMICH-VJJABTE-WEBWRTF-KPUIX4Y-XP2F7LK-OTGEUHD-RT5KFAT";
+          };
+          "gethsemane" = {
+            id = "77K3CD7-4BU5KJ5-HVNMEO6-PQK7UE5-I337CMW-TPQHXSY-ZN6S57W-OOV2PAL";
+          };
         };
 
         # Folders to sync
-        folders = 
+        folders =
           (optionalAttrs (cfg.musicPath != null) {
             "Music" = {
               path = toString cfg.musicPath;
               devices = builtins.attrNames config.services.syncthing.settings.devices;
             };
-          }) // 
-          (optionalAttrs (cfg.docsPath != null) {
+          })
+          // (optionalAttrs (cfg.docsPath != null) {
             "Documents" = {
               path = toString cfg.docsPath;
               devices = builtins.attrNames config.services.syncthing.settings.devices;
             };
-          }) //
-          (optionalAttrs (cfg.ledgerPath != null) {
+          })
+          // (optionalAttrs (cfg.ledgerPath != null) {
             "Ledger" = {
               path = toString cfg.ledgerPath;
               devices = builtins.attrNames config.services.syncthing.settings.devices;
             };
-          }) //
-          (optionalAttrs (cfg.playlistPath != null) {
+          })
+          // (optionalAttrs (cfg.playlistPath != null) {
             "Playlists" = {
               path = toString cfg.playlistPath;
               devices = builtins.attrNames config.services.syncthing.settings.devices;
             };
-          }) //
-          (optionalAttrs (cfg.playlistMetaPath != null) {
+          })
+          // (optionalAttrs (cfg.playlistMetaPath != null) {
             "PlaylistMetadata" = {
               path = toString cfg.playlistMetaPath;
               devices = builtins.attrNames config.services.syncthing.settings.devices;
@@ -88,8 +115,14 @@ in {
     };
 
     # Ports needed for discovery/sync
-    networking.firewall.allowedTCPPorts = [ 22000 8384 ];
-    networking.firewall.allowedUDPPorts = [ 22000 21027 ];
+    networking.firewall.allowedTCPPorts = [
+      22000
+      8384
+    ];
+    networking.firewall.allowedUDPPorts = [
+      22000
+      21027
+    ];
 
     # Ensure config dir exists before starting services
     systemd.tmpfiles.rules = [

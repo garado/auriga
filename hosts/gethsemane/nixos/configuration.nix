@@ -1,10 +1,17 @@
-
 # █▀▀ █▀▀ ▀█▀ █░█ █▀ █▀▀ █▀▄▀█ ▄▀█ █▄░█ █▀▀
 # █▄█ ██▄ ░█░ █▀█ ▄█ ██▄ █░▀░█ █▀█ █░▀█ ██▄
 
 # Nix config for gethsemane (home server).
 
-{ self, config, pkgs, lib, inputs, nixpkgs-unstable, ... }:
+{
+  self,
+  config,
+  pkgs,
+  lib,
+  inputs,
+  nixpkgs-unstable,
+  ...
+}:
 let
   pkgs-unstable = import nixpkgs-unstable {
     system = pkgs.system;
@@ -32,7 +39,9 @@ in
   # fails the build for immich-machine-learning's aiocache dependency.
   nixpkgs.overlays = [
     (final: prev: {
-      valkey = prev.valkey.overrideAttrs (_: { doCheck = false; });
+      valkey = prev.valkey.overrideAttrs (_: {
+        doCheck = false;
+      });
     })
   ];
 
@@ -45,17 +54,21 @@ in
   users.users.vessel = {
     isNormalUser = true;
     description = "vessel";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
     packages = with pkgs; [
       qbittorrent-nox
       compose2nix
       sops
       restic
-      immich-cli immich-go
+      immich-cli
+      immich-go
       timewarrior
     ];
   };
-    
+
   users.users.vessel.shell = pkgs.zsh;
   programs.zsh.enable = true;
 
@@ -65,7 +78,11 @@ in
   # Networking and ssh access
   networking.hostName = "gethsemane";
   networking.firewall.allowedTCPPorts = [
-    22 2283 443 8443 80
+    22
+    2283
+    443
+    8443
+    80
   ];
   networking.firewall.allowedUDPPorts = [ 5353 ];
   networking.firewall.checkReversePath = "loose";
@@ -114,10 +131,18 @@ in
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
     secrets = {
-      tailscale_key   = { owner = "root"; };
-      restic_pass     = { owner = "root"; };
-      b2_env          = { owner = "root"; };
-      cloudflare_api  = { owner = "root"; };
+      tailscale_key = {
+        owner = "root";
+      };
+      restic_pass = {
+        owner = "root";
+      };
+      b2_env = {
+        owner = "root";
+      };
+      cloudflare_api = {
+        owner = "root";
+      };
     };
   };
 
@@ -219,7 +244,11 @@ in
     "/mnt/blackreach" = {
       device = "/dev/disk/by-label/blackreach";
       fsType = "ntfs3";
-      options = [ "defaults" "nofail" "x-systemd.device-timeout=5s" ];
+      options = [
+        "defaults"
+        "nofail"
+        "x-systemd.device-timeout=5s"
+      ];
     };
   };
 

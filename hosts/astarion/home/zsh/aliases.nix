@@ -1,11 +1,16 @@
-
 # ▀█ █▀ █░█   ▄▀█ █░░ █ ▄▀█ █▀ █▀▀ █▀
 # █▄ ▄█ █▀█   █▀█ █▄▄ █ █▀█ ▄█ ██▄ ▄█
 
 # zsh aliases specific to @astarion.
 # these will be merged with the global zsh config in ROOT/modules/home/zsh/.
 
-{ self, pkgs, config, ... }: {
+{
+  self,
+  pkgs,
+  config,
+  ...
+}:
+{
   programs.zsh.shellAliases = {
     # Quick navigation
     dots = "cd ~/Github/dotfiles/";

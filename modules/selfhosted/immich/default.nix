@@ -1,10 +1,10 @@
-
 # █ █▀▄▀█ █▀▄▀█ █ █▀▀ █░█
 # █ █░▀░█ █░▀░█ █ █▄▄ █▀█
 
 # Google Photos alternative
 
-{ ... }: {
+{ ... }:
+{
   services.immich = {
     enable = true;
     mediaLocation = "/var/lib/immich";

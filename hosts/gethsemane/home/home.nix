@@ -1,10 +1,17 @@
-
 # █░█ █▀█ █▀▄▀█ █▀▀   █▀▄▀█ ▄▀█ █▄░█ ▄▀█ █▀▀ █▀▀ █▀█
 # █▀█ █▄█ █░▀░█ ██▄   █░▀░█ █▀█ █░▀█ █▀█ █▄█ ██▄ █▀▄
 
 # Home manager configuration for gethsemane.
 
-{ self, inputs, lib, config, pkgs, ... }: {
+{
+  self,
+  inputs,
+  lib,
+  config,
+  pkgs,
+  ...
+}:
+{
   imports = [
     ./zsh/aliases.nix
   ];

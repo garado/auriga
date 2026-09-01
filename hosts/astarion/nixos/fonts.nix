@@ -1,8 +1,8 @@
-
 # █▀▀ █▀█ █▄░█ ▀█▀ █▀
 # █▀░ █▄█ █░▀█ ░█░ ▄█
 
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   fonts = {
 
     fontconfig = {
@@ -12,7 +12,7 @@
 
     packages = with pkgs; [
       # (nerdfonts.override { fonts = [ "DroidSansMono" "NerdFontsSymbolsOnly"]; })
-    
+
       noto-fonts
       noto-fonts-color-emoji
 

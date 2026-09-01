@@ -1,4 +1,3 @@
-
 # █▀▄ ▄▀█ █░█░█ ▄▀█ █▀█ █ █▀▀ █░█
 # █▄▀ █▀█ ▀▄▀▄▀ █▀█ █▀▄ █ █▄▄ █▀█
 
@@ -9,7 +8,8 @@
 # > cd dawarich
 # > compose2nix -project=dawarich
 
-{ ... }: {
+{ ... }:
+{
   imports = [
     ./docker-compose.nix
   ];

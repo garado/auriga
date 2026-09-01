@@ -1,12 +1,21 @@
-
 # █▀▀ █▀█ █▄░█ █▀▀ █ █▀▀ █░█ █▀█ ▄▀█ ▀█▀ █ █▀█ █▄░█
 # █▄▄ █▄█ █░▀█ █▀░ █ █▄█ █▄█ █▀▄ █▀█ ░█░ █ █▄█ █░▀█
 
-{ self, inputs, lib, config, pkgs, musnix, light, ... }: 
+{
+  self,
+  inputs,
+  lib,
+  config,
+  pkgs,
+  musnix,
+  light,
+  ...
+}:
 let
   unstable = inputs.nixpkgs-unstable;
-in {
-  
+in
+{
+
   # --------------------------------------------
   # BASIC SYSTEM CONFIGURATION
   # --------------------------------------------
@@ -27,7 +36,7 @@ in {
 
     # fixes no internet after mullvad vpn exit node
     # https://github.com/tailscale/tailscale/issues/10319
-    firewall.checkReversePath = "loose"; 
+    firewall.checkReversePath = "loose";
   };
 
   services.resolved.enable = true;
@@ -61,8 +70,15 @@ in {
   # Bootloader
   boot = {
     loader.systemd-boot.enable = true;
-    kernelModules = [ "snd-seq" "snd-rawmidi" ];
-    blacklistedKernelModules = [ "snd_pci_ps" "snd_rn_pci_acp3x" "snd_pci_acp3x" ];
+    kernelModules = [
+      "snd-seq"
+      "snd-rawmidi"
+    ];
+    blacklistedKernelModules = [
+      "snd_pci_ps"
+      "snd_rn_pci_acp3x"
+      "snd_pci_acp3x"
+    ];
     kernelParams = [
       "amdgpu.abm_level=0"
       "amdgpu.dcdebugmask=0x10"
@@ -85,18 +101,22 @@ in {
 
   security = {
     rtkit.enable = true;
-    pam.services.astal-auth = {};
-  
+    pam.services.astal-auth = { };
+
     acme.acceptTerms = true;
     acme.defaults.email = "alexisgarado@gmail.com";
 
-    sudo.extraRules = [{
-      users = [ "alexis" ];
-      commands = [{
-        command = "/run/current-system/sw/bin/framework-tool";
-        options = [ "NOPASSWD" ];
-      }];
-    }];
+    sudo.extraRules = [
+      {
+        users = [ "alexis" ];
+        commands = [
+          {
+            command = "/run/current-system/sw/bin/framework-tool";
+            options = [ "NOPASSWD" ];
+          }
+        ];
+      }
+    ];
   };
 
   # Keyring
@@ -105,8 +125,8 @@ in {
 
   environment = {
     variables = {
-        EDITOR = "nvim";
-        VISUAL = "nvim";
+      EDITOR = "nvim";
+      VISUAL = "nvim";
     };
 
     sessionVariables = rec {
@@ -121,19 +141,57 @@ in {
     defaultSopsFile = "${self}/secrets.yaml";
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
-      tailscale_key   = { owner = "root"; };
-      gemini_api      = { owner = "alexis"; mode = "0400"; };
-      transit_api     = { owner = "alexis"; mode = "0400"; };
-      locationiq_api  = { owner = "alexis"; mode = "0400"; };
-      pushover_user   = { owner = "alexis"; mode = "0400"; };
-      pushover_api    = { owner = "alexis"; mode = "0400"; };
-      openweather_api = { owner = "alexis"; mode = "0400"; };
-      gcalcli_oauth   = { owner = "alexis"; mode = "0400"; };
-      lastfm_user     = { owner = "alexis"; mode = "0400"; };
-      lastfm_pass     = { owner = "alexis"; mode = "0400"; };
-      light_email     = { owner = "alexis"; mode = "0400"; };
-      light_password  = { owner = "alexis"; mode = "0400"; };
-      light_device_id = { owner = "alexis"; mode = "0400"; };
+      tailscale_key = {
+        owner = "root";
+      };
+      gemini_api = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      transit_api = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      locationiq_api = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      pushover_user = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      pushover_api = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      openweather_api = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      gcalcli_oauth = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      lastfm_user = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      lastfm_pass = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      light_email = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      light_password = {
+        owner = "alexis";
+        mode = "0400";
+      };
+      light_device_id = {
+        owner = "alexis";
+        mode = "0400";
+      };
     };
   };
 
@@ -151,24 +209,27 @@ in {
     playlistMetaPath = /home/alexis/.config/labyrinthine/playlists;
     ledgerPath = /home/alexis/Documents/ledger/data;
   };
-  
+
   # --------------------------------------------
   # SYSTEM PACKAGES
   # These will be installed for all users
   # --------------------------------------------
 
   # Explicitly specify allowed unfree packages
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "steam"
-    "steam-original"
-    "steam-run"
-    "steam-tui"
-    "steam-unwrapped"
-    "steamcmd"
-    "reaper"
-    "zoom"
-    "waveforms" "adept2-runtime"
-  ];
+  nixpkgs.config.allowUnfreePredicate =
+    pkg:
+    builtins.elem (lib.getName pkg) [
+      "steam"
+      "steam-original"
+      "steam-run"
+      "steam-tui"
+      "steam-unwrapped"
+      "steamcmd"
+      "reaper"
+      "zoom"
+      "waveforms"
+      "adept2-runtime"
+    ];
 
   environment.systemPackages = with pkgs; [
     light.packages.x86_64-linux.light-phone-cli-tui
@@ -182,13 +243,19 @@ in {
     # DE/WM
     inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
     unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".hyprpicker # v0.4.2
-    brightnessctl playerctl
+    brightnessctl
+    playerctl
     wl-clipboard
     libnotify
 
     # Essentials
     framework-tool
-    ripgrep zip unzip wget lf mpv
+    ripgrep
+    zip
+    unzip
+    wget
+    lf
+    mpv
     firefox
     gthumb
     imagemagick
@@ -213,42 +280,65 @@ in {
 
     # CLI tools
     unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".gcalcli
-    hledger reckon
+    hledger
+    reckon
     cava
     tree
 
     # TUI
-    youtube-tui steam-tui taskwarrior-tui
+    youtube-tui
+    steam-tui
+    taskwarrior-tui
 
     # Utilities and monitoring
-    htop btop radeontop acpi
-    grimblast obs-studio
+    htop
+    btop
+    radeontop
+    acpi
+    grimblast
+    obs-studio
     exiftool
 
     # Embedded dev (C/C++)
-    libgccjit gcc_multi clang-tools gdb gnumake valgrind
+    libgccjit
+    gcc_multi
+    clang-tools
+    gdb
+    gnumake
+    valgrind
     kicad
 
     # JS dev
-    nodejs_22 nodePackages.typescript
+    nodejs_22
+    nodePackages.typescript
 
     # Go dev
-    go hugo
+    go
+    hugo
 
     # Python dev
     poetry
-    (python311.withPackages (ps: with ps; [
-      pyyaml
-    ]))
-
+    (python311.withPackages (
+      ps: with ps; [
+        pyyaml
+      ]
+    ))
 
     # Misc
-    yt-dlp id3v2 cmus cmusfm # Music library
+    yt-dlp
+    id3v2
+    cmus
+    cmusfm # Music library
     pkgs.python311Packages.mutagen # Or another desired Python version, e.g., python312Packages.mutagen
-    libimobiledevice ifuse  # iPhone mounting
+    libimobiledevice
+    ifuse # iPhone mounting
 
     # Guitar
-    guitarix qjackctl libjack2 jack2 jack_capture
+    guitarix
+    qjackctl
+    libjack2
+    jack2
+    jack_capture
     tuxguitar
     lmms
 
@@ -267,7 +357,10 @@ in {
   # FlatPak
   services.flatpak.enable = true;
   xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
+  xdg.portal.extraPortals = [
+    pkgs.xdg-desktop-portal-hyprland
+    pkgs.xdg-desktop-portal-gtk
+  ];
   xdg.portal.config.common.default = "*";
 
   # --------------------------------------------
@@ -276,7 +369,7 @@ in {
 
   services = {
     automatic-timezoned.enable = true;
-  
+
     tumbler.enable = true;
 
     power-profiles-daemon.enable = true;
@@ -318,7 +411,12 @@ in {
     };
 
     nginx.virtualHosts."localhost" = {
-      listen = [{ addr = "127.0.0.1"; port = 8080; }];
+      listen = [
+        {
+          addr = "127.0.0.1";
+          port = 8080;
+        }
+      ];
     };
 
     logind = {
@@ -328,7 +426,7 @@ in {
           extraConfig = ''
             IdleAction=suspend
             IdleActionSec=10min
-            '';
+          '';
         };
       };
     };
@@ -384,7 +482,7 @@ in {
         isNormalUser = true;
         extraGroups = [
           "wheel"
-          "networkmanager" 
+          "networkmanager"
           "audio"
           "docker"
         ];

@@ -3,13 +3,16 @@
 #
 # General purpose Python devshell
 
-{ pkgs ? import <nixpkgs> {} }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 pkgs.mkShell {
   buildInputs = [
-      pkgs.typst
-      pkgs.poppler_utils
-      pkgs.noto-fonts-color-emoji
-      (pkgs.python3.withPackages (ps: with ps; [
+    pkgs.typst
+    pkgs.poppler_utils
+    pkgs.noto-fonts-color-emoji
+    (pkgs.python3.withPackages (
+      ps: with ps; [
         numpy
         requests
         pyyaml
@@ -18,8 +21,9 @@ pkgs.mkShell {
         shapely
         piexif
         pypdf
-      ]))
-    ];
+      ]
+    ))
+  ];
 
   shellHook = ''
     export NIX_DEV_SHELL="Python"

@@ -1,10 +1,10 @@
-
 # ▀█▀ █▀ █▀▄ █▀█ █▀█ █▀█ ▀▄▀ █▄█
 # ░█░ ▄█ █▄▀ █▀▀ █▀▄ █▄█ █░█ ░█░
 
 # tsdproxy is a tool used to assign distinct subdomains to services on a tailnet.
 
-{ ... }: {
+{ ... }:
+{
   imports = [
     ./docker-compose.nix
   ];

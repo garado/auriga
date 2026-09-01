@@ -1,10 +1,16 @@
-
 # ▄▀█ █▀█ █▀▀ █░█ ▄▀█ █▀▀ ▄▀█
 # █▀█ █▀▄ █▄▄ █▀█ █▀█ ██▄ █▀█
 
 # Surface Go 2
 
-{ self, inputs, lib, config, pkgs, ... }:
+{
+  self,
+  inputs,
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 {
   imports = [
     ../../../modules/syncthing
@@ -57,7 +63,7 @@
 
   security = {
     rtkit.enable = true;
-    pam.services.astal-auth = {};
+    pam.services.astal-auth = { };
     pam.services.greetd.enableGnomeKeyring = true;
   };
 
@@ -78,7 +84,9 @@
     defaultSopsFile = "${self}/secrets.yaml";
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     secrets = {
-      tailscale_key   = { owner = "root"; };
+      tailscale_key = {
+        owner = "root";
+      };
     };
   };
 
@@ -93,7 +101,7 @@
     user = "alexis";
   };
 
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [];
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ ];
 
   # --------------------------------------------
   # SYSTEM PACKAGES
@@ -102,18 +110,25 @@
   environment.systemPackages = with pkgs; [
     # DE/WM
     inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
-    brightnessctl playerctl
+    brightnessctl
+    playerctl
     wl-clipboard
     libnotify
 
     # Essentials
-    ripgrep zip unzip wget lf mpv
+    ripgrep
+    zip
+    unzip
+    wget
+    lf
+    mpv
     firefox
     imagemagick
     zathura
     ffmpeg
     sops
-    xournalpp drawing
+    xournalpp
+    drawing
 
     # Terminal
     kitty
@@ -123,7 +138,9 @@
     tree
 
     # Utilities
-    htop btop acpi
+    htop
+    btop
+    acpi
     grimblast
   ];
 
@@ -182,7 +199,10 @@
   };
 
   xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
+  xdg.portal.extraPortals = [
+    pkgs.xdg-desktop-portal-hyprland
+    pkgs.xdg-desktop-portal-gtk
+  ];
   xdg.portal.config.common.default = "*";
 
   # --------------------------------------------

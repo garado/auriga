@@ -1,10 +1,10 @@
-
 # █▀█ ▄▀█ █▀█ █▀▀ █▀█ █░░ █▀▀ █▀ █▀
 # █▀▀ █▀█ █▀▀ ██▄ █▀▄ █▄▄ ██▄ ▄█ ▄█
 
 # Document storage and retrieval platform
 
-{ ... }: {
+{ ... }:
+{
   imports = [ ./docker-compose.nix ];
 
   # Create required paperless

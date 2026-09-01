@@ -1,7 +1,8 @@
 # ▀█▀ ▄▀█ █▀ █▄▀ █░█░█ ▄▀█ █▀█ █▀█ █ █▀█ █▀█
 # ░█░ █▀█ ▄█ █░█ ▀▄▀▄▀ █▀█ █▀▄ █▀▄ █ █▄█ █▀▄
 
-{ pkgs, config, ... }: {
+{ pkgs, config, ... }:
+{
   programs.taskwarrior = {
     enable = true;
 
