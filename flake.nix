@@ -3,17 +3,16 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    nixpkgs-2505.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    light.url = "github:garado/light";
-
-    swww.url = "github:LGFae/swww";
+    light = {
+      url = "github:garado/light";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
@@ -26,7 +25,10 @@
     };
 
     # Real-time audio
-    musnix.url = "github:musnix/musnix";
+    musnix = {
+      url = "github:musnix/musnix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
@@ -47,8 +49,6 @@
       self,
       home-manager,
       nixpkgs,
-      nixpkgs-2505,
-      nixpkgs-unstable,
       light,
       treefmt-nix,
       ...
@@ -78,7 +78,6 @@
           specialArgs = {
             inherit
               inputs
-              nixpkgs-unstable
               light
               self
               ;
@@ -94,8 +93,7 @@
             {
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = {
-                inherit self inputs nixpkgs-unstable;
-                pkgs-2505 = import nixpkgs-2505 { system = "x86_64-linux"; };
+                inherit self inputs;
               };
               home-manager.backupFileExtension = "hm-backup";
               home-manager.users.alexis = {
@@ -112,14 +110,14 @@
         # Lenovo Ideapad Flex 5 14" 2-in-1 (home server)
         gethsemane = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = { inherit inputs self nixpkgs-unstable; };
+          specialArgs = { inherit inputs self; };
           modules = [
             ./hosts/gethsemane/nixos/configuration.nix
 
             home-manager.nixosModules.home-manager
             {
               home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = { inherit self inputs nixpkgs-unstable; };
+              home-manager.extraSpecialArgs = { inherit self inputs; };
               home-manager.users.vessel = {
                 imports = [
                   self.homeModules.common
@@ -143,7 +141,7 @@
 
             {
               home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = { inherit self inputs nixpkgs-unstable; };
+              home-manager.extraSpecialArgs = { inherit self inputs; };
               home-manager.backupFileExtension = "hm-backup";
               home-manager.users.alexis = {
                 imports = [

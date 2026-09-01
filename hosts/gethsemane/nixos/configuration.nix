@@ -9,15 +9,8 @@
   pkgs,
   lib,
   inputs,
-  nixpkgs-unstable,
   ...
 }:
-let
-  pkgs-unstable = import nixpkgs-unstable {
-    system = pkgs.system;
-    config.allowUnfree = true;
-  };
-in
 {
   imports = [
     ./hardware-configuration.nix
@@ -97,6 +90,12 @@ in
     ports = [ 22 ];
   };
   networking.networkmanager.enable = true;
+
+  # TODO stupid tmp fix for 'nix flake check' failure
+  environment.pathsToLink = [
+    "/share/applications"
+    "/share/xdg-desktop-portal"
+  ];
 
   security.acme = {
     acceptTerms = true;

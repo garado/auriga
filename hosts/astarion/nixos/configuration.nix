@@ -11,9 +11,6 @@
   light,
   ...
 }:
-let
-  unstable = inputs.nixpkgs-unstable;
-in
 {
 
   # --------------------------------------------
@@ -241,8 +238,8 @@ in
     spotdl
 
     # DE/WM
-    inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
-    unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".hyprpicker # v0.4.2
+    # inputs.swww.packages.${pkgs.stdenv.hostPlatform.system}.swww
+    # unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".hyprpicker # v0.4.2
     brightnessctl
     playerctl
     wl-clipboard
@@ -250,6 +247,7 @@ in
 
     # Essentials
     framework-tool
+    swww
     ripgrep
     zip
     unzip
@@ -279,7 +277,6 @@ in
     vim
 
     # CLI tools
-    unstable.legacyPackages."${pkgs.stdenv.hostPlatform.system}".gcalcli
     hledger
     reckon
     cava
@@ -380,8 +377,6 @@ in
 
     pipewire = {
       enable = true;
-      package = unstable.legacyPackages."${pkgs.system}".pipewire;
-      wireplumber.package = unstable.legacyPackages."${pkgs.system}".wireplumber;
       alsa = {
         enable = true;
         support32Bit = true;
