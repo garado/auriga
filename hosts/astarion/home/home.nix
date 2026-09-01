@@ -128,10 +128,10 @@
   
   programs.ncmpcpp = {
     enable = true;
+    mpdMusicDir = "/home/alexis/Music/Library";
     settings = {
       mpd_host = "localhost";
       mpd_port = 6600;
-      mpd_music_dir = "/home/alexis/Music/Library";
     };
 
     bindings = [
