@@ -1,0 +1,4 @@
+.claude/
+result
+.direnv
+*.hm-backup

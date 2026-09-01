@@ -15,8 +15,6 @@
 
     swww.url = "github:LGFae/swww";
 
-    # waveforms.url = "github:liff/waveforms-flake?rev=c6fac3b8694ab95a3f4204b6bf110df9d2594d0f";
-
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -45,7 +43,6 @@
     nixpkgs,
     nixpkgs-2505,
     nixpkgs-unstable,
-    # waveforms,
     light,
     ... 
   } @ inputs: {
@@ -67,7 +64,6 @@
           ./hosts/astarion/nixos/configuration.nix
           inputs.musnix.nixosModules.musnix
           home-manager.nixosModules.home-manager
-          # waveforms.nixosModule
 
           ({ users.users.alexis.extraGroups = [ "plugdev" ]; })
 
@@ -147,7 +143,6 @@
 
         extraSpecialArgs = {
           inherit inputs self;
-          hostname = "agarado-";
         };
 
         modules = [

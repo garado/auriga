@@ -8,18 +8,6 @@ let
 in {
   
   # --------------------------------------------
-  # OVERLAYS
-  # --------------------------------------------
-
-  nixpkgs = { 
-    overlays = [
-      (final: prev: {
-        nvchad = inputs.nix4nvchad.packages."${pkgs.system}".nvchad;
-      })
-    ];
-  };
-
-  # --------------------------------------------
   # BASIC SYSTEM CONFIGURATION
   # --------------------------------------------
 
