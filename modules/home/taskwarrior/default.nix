@@ -1,13 +1,13 @@
 # ▀█▀ ▄▀█ █▀ █▄▀ █░█░█ ▄▀█ █▀█ █▀█ █ █▀█ █▀█
 # ░█░ █▀█ ▄█ █░█ ▀▄▀▄▀ █▀█ █▀▄ █▀▄ █ █▄█ █▀▄
 
-{ pkgs, ... }: {
+{ pkgs, config, ... }: {
   programs.taskwarrior = {
     enable = true;
 
     package = pkgs.taskwarrior2;
 
-    dataLocation = "/home/alexis/Documents/tasks/";
+    dataLocation = "${config.home.homeDirectory}/Documents/tasks/";
 
     config = {
       "uda.why.type" = "string";

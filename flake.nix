@@ -27,10 +27,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland.url = "github:hyprwm/Hyprland";
-
-    hardware.url = "github:nixos/nixos-hardware";
-
     # Real-time audio
     musnix.url = "github:musnix/musnix";
 

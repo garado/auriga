@@ -1,7 +1,7 @@
 # █░█ █▄█ █▀█ █▀█ █░░ ▄▀█ █▄░█ █▀▄
 # █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
 
-{ inputs, lib, config, pkgs, nixpkgs-unstable, ... }: {
+{ inputs, lib, config, pkgs, ... }: {
   wayland.windowManager.hyprland = {
     enable = true;
     systemd.enable = true;
