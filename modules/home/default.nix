@@ -10,7 +10,6 @@
     ./nvim/default.nix
     ./lf/default.nix
     ./zsh/default.nix
-    ./gtk/default.nix
     ./kitty/default.nix
     ./taskwarrior/default.nix
     ./hyprland/default.nix
@@ -21,8 +20,9 @@
     settings = {
       user.name = "garado";
       user.email = "alexisgarado@gmail.com";
+      core.quotepath = false;
+      i18n.commitencoding = "utf-8";
+      i18n.logoutputencoding = "utf-8";
     };
   };
-
-  home.packages = [ pkgs.git ];
 }

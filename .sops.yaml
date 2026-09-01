@@ -2,6 +2,7 @@ keys:
   - &alexis age188u09w647r8hxakhyfp9myamhz7qr47v24rtaz29znjzwr43uacqesz2kz
   - &astarion age1xmaa78j2gp59yef8p4aqf2egv440l3ea4dumm7vdq3m7wkl5742q6dhcns
   - &gethsemane age1089c42fluecra0heqer68sd2rm2j2jnpfce992c5ecx04tdznp0s7yv4yy
+  - &archaea age1xhlmhs47mnmep20r9vvtc2a4hgqhkkn90peqq9exhe2rrprgj3wsxm42kc
 creation_rules:
   - path_regex: secrets\.yaml$
     key_groups:
@@ -9,3 +10,4 @@ creation_rules:
       - *alexis
       - *astarion
       - *gethsemane
+      - *archaea
