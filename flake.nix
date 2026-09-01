@@ -35,6 +35,11 @@
         home-manager.follows = "home-manager";
       };
     };
+
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -45,11 +50,19 @@
       nixpkgs-2505,
       nixpkgs-unstable,
       light,
+      treefmt-nix,
       ...
     }@inputs:
+    let
+      treefmtEval = treefmt-nix.lib.evalModule nixpkgs.legacyPackages.x86_64-linux {
+        projectRootFile = "flake.nix";
+        programs.nixfmt.enable = true;
+      };
+    in
     {
 
-      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+      formatter.x86_64-linux = treefmtEval.config.build.wrapper;
+      checks.x86_64-linux.formatting = treefmtEval.config.build.check self;
 
       homeModules.common = import ./modules/home;
 
