@@ -10,7 +10,7 @@
       ../../pre-dendritic/hosts/astarion/nixos/hardware-configuration.nix
     ]
     ++ (with config.flake.modules.nixos; [
-      mdns
+      fonts
     ]);
 
     boot.loader.systemd-boot.enable = true;
