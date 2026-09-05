@@ -1,0 +1,20 @@
+services:
+  homebox:
+    image: ghcr.io/sysadminsmedia/homebox:latest
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "inventory"
+    container_name: homebox
+    restart: always
+    environment:
+    - HBOX_LOG_LEVEL=info
+    - HBOX_LOG_FORMAT=text
+    - HBOX_WEB_MAX_UPLOAD_SIZE=10
+    volumes:
+      - /var/lib/homebox/data:/data
+    ports:
+      - 3100:7745
+
+volumes:
+   homebox-data:
+     driver: local

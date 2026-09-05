@@ -5,10 +5,10 @@
 
 { config, inputs, ... }:
 {
-  # modules ---------------------------------------------------------------------
   flake.modules.nixos."hosts/astarion" =
     { pkgs, ... }:
     {
+      # modules ---------------------------------------------------------------------
       imports = [
         ../../pre-dendritic/hosts/astarion/nixos/hardware-configuration.nix
       ]
@@ -54,6 +54,10 @@
           nvim
           zsh
         ];
+      };
+      # /modules --------------------------------------------------------------------
+
+      home-manager.users.alexis = {
         home.stateVersion = "24.11";
 
         # let home-manager manage/upgrade itself
@@ -78,7 +82,6 @@
           longitude = -122.3200;
         };
       };
-      # /modules --------------------------------------------------------------------
 
       # packages --------------------------------------------------------------------
       environment.systemPackages = with pkgs; [
