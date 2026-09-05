@@ -25,6 +25,7 @@
 
           # Formatters
           black
+          nixfmt
         ];
 
         # These get symlinked

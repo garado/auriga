@@ -92,6 +92,8 @@ local plugins = {
           python =  { "black" },
 
           sh = { "shfmt" },
+
+          nix = { "nixfmt" },
         },
 
         prettier = {
