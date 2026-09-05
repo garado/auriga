@@ -1,17 +1,20 @@
-# █▀▀ ░░▄▀ █▀▀ ▄█▄ ▄█▄   █▀▄ █▀▀ █░█ █▀ █░█ █▀▀ █░░ █░░
-# █▄▄ ▄▀░░ █▄▄ ░▀░ ░▀░   █▄▀ ██▄ ▀▄▀ ▄█ █▀█ ██▄ █▄▄ █▄▄
-#
-# General purpose C/C++ devshell for quick work
+# █▀▀ ░░▄▀ █▀▀ ▄█▄ ▄█▄
+# █▄▄ ▄▀░░ █▄▄ ░▀░ ░▀░
+
+# General purpose C/C++ devshell
 
 {
   pkgs ? import <nixpkgs> { },
 }:
 pkgs.mkShell {
   buildInputs = with pkgs; [
+    clang-tools
     gcc
+    gcc_multi
     gdb
     glibc
     gnumake
+    libgccjit
     valgrind
   ];
 
