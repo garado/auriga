@@ -22,10 +22,11 @@
       mdns
       nix-settings
       sops
+      steam
+      tailscale
       thunar
+      unfree
     ]);
-
-    sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
     home-manager.users.alexis = {
       imports = with config.flake.modules.homeManager; [
@@ -39,6 +40,10 @@
       ];
       home.stateVersion = "24.11";
     };
+
+    # secrets management
+    sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    services.tailscale.useRoutingFeatures = "client";
 
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
