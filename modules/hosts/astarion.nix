@@ -28,6 +28,7 @@
         locale
         mdns
         mpd
+        networkmanager
         nix-settings
         obsidian # TODO remove after migrating data out of obsidian
         sops
@@ -59,6 +60,10 @@
 
         # reload systemd user services more gracefully on rebuild
         systemd.user.startServices = "sd-switch";
+
+        wayland.windowManager.hyprland.settings.monitor = [
+          "eDP-1,2256x1504@59.99900,0x1080,1"
+        ];
 
         wayland.windowManager.hyprland.settings.exec-once = [
           "sleep 1 && swww-daemon &"
