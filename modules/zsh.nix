@@ -88,13 +88,9 @@
           pyshell = "nix-shell ${self}/devshell/python-shell.nix";
           texshell = "nix-shell ${self}/devshell/latex-shell.nix";
 
-          # astarion-specific
+          # common across hosts
           dots = "cd ~/Github/dotfiles/";
-          tabs = "cd ~/Documents/Music/guitar/";
           cfg = "cd ~/.config";
-          edl = "cd $ENCHIRIDION/self/ledger ; nvim 2024/2024.ledger";
-          todo = "cd ~/Documents/stickynotes/ ; nvim todo.md";
-          py = "python3.11";
           m = "make";
         };
       };

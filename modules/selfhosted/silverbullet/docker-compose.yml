@@ -1,0 +1,27 @@
+services:
+  silverbullet:
+    image: zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f
+    container_name: silverbullet
+    volumes:
+      - /home/vessel/Enchiridion:/space
+    ports:
+      - "3000:3000"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "enchiridion"
+      tsdproxy.container_port: "3000"
+    restart: unless-stopped
+
+  # read-only instance thru cloudflare zero-trust (access controlled by email)
+  # https://community.silverbullet.md/t/use-silverbullet-with-cloudflare-zero-trust/3618
+  silverbullet-read:
+    image: zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f
+    container_name: silverbullet-read
+    volumes:
+      - /home/vessel/Enchiridion:/space:ro
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    environment:
+      - SB_READ_ONLY=true
+      - SB_INDEX_PAGE=Welcome

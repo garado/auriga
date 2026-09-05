@@ -18,7 +18,7 @@
         extraPackages = with pkgs; [
           # Language servers
           clang-tools
-          nodePackages.bash-language-server
+          bash-language-server
           typescript-language-server
           nixd
           basedpyright

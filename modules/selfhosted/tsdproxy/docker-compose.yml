@@ -1,0 +1,25 @@
+services:
+  tsdproxy:
+    image: almeidapaulopt/tsdproxy:1
+    volumes:
+      - /run/podman/podman.sock:/var/run/docker.sock
+      - datadir:/data
+      - /etc/tsdproxy/tsdproxy.yaml:/config/tsdproxy.yaml:ro
+      - /etc/tsdproxy/proxies.yaml:/config/proxies.yaml:ro
+      - /run/secrets/tailscale_key:/run/secrets/tailscale_key:ro # so it can see my sops secrets
+    environment:
+      HOME: /data
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+      - dawarich_net
+
+networks:
+  dawarich_net:
+    external: true
+    name: dawarich_dawarich
+
+volumes:
+  datadir:

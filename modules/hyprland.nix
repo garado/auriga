@@ -2,9 +2,11 @@
 # █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
 
 {
-  flake.modules.nixos.hyprland = {
-    programs.hyprland.enable = true;
-  };
+  flake.modules.nixos.hyprland =
+    { pkgs, ... }:
+    {
+      programs.hyprland.enable = true;
+    };
 
   flake.modules.homeManager.hyprland =
     { pkgs, ... }:
@@ -15,25 +17,15 @@
         wl-clipboard
         libnotify
         grimblast
-        swww
+        awww
       ];
 
       wayland.windowManager.hyprland = {
         enable = true;
         systemd.enable = true;
-
-        plugins = with pkgs.hyprlandPlugins; [
-          hyprsplit
-        ];
+        configType = "hyprlang"; # TODO migrate to lua
 
         settings = {
-          plugin = {
-            hyprsplit = {
-              num_workspaces = 9;
-              persistent_workspaces = false;
-            };
-          };
-
           misc = {
             disable_hyprland_logo = true;
             disable_splash_rendering = true;
@@ -77,7 +69,8 @@
             };
           };
 
-          layerrule = "animation slide, gtk4-layer-shell";
+          # TODO: "invalid field gtk4-layer-shell" on hyprland 0.55 - find correct new syntax
+          # layerrule = "animation slide, gtk4-layer-shell";
 
           animations = {
             enabled = "yes";
@@ -88,15 +81,10 @@
             ];
           };
 
-          windowrule = [
-            "float, class:^(thunar)$"
-            "float, class:^(mpv)$"
-          ];
-
-          dwindle = {
-            pseudotile = "yes";
-            preserve_split = "yes";
-          };
+          # windowrule = [
+          # "float, class:^(thunar)$"
+          # "float, class:^(mpv)$"
+          # ];
 
           "$mainMod" = "SUPER";
 
@@ -133,28 +121,28 @@
             "ALT_L, j, movefocus, u"
             "ALT_L, k, movefocus, d"
 
-            "ALT_L, 1, split:workspace, 1"
-            "ALT_L, 2, split:workspace, 2"
-            "ALT_L, 3, split:workspace, 3"
-            "ALT_L, 4, split:workspace, 4"
-            "ALT_L, 5, split:workspace, 5"
-            "ALT_L, 6, split:workspace, 6"
-            "ALT_L, 7, split:workspace, 7"
-            "ALT_L, 8, split:workspace, 8"
-            "ALT_L, 9, split:workspace, 9"
+            "ALT_L, 1, workspace, 1"
+            "ALT_L, 2, workspace, 2"
+            "ALT_L, 3, workspace, 3"
+            "ALT_L, 4, workspace, 4"
+            "ALT_L, 5, workspace, 5"
+            "ALT_L, 6, workspace, 6"
+            "ALT_L, 7, workspace, 7"
+            "ALT_L, 8, workspace, 8"
+            "ALT_L, 9, workspace, 9"
 
             "$mainMod, TAB, workspace, +1"
             "$mainMod SHIFT, TAB, workspace, -1"
 
-            "ALT_L SHIFT, 1, split:movetoworkspace, 1"
-            "ALT_L SHIFT, 2, split:movetoworkspace, 2"
-            "ALT_L SHIFT, 3, split:movetoworkspace, 3"
-            "ALT_L SHIFT, 4, split:movetoworkspace, 4"
-            "ALT_L SHIFT, 5, split:movetoworkspace, 5"
-            "ALT_L SHIFT, 6, split:movetoworkspace, 6"
-            "ALT_L SHIFT, 7, split:movetoworkspace, 7"
-            "ALT_L SHIFT, 8, split:movetoworkspace, 8"
-            "ALT_L SHIFT, 9, split:movetoworkspace, 9"
+            "ALT_L SHIFT, 1, movetoworkspace, 1"
+            "ALT_L SHIFT, 2, movetoworkspace, 2"
+            "ALT_L SHIFT, 3, movetoworkspace, 3"
+            "ALT_L SHIFT, 4, movetoworkspace, 4"
+            "ALT_L SHIFT, 5, movetoworkspace, 5"
+            "ALT_L SHIFT, 6, movetoworkspace, 6"
+            "ALT_L SHIFT, 7, movetoworkspace, 7"
+            "ALT_L SHIFT, 8, movetoworkspace, 8"
+            "ALT_L SHIFT, 9, movetoworkspace, 9"
 
             "ALT_L CTRL, h, resizeactive, -90 0"
             "ALT_L CTRL, l, resizeactive, 90 0"

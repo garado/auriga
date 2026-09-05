@@ -5,21 +5,22 @@
 
 { config, inputs, ... }:
 {
-  # modules ---------------------------------------------------------------------
   flake.modules.nixos."hosts/astarion" =
     { pkgs, ... }:
     {
+      # modules ---------------------------------------------------------------------
       imports = [
         ../../pre-dendritic/hosts/astarion/nixos/hardware-configuration.nix
       ]
       ++ (with config.flake.modules.nixos; [
         audio
         bluetooth
+        claude
         cli-tools
-        desktop
         editor
         fonts
         git
+        graphical-session
         guitarix
         home-manager
         hugo
@@ -43,6 +44,7 @@
 
       home-manager.users.alexis = {
         imports = with config.flake.modules.homeManager; [
+          claude
           git
           gtk
           hyprland
@@ -52,8 +54,13 @@
           lf
           mpd
           nvim
+          obsidian
           zsh
         ];
+      };
+      # /modules --------------------------------------------------------------------
+
+      home-manager.users.alexis = {
         home.stateVersion = "24.11";
 
         # let home-manager manage/upgrade itself
@@ -62,12 +69,19 @@
         # reload systemd user services more gracefully on rebuild
         systemd.user.startServices = "sd-switch";
 
+        programs.zsh.shellAliases = {
+          tabs = "cd ~/Documents/Music/guitar/";
+          edl = "cd $ENCHIRIDION/self/ledger ; nvim 2024/2024.ledger";
+          todo = "cd ~/Documents/stickynotes/ ; nvim todo.md";
+          py = "python3.11";
+        };
+
         wayland.windowManager.hyprland.settings.monitor = [
           "eDP-1,2256x1504@59.99900,0x1080,1"
         ];
 
         wayland.windowManager.hyprland.settings.exec-once = [
-          "sleep 1 && swww-daemon &"
+          "sleep 1 && awww-daemon &"
           "labyrinthine &"
         ];
 
@@ -78,7 +92,6 @@
           longitude = -122.3200;
         };
       };
-      # /modules --------------------------------------------------------------------
 
       # packages --------------------------------------------------------------------
       environment.systemPackages = with pkgs; [
@@ -89,6 +102,7 @@
         framework-tool
         mpv
         firefox
+        feh
         gthumb
         imagemagick
         zathura
@@ -103,16 +117,17 @@
 
         yt-dlp
         id3v2
-        cmus
-        cmusfm
-        pkgs.python311Packages.mutagen
+        pkgs.python3Packages.mutagen
 
         lmms
 
         prismlauncher
-        wineWowPackages.stable
       ];
       # /packages -------------------------------------------------------------------
+
+      # TODO xf86 brightness ctl keys are not being registered
+      # brightnessctl works when manually invoked
+      # just the keys don't work
 
       # secrets management
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
@@ -170,6 +185,7 @@
           "wheel"
           "networkmanager"
           "audio"
+          "video"
         ];
         initialPassword = "changeme"; # TODO swap for hashedPasswordFile (sops secret)
       };

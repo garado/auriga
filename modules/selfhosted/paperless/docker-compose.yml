@@ -1,0 +1,38 @@
+services:
+  paperless_broker:
+    image: docker.io/library/redis:8
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+  paperless_webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - paperless_broker
+    volumes:
+      - data:/usr/src/paperless/data
+      - media:/usr/src/paperless/media
+      - /var/lib/paperless/export:/usr/src/paperless/export
+      - /var/lib/paperless/consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://paperless_broker:6379
+      PAPERLESS_URL: https://paperless.dinosaur-frog.ts.net
+      PAPERLESS_TIME_ZONE: America/Los_Angeles
+      PAPERLESS_SECRET_KEY: "CHANGE_ME"
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "paperless"
+      tsdproxy.container_port: "8000"
+    networks:
+      - default
+      - tsdproxy_net
+
+networks:
+  tsdproxy_net:
+    external: true
+    name: tsdproxy_default
+
+volumes:
+  data:
+  media:
+  redisdata:
