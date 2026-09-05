@@ -10,7 +10,7 @@
     {
       # modules ---------------------------------------------------------------------
       imports = [
-        ../../pre-dendritic/hosts/gethsemane/nixos/hardware-configuration.nix
+        ./_hardware-configuration.nix
       ]
       ++ (with config.flake.modules.nixos; [
         backup
