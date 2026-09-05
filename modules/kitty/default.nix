@@ -26,5 +26,6 @@
     };
 
     xdg.configFile."kitty/themes".source = ./themes;
+    xdg.configFile."kitty/sessions".source = ./sessions;
   };
 }

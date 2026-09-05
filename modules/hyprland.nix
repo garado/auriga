@@ -9,6 +9,15 @@
   flake.modules.homeManager.hyprland =
     { pkgs, ... }:
     {
+      home.packages = with pkgs; [
+        brightnessctl
+        playerctl
+        wl-clipboard
+        libnotify
+        grimblast
+        swww
+      ];
+
       wayland.windowManager.hyprland = {
         enable = true;
         systemd.enable = true;

@@ -2,87 +2,101 @@
 # █▄ ▄█ █▀█
 
 {
-  flake.modules.homeManager.zsh = {
-    programs.zsh = {
-      enable = true;
+  flake.modules.nixos.zsh =
+    { pkgs, ... }:
+    {
+      programs.zsh.enable = true;
+      users.defaultUserShell = pkgs.zsh;
+    };
 
-      oh-my-zsh = {
+  flake.modules.homeManager.zsh =
+    { self, ... }:
+    {
+      programs.zsh = {
         enable = true;
-        theme = "theunraveler";
-      };
 
-      # Extra commands to add to .zshrc
-      initContent = ''
-        bindkey -v
-        bindkey -M viins 'jk' vi-cmd-mode
-        autoload zmv
+        oh-my-zsh = {
+          enable = true;
+          theme = "theunraveler";
+        };
 
-        # Modify prompt if in nix devshell
-        if [ -n "$NIX_DEV_SHELL" ]; then
-          PROMPT="$PROMPT [$NIX_DEV_SHELL] "
-        fi
+        # Extra commands to add to .zshrc
+        initContent = ''
+          bindkey -v
+          bindkey -M viins 'jk' vi-cmd-mode
+          autoload zmv
 
-        lfcd() {
-          tmp="$(mktemp)"
-          lf -last-dir-path="$tmp" "$@"
-          if [ -f "$tmp" ]; then
-            dir="$(cat "$tmp")"
-            rm -f "$tmp"
-            [ -d "$dir" ] && cd "$dir"
+          # Modify prompt if in nix devshell
+          if [ -n "$NIX_DEV_SHELL" ]; then
+            PROMPT="$PROMPT [$NIX_DEV_SHELL] "
           fi
-        }
-        alias lf="lfcd"
-      '';
 
-      shellAliases = {
-        # Shell commands
-        c = "clear";
-        l = "ls -X --group-directories-first";
-        lsa = "ls -laX --group-directories-first";
-        p = "pwd";
-        pclip = "pwd | wl-copy";
+          lfcd() {
+            tmp="$(mktemp)"
+            lf -last-dir-path="$tmp" "$@"
+            if [ -f "$tmp" ]; then
+              dir="$(cat "$tmp")"
+              rm -f "$tmp"
+              [ -d "$dir" ] && cd "$dir"
+            fi
+          }
+          alias lf="lfcd"
+        '';
 
-        # Quick navigation
-        ".." = "cd ..";
-        "..." = "cd ../..";
-        "...." = "cd ../../..";
-        desk = "cd ~/Desktop";
-        docs = "cd ~/Documents";
-        mus = "cd ~/Music";
-        pics = "cd ~/Pictures";
-        vids = "cd ~/Videos";
-        gth = "cd ~/Github";
-        dl = "cd ~/Downloads";
+        shellAliases = {
+          # Shell commands
+          c = "clear";
+          l = "ls -X --group-directories-first";
+          lsa = "ls -laX --group-directories-first";
+          p = "pwd";
+          pclip = "pwd | wl-copy";
 
-        # Nix
-        rebuild = "sudo nixos-rebuild switch --flake .#$(hostname)";
-        re = "rebuild";
-        ndev = "nix develop --command zsh";
+          # Quick navigation
+          ".." = "cd ..";
+          "..." = "cd ../..";
+          "...." = "cd ../../..";
+          desk = "cd ~/Desktop";
+          docs = "cd ~/Documents";
+          mus = "cd ~/Music";
+          pics = "cd ~/Pictures";
+          vids = "cd ~/Videos";
+          gth = "cd ~/Github";
+          dl = "cd ~/Downloads";
 
-        # Shortcut for terminal programs
-        v = "nvim";
-        nv = "nvim";
+          # Nix
+          rebuild = "sudo nixos-rebuild switch --flake .#$(hostname)";
+          re = "rebuild";
+          ndev = "nix develop --command zsh";
 
-        # Git
-        gst = "git status";
-        gtc = "git commit";
-        gtcm = "git commit -m ";
-        gtp = "git push";
-        gtd = "git diff";
-        gds = "git diff --staged";
-        gta = "git add";
-        gtl = "git log";
-        gtrl = "git reflog";
+          # Shortcut for terminal programs
+          v = "nvim";
+          nv = "nvim";
 
-        # astarion-specific
-        dots = "cd ~/Github/dotfiles/";
-        tabs = "cd ~/Documents/Music/guitar/";
-        cfg = "cd ~/.config";
-        edl = "cd $ENCHIRIDION/self/ledger ; nvim 2024/2024.ledger";
-        todo = "cd ~/Documents/stickynotes/ ; nvim todo.md";
-        py = "python3.11";
-        m = "make";
+          # Git
+          gst = "git status";
+          gtc = "git commit";
+          gtcm = "git commit -m ";
+          gtp = "git push";
+          gtd = "git diff";
+          gds = "git diff --staged";
+          gta = "git add";
+          gtl = "git log";
+          gtrl = "git reflog";
+
+          # Devshells
+          cshell = "nix-shell ${self}/devshell/c-shell.nix";
+          pyshell = "nix-shell ${self}/devshell/python-shell.nix";
+          texshell = "nix-shell ${self}/devshell/latex-shell.nix";
+
+          # astarion-specific
+          dots = "cd ~/Github/dotfiles/";
+          tabs = "cd ~/Documents/Music/guitar/";
+          cfg = "cd ~/.config";
+          edl = "cd $ENCHIRIDION/self/ledger ; nvim 2024/2024.ledger";
+          todo = "cd ~/Documents/stickynotes/ ; nvim todo.md";
+          py = "python3.11";
+          m = "make";
+        };
       };
     };
-  };
 }
