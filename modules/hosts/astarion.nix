@@ -46,6 +46,7 @@
       home-manager.users.alexis = {
         imports = with config.flake.modules.homeManager; [
           claude
+          disc
           git
           gtk
           hyprland
