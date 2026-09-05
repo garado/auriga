@@ -27,7 +27,10 @@
       imports = with config.flake.modules.homeManager; [
         git
         hyprland
+        kitty
+        lf
         nvim
+        zsh
       ];
       home.stateVersion = "24.11";
     };
