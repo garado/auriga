@@ -11,7 +11,10 @@
       auto-optimise-store = true;
 
       # allow remote builds
-      trusted-users = [ "root" "vessel" ];
+      trusted-users = [
+        "root"
+        "vessel"
+      ];
     };
 
     nix.gc = {

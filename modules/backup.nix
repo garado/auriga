@@ -17,7 +17,7 @@
           passwordFile = config.sops.secrets.restic_pass.path;
           environmentFile = config.sops.secrets.b2_env.path;
 
-          paths = [ "/var/Vault/" ];
+          paths = [ "/srv/vault/" ];
 
           timerConfig = {
             OnCalendar = "03:00";
@@ -36,7 +36,7 @@
           repository = "/mnt/blackreach/Vault";
           passwordFile = config.sops.secrets.restic_pass.path;
 
-          paths = [ "/var/Vault/" ];
+          paths = [ "/srv/vault/" ];
 
           timerConfig = {
             OnCalendar = "02:00";

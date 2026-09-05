@@ -66,10 +66,10 @@
       services.auriga-syncthing = {
         enable = true;
         user = "vessel";
-        musicPath = /var/Vault/Music/Library;
-        playlistPath = /var/Vault/Music/Playlists;
-        playlistMetaPath = /var/Vault/Music/PlaylistMetadata;
-        ledgerPath = /var/Vault/Ledger;
+        musicPath = /srv/vault/Music/Library;
+        playlistPath = /srv/vault/Music/Playlists;
+        playlistMetaPath = /srv/vault/Music/PlaylistMetadata;
+        ledgerPath = /srv/vault/Ledger;
       };
 
       boot.loader.systemd-boot.enable = true;
