@@ -3,9 +3,12 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "0 12 * * *" # daily
 
 jobs:
   formatting:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,3 +16,17 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Check formatting
         run: nix build --print-build-logs .#checks.x86_64-linux.treefmt
+
+  nixpkgs-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if nixpkgs hasn't been updated in 14 days
+        run: |
+          last_modified=$(jq '.nodes.nixpkgs.locked.lastModified' flake.lock)
+          age_days=$(( ($(date +%s) - last_modified) / 86400 ))
+          echo "nixpkgs input is $age_days days old"
+          if [ "$age_days" -gt 14 ]; then
+            echo "::error::flake.lock's nixpkgs input is $age_days days old (>14). Run 'nix flake update' and rebuild."
+            exit 1
+          fi
