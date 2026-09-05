@@ -16,9 +16,6 @@
     systemd.services."podman-tsdproxy-tsdproxy" = {
       after = [ "podman.socket" ];
       requires = [ "podman.socket" ];
-      serviceConfig.Environment = [
-        "TSNET_FORCE_LOGIN=1"
-      ];
     };
 
     # create docker-compatible socket so tsdproxy can talk to podman as if it were docker
