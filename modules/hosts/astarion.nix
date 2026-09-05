@@ -25,6 +25,7 @@
         hugo
         hyprland
         iphone-connect
+        laptop
         locale
         mdns
         mpd
