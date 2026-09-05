@@ -9,6 +9,9 @@
         "flakes"
       ];
       auto-optimise-store = true;
+
+      # allow remote builds
+      trusted-users = [ "root" "vessel" ];
     };
   };
 }
