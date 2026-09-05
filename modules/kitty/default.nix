@@ -7,7 +7,7 @@
       enable = true;
 
       font = {
-        name = "Mononoki";
+        name = "Ioskeley Mono";
         size = 15.0;
       };
 

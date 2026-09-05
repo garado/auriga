@@ -3,17 +3,24 @@
 
 {
   flake.modules.nixos.fonts =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     {
       fonts = {
         packages = with pkgs; [
+          # sans-serif
+          karla
+
+          # monospace
+          mononoki
+
+          # other
           noto-fonts
           noto-fonts-color-emoji
-          monocraft
-          mononoki
-          cozette
-          scientifica
-        ];
+        ]
+        ++ builtins.attrValues (
+          # pull everything in the ioskeley-mono package set
+          lib.filterAttrs (_: v: lib.isDerivation v) ioskeley-mono
+        );
       };
     };
 }
