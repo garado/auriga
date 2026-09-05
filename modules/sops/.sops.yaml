@@ -1,3 +1,8 @@
+# █▀ █▀█ █▀█ █▀   █▀▀ █▀▀ █▀▀
+# ▄█ █▄█ █▀▀ ▄█   █▄▄ █▀░ █▄█
+
+# Defines which encryption keys are allowed to decrypt which secrets files.
+
 keys:
   - &alexis age188u09w647r8hxakhyfp9myamhz7qr47v24rtaz29znjzwr43uacqesz2kz
   - &astarion age1xmaa78j2gp59yef8p4aqf2egv440l3ea4dumm7vdq3m7wkl5742q6dhcns

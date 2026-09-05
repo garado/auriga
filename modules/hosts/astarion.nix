@@ -19,13 +19,18 @@
       home-manager
       hyprland
       locale
+      mdns
       nix-settings
+      sops
       thunar
     ]);
+
+    sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
     home-manager.users.alexis = {
       imports = with config.flake.modules.homeManager; [
         git
+        gtk
         hyprland
         kitty
         lf
