@@ -218,7 +218,6 @@
       "steam-run"
       "steam-tui"
       "steam-unwrapped"
-      "steamcmd"
       "reaper"
       "zoom"
       "waveforms"

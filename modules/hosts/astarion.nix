@@ -15,6 +15,7 @@
       ++ (with config.flake.modules.nixos; [
         audio
         bluetooth
+        claude
         cli-tools
         desktop
         editor
@@ -43,6 +44,7 @@
 
       home-manager.users.alexis = {
         imports = with config.flake.modules.homeManager; [
+          claude
           git
           gtk
           hyprland
@@ -52,6 +54,7 @@
           lf
           mpd
           nvim
+          obsidian
           zsh
         ];
       };
@@ -66,12 +69,19 @@
         # reload systemd user services more gracefully on rebuild
         systemd.user.startServices = "sd-switch";
 
+        programs.zsh.shellAliases = {
+          tabs = "cd ~/Documents/Music/guitar/";
+          edl = "cd $ENCHIRIDION/self/ledger ; nvim 2024/2024.ledger";
+          todo = "cd ~/Documents/stickynotes/ ; nvim todo.md";
+          py = "python3.11";
+        };
+
         wayland.windowManager.hyprland.settings.monitor = [
           "eDP-1,2256x1504@59.99900,0x1080,1"
         ];
 
         wayland.windowManager.hyprland.settings.exec-once = [
-          "sleep 1 && swww-daemon &"
+          "sleep 1 && awww-daemon &"
           "labyrinthine &"
         ];
 
@@ -92,6 +102,7 @@
         framework-tool
         mpv
         firefox
+        feh
         gthumb
         imagemagick
         zathura
@@ -106,14 +117,11 @@
 
         yt-dlp
         id3v2
-        cmus
-        cmusfm
-        pkgs.python311Packages.mutagen
+        pkgs.python3Packages.mutagen
 
         lmms
 
         prismlauncher
-        wineWowPackages.stable
       ];
       # /packages -------------------------------------------------------------------
 

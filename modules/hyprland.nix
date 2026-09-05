@@ -15,25 +15,15 @@
         wl-clipboard
         libnotify
         grimblast
-        swww
+        awww
       ];
 
       wayland.windowManager.hyprland = {
         enable = true;
         systemd.enable = true;
-
-        plugins = with pkgs.hyprlandPlugins; [
-          hyprsplit
-        ];
+        configType = "hyprlang"; # TODO migrate to lua
 
         settings = {
-          plugin = {
-            hyprsplit = {
-              num_workspaces = 9;
-              persistent_workspaces = false;
-            };
-          };
-
           misc = {
             disable_hyprland_logo = true;
             disable_splash_rendering = true;
