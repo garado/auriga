@@ -24,6 +24,7 @@
         immich
         mdns
         networkmanager
+        nfs-server
         nix-settings
         paperless
         silverbullet

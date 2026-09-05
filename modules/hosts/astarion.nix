@@ -31,6 +31,7 @@
         mdns
         mpd
         networkmanager
+        nfs-client
         nix-settings
         obsidian # TODO remove after migrating data out of obsidian
         sops
