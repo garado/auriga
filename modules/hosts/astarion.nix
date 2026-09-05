@@ -17,10 +17,10 @@
         bluetooth
         claude
         cli-tools
-        desktop
         editor
         fonts
         git
+        graphical-session
         guitarix
         home-manager
         hugo
@@ -125,6 +125,10 @@
       ];
       # /packages -------------------------------------------------------------------
 
+      # TODO xf86 brightness ctl keys are not being registered
+      # brightnessctl works when manually invoked
+      # just the keys don't work
+
       # secrets management
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";
@@ -181,6 +185,7 @@
           "wheel"
           "networkmanager"
           "audio"
+          "video"
         ];
         initialPassword = "changeme"; # TODO swap for hashedPasswordFile (sops secret)
       };

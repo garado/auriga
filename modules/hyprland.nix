@@ -2,9 +2,11 @@
 # █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▀█ █░▀█ █▄▀
 
 {
-  flake.modules.nixos.hyprland = {
-    programs.hyprland.enable = true;
-  };
+  flake.modules.nixos.hyprland =
+    { pkgs, ... }:
+    {
+      programs.hyprland.enable = true;
+    };
 
   flake.modules.homeManager.hyprland =
     { pkgs, ... }:
@@ -67,7 +69,8 @@
             };
           };
 
-          layerrule = "animation slide, gtk4-layer-shell";
+          # TODO: "invalid field gtk4-layer-shell" on hyprland 0.55 - find correct new syntax
+          # layerrule = "animation slide, gtk4-layer-shell";
 
           animations = {
             enabled = "yes";
@@ -78,15 +81,10 @@
             ];
           };
 
-          windowrule = [
-            "float, class:^(thunar)$"
-            "float, class:^(mpv)$"
-          ];
-
-          dwindle = {
-            pseudotile = "yes";
-            preserve_split = "yes";
-          };
+          # windowrule = [
+          # "float, class:^(thunar)$"
+          # "float, class:^(mpv)$"
+          # ];
 
           "$mainMod" = "SUPER";
 
