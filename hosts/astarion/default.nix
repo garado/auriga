@@ -158,7 +158,7 @@
       services.auriga-syncthing = {
         enable = true;
         user = "alexis";
-        musicPath = /home/alexis/Music/Library;
+        musicPath = null;
         playlistPath = /home/alexis/Music/Playlists/cmus-playlist-defs/playlists;
         playlistMetaPath = /home/alexis/.config/labyrinthine/playlists;
         ledgerPath = /home/alexis/Documents/ledger/data;

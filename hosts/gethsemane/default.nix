@@ -67,7 +67,7 @@
       services.auriga-syncthing = {
         enable = true;
         user = "vessel";
-        musicPath = /srv/vault/Music/Library;
+        musicPath = null;
         playlistPath = /srv/vault/Music/Playlists;
         playlistMetaPath = /srv/vault/Music/PlaylistMetadata;
         ledgerPath = /srv/vault/Ledger;
