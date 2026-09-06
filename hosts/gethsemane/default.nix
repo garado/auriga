@@ -76,6 +76,21 @@
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
 
+      # HDD for nightly backups
+      # WD 5TB Elements Portable (WDBU6Y0050BBK-WESN) 2022-03
+      boot.supportedFilesystems = [ "ntfs" ];
+      fileSystems."/mnt/blackreach" = {
+        device = "/dev/disk/by-uuid/E45E388E5E385B8C";
+        fsType = "ntfs3";
+        options = [
+          "nofail"
+          "uid=0"
+          "gid=0"
+          "fmask=0177"
+          "dmask=0077"
+        ];
+      };
+
       # server, no sleeping
       services.logind.settings.Login = {
         HandleLidSwitch = "ignore";

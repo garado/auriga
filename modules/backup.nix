@@ -1,7 +1,9 @@
 # █▄▄ ▄▀█ █▀▀ █▄▀ █░█ █▀█
 # █▄█ █▀█ █▄▄ █░█ █▄█ █▀▀
 
-# 3-2-1 backup: cloud (Backblaze B2) + local device (blackreach HDD).
+# Nightly backups
+# - Backblaze B2
+# - Local HDD
 
 {
   flake.modules.nixos.backup =
@@ -11,6 +13,7 @@
       sops.secrets.b2_env.owner = "root";
 
       services.restic.backups = {
+        # Nightly cloud backup
         daily-cloud = {
           initialize = true;
           repository = "b2:gethsemane";
@@ -31,9 +34,10 @@
           ];
         };
 
+        # Nightly HDD backup
         daily-blackreach = {
           initialize = true;
-          repository = "/mnt/blackreach/Vault";
+          repository = "/mnt/blackreach/vault";
           passwordFile = config.sops.secrets.restic_pass.path;
 
           paths = [ "/srv/vault/" ];
@@ -49,6 +53,12 @@
             "--keep-monthly 6"
           ];
         };
+      };
+
+      # hard-require the actual mount so a disconnected/unmounted blackreach HDD fails the backup
+      systemd.services.restic-backups-daily-blackreach = {
+        after = [ "mnt-blackreach.mount" ];
+        requires = [ "mnt-blackreach.mount" ];
       };
     };
 }
