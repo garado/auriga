@@ -396,58 +396,72 @@ else
 fi
 
 # Machine Report
-PRINT_HEADER
-PRINT_CENTERED_DATA "$report_title"
-PRINT_CENTERED_DATA "TR-100 MACHINE REPORT"
-PRINT_DIVIDER "top"
-PRINT_DATA "OS" "$os_name"
-PRINT_DATA "KERNEL" "$os_kernel"
-PRINT_DIVIDER
-PRINT_DATA "HOSTNAME" "$net_hostname"
-PRINT_DATA "MACHINE IP" "$net_machine_ip"
-PRINT_DATA "CLIENT  IP" "$net_client_ip"
-
-for dns_num in "${!net_dns_ip[@]}"; do
-    PRINT_DATA "DNS  IP $(($dns_num + 1))" "${net_dns_ip[dns_num]}"
-done
-
-PRINT_DATA "USER" "$net_current_user"
-PRINT_DIVIDER
-PRINT_DATA "PROCESSOR" "$cpu_model"
-PRINT_DATA "CORES" "$cpu_cores_per_socket vCPU(s) / $cpu_sockets Socket(s)"
-PRINT_DATA "HYPERVISOR" "$cpu_hypervisor"
-PRINT_DATA "CPU FREQ" "$cpu_freq GHz"
-PRINT_DATA "LOAD  1m" "$cpu_1min_bar_graph"
-PRINT_DATA "LOAD  5m" "$cpu_5min_bar_graph"
-PRINT_DATA "LOAD 15m" "$cpu_15min_bar_graph"
-
-if [ $zfs_present -eq 1 ]; then
+print_report() {
+    PRINT_HEADER
+    PRINT_CENTERED_DATA "$report_title"
+    PRINT_CENTERED_DATA "TR-100 MACHINE REPORT"
+    PRINT_DIVIDER "top"
+    PRINT_DATA "OS" "$os_name"
+    PRINT_DATA "KERNEL" "$os_kernel"
     PRINT_DIVIDER
-    PRINT_DATA "VOLUME" "$zfs_used_gb/$zfs_available_gb GB [$disk_percent%]"
-    PRINT_DATA "DISK USAGE" "$disk_bar_graph"
-    PRINT_DATA "ZFS HEALTH" "$zfs_health"
-else
+    PRINT_DATA "HOSTNAME" "$net_hostname"
+    PRINT_DATA "MACHINE IP" "$net_machine_ip"
+    PRINT_DATA "CLIENT  IP" "$net_client_ip"
+
+    for dns_num in "${!net_dns_ip[@]}"; do
+        PRINT_DATA "DNS  IP $(($dns_num + 1))" "${net_dns_ip[dns_num]}"
+    done
+
+    PRINT_DATA "USER" "$net_current_user"
     PRINT_DIVIDER
-    PRINT_DATA "VOLUME" "$root_used_gb/$root_total_gb GB [$disk_percent%]"
-    PRINT_DATA "DISK USAGE" "$disk_bar_graph"
+    PRINT_DATA "PROCESSOR" "$cpu_model"
+    PRINT_DATA "CORES" "$cpu_cores_per_socket vCPU(s) / $cpu_sockets Socket(s)"
+    PRINT_DATA "HYPERVISOR" "$cpu_hypervisor"
+    PRINT_DATA "CPU FREQ" "$cpu_freq GHz"
+    PRINT_DATA "LOAD  1m" "$cpu_1min_bar_graph"
+    PRINT_DATA "LOAD  5m" "$cpu_5min_bar_graph"
+    PRINT_DATA "LOAD 15m" "$cpu_15min_bar_graph"
+
+    if [ $zfs_present -eq 1 ]; then
+        PRINT_DIVIDER
+        PRINT_DATA "VOLUME" "$zfs_used_gb/$zfs_available_gb GB [$disk_percent%]"
+        PRINT_DATA "DISK USAGE" "$disk_bar_graph"
+        PRINT_DATA "ZFS HEALTH" "$zfs_health"
+    else
+        PRINT_DIVIDER
+        PRINT_DATA "VOLUME" "$root_used_gb/$root_total_gb GB [$disk_percent%]"
+        PRINT_DATA "DISK USAGE" "$disk_bar_graph"
+    fi
+
+    PRINT_DIVIDER
+    PRINT_DATA "MEMORY" "${mem_used_gb}/${mem_total_gb} GiB [${mem_percent}%]"
+    PRINT_DATA "USAGE" "${mem_bar_graph}"
+
+    PRINT_DIVIDER
+    PRINT_DATA "CONTAINERS" "$podman_status"
+    PRINT_DATA "SYNCTHING" "$syncthing_status"
+    PRINT_DATA "BACKUP B2" "$restic_cloud_status"
+    PRINT_DATA "BACKUP HDD" "$restic_blackreach_status"
+
+    PRINT_DIVIDER
+    PRINT_DATA "LAST LOGIN" "$last_login_time"
+
+    if [ $last_login_ip_present -eq 1 ]; then
+        PRINT_DATA "" "$last_login_ip"
+    fi
+
+    PRINT_DATA "UPTIME" "$sys_uptime"
+    PRINT_DIVIDER "bottom"
+}
+
+# Center the whole box horizontally in the terminal
+box_width=$((CURRENT_LEN+MAX_NAME_LEN+BORDERS_AND_PADDING))
+term_width=$(tput cols 2>/dev/null || echo "$box_width")
+left_pad=$(( (term_width - box_width) / 2 ))
+if (( left_pad < 0 )); then
+    left_pad=0
 fi
 
-PRINT_DIVIDER
-PRINT_DATA "MEMORY" "${mem_used_gb}/${mem_total_gb} GiB [${mem_percent}%]"
-PRINT_DATA "USAGE" "${mem_bar_graph}"
-
-PRINT_DIVIDER
-PRINT_DATA "CONTAINERS" "$podman_status"
-PRINT_DATA "SYNCTHING" "$syncthing_status"
-PRINT_DATA "BACKUP B2" "$restic_cloud_status"
-PRINT_DATA "BACKUP HDD" "$restic_blackreach_status"
-
-PRINT_DIVIDER
-PRINT_DATA "LAST LOGIN" "$last_login_time"
-
-if [ $last_login_ip_present -eq 1 ]; then
-    PRINT_DATA "" "$last_login_ip"
-fi
-
-PRINT_DATA "UPTIME" "$sys_uptime"
-PRINT_DIVIDER "bottom"
+while IFS= read -r line; do
+    printf '%*s%s\n' "$left_pad" "" "$line"
+done < <(print_report)
