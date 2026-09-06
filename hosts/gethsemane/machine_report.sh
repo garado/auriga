@@ -71,10 +71,14 @@ set_current_len() {
         "$last_login_ip"                                         \
         "$last_login_ip"                                         \
         "$sys_uptime"                                            \
-        "$podman_status"                                         \
+        "$svc_dawarich"                                          \
+        "$svc_silverbullet"                                      \
+        "$svc_paperless"                                         \
+        "$svc_homebox"                                           \
         "$syncthing_status"                                      \
         "$restic_cloud_status"                                   \
         "$restic_blackreach_status"                              \
+        "$blackreach_usage"                                      \
     )
 }
 
@@ -243,15 +247,24 @@ get_ip_addr() {
     printf '%s' "$ip_address"
 }
 
-# gethsemane-specific: podman container status via compose2nix-generated units
-get_podman_status() {
-    local running total
-    running=$(systemctl list-units --type=service --state=running --no-legend --plain 'podman-*.service' 2>/dev/null | wc -l)
-    total=$(systemctl list-units --type=service --all --no-legend --plain 'podman-*.service' 2>/dev/null | wc -l)
+# gethsemane-specific: per-service status via compose2nix-generated podman
+# units. Matches "podman-<name>*.service" only, which (per the naming
+# convention compose2nix uses) excludes the "podman-network-<name>-*" and
+# "podman-volume-<name>-*" oneshot setup units for the same service.
+get_service_status() {
+    local name="$1"
+    local units total up
+    units=$(systemctl list-units --type=service --all --no-legend --plain "podman-${name}*.service" 2>/dev/null)
+    total=$(printf '%s\n' "$units" | grep -c .)
     if [ "$total" -eq 0 ]; then
-        printf 'no units found'
+        printf 'not found'
+        return
+    fi
+    up=$(printf '%s\n' "$units" | awk '$3=="active" && $4=="running" {c++} END{print c+0}')
+    if [ "$up" -eq "$total" ]; then
+        printf 'up'
     else
-        printf '%s/%s running' "$running" "$total"
+        printf '%s/%s up' "$up" "$total"
     fi
 }
 
@@ -273,6 +286,21 @@ get_syncthing_status() {
     else
         printf '%s%% synced' "$completion"
     fi
+}
+
+# gethsemane-specific: blackreach HDD usage, only meaningful if actually mounted
+get_blackreach_usage() {
+    if ! mountpoint -q /mnt/blackreach 2>/dev/null; then
+        printf 'not mounted'
+        return
+    fi
+    local used total used_gb total_gb percent
+    used=$(df -m /mnt/blackreach | awk 'NR==2 {print $3}')
+    total=$(df -m /mnt/blackreach | awk 'NR==2 {print $2}')
+    used_gb=$(awk -v u="$used" 'BEGIN { printf "%.1f", u / 1024 }')
+    total_gb=$(awk -v t="$total" 'BEGIN { printf "%.1f", t / 1024 }')
+    percent=$(awk -v u="$used" -v t="$total" 'BEGIN { if (t == 0) { print 0 } else { printf "%.0f", (u / t) * 100 } }')
+    printf '%s/%s GB [%s%%]' "$used_gb" "$total_gb" "$percent"
 }
 
 # gethsemane-specific: last restic-backups-<name> run, via systemd unit state
@@ -358,28 +386,32 @@ else
 fi
 
 # Last login and Uptime
-last_login=$(lastlog -u "$USER")
-last_login_ip=$(echo "$last_login" | awk 'NR==2 {print $3}')
+# nixpkgs' shadow doesn't build lastlog, so use `last` (util-linux) instead:
+# line 1 is the current (still-active) session, line 2 is the previous login.
+prev_login=$(last -n 2 "$USER" 2>/dev/null | awk 'NR==2')
+last_login_ip=$(echo "$prev_login" | awk '{print $3}')
 
-# Check if last_login_ip is an IP address
-if [[ "$last_login_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [ -z "$prev_login" ]; then
+    last_login_time="Never logged in"
+elif [[ "$last_login_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     last_login_ip_present=1
-    last_login_time=$(echo "$last_login" | awk 'NR==2 {print $6, $7, $10, $8}')
+    last_login_time=$(echo "$prev_login" | awk '{print $4, $5, $6, $7}')
 else
-    last_login_time=$(echo "$last_login" | awk 'NR==2 {print $4, $5, $8, $6}')
-    # Check for **Never logged in** edge case
-    if [ "$last_login_time" = "in**" ]; then
-        last_login_time="Never logged in"
-    fi
+    last_login_ip=""
+    last_login_time=$(echo "$prev_login" | awk '{print $3, $4, $5, $6}')
 fi
 
 sys_uptime=$(uptime -p | sed 's/up\s*//; s/\s*day\(s*\)/d/; s/\s*hour\(s*\)/h/; s/\s*minute\(s*\)/m/')
 
 # gethsemane-specific services
-podman_status=$(get_podman_status)
+svc_dawarich=$(get_service_status "dawarich")
+svc_silverbullet=$(get_service_status "silverbullet")
+svc_paperless=$(get_service_status "paperless")
+svc_homebox=$(get_service_status "homebox")
 syncthing_status=$(get_syncthing_status)
 restic_cloud_status=$(get_restic_status "daily-cloud")
 restic_blackreach_status=$(get_restic_status "daily-blackreach")
+blackreach_usage=$(get_blackreach_usage)
 
 # Set current length before graphs get calculated
 set_current_len
@@ -440,10 +472,14 @@ print_report() {
     PRINT_DATA "USAGE" "${mem_bar_graph}"
 
     PRINT_DIVIDER
-    PRINT_DATA "CONTAINERS" "$podman_status"
+    PRINT_DATA "DAWARICH" "$svc_dawarich"
+    PRINT_DATA "SILVERBULLET" "$svc_silverbullet"
+    PRINT_DATA "PAPERLESS" "$svc_paperless"
+    PRINT_DATA "HOMEBOX" "$svc_homebox"
     PRINT_DATA "SYNCTHING" "$syncthing_status"
     PRINT_DATA "BACKUP B2" "$restic_cloud_status"
     PRINT_DATA "BACKUP HDD" "$restic_blackreach_status"
+    PRINT_DATA "HDD USAGE" "$blackreach_usage"
 
     PRINT_DIVIDER
     PRINT_DATA "LAST LOGIN" "$last_login_time"
