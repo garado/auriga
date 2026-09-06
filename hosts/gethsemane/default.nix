@@ -123,6 +123,9 @@
         options rtw88_core disable_lps_deep=1
       '';
 
+      # prevent power-saving wifi throttling
+      networking.networkmanager.wifi.powersave = false;
+
       # TODO: qbittorrent-nox -> arr.nix, immich-cli/immich-go -> immich.nix, once those exist
       users.users.vessel = {
         isNormalUser = true;
