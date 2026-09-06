@@ -8,6 +8,8 @@
 # Copyright © 2024, U.S. Graphics, LLC. BSD-3-Clause License.
 # https://github.com/usgraphics/TR-100
 
+set +euo pipefail
+
 # Global variables
 MIN_NAME_LEN=5
 MAX_NAME_LEN=13
