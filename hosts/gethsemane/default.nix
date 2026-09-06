@@ -35,6 +35,7 @@
         tailscale
         tsdproxy
         unfree
+        wiki-sync
         zsh
       ]);
 
@@ -63,6 +64,17 @@
       };
 
       services.openssh.settings.PrintLastLog = false;
+
+      # nightly: render published Enchiridion notes into site-hugo and
+      # open/update a PR. See modules/wiki-sync.nix.
+      # NOTE: siteRepo assumed at this path -- clone it there before the
+      # timer fires, or update the path if it lives somewhere else on gethsemane.
+      services.wiki-sync = {
+        enable = true;
+        user = "vessel";
+        siteRepo = "/home/vessel/Github/site-hugo";
+        vaultSrc = "/home/vessel/Enchiridion";
+      };
 
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";

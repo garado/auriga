@@ -1,59 +1,39 @@
-<h1>Auriga</h1>
+# Auriga
+
 Personal Nix configuration.
 
-<h2>Devices</h2>
-<table>
-  <tr>
-    <th>Machine</th>
-    <th>Name</th>
-    <th>Purpose</th>
-  </tr>
-  <tr>
-    <td>Framework 13</td>
-    <td>astarion</td>
-    <td>Daily driver</td>
-  </tr>
-  <tr>
-    <td>Lenovo Ideapad Flex 5</td>
-    <td>gethsemane</td>
-    <td>Home server</td>
-  </tr>
-  <tr>
-    <td>Surface Go 2</td>
-    <td>archaea</td>
-    <td>(WIP) Wall-mounted home dashboard</td>
-  </tr>
-</table>
+## Devices
 
-<h2>Structure</h2>
-<pre>
+| Machine | Name | Purpose |
+| -------------------- | ---------- | --------------------------------------- |
+| Framework 13 | astarion | Daily driver |
+| Lenovo Ideapad Flex 5 | gethsemane | Home server (former daily driver) |
+| Surface Go 2 | archaea  | Travel laptop/tablet |
+
+## Structure
+
+```
 .
-├── hosts/          # per-machine configs
-├── modules/        # shared NixOS/home manager modules
-├── devshell/       # development shells
-└── secrets.yaml    # sops-encrypted secrets
-</pre>
+├── hosts/     # configs for each machine
+├── modules/   # configs for each feature
+└── devshell/  # development shells
+```
 
-<h2>Applications</h2>
-<ul>
-  <li>nvim (nvchad)</li>
-  <li>hyprland</li>
-  <li>zsh</li>
-  <li>lf (terminal file manager) with neat audio/image preview</li>
-  <li>custom desktop shell made with qt/c++</li>
-  <ul>
-    <li>new shell: labyrinthine (qt/c++)</li>
-    <li>old shell: <a href="https://github.com/garado/ags-shell/" target="_blank">ags v2 (typescript+sass)</a></li>
-  </ul>
-</ul>
+## Applications
+- nvim (nvchad)
+- hyprland
+- zsh
+- lf (terminal file manager) with neat audio/image preview
+- custom desktop shell made with qt/c++
+  - new shell: labyrinthine (qt/c++)
+  - old shell: [ags v2 (typescript+sass)](https://github.com/garado/ags-shell/)
 
-<h2>Home server (gethsemane)</h2>
-<ul>
-  <li>Immich (photo management)</li>
-  <li>Homebox (home inventory)</li>
-  <li>Paperless-ngx (documents)</li>
-  <li>Syncthing for music/ledger files</li>
-  <li>Nightly Restic backups to B2 + local</li>
-  <li>TODO: TaskWarrior server</li>
-  <li>TODO: CalDAV/CardDAV server</li>
-</ul>
+## Home server (gethsemane)
+
+- Immich (photo management)
+- Homebox (home inventory)
+- Paperless-ngx (documents)
+- Syncthing for music/ledger files
+- Nightly Restic backups to B2 + local
+- TODO: TaskWarrior server
+- TODO: CalDAV/CardDAV server
