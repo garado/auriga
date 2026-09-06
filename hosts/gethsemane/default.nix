@@ -11,6 +11,7 @@
       # modules ---------------------------------------------------------------------
       imports = [
         ./_hardware-configuration.nix
+        ./_machine-report.nix
       ]
       ++ (with config.flake.modules.nixos; [
         backup
