@@ -72,7 +72,7 @@
       services.wiki-sync = {
         enable = true;
         user = "vessel";
-        siteRepo = "/home/vessel/Github/site-hugo";
+        siteRepo = "/home/vessel/Github/garado.github.io/";
         vaultSrc = "/home/vessel/Enchiridion";
       };
 
