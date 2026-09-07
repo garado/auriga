@@ -23,7 +23,6 @@
           paths = [
             "/srv/vault/"
             "/var/lib/immich"
-            "/var/backup/postgresql"
           ];
 
           timerConfig = {
@@ -47,7 +46,6 @@
           paths = [
             "/srv/vault/"
             "/var/lib/immich"
-            "/var/backup/postgresql"
           ];
 
           timerConfig = {
@@ -63,15 +61,9 @@
         };
       };
 
-      # ensure immich finishes its own db backup before restic backs up db + media
-      systemd.services.restic-backups-daily-cloud.after = [ "postgresqlBackup-immich.service" ];
-
       # hard-require the actual mount so a disconnected/unmounted blackreach HDD fails the backup
       systemd.services.restic-backups-daily-blackreach = {
-        after = [
-          "mnt-blackreach.mount"
-          "postgresqlBackup-immich.service"
-        ];
+        after = [ "mnt-blackreach.mount" ];
         requires = [ "mnt-blackreach.mount" ];
       };
     };
