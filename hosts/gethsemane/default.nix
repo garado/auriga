@@ -24,6 +24,7 @@
         homebox
         immich
         mdns
+        navidrome
         networkmanager
         nfs-server
         nix-settings

@@ -1,2 +1,4 @@
 photos: # immich
   url: http://10.0.0.95:2283
+music: # navidrome
+  url: http://10.0.0.95:4533
