@@ -3,7 +3,7 @@ services:
     image: zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f
     container_name: silverbullet
     volumes:
-      - /home/vessel/Enchiridion:/space
+      - /srv/vault/Enchiridion:/space
     ports:
       - "3000:3000"
     labels:
@@ -18,7 +18,7 @@ services:
     image: zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f
     container_name: silverbullet-read
     volumes:
-      - /home/vessel/Enchiridion:/space:ro
+      - /srv/vault/Enchiridion:/space:ro
     ports:
       - "3001:3000"
     restart: unless-stopped
