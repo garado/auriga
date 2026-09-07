@@ -19,7 +19,15 @@
       ];
 
       environment.systemPackages = with pkgs; [
-        guitarix
+        # auto-start qjackctl when guitarix starts
+        (guitarix.overrideAttrs (old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ makeWrapper ];
+          postFixup = ''
+            wrapProgram $out/bin/guitarix \
+              --run 'pgrep -x qjackctl >/dev/null || (qjackctl >/dev/null 2>&1 &)'
+          '';
+        }))
+
         qjackctl
         libjack2
         jack2
