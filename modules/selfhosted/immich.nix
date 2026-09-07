@@ -23,5 +23,13 @@
     };
 
     networking.firewall.allowedTCPPorts = [ 2283 ];
+
+    # nightly dump of immich postgres db
+    # /var/backup/postgresql/immich.sql.gz
+    services.postgresqlBackup = {
+      enable = true;
+      databases = [ "immich" ];
+      startAt = "01:00";
+    };
   };
 }
