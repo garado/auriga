@@ -19,41 +19,12 @@ My personal Nix configuration.
 └── devshell/  # development shells
 ```
 
-This config follows the [dendritic pattern](https://github.com/Doc-Steve/dendritic-design-with-flake-parts). A few of my favorite things about the structure are below.
+This config follows the [dendritic pattern](https://github.com/Doc-Steve/dendritic-design-with-flake-parts).
 
-### Modules are autodiscovered
-
-`flake.nix` uses `import-tree`, which autodiscovers everything in my specified directories (`modules/` and `hosts/`). No more manual imports!
-
-```nix
-outputs =
-  inputs:
-  inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-    inputs.import-tree [
-      ./modules
-      ./hosts
-    ]
-  );
-```
-
-### Aspect-oriented modules
-
-Instead of one big config per host, each module declares a named "aspect" - a self-contained piece of config exposed as `flake.modules.nixos.<name>` (or `flake.modules.homeManager.<name>`). A host then composes the aspects it wants by name:
-
-```nix
-imports = (with config.flake.modules.nixos; [
-  backup
-  caddy
-  immich
-  silverbullet
-  tailscale
-]);
-```
-
-This means:
-- Modules exist completely independently of hosts.
-- Hosts become just a list of aspects.
-- Adding a feature to a host is a one-line change, since `import-tree` autodiscovers every module.
+A few of my favorite things about my config structure:
+- **Modules are autodiscovered.** With `import-tree`, every Nix file in `modules/` and `hosts/` is autodiscovered, so I almost never have to manually import anything.
+- **Feature-oriented modules.** In my old setup, if I wanted to set up some feature that had a NixOS config and a Home Manager config, the two halves lived in separate files. Now they're combined in a single file, so everything about a feature - the system-level service, the user-level program config, any relevant packages, etc. - all live in a single file (or directory).
+- **Modular host configs.** Because of the above, adding a feature to a host is as simple as adding one line to the host's import list.
 
 ---
 
@@ -86,4 +57,16 @@ sudo lf /mnt/restic
 
 # when done:
 fusermount -u /mnt/restic
+```
+
+#### Restore a single file
+
+```sh
+sudo restic-daily-cloud dump latest /path/inside/repo > recovered-file
+```
+
+#### Restore a full snapshot to a directory
+
+```sh
+sudo restic-daily-cloud restore latest --target /path/to/restore-here
 ```
