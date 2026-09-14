@@ -20,5 +20,9 @@
         i18n.logoutputencoding = "utf-8";
       };
     };
+
+    programs.gh = {
+      enable = true;
+    };
   };
 }
