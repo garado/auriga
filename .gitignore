@@ -2,3 +2,4 @@
 result
 .direnv
 *.hm-backup
+hosts/sisyphus/aurora.nix
