@@ -26,6 +26,7 @@
           # Formatters
           black
           nixfmt
+          buildifier
         ];
 
         # These get symlinked

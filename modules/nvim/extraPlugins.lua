@@ -66,6 +66,7 @@ local plugins = {
         "bash",
         "markdown",
         "markdown_inline",
+        "starlark",
       },
     },
   },
@@ -102,13 +103,16 @@ local plugins = {
           javascript = { "prettierd" },
           css = { "prettierd" },
           html = { "prettierd" },
-          cpp = { "clang" },
-          c = { "clang" },
+          markdown = { "prettierd" },
+          cpp = { "clang-format" },
+          c = { "clang-format" },
           python =  { "black" },
 
           sh = { "shfmt" },
 
           nix = { "nixfmt" },
+
+          bzl = { "buildifier" },
         },
 
         prettier = {
