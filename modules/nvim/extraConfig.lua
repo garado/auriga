@@ -35,6 +35,7 @@ vim.o.cmdheight = 0
 
 vim.keymap.set("n", "<leader>q", "<cmd>bd<cr>", { desc = "Close buffer" })
 vim.keymap.set("n", "<leader>o", "<cmd>Octo actions<cr>", { desc = "Octo actions" })
+vim.keymap.set("n", "<leader>a", "<cmd>Trouble symbols toggle<cr>", { desc = "Trouble symbols toggle" })
 
 ---------------------------------------------------------
 -- DIFF HIGHLIGHTING
@@ -70,6 +71,29 @@ autocmd("FileType", {
     if vim.api.nvim_buf_get_name(args.buf):match "^octo://" then
       fix_diff_highlights()
     end
+  end,
+})
+
+---------------------------------------------------------
+-- LSP
+---------------------------------------------------------
+
+-- Addresses race condition causing Pyright diagnostics to not load properly.
+-- Pyright's diagnostics can sometimes initialize before imports in extraPaths do,
+-- causing false import errors. Detach/reattach from buffer to reload and fix.
+autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if not client or client.name ~= "pyright" then
+      return
+    end
+    local bufnr = args.buf
+    vim.defer_fn(function()
+      if vim.api.nvim_buf_is_valid(bufnr) then
+        vim.lsp.buf_detach_client(bufnr, client.id)
+        vim.lsp.buf_attach_client(bufnr, client.id)
+      end
+    end, 200)
   end,
 })
 

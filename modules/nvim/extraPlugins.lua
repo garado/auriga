@@ -282,15 +282,15 @@ local plugins = {
     config = function()
       local on_attach = vim.lsp.config.on_attach
       local capabilities = vim.lsp.config.capabilities
-      
+
       local servers = {
         cssls = {},
         ts_ls = {},
         html = {
           init_options = {
-            provideFormatter = true 
+            provideFormatter = true
           },
-          settings = {  
+          settings = {
             css = {
               lint = {
                 validProperties = {}
@@ -302,7 +302,7 @@ local plugins = {
           cmd = { "clangd" },
         },
         qmlls = {},
-        basedpyright = {},
+        pyright = {},
       }
       
       for server, opts in pairs(servers) do

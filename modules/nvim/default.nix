@@ -6,6 +6,8 @@
 {
   flake.modules.homeManager.nvim =
     {
+      config,
+      lib,
       inputs,
       pkgs,
       ...
@@ -13,25 +15,37 @@
     {
       imports = [ inputs.nix4nvchad.homeManagerModules.nvchad ];
 
-      programs.nvchad = {
+      options.auriga-nvim = {
+        extraConfigFiles = lib.mkOption {
+          type = lib.types.listOf lib.types.path;
+          default = [ ];
+          description = ''
+            Additional extraConfig files, appended after the shared extraConfig.lua.
+          '';
+        };
+      };
+
+      config.programs.nvchad = {
         enable = true;
         extraPackages = with pkgs; [
           # Language servers
-          clang-tools
           bash-language-server
-          typescript-language-server
+          clang-tools
           nixd
-          basedpyright
+          pyright
+          typescript-language-server
 
           # Formatters
           black
-          nixfmt
           buildifier
+          nixfmt
         ];
 
         # These get symlinked
         extraPlugins = builtins.readFile ./extraPlugins.lua;
-        extraConfig = builtins.readFile ./extraConfig.lua;
+        extraConfig = lib.concatMapStringsSep "\n\n" builtins.readFile (
+          [ ./extraConfig.lua ] ++ config.auriga-nvim.extraConfigFiles
+        );
 
         hm-activation = true;
         backup = true;
