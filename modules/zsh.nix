@@ -34,7 +34,7 @@
           # make lf always cd to wherever you exit from
           lfcd() {
             tmp="$(mktemp)"
-            lf -last-dir-path="$tmp" "$@"
+            command lf -last-dir-path="$tmp" "$@"
             if [ -f "$tmp" ]; then
               dir="$(cat "$tmp")"
               rm -f "$tmp"
@@ -95,8 +95,7 @@
           gtp = "git push";
           gtd = "git diff";
           gds = "git diff --staged";
-          gta = "git add";
-          gat = "git add";
+          gad = "git add";
           gtl = "git log";
           gtrl = "git reflog";
           gstat = "echo '--- UNSTAGED ---'; git --no-pager diff --stat; echo '---- STAGED ----'; git --no-pager diff --staged --stat ; echo '----------------'";
