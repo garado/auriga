@@ -27,6 +27,10 @@
         enable = true;
       };
 
+      programs.lazygit = {
+        enable = true;
+      };
+
       home.packages = [ pkgs.git-crypt ];
     };
 }

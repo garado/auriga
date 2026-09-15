@@ -39,6 +39,9 @@
           black
           buildifier
           nixfmt
+
+          # Tools
+          fd
         ];
 
         # These get symlinked

@@ -29,7 +29,11 @@ local plugins = {
   -- Pretty diagnostics, references, telescope results, quickfix and location list
   {
     "folke/trouble.nvim",
-    opts = {},
+    opts = {
+      win = {
+        size = 0.4,
+      },
+    },
     cmd = "Trouble",
     keys = {
       {
@@ -41,6 +45,71 @@ local plugins = {
         "<leader>cl",
         "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
         desc = "LSP Definitions / references / ... (Trouble)",
+      },
+    },
+  },
+ 
+  -- Random QOL stuff
+  {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    keys = {
+      { "<leader>go", function() Snacks.gitbrowse() end, desc = "Open in browser (gitbrowse)" },
+      { "<leader>gp", function() Snacks.picker.gh_pr() end, desc = "GitHub Pull Requests (open)" },
+      { "<leader>gl", function() Snacks.lazygit() end, desc = "LazyGit" },
+    },
+    opts = {
+      -- stop lsp from attaching on big files
+      bigfile = {
+        enabled = true,
+        notify = true,
+        size = 1.5 * 1024 * 1024, -- 1.5MB
+      },
+
+      -- focus on active scope; dim the rest
+      dim = { enabled = true },
+
+      -- github
+      gh = {
+        enabled = true,
+        keys = {
+        },
+      },
+
+      git = { enabled = true }, -- git blame
+
+      -- show link to active file+line in github
+      gitbrowse = {
+        enabled = true,
+        open = function(url)
+          vim.api.nvim_echo({ { url } }, false, {})
+        end,
+      },
+
+      lazygit = {
+        enabled = true,
+        configure = true,
+      },
+
+      scope = {
+        enabled = true,
+      },
+      
+      picker = {
+        enabled = true,
+      },
+
+      -- highlight other usages of the word under the cursor
+      words = {
+        enabled = true,
+      },
+
+      -- match main editor background instead of NormalFloat
+      styles = {
+        lazygit = {
+          wo = { winhighlight = "Normal:Normal,NormalNC:Normal" },
+        },
       },
     },
   },
@@ -134,6 +203,27 @@ local plugins = {
   ---------------------------------------
   -- UI
   ---------------------------------------
+
+  -- Nicer cmdline, messages, and LSP hover/signature UI
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    dependencies = { "MunifTanjim/nui.nvim" },
+    opts = {
+      lsp = {
+        override = {
+          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+          ["vim.lsp.util.stylize_markdown"] = true,
+        },
+      },
+      presets = {
+        lsp_doc_border = true,
+      },
+      cmdline = {
+        view = "cmdline",
+      },
+    },
+  },
 
   -- File explorer tree
   {
@@ -261,7 +351,7 @@ local plugins = {
     cmd = "Octo",
     config = function()
       require("octo").setup({
-        picker = "telescope",
+        picker = "snacks",
       })
     end,
   },
@@ -314,22 +404,6 @@ local plugins = {
       vim.lsp.enable(vim.tbl_keys(servers))
     end,
   },
-
-  -- Extra TS Features
-  -- Improves TypeScript support with organizing imports, fixing imports, and more.
-  -- { 
-  --   'jose-elias-alvarez/nvim-lsp-ts-utils',
-  --   ft = "typescript",
-  -- },
-
-  {
-    "pmizio/typescript-tools.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
-    event = "BufEnter",
-    ft = "typescript",
-    opts = {},
-  },
-
 }
 
 return plugins
