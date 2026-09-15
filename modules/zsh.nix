@@ -41,6 +41,17 @@
             fi
           }
           alias lf="lfcd"
+
+          # copy stdin to local clipboard (OSC52 for ssh support)
+          osc52-copy() {
+            local data
+            data="$(base64 | tr -d '\n')"
+            if [ -n "$TMUX" ]; then
+              printf '\033Ptmux;\033\033]52;c;%s\a\033\\' "$data"
+            else
+              printf '\033]52;c;%s\a' "$data"
+            fi
+          }
         '';
 
         shellAliases = {
@@ -49,7 +60,7 @@
           l = "ls -X --group-directories-first";
           lsa = "ls -laX --group-directories-first";
           p = "pwd";
-          pclip = "pwd | wl-copy";
+          pclip = "pwd | osc52-copy";
 
           # Quick navigation
           ".." = "cd ..";
