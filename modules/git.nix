@@ -9,20 +9,24 @@
     };
   };
 
-  flake.modules.homeManager.git = {
-    programs.git = {
-      enable = true;
-      settings = {
-        user.name = "garado";
-        user.email = "alexisgarado@gmail.com";
-        core.quotepath = false;
-        i18n.commitencoding = "utf-8";
-        i18n.logoutputencoding = "utf-8";
+  flake.modules.homeManager.git =
+    { pkgs, ... }:
+    {
+      programs.git = {
+        enable = true;
+        settings = {
+          user.name = "garado";
+          user.email = "alexisgarado@gmail.com";
+          core.quotepath = false;
+          i18n.commitencoding = "utf-8";
+          i18n.logoutputencoding = "utf-8";
+        };
       };
-    };
 
-    programs.gh = {
-      enable = true;
+      programs.gh = {
+        enable = true;
+      };
+
+      home.packages = [ pkgs.git-crypt ];
     };
-  };
 }
