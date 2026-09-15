@@ -88,6 +88,13 @@ autocmd("LspAttach", {
       return
     end
     local bufnr = args.buf
+
+    -- make it one-shot
+    if vim.b[bufnr].pyright_reattach_nudged then
+      return
+    end
+    vim.b[bufnr].pyright_reattach_nudged = true
+
     vim.defer_fn(function()
       if vim.api.nvim_buf_is_valid(bufnr) then
         vim.lsp.buf_detach_client(bufnr, client.id)
