@@ -52,7 +52,22 @@ local plugins = {
   -- Tree-sitter parser
   {
     "nvim-treesitter/nvim-treesitter",
-    -- opts = overrides.treesitter,
+    opts = {
+      ensure_installed = {
+        "lua",
+        "luadoc",
+        "printf",
+        "vim",
+        "vimdoc",
+        "query",
+        "python",
+        "c",
+        "cpp",
+        "bash",
+        "markdown",
+        "markdown_inline",
+      },
+    },
   },
 
   -- Install and manage LSP servers, DAP servers, linters, and formatters
@@ -130,12 +145,39 @@ local plugins = {
   {
     "goolord/alpha-nvim",
     event = 'VimEnter',
+    nested = true,
     config = function()
       local alpha = require('alpha')
       local dashboard = require('alpha.themes.dashboard')
 
-      -- No buttons
-      dashboard.section.buttons.val = {}
+      -- Buttons
+      local resume_review_btn = dashboard.button("r", "  Resume review", "<cmd>OctoResumeReview<cr>")
+      resume_review_btn.opts.cursor = 2
+
+      local review_requests_btn = dashboard.button(
+        "p",
+        "  Awaiting my review",
+        "<cmd>Octo search is:pr is:open review-requested:@me<cr>"
+      )
+      review_requests_btn.opts.cursor = 2
+      
+      local pr_list_btn = dashboard.button(
+        "l",
+        "  List PRs",
+        "<cmd>Octo pr list<cr>"
+      )
+      pr_list_btn.opts.cursor = 2
+
+      local quit_btn = dashboard.button("q", "  Quit", "<cmd>qa<cr>")
+      quit_btn.opts.cursor = 2
+
+
+      dashboard.section.buttons.val = {
+        resume_review_btn,
+        review_requests_btn,
+        pr_list_btn,
+        quit_btn,
+      }
 
       -- Header
       dashboard.section.header.val = {
@@ -165,19 +207,59 @@ local plugins = {
 
       -- Footer
       dashboard.section.footer.val = {
-        "less talk, more code",
+        "make it work, make it right, make it fast",
       }
 
       -- Vertically center header/footer
-      -- dashboard.config.layout = {
-      --   { type = "padding", val = vim.fn.max({ 2, vim.fn.floor(vim.fn.winheight(0) * 0.2) }) },
-      --   dashboard.section.header,
-      --   { type = "padding", val = 2 },
-      --   dashboard.section.footer,
-      -- }
+      dashboard.config.layout = {
+        { type = "padding", val = vim.fn.max({ 2, vim.fn.floor(vim.fn.winheight(0) * 0.2) }) },
+        dashboard.section.header,
+        { type = "padding", val = 2 },
+        dashboard.section.footer,
+        { type = "padding", val = 2 },
+        dashboard.section.buttons,
+      }
 
       alpha.setup(dashboard.config)
+
+      -- NvChad's highlights sometimes finish loading after alpha has
+      -- already drawn, so splash screen is sad and colorless.
+      -- Re-apply highlights once alpha is done rendering.
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "AlphaReady",
+        callback = function()
+          vim.schedule(function()
+            require("base46").load_all_highlights()
+          end)
+
+          vim.defer_fn(function()
+            local eventignore = vim.o.eventignore
+            vim.o.eventignore = "CursorMoved,CursorMovedI"
+            vim.api.nvim_win_set_cursor(0, { 1, 0 })
+            vim.o.eventignore = eventignore
+          end, 0)
+        end,
+      })
     end
+  },
+
+  ---------------------------------------
+  -- GITHUB
+  ---------------------------------------
+
+  -- Work with GitHub issues and PRs from within nvim
+  {
+    "pwntester/octo.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+    },
+    cmd = "Octo",
+    config = function()
+      require("octo").setup({
+        picker = "telescope",
+      })
+    end,
   },
 
   ---------------------------------------
