@@ -6,7 +6,7 @@
 
 { config, ... }:
 {
-  flake.modules.homeManager."hosts/pkgs-only" = {
+  flake.modules.homeManager."hosts/sisyphus" = {
     imports = with config.flake.modules.homeManager; [
       git
       lf
