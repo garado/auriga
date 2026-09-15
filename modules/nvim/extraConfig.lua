@@ -61,6 +61,8 @@ autocmd("FileType", {
 vim.keymap.set("n", "<leader>q", "<cmd>bd<cr>", { desc = "Close buffer" })
 vim.keymap.set("n", "<leader>o", "<cmd>Octo actions<cr>", { desc = "Octo actions" })
 vim.keymap.set("n", "<leader>a", "<cmd>Trouble symbols toggle<cr>", { desc = "Trouble symbols toggle" })
+vim.keymap.set("n", "<leader>ww", "<cmd>set wrap<cr>", { desc = "Set wrap" })
+vim.keymap.set("n", "<leader>wn", "<cmd>set nowrap<cr>", { desc = "Unset wrap" })
 
 -- Replace NvChad's default Telescope pickers with Snacks.picker equivalents.
 vim.keymap.set("n", "<leader>ff", function() Snacks.picker.files() end, { desc = "find files" })

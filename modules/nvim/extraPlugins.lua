@@ -58,6 +58,18 @@ local plugins = {
       { "<leader>go", function() Snacks.gitbrowse() end, desc = "Open in browser (gitbrowse)" },
       { "<leader>gp", function() Snacks.picker.gh_pr() end, desc = "GitHub Pull Requests (open)" },
       { "<leader>gl", function() Snacks.lazygit() end, desc = "LazyGit" },
+      {
+        "<leader>gd",
+        function()
+          local pr = vim.trim(vim.fn.system("gh pr view --json number -q .number"))
+          if vim.v.shell_error ~= 0 or pr == "" then
+            vim.notify("No PR found for current branch", vim.log.levels.WARN)
+            return
+          end
+          Snacks.picker.gh_diff({ pr = tonumber(pr) })
+        end,
+        desc = "PR diff (current branch)",
+      },
     },
     opts = {
       -- stop lsp from attaching on big files
@@ -98,6 +110,27 @@ local plugins = {
       
       picker = {
         enabled = true,
+        sources = {
+          gh_pr = {
+            win = {
+              input = {
+                keys = {
+                  ["<a-o>"] = { "gh_octo_edit", mode = { "n", "i" } },
+                },
+              },
+              list = {
+                keys = {
+                  ["O"] = "gh_octo_edit",
+                },
+              },
+            },
+          },
+        },
+        actions = {
+          gh_octo_edit = function(_, item)
+            vim.cmd("Octo pr edit " .. item.number)
+          end,
+        },
       },
 
       -- highlight other usages of the word under the cursor
@@ -258,7 +291,7 @@ local plugins = {
       local pr_list_btn = dashboard.button(
         "l",
         "  List PRs",
-        "<cmd>Octo pr list<cr>"
+        "<cmd>Octo search is:pr is:open author:@me<cr>"
       )
       pr_list_btn.opts.cursor = 2
 
@@ -340,6 +373,31 @@ local plugins = {
   ---------------------------------------
   -- GITHUB
   ---------------------------------------
+
+  -- Cycle through diffs for all files in a git rev, merge conflicts, etc.
+  {
+    "sindrets/diffview.nvim",
+    cmd = { "DiffviewOpen", "DiffviewClose" },
+    keys = {
+      {
+        "<leader>dv",
+        function()
+          local base = vim.trim(vim.fn.system("gh pr view --json baseRefName -q .baseRefName"))
+          if vim.v.shell_error ~= 0 or base == "" then
+            base = vim.trim(vim.fn.system("gh repo view --json defaultBranchRef -q .defaultBranchRef.name"))
+          end
+          if base == "" then
+            vim.notify("Could not determine base branch", vim.log.levels.WARN)
+            return
+          end
+          local cmd = "DiffviewOpen origin/" .. base .. "...HEAD"
+          vim.notify(cmd)
+          vim.cmd(cmd)
+        end,
+        desc = "Diffview (against base branch)",
+      },
+    },
+  },
 
   -- Work with GitHub issues and PRs from within nvim
   {

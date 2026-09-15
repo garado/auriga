@@ -31,6 +31,7 @@
             PROMPT="$PROMPT [$NIX_DEV_SHELL] "
           fi
 
+          # make lf always cd to wherever you exit from
           lfcd() {
             tmp="$(mktemp)"
             lf -last-dir-path="$tmp" "$@"
@@ -61,18 +62,22 @@
           lsa = "ls -laX --group-directories-first";
           p = "pwd";
           pclip = "pwd | osc52-copy";
+          mkdp = "mkdir -p ";
+          mkd = "mkdir";
+          zsrc = "source ~/.zshrc";
 
           # Quick navigation
           ".." = "cd ..";
           "..." = "cd ../..";
           "...." = "cd ../../..";
+          cfg = "cd ~/.config";
           desk = "cd ~/Desktop";
+          dl = "cd ~/Downloads";
           docs = "cd ~/Documents";
+          gth = "cd ~/Github";
           mus = "cd ~/Music";
           pics = "cd ~/Pictures";
           vids = "cd ~/Videos";
-          gth = "cd ~/Github";
-          dl = "cd ~/Downloads";
 
           # Nix
           rebuild = "sudo nixos-rebuild switch --flake .#$(hostname)";
@@ -91,17 +96,18 @@
           gtd = "git diff";
           gds = "git diff --staged";
           gta = "git add";
+          gat = "git add";
           gtl = "git log";
           gtrl = "git reflog";
+          gstat = "echo '--- UNSTAGED ---'; git --no-pager diff --stat; echo '---- STAGED ----'; git --no-pager diff --staged --stat ; echo '----------------'";
 
           # Devshells
           cshell = "nix-shell ${self}/devshell/c-shell.nix";
           pyshell = "nix-shell ${self}/devshell/python-shell.nix";
           texshell = "nix-shell ${self}/devshell/latex-shell.nix";
 
-          # common across hosts
+          # Common across hosts
           dots = "cd ~/Github/dotfiles/";
-          cfg = "cd ~/.config";
           m = "make";
         };
       };

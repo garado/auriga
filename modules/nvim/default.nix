@@ -44,6 +44,14 @@
           fd
         ];
 
+        chadrcConfig = ''
+          local M = {}
+          M.base46 = {
+            theme = "mountain",
+          }
+          return M
+        '';
+
         # These get symlinked
         extraPlugins = builtins.readFile ./extraPlugins.lua;
         extraConfig = lib.concatMapStringsSep "\n\n" builtins.readFile (
@@ -51,7 +59,7 @@
         );
 
         hm-activation = true;
-        backup = true;
+        backup = false;
       };
     };
 }

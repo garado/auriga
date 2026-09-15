@@ -22,6 +22,10 @@
         enable_audio_bell no
         include current-theme.conf
         sync_to_monitor no
+
+        # report xterm-256color instead of xterm-kitty so remote hosts
+        # (and tmux) don't need the kitty terminfo entry installed
+        term xterm-256color
       '';
     };
 

@@ -14,6 +14,7 @@
     {
       programs.git = {
         enable = true;
+
         settings = {
           user.name = "garado";
           user.email = "alexisgarado@gmail.com";
@@ -21,6 +22,16 @@
           i18n.commitencoding = "utf-8";
           i18n.logoutputencoding = "utf-8";
         };
+      };
+
+      # binds for browsing `git diff` output
+      programs.less = {
+        enable = true;
+        config = ''
+          #command
+          J forw-screen
+          K back-screen
+        '';
       };
 
       programs.gh = {
