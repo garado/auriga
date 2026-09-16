@@ -75,12 +75,25 @@ vim.keymap.set("n", "<leader>ww", "<cmd>set wrap<cr>", { desc = "Set wrap" })
 vim.keymap.set("n", "<leader>wn", "<cmd>set nowrap<cr>", { desc = "Unset wrap" })
 
 -- Replace NvChad's default Telescope pickers with Snacks.picker equivalents.
-vim.keymap.set("n", "<leader>ff", function() Snacks.picker.files() end, { desc = "find files" })
-vim.keymap.set("n", "<leader>fw", function() Snacks.picker.grep() end, { desc = "live grep" })
-vim.keymap.set("n", "<leader>fb", function() Snacks.picker.buffers() end, { desc = "find buffers" })
-vim.keymap.set("n", "<leader>fh", function() Snacks.picker.help() end, { desc = "help page" })
-vim.keymap.set("n", "<leader>fo", function() Snacks.picker.recent() end, { desc = "find oldfiles" })
-vim.keymap.set("n", "<leader>fz", function() Snacks.picker.lines() end, { desc = "find in current buffer" })
+--
+-- NvChad's own mappings (lua/mappings.lua -> require "nvchad.mappings") are
+-- set via vim.schedule from lua/init.lua, which runs *before* this file but
+-- whose scheduled callback fires *after* this file's top-level code. So by
+-- the time we get here, the Telescope binds don't exist yet, and setting
+-- ours immediately just gets clobbered a moment later. Defer ours too: since
+-- vim.schedule callbacks run in the order they were queued, and NvChad's was
+-- queued first, ours is guaranteed to run after and can safely remove theirs.
+vim.schedule(function()
+  for _, lhs in ipairs { "<leader>ff", "<leader>fw", "<leader>fb", "<leader>fh", "<leader>fo", "<leader>fz" } do
+    pcall(vim.keymap.del, "n", lhs)
+  end
+  vim.keymap.set("n", "<leader>ff", function() Snacks.picker.files() end, { desc = "find files" })
+  vim.keymap.set("n", "<leader>fw", function() Snacks.picker.grep() end, { desc = "live grep" })
+  vim.keymap.set("n", "<leader>fb", function() Snacks.picker.buffers() end, { desc = "find buffers" })
+  vim.keymap.set("n", "<leader>fh", function() Snacks.picker.help() end, { desc = "help page" })
+  vim.keymap.set("n", "<leader>fo", function() Snacks.picker.recent() end, { desc = "find oldfiles" })
+  vim.keymap.set("n", "<leader>fz", function() Snacks.picker.lines() end, { desc = "find in current buffer" })
+end)
 
 ---------------------------------------------------------
 -- DIFF HIGHLIGHTING
