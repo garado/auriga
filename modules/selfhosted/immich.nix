@@ -16,6 +16,11 @@
       })
     ];
 
+    # TODO Removed after upgrading to 26.11
+    nixpkgs.config.permittedInsecurePackages = [
+      "immich-2.7.5"
+    ];
+
     services.immich = {
       enable = true;
       mediaLocation = "/var/lib/immich";
