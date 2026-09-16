@@ -7,7 +7,9 @@
 {
   flake.modules.nixos.nfs-server =
     let
+      # static tailscale IPs
       astarionIP = "100.90.137.98";
+      archaeaIP = "100.68.250.36";
     in
     {
       services.nfs.server = {
@@ -15,12 +17,16 @@
         exports = ''
           # astarion
           /srv/vault ${astarionIP}(rw,sync,no_subtree_check,root_squash)
+
+          # archaea
+          /srv/vault ${archaeaIP}(rw,sync,no_subtree_check,root_squash)
         '';
       };
 
       # restrict access to only the specified IPs
       networking.firewall.extraCommands = ''
         iptables -A nixos-fw -p tcp -s ${astarionIP} --dport 2049 -j nixos-fw-accept
+        iptables -A nixos-fw -p tcp -s ${archaeaIP} --dport 2049 -j nixos-fw-accept
       '';
     };
 
