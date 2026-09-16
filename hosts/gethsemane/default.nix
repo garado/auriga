@@ -64,6 +64,12 @@
 
         # reload systemd user services more gracefully on rebuild
         systemd.user.startServices = "sd-switch";
+
+        # headless keyring backend
+        home.file.".local/share/python_keyring/keyringrc.cfg".text = ''
+          [backend]
+          default-keyring=keyrings.cryptfile.cryptfile.CryptFileKeyring
+        '';
       };
 
       services.openssh.settings.PrintLastLog = false;
@@ -141,6 +147,10 @@
           pkgs.compose2nix
           pkgs.timewarrior
           pkgs.restic
+          (pkgs.python3.withPackages (ps: [
+            ps.keyring
+            ps.keyrings-cryptfile
+          ]))
         ];
       };
 
