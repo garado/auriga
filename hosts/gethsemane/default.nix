@@ -24,6 +24,7 @@
         homebox
         immich
         mdns
+        mosh
         navidrome
         networkmanager
         nfs-server
@@ -46,6 +47,7 @@
           ledger
           lf
           nvim
+          tmux
           zsh
         ];
       };

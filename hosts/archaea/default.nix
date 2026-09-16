@@ -26,6 +26,7 @@
         laptop
         locale
         mdns
+        mosh
         mpd
         networkmanager
         nfs-client
