@@ -34,11 +34,14 @@
           nixd
           pyright
           typescript-language-server
+          gopls
+          go
 
           # Formatters
           black
           buildifier
           nixfmt
+          gofumpt
 
           # Tools
           fd
