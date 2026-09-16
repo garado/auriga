@@ -15,6 +15,7 @@
       ++ (with config.flake.modules.nixos; [
         audio
         bluetooth
+        claude
         cli-tools
         editor
         fonts
@@ -27,6 +28,7 @@
         mdns
         mpd
         networkmanager
+        nfs-client
         nix-settings
         sops
         sshd
@@ -39,11 +41,14 @@
 
       home-manager.users.alexis = {
         imports = with config.flake.modules.homeManager; [
+          claude
           git
           gtk
           hyprland
           lf
           mpd
+          nvim
+          kitty
           zsh
         ];
       };
