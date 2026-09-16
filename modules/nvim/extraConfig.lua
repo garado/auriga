@@ -29,18 +29,28 @@ vim.filetype.add {
 -- Hide command bar
 vim.o.cmdheight = 0
 
--- Make yank/paste work over SSH
-vim.g.clipboard = {
-  name = "OSC 52",
-  copy = {
-    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-  },
-  paste = {
-    ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-  },
-}
+-- Disable Neovim 0.12's native OSC 9;4 progress bar (shows as a flash
+-- in the kitty window/taskbar on every LSP progress event, e.g. save).
+pcall(vim.api.nvim_del_augroup_by_name, "nvim.progress")
+
+-- Make yank/paste work over SSH.
+-- Only override the clipboard provider when actually remote: OSC 52 paste
+-- requires the terminal to answer a clipboard-read escape sequence, and
+-- kitty prompts for confirmation on every read. Locally, nvim already has
+-- native clipboard access, so forcing OSC 52 there just adds a nag prompt.
+if vim.env.SSH_TTY or vim.env.SSH_CONNECTION then
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = {
+      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+    },
+    paste = {
+      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+    },
+  }
+end
 
 -- Workaround for upstream neovim/nvim-treesitter crash on markdown fenced code blocks
 -- TODO remove once neovim is > 0.12.4

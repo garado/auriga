@@ -248,6 +248,12 @@ local plugins = {
           ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
           ["vim.lsp.util.stylize_markdown"] = true,
         },
+        progress = {
+          -- Servers like pyright fire off a huge number of $/progress
+          -- messages; noice queues each as its own toast instead of
+          -- updating in place, flooding the corner of the screen.
+          enabled = false,
+        },
       },
       presets = {
         lsp_doc_border = true,
@@ -428,8 +434,9 @@ local plugins = {
   {
     "neovim/nvim-lspconfig",
     config = function()
-      local on_attach = vim.lsp.config.on_attach
-      local capabilities = vim.lsp.config.capabilities
+      local lspconfig_defaults = require "nvchad.configs.lspconfig"
+      local on_attach = lspconfig_defaults.on_attach
+      local capabilities = lspconfig_defaults.capabilities
 
       local servers = {
         cssls = {},
@@ -450,7 +457,19 @@ local plugins = {
           cmd = { "clangd" },
         },
         qmlls = {},
-        pyright = {},
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                -- Without a pyrightconfig.json/pyproject.toml, root_dir falls
+                -- back to the git root (this whole repo). "workspace" mode
+                -- would re-analyze everything on every save; restrict it to
+                -- just the open buffers.
+                diagnosticMode = "openFilesOnly",
+              },
+            },
+          },
+        },
       }
       
       for server, opts in pairs(servers) do
