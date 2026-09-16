@@ -156,19 +156,23 @@ local plugins = {
     "nvim-treesitter/nvim-treesitter",
     opts = {
       ensure_installed = {
-        "lua",
-        "luadoc",
-        "printf",
-        "vim",
-        "vimdoc",
-        "query",
-        "python",
+        "bash",
         "c",
         "cpp",
-        "bash",
+        "go",
+        "gomod",
+        "gosum",
+        "gowork",
+        "lua",
+        "luadoc",
         "markdown",
         "markdown_inline",
+        "printf",
+        "python",
+        "query",
         "starlark",
+        "vim",
+        "vimdoc",
       },
     },
   },
@@ -199,22 +203,19 @@ local plugins = {
         lsp_fallback = true,
 
         formatters_by_ft = {
-          lua = { "stylua" },
-
-          typescript = { "prettierd" },
-          javascript = { "prettierd" },
-          css = { "prettierd" },
-          html = { "prettierd" },
-          markdown = { "prettierd" },
-          cpp = { "clang-format" },
-          c = { "clang-format" },
-          python =  { "black" },
-
-          sh = { "shfmt" },
-
-          nix = { "nixfmt" },
-
           bzl = { "buildifier" },
+          c = { "clang-format" },
+          cpp = { "clang-format" },
+          css = { "prettierd" },
+          go = { "gofumpt" },
+          html = { "prettierd" },
+          javascript = { "prettierd" },
+          lua = { "stylua" },
+          markdown = { "prettierd" },
+          nix = { "nixfmt" },
+          python =  { "black" },
+          sh = { "shfmt" },
+          typescript = { "prettierd" },
         },
 
         prettier = {
@@ -457,6 +458,13 @@ local plugins = {
           cmd = { "clangd" },
         },
         qmlls = {},
+        gopls = {
+          settings = {
+            gopls = {
+              gofumpt = true,
+            },
+          },
+        },
         pyright = {
           settings = {
             python = {
