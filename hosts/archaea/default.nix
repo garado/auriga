@@ -29,6 +29,7 @@
         networkmanager
         nix-settings
         sops
+        sshd
         syncthing
         tailscale
         thunar
