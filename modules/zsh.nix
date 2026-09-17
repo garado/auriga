@@ -98,6 +98,7 @@
           gad = "git add";
           gtl = "git log";
           gtrl = "git reflog";
+          gwtl = "git worktree list";
           gstat = "echo '--- UNSTAGED ---'; git --no-pager diff --stat; echo '---- STAGED ----'; git --no-pager diff --staged --stat ; echo '----------------'";
 
           # Devshells
