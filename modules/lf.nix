@@ -101,7 +101,7 @@
               # TODO: pdf, video
               if [[ "$( ${pkgs.file}/bin/file -Lb --mime-type "$file")" =~ ^image ]]; then
                 # images: native kitty img rendering
-                ${pkgs.kitty}/bin/kitty +kitten icat --silent --stdin no --transfer-mode file --place "''${w}x''${h}@''${x}x''${y}" "$file" < /dev/null > /dev/tty
+                ${pkgs.kitty}/bin/kitty +kitten icat --silent --stdin no --transfer-mode memory --place "''${w}x''${h}@''${x}x''${y}" "$file" < /dev/null > /dev/tty
                 exit 1
               elif [[ "$(file -b --mime-type "$file")" =~ ^audio ]]; then
                 # audio: preview metadata
@@ -112,7 +112,7 @@
               ${pkgs.pistol}/bin/pistol "$file"
             '';
             cleaner = pkgs.writeShellScriptBin "clean.sh" ''
-              ${pkgs.kitty}/bin/kitty +kitten icat --clear --stdin no --silent --transfer-mode file < /dev/null > /dev/tty
+              ${pkgs.kitty}/bin/kitty +kitten icat --clear --stdin no --silent --transfer-mode memory < /dev/null > /dev/tty
             '';
           in
           ''
