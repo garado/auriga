@@ -15,6 +15,12 @@
         window_padding_width = 20;
       };
 
+      keybindings = {
+        # broadcast: send input to every tab in the currently-focused Kitty window
+        "ctrl+shift+alt+b" =
+          "launch --allow-remote-control --type=overlay kitty +kitten broadcast --match state:focused_os_window";
+      };
+
       extraConfig = ''
         cursor_blink_interval 0.5
         cursor_stop_blinking_after 0
