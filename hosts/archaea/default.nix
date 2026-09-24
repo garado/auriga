@@ -23,6 +23,7 @@
         graphical-session
         home-manager
         hyprland
+        krita
         laptop
         locale
         mdns
