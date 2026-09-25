@@ -1,0 +1,26 @@
+services:
+  rudolfs:
+    image: jasonwhite0/rudolfs:latest
+    container_name: rudolfs
+    restart: unless-stopped
+    command:
+      - "--host=0.0.0.0:8080"
+      - "--cache-dir=/data"
+      - "--max-cache-size=20GiB"
+      - "local"
+      - "--path=/storage"
+    volumes:
+      - /var/lib/rudolfs/cache:/data
+      - /var/lib/rudolfs/storage:/storage
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "rudolfs"
+      tsdproxy.container_port: "8080"
+    networks:
+      - default
+      - tsdproxy_net
+
+networks:
+  tsdproxy_net:
+    external: true
+    name: tsdproxy_default
