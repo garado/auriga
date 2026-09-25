@@ -30,6 +30,7 @@
         nfs-server
         nix-settings
         paperless
+        rudolfs
         silverbullet
         sops
         sshd
