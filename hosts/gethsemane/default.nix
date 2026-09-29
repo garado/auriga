@@ -16,6 +16,7 @@
       ++ (with config.flake.modules.nixos; [
         backup
         caddy
+        claude
         cli-tools
         dawarich
         editor
@@ -30,6 +31,7 @@
         nfs-server
         nix-settings
         paperless
+        rudolfs
         silverbullet
         sops
         sshd
@@ -43,6 +45,7 @@
 
       home-manager.users.vessel = {
         imports = with config.flake.modules.homeManager; [
+          claude
           git
           ledger
           lf
