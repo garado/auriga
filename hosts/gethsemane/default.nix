@@ -32,6 +32,7 @@
         nix-settings
         paperless
         rudolfs
+        searxng
         silverbullet
         sops
         sshd

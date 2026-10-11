@@ -134,6 +134,9 @@
       # secrets management
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";
+      sops.secrets."delve/gmail-app-pass" = {
+        owner = "alexis";
+      };
 
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
