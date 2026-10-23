@@ -1,56 +1,95 @@
 # █▀▀ ▄▀█ █▀▄ █▀▄ █▄█
 # █▄▄ █▀█ █▄▀ █▄▀ ░█░
 
-# Provides https access to my server over LAN through my existing
-# `garado.dev` domain (Cloudflare DNS routes garado.dev -> server IP).
+# Reverse proxy for exposing selfhosted services over HTTPS on a real
+# domain, with certs issued via Cloudflare DNS-01 (works even though
+# the server itself isn't publicly reachable).
 #
-# Needed to access my selfhosted Silverbullet instance from my work
-# laptop for referencing/editing notes, without adding that laptop to
-# my tailnet.
+# Needed to access selfhosted services from devices that aren't on the
+# tailnet (e.g. a work laptop), without adding those devices to the
+# tailnet.
 #
 # Uses prebuilt image: ghcr.io/caddybuilds/caddy-cloudflare
+#
+# Usage, from any host/module:
+#   services.caddyReverseProxy.virtualHosts."enchiridion.garado.dev" = {
+#     bind = "10.0.0.95";
+#     reverseProxy = "localhost:3000";
+#   };
 
 {
   flake.modules.nixos.caddy =
-    { config, pkgs, ... }:
+    { config, lib, pkgs, ... }:
     let
-      caddyfile = pkgs.writeText "Caddyfile" ''
-        enchiridion.garado.dev {
-          bind 10.0.0.95
-          tls {
-            dns cloudflare {env.CLOUDFLARE_API_TOKEN}
-            resolvers 1.1.1.1 1.0.0.1
-            propagation_timeout 5m
-          }
-          reverse_proxy localhost:3000
-        }
-      '';
+      cfg = config.services.caddyReverseProxy;
+
+      caddyfile = pkgs.writeText "Caddyfile" (
+        lib.concatStringsSep "\n" (
+          lib.mapAttrsToList (domain: vhost: ''
+            ${domain} {
+              bind ${vhost.bind}
+              tls {
+                dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+                resolvers 1.1.1.1 1.0.0.1
+                propagation_timeout 5m
+              }
+              reverse_proxy ${vhost.reverseProxy}
+            }
+          '') cfg.virtualHosts
+        )
+      );
     in
     {
-      virtualisation.podman.enable = true;
-      virtualisation.oci-containers.backend = "podman";
+      options.services.caddyReverseProxy = {
+        virtualHosts = lib.mkOption {
+          type = lib.types.attrsOf (
+            lib.types.submodule {
+              options = {
+                bind = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Local IP to bind this virtual host to.";
+                  example = "10.0.0.95";
+                };
 
-      sops.secrets.cloudflare_api.owner = "root";
-
-      sops.templates."caddy-env".content = ''
-        CLOUDFLARE_API_TOKEN=${config.sops.placeholder.cloudflare_api}
-      '';
-
-      virtualisation.oci-containers.containers.caddy = {
-        image = "ghcr.io/caddybuilds/caddy-cloudflare:latest";
-        volumes = [
-          "${caddyfile}:/etc/caddy/Caddyfile:ro"
-          "/var/lib/caddy/data:/data"
-          "/var/lib/caddy/config:/config"
-        ];
-        environmentFiles = [ config.sops.templates."caddy-env".path ];
-        extraOptions = [ "--network=host" ]; # silverbullet runs natively on host
+                reverseProxy = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Upstream address to proxy requests to.";
+                  example = "localhost:3000";
+                };
+              };
+            }
+          );
+          default = { };
+          description = "Virtual hosts to serve, keyed by domain name.";
+        };
       };
 
-      networking.firewall.allowedTCPPorts = [
-        80
-        443
-      ];
-      networking.firewall.allowedUDPPorts = [ 443 ]; # HTTP/3
+      config = lib.mkIf (cfg.virtualHosts != { }) {
+        virtualisation.podman.enable = true;
+        virtualisation.oci-containers.backend = "podman";
+
+        sops.secrets.cloudflare_api.owner = "root";
+
+        sops.templates."caddy-env".content = ''
+          CLOUDFLARE_API_TOKEN=${config.sops.placeholder.cloudflare_api}
+        '';
+
+        virtualisation.oci-containers.containers.caddy = {
+          image = "ghcr.io/caddybuilds/caddy-cloudflare:latest";
+          volumes = [
+            "${caddyfile}:/etc/caddy/Caddyfile:ro"
+            "/var/lib/caddy/data:/data"
+            "/var/lib/caddy/config:/config"
+          ];
+          environmentFiles = [ config.sops.templates."caddy-env".path ];
+          extraOptions = [ "--network=host" ]; # proxied services run natively on host
+        };
+
+        networking.firewall.allowedTCPPorts = [
+          80
+          443
+        ];
+        networking.firewall.allowedUDPPorts = [ 443 ]; # HTTP/3
+      };
     };
 }
