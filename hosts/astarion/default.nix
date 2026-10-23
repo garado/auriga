@@ -29,7 +29,6 @@
         laptop
         locale
         mdns
-        mpd
         networkmanager
         nfs-client
         nix-settings
@@ -54,7 +53,6 @@
           labyrinthine
           ledger
           lf
-          mpd
           nvim
           obsidian
           zsh

@@ -28,7 +28,6 @@
         locale
         mdns
         mosh
-        mpd
         networkmanager
         nfs-client
         nix-settings
@@ -48,7 +47,6 @@
           gtk
           hyprland
           lf
-          mpd
           nvim
           kitty
           zsh
