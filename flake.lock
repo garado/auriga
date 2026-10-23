@@ -163,6 +163,26 @@
         "type": "github"
       }
     },
+    "project-zomboid-servers": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791411315,
+        "narHash": "sha256-6w7ZZyGGByBwFSeUNv3CO1lWLnj8hPwQgt4Vp22NWsY=",
+        "owner": "Cairnstew",
+        "repo": "nixos-projectzomboid-servers",
+        "rev": "8c6df99034105208d985584cb9fc1b5b7420b8a0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Cairnstew",
+        "repo": "nixos-projectzomboid-servers",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -172,6 +192,7 @@
         "musnix": "musnix",
         "nix4nvchad": "nix4nvchad",
         "nixpkgs": "nixpkgs",
+        "project-zomboid-servers": "project-zomboid-servers",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix"
       }
