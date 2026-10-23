@@ -91,6 +91,11 @@
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";
 
+      services.navidromeServer = {
+        enable = true;
+        musicFolder = "/srv/vault/Music";
+      };
+
       services.caddyReverseProxy.virtualHosts."enchiridion.garado.dev" = {
         bind = "10.0.0.95";
         reverseProxy = "localhost:3000";
