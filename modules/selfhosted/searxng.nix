@@ -7,7 +7,7 @@
   flake.modules.nixos.searxng =
     { config, ... }:
     {
-      sops.secrets.searx_secret.owner = "searx";
+      sops.secrets."searx/key".owner = "searx";
 
       sops.templates."searx-env".content = ''
         SEARX_SECRET=${config.sops.placeholder."searx/key"}
