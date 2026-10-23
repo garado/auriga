@@ -27,6 +27,6 @@
       host = "0.0.0.0"; # needed for tailscale access
     };
 
-    networking.firewall.allowedTCPPorts = [ 2283 ];
+    networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 2283 ];
   };
 }
