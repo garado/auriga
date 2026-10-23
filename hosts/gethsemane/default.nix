@@ -18,7 +18,6 @@
         caddy
         claude
         cli-tools
-        dawarich
         editor
         git
         home-manager
