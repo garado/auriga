@@ -28,7 +28,7 @@
 
   # Containers
   virtualisation.oci-containers.containers."silverbullet" = {
-    image = "zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f";
+    image = "zefhemel/silverbullet@sha256:370a3bf2daa37b7dbba62183085c57d5d43862189ea127e0765646d230561d9d"; # 2.12.1 2026-10-12
     volumes = [
       "/srv/vault/Enchiridion:/space:rw"
     ];
@@ -64,7 +64,7 @@
     ];
   };
   virtualisation.oci-containers.containers."silverbullet-read" = {
-    image = "zefhemel/silverbullet@sha256:4b819510519322df146d9c51e937718f7f52a97ad24291ee3e7d7ce02231d45f";
+    image = "zefhemel/silverbullet@sha256:370a3bf2daa37b7dbba62183085c57d5d43862189ea127e0765646d230561d9d"; # 2.12.1, pushed 2026-10-12
     environment = {
       "SB_INDEX_PAGE" = "Welcome";
       "SB_READ_ONLY" = "true";
