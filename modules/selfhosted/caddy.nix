@@ -7,45 +7,50 @@
 # Needed to access my selfhosted Silverbullet instance from my work
 # laptop for referencing/editing notes, without adding that laptop to
 # my tailnet.
+#
+# Uses prebuilt image: ghcr.io/caddybuilds/caddy-cloudflare
 
 {
   flake.modules.nixos.caddy =
     { config, pkgs, ... }:
     let
-      caddyWithCloudflare = pkgs.caddy.withPlugins {
-        plugins = [ "github.com/caddy-dns/cloudflare@v0.2.3" ];
-        hash = "sha256-8KwWkxhCyz7cxRFjm47tUS/veVH7cVzv/+FQ16ri3jE="; # TODO need to stop maintaining this manually
-      };
+      caddyfile = pkgs.writeText "Caddyfile" ''
+        enchiridion.garado.dev {
+          bind 10.0.0.95
+          tls {
+            dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+            resolvers 1.1.1.1 1.0.0.1
+            propagation_timeout 5m
+          }
+          reverse_proxy localhost:3000
+        }
+      '';
     in
     {
+      virtualisation.podman.enable = true;
+      virtualisation.oci-containers.backend = "podman";
+
       sops.secrets.cloudflare_api.owner = "root";
 
       sops.templates."caddy-env".content = ''
         CLOUDFLARE_API_TOKEN=${config.sops.placeholder.cloudflare_api}
       '';
 
-      services.caddy = {
-        enable = true;
-        package = caddyWithCloudflare;
-
-        virtualHosts."enchiridion.garado.dev" = {
-          extraConfig = ''
-            bind 10.0.0.95
-            tls {
-              dns cloudflare {env.CLOUDFLARE_API_TOKEN}
-              resolvers 1.1.1.1 1.0.0.1
-              propagation_timeout 5m
-            }
-            reverse_proxy localhost:3000
-          '';
-        };
+      virtualisation.oci-containers.containers.caddy = {
+        image = "ghcr.io/caddybuilds/caddy-cloudflare:latest";
+        volumes = [
+          "${caddyfile}:/etc/caddy/Caddyfile:ro"
+          "/var/lib/caddy/data:/data"
+          "/var/lib/caddy/config:/config"
+        ];
+        environmentFiles = [ config.sops.templates."caddy-env".path ];
+        extraOptions = [ "--network=host" ]; # silverbullet runs natively on host
       };
-
-      systemd.services.caddy.serviceConfig.EnvironmentFile = config.sops.templates."caddy-env".path;
 
       networking.firewall.allowedTCPPorts = [
         80
         443
       ];
+      networking.firewall.allowedUDPPorts = [ 443 ]; # HTTP/3
     };
 }
