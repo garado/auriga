@@ -19,7 +19,12 @@
 
 {
   flake.modules.nixos.caddy =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.services.caddyReverseProxy;
 
