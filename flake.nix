@@ -29,11 +29,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    project-zomboid-servers = {
-      url = "github:Cairnstew/nixos-projectzomboid-servers";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";

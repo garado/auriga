@@ -41,7 +41,6 @@
         tsdproxy
         unfree
         wiki-sync
-        zomboid
         zsh
       ]);
 
