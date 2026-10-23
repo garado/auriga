@@ -73,6 +73,11 @@
         virtualisation.podman.enable = true;
         virtualisation.oci-containers.backend = "podman";
 
+        systemd.tmpfiles.rules = [
+          "d /var/lib/caddy/data   0755 root root -"
+          "d /var/lib/caddy/config 0755 root root -"
+        ];
+
         sops.secrets.cloudflare_api.owner = "root";
 
         sops.templates."caddy-env".content = ''
