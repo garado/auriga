@@ -70,6 +70,9 @@
           ".." = "cd ..";
           "..." = "cd ../..";
           "...." = "cd ../../..";
+          "....." = "cd ../../../..";
+          "......" = "cd ../../../../..";
+          "......." = "cd ../../../../../..";
           cfg = "cd ~/.config";
           desk = "cd ~/Desktop";
           dl = "cd ~/Downloads";
@@ -93,11 +96,12 @@
           gtc = "git commit";
           gtcm = "git commit -m ";
           gtp = "git push";
+          gtpl = "git pull";
           gtd = "git diff";
           gds = "git diff --staged";
           gad = "git add";
-          gtl = "git log";
-          gtrl = "git reflog";
+          glog = "git log";
+          grlog = "git reflog";
           gwtl = "git worktree list";
           gstat = "echo '--- UNSTAGED ---'; git --no-pager diff --stat; echo '---- STAGED ----'; git --no-pager diff --staged --stat ; echo '----------------'";
 
