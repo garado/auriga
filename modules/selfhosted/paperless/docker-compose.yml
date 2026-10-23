@@ -18,7 +18,6 @@ services:
       PAPERLESS_REDIS: redis://paperless_broker:6379
       PAPERLESS_URL: https://paperless.dinosaur-frog.ts.net
       PAPERLESS_TIME_ZONE: America/Los_Angeles
-      PAPERLESS_SECRET_KEY: "CHANGE_ME"
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "paperless"

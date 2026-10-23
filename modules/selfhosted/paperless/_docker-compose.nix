@@ -61,10 +61,10 @@
     image = "ghcr.io/paperless-ngx/paperless-ngx:latest";
     environment = {
       "PAPERLESS_REDIS" = "redis://paperless_broker:6379";
-      "PAPERLESS_SECRET_KEY" = "CHANGE_ME";
       "PAPERLESS_TIME_ZONE" = "America/Los_Angeles";
       "PAPERLESS_URL" = "https://paperless.dinosaur-frog.ts.net";
     };
+    environmentFiles = [ config.sops.templates."paperless-env".path ];
     volumes = [
       "/var/lib/paperless/consume:/usr/src/paperless/consume:rw"
       "/var/lib/paperless/export:/usr/src/paperless/export:rw"
