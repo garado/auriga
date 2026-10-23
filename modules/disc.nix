@@ -10,6 +10,7 @@
       home.packages = [
         pkgs.abcde
         pkgs.lame
+        pkgs.id3v2
       ];
 
       home.file.".abcde.conf".text = ''
@@ -21,6 +22,7 @@
         CDCOVERARTIST="musicbrainz"
         MP3ENCODERSYNTAX=lame
         LAMEOPTS="-b 320"
+        ID3TAGV=id3v2.3
       '';
     };
 }
