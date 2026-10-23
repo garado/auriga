@@ -110,6 +110,12 @@
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";
 
+      services.nfsMount = {
+        enable = true;
+        server = "gethsemane";
+        remotePath = "/srv/vault";
+      };
+
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
 

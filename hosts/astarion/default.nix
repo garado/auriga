@@ -138,6 +138,12 @@
         owner = "alexis";
       };
 
+      services.nfsMount = {
+        enable = true;
+        server = "gethsemane";
+        remotePath = "/srv/vault";
+      };
+
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
 

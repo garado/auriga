@@ -91,6 +91,15 @@
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";
 
+      services.nfsExport = {
+        enable = true;
+        path = "/srv/vault";
+        clients = {
+          astarion = "100.90.137.98";
+          archaea = "100.68.250.36";
+        };
+      };
+
       services.auriga-syncthing = {
         enable = true;
         user = "vessel";
