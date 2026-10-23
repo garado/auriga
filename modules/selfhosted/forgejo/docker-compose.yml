@@ -1,0 +1,29 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:10
+    container_name: forgejo
+    restart: always
+    environment:
+      - USER_UID=1000
+      - USER_GID=100
+      - FORGEJO__server__DOMAIN=git.dinosaur-frog.ts.net
+      - FORGEJO__server__ROOT_URL=https://git.dinosaur-frog.ts.net
+      - FORGEJO__server__SSH_DOMAIN=gethsemane.dinosaur-frog.ts.net
+      - FORGEJO__server__SSH_LISTEN_PORT=22
+      - FORGEJO__server__SSH_PORT=2222
+    volumes:
+      - /var/lib/forgejo/data:/data
+    ports:
+      - 2222:22
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "git"
+      tsdproxy.container_port: "3000"
+    networks:
+      - default
+      - tsdproxy_net
+
+networks:
+  tsdproxy_net:
+    external: true
+    name: tsdproxy_default

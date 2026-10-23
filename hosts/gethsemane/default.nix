@@ -19,6 +19,7 @@
         claude
         cli-tools
         editor
+        forgejo
         git
         home-manager
         homebox
