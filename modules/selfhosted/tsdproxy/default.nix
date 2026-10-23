@@ -7,11 +7,7 @@
   flake.modules.nixos.tsdproxy = {
     imports = [ ./_docker-compose.nix ];
 
-    networking.firewall.allowedTCPPorts = [ 8080 ];
-
-    networking.firewall.interfaces."podman+" = {
-      allowedTCPPorts = [ 2283 ];
-    };
+    networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 ];
 
     systemd.services."podman-tsdproxy-tsdproxy" = {
       after = [ "podman.socket" ];
