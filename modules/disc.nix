@@ -10,7 +10,6 @@
       home.packages = [
         pkgs.abcde
         pkgs.lame
-        pkgs.id3v2
       ];
 
       home.file.".abcde.conf".text = ''
@@ -22,7 +21,13 @@
         CDCOVERARTIST="musicbrainz"
         MP3ENCODERSYNTAX=lame
         LAMEOPTS="-b 320"
-        ID3TAGV=id3v2.3
+
+        # pass genre through as free text instead of abcde's numeric mapping
+        do_getgenreid ()
+        {
+        	echo "''${@}"
+        	return 0
+        }
       '';
     };
 }
