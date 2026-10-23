@@ -8,7 +8,6 @@
     { config, pkgs, ... }:
     {
       imports = [ ./_docker-compose.nix ];
-      networking.firewall.allowedTCPPorts = [ 3000 ];
 
       sops.secrets."cloudflared/silverbullet-token" = { };
 
