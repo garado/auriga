@@ -26,9 +26,14 @@
           bindkey -M viins 'jk' vi-cmd-mode
           autoload zmv
 
-          # Modify prompt if in nix devshell
+          # modify prompt if in nix devshell
           if [ -n "$NIX_DEV_SHELL" ]; then
             PROMPT="$PROMPT [$NIX_DEV_SHELL] "
+          fi
+
+          # recolor prompt red when connected over SSH
+          if [ -n "$SSH_CONNECTION" ]; then
+            PROMPT="%{$fg[red]%}$PROMPT%{$reset_color%}"
           fi
 
           # make lf always cd to wherever you exit from
