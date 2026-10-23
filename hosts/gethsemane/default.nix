@@ -92,7 +92,7 @@
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";
 
-      sops.secrets.restic_pass.owner = "root";
+      sops.secrets."restic/pass".owner = "root";
       sops.secrets.b2_env.owner = "root";
 
       services.nightlyBackup = {
@@ -104,7 +104,7 @@
               "/srv/vault/"
               "/var/lib/immich"
             ];
-            passwordFile = "/run/secrets/restic_pass";
+            passwordFile = "/run/secrets/restic/pass";
             environmentFile = "/run/secrets/b2_env";
             onCalendar = "03:00";
           };
@@ -115,7 +115,7 @@
               "/srv/vault/"
               "/var/lib/immich"
             ];
-            passwordFile = "/run/secrets/restic_pass";
+            passwordFile = "/run/secrets/restic/pass";
             onCalendar = "02:00";
             mountUnit = "mnt-blackreach.mount";
           };

@@ -9,10 +9,10 @@
     {
       imports = [ ./_docker-compose.nix ];
 
-      sops.secrets."paperless/secret-key".owner = "root";
+      sops.secrets."paperless/key".owner = "root";
 
       sops.templates."paperless-env".content = ''
-        PAPERLESS_SECRET_KEY=${config.sops.placeholder."paperless/secret-key"}
+        PAPERLESS_SECRET_KEY=${config.sops.placeholder."paperless/key"}
       '';
 
       systemd.tmpfiles.rules = [

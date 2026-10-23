@@ -10,7 +10,7 @@
       sops.secrets.searx_secret.owner = "searx";
 
       sops.templates."searx-env".content = ''
-        SEARX_SECRET=${config.sops.placeholder.searx_secret}
+        SEARX_SECRET=${config.sops.placeholder."searx/key"}
       '';
 
       services.searx = {

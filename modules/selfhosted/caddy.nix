@@ -78,10 +78,10 @@
           "d /var/lib/caddy/config 0755 root root -"
         ];
 
-        sops.secrets.cloudflare_api.owner = "root";
+        sops.secrets."cloudflare/key".owner = "root";
 
         sops.templates."caddy-env".content = ''
-          CLOUDFLARE_API_TOKEN=${config.sops.placeholder.cloudflare_api}
+          CLOUDFLARE_API_TOKEN=${config.sops.placeholder."cloudflare/api"}
         '';
 
         virtualisation.oci-containers.containers.caddy = {

@@ -11,7 +11,7 @@ files:
 tailscale:
   providers:
     default: # name of the provider
-      authKeyFile: /run/secrets/tailscale_key # stored with sops
+      authKeyFile: /run/secrets/tailscale/key # stored with sops
       controlUrl: https://controlplane.tailscale.com # use this to override the default control URL
   dataDir: /data/
 http:

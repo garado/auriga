@@ -5,11 +5,11 @@
   flake.modules.nixos.tailscale =
     { config, ... }:
     {
-      sops.secrets.tailscale_key.owner = "root";
+      sops.secrets."tailscale/key".owner = "root";
 
       services.tailscale = {
         enable = true;
-        authKeyFile = config.sops.secrets.tailscale_key.path;
+        authKeyFile = config.sops.secrets."tailscale/key".path;
       };
 
       # fixes no internet after mullvad vpn exit node
