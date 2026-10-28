@@ -81,7 +81,7 @@
         sops.secrets."cloudflare/key".owner = "root";
 
         sops.templates."caddy-env".content = ''
-          CLOUDFLARE_API_TOKEN=${config.sops.placeholder."cloudflare/api"}
+          CLOUDFLARE_API_TOKEN=${config.sops.placeholder."cloudflare/key"}
         '';
 
         virtualisation.oci-containers.containers.caddy = {
