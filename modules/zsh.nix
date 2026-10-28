@@ -58,6 +58,9 @@
               printf '\033]52;c;%s\a' "$data"
             fi
           }
+
+          cdmkd() { mkdir -p "$1" && cd "$1"; }
+          alias cdmd="cdmkd"
         '';
 
         shellAliases = {
