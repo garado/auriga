@@ -35,6 +35,18 @@
           };
         };
 
+        sops.secrets."lastfm/key" = { };
+        sops.secrets."lastfm/secret" = { };
+
+        sops.templates."navidrome-lastfm-env".content = ''
+          ND_LASTFM_ENABLED=true
+          ND_LASTFM_APIKEY=${config.sops.placeholder."lastfm/key"}
+          ND_LASTFM_SECRET=${config.sops.placeholder."lastfm/secret"}
+        '';
+
+        systemd.services.navidrome.serviceConfig.EnvironmentFile =
+          config.sops.templates."navidrome-lastfm-env".path;
+
         networking.firewall.interfaces."podman+" = {
           allowedTCPPorts = [ 4533 ];
         };
