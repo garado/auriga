@@ -59,8 +59,8 @@
             fi
           }
 
-          cdmkd() { mkdir -p "$1" && cd "$1"; }
-          alias cdmd="cdmkd"
+          mkdcd() { mkdir -p "$1" && cd "$1"; }
+          alias mdcd="mkdcd"
         '';
 
         shellAliases = {
