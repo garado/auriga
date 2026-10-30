@@ -14,7 +14,7 @@
 
       home.file.".abcde.conf".text = ''
         OUTPUTTYPE=mp3
-        OUTPUTFORMAT='${"$"}{TRACKNUM} ${"$"}{TRACKNAME}'
+        OUTPUTFORMAT='${"$"}{TRACKNUM} ${"$"}{TRACKFILE}'
         TRACKNUMFORMAT='%02d'
         GETALBUMART=y
         EMBEDALBUMART=n
