@@ -5,15 +5,30 @@
 
 {
   flake.modules.homeManager.disc =
-    { pkgs, ... }:
     {
-      home.packages = [
+      lib,
+      pkgs,
+      config,
+      ...
+    }:
+    let
+      cfg = config.disc;
+    in
+    {
+      options.disc.abcdeOutputPath = lib.mkOption {
+        type = lib.types.str;
+        description = "Directory abcde rips into";
+        example = "/mnt/vault/Music/.abcde-staging";
+      };
+
+      config.home.packages = [
         pkgs.abcde
         pkgs.lame
       ];
 
-      home.file.".abcde.conf".text = ''
+      config.home.file.".abcde.conf".text = ''
         OUTPUTTYPE=mp3
+        OUTPUTDIR="${cfg.abcdeOutputPath}"
         OUTPUTFORMAT='${"$"}{TRACKNUM} ${"$"}{TRACKFILE}'
         TRACKNUMFORMAT='%02d'
         GETALBUMART=y

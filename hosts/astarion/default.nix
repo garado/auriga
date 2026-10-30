@@ -63,6 +63,8 @@
       home-manager.users.alexis = {
         home.stateVersion = "24.11";
 
+        disc.abcdeOutputPath = "/mnt/vault/Music/Library/.abcde-staging";
+
         # let home-manager manage/upgrade itself
         programs.home-manager.enable = true;
 
