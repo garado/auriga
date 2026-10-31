@@ -44,8 +44,8 @@
 
       home-manager.users.alexis = {
         imports = with config.flake.modules.homeManager; [
+          cdrip
           claude
-          disc
           git
           gtk
           hyprland
@@ -63,7 +63,8 @@
       home-manager.users.alexis = {
         home.stateVersion = "24.11";
 
-        disc.abcdeOutputPath = "/mnt/vault/Music/Library/.abcde-staging";
+        cdrip.stagingPath = "/mnt/vault/Music/Library/.abcde-staging";
+        cdrip.libraryPath = "/mnt/vault/Music/Library";
 
         # let home-manager manage/upgrade itself
         programs.home-manager.enable = true;
