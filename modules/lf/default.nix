@@ -6,6 +6,15 @@
 {
   flake.modules.homeManager.lf =
     { pkgs, ... }:
+    let
+      editId3Tags = pkgs.writers.writePython3Bin "edit-id3-tags" {
+        libraries = [ pkgs.python3Packages.mutagen ];
+        flakeIgnore = [
+          "E501"
+          "E203"
+        ];
+      } (builtins.readFile ./edit-id3-tags.py);
+    in
     {
       programs.lf = {
         enable = true;
@@ -25,6 +34,7 @@
           "s" = "play";
           "S" = "playkill";
           "m" = "mkdir";
+          "E" = "edittags";
         };
 
         commands = {
@@ -41,6 +51,15 @@
           copyPath = ''
             ''${{
               echo -n $fx | xclip -selection clipboard
+            }}
+          '';
+
+          # Edit ID3v2 tags of the selected audio file(s) in $EDITOR
+          edittags = ''
+            ''${{
+              IFS=$'\n'
+              ${editId3Tags}/bin/edit-id3-tags $fx
+              lf -remote "send reload"
             }}
           '';
 
