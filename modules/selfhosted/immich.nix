@@ -28,5 +28,6 @@
     };
 
     networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 2283 ];
+    networking.firewall.interfaces."podman+".allowedTCPPorts = [ 2283 ];
   };
 }
