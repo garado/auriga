@@ -44,6 +44,7 @@
 
       home-manager.users.alexis = {
         imports = with config.flake.modules.homeManager; [
+          beets
           cdrip
           claude
           git
@@ -62,6 +63,8 @@
 
       home-manager.users.alexis = {
         home.stateVersion = "24.11";
+
+        beets.libraryPath = "/mnt/vault/Music/Library";
 
         cdrip.stagingPath = "/mnt/vault/Music/Library/.abcde-staging";
         cdrip.libraryPath = "/mnt/vault/Music/Library";
