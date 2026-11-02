@@ -30,6 +30,8 @@
       config.home.packages = [
         pkgs.abcde
         pkgs.lame
+        pkgs.flac
+        pkgs.vorbis-tools
 
         (pkgs.writeShellScriptBin "cdrip" ''
           set -euo pipefail
@@ -37,15 +39,60 @@
           staging="${cfg.stagingPath}"
           library="${cfg.libraryPath}"
 
-          abcde "$@"
+          valid_formats="vorbis ogg mp3 flac mp2 spx mpc m4a wav wv ape opus mka aiff"
+          is_valid_format() {
+            case " $valid_formats " in
+              *" $1 "*) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
+
+          quality=()
+          disc=""
+          args=()
+          while [ "$#" -gt 0 ]; do
+            case "$1" in
+              --quality)
+                shift
+                while [ "$#" -gt 0 ] && is_valid_format "$1"; do
+                  quality+=("$1")
+                  shift
+                done
+                ;;
+              --disc)
+                shift
+                disc="$1"
+                shift
+                ;;
+              *)
+                args+=("$1")
+                shift
+                ;;
+            esac
+          done
+
+          abcde_opts=()
+          if [ "${"$"}{#quality[@]}" -gt 0 ]; then
+            abcde_opts+=(-o "$(IFS=,; echo "${"$"}{quality[*]}")")
+          fi
+          if [ -n "$disc" ]; then
+            abcde_opts+=(-W "$disc")
+          fi
+
+          abcde "${"$"}{abcde_opts[@]}" "${"$"}{args[@]}"
 
           if [ -n "$(${pkgs.coreutils}/bin/ls -A "$staging" 2>/dev/null)" ]; then
             while IFS= read -r -d "" albumdir; do
-              mapfile -d "" tracks < <(${pkgs.findutils}/bin/find "$albumdir" -maxdepth 1 -type f -name '*.mp3' -print0 | ${pkgs.coreutils}/bin/sort -z)
+              mapfile -d "" tracks < <(${pkgs.findutils}/bin/find "$albumdir" -maxdepth 1 -type f -regextype posix-extended -iregex '.*\.(vorbis|ogg|mp3|flac|mp2|spx|mpc|m4a|wav|wv|ape|opus|mka|aiff)' -print0 | ${pkgs.coreutils}/bin/sort -z)
 
               if [ "${"$"}{#tracks[@]}" -eq 0 ]; then
                 continue
               fi
+
+              artistdir="$(${pkgs.coreutils}/bin/dirname "$albumdir")"
+              while IFS= read -r -d "" cover; do
+                ${pkgs.coreutils}/bin/cp -n "$cover" "$albumdir"/
+              done < <(${pkgs.findutils}/bin/find "$artistdir" -maxdepth 1 -type f -iname 'cover.*' -print0)
 
               rel="${"$"}{albumdir#"$staging"/}"
               rel="${"$"}{rel//YEAROPEN/(}"
