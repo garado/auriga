@@ -131,10 +131,6 @@
       ];
       # /packages -------------------------------------------------------------------
 
-      # TODO xf86 brightness ctl keys are not being registered
-      # brightnessctl works when manually invoked
-      # just the keys don't work
-
       # secrets management
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       services.tailscale.useRoutingFeatures = "client";
