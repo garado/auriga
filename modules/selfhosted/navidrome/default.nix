@@ -27,6 +27,15 @@
       };
 
       config = lib.mkIf cfg.enable {
+        nixpkgs.overlays = [
+          (final: prev: {
+            # Subsonic API only allows ratings from 1-5; patch it to 0-100
+            navidrome = prev.navidrome.overrideAttrs (old: {
+              patches = (old.patches or [ ]) ++ [ ./navidrome-100-rating.patch ];
+            });
+          })
+        ];
+
         services.navidrome = {
           enable = true;
           settings = {
