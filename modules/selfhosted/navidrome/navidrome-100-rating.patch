@@ -22,73 +22,11 @@ index 0000000..e2f0072
 +UPDATE media_file SET average_rating = average_rating / 20 WHERE average_rating > 0;
 +UPDATE artist SET average_rating = average_rating / 20 WHERE average_rating > 0;
 +UPDATE playlist SET average_rating = average_rating / 20 WHERE average_rating > 0;
-diff --git a/server/subsonic/e2e/subsonic_media_annotation_test.go b/server/subsonic/e2e/subsonic_media_annotation_test.go
-index 9abf8c4..504481c 100644
---- a/server/subsonic/e2e/subsonic_media_annotation_test.go
-+++ b/server/subsonic/e2e/subsonic_media_annotation_test.go
-@@ -138,8 +138,8 @@ var _ = Describe("Media Annotation Endpoints", Ordered, func() {
- 			Expect(resp.Status).To(Equal(responses.StatusFailed))
- 		})
- 
--		It("rejects ratings outside the 0-5 range", func() {
--			for _, rating := range []string{"-1", "6"} {
-+		It("rejects ratings outside the 0-100 range", func() {
-+			for _, rating := range []string{"-1", "101"} {
- 				resp := doReq("setRating", "id", songID, "rating", rating)
- 
- 				Expect(resp.Status).To(Equal(responses.StatusFailed))
-diff --git a/server/subsonic/media_annotation.go b/server/subsonic/media_annotation.go
-index 164cafc..8b9c9f8 100644
---- a/server/subsonic/media_annotation.go
-+++ b/server/subsonic/media_annotation.go
-@@ -17,8 +17,9 @@ import (
- 	"github.com/navidrome/navidrome/utils/req"
- )
- 
--// maxRating is the highest value accepted by the Subsonic spec for setRating. 0 clears the rating.
--const maxRating = 5
-+// maxRating is the highest value accepted for setRating. Upstream Subsonic spec caps this at 5;
-+// widened to 100 here to allow finer-grained ratings from our custom client. 0 clears the rating.
-+const maxRating = 100
- 
- func (api *Router) SetRating(r *http.Request) (*responses.Subsonic, error) {
- 	p := req.Params(r)
-diff --git a/server/subsonic/media_annotation_test.go b/server/subsonic/media_annotation_test.go
-index aa571c0..81ab909 100644
---- a/server/subsonic/media_annotation_test.go
-+++ b/server/subsonic/media_annotation_test.go
-@@ -258,7 +258,7 @@ var _ = Describe("MediaAnnotationController", func() {
- 				Expect(subErr.code).To(Equal(responses.ErrorGeneric))
- 				Expect(plRepo.Ratings).To(HaveKeyWithValue("pl-1", 4))
- 			},
--			Entry("above maximum", "6"),
-+			Entry("above maximum", "101"),
- 			Entry("well above maximum", "1000"),
- 			Entry("negative", "-3"),
- 			// These wrap to 0 and 5 when narrowed to a 32-bit int.
-@@ -266,7 +266,7 @@ var _ = Describe("MediaAnnotationController", func() {
- 			Entry("2^32+5 (wraps to 5 on 32-bit)", "4294967301"),
- 		)
- 
--		DescribeTable("accepts ratings inside the 0-5 range",
-+		DescribeTable("accepts ratings inside the 0-100 range",
- 			func(rating int) {
- 				r := newGetRequest("id=pl-1", fmt.Sprintf("rating=%d", rating))
- 
-@@ -277,7 +277,7 @@ var _ = Describe("MediaAnnotationController", func() {
- 			},
- 			Entry("zero clears the rating", 0),
- 			Entry("middle of the range", 3),
--			Entry("maximum", 5),
-+			Entry("maximum", 100),
- 		)
- 	})
- 
 diff --git a/ui/src/common/RatingField.jsx b/ui/src/common/RatingField.jsx
-index f892b47..3565e9d 100644
+index f92b0d9..46845f5 100644
 --- a/ui/src/common/RatingField.jsx
 +++ b/ui/src/common/RatingField.jsx
-@@ -1,19 +1,21 @@
+@@ -1,17 +1,19 @@
 -import React, { useCallback } from 'react'
 +import React, { useCallback, useState } from 'react'
  import PropTypes from 'prop-types'
@@ -98,8 +36,6 @@ index f892b47..3565e9d 100644
 -import StarBorderIcon from '@material-ui/icons/StarBorder'
  import clsx from 'clsx'
  import { useRating } from './useRating'
- import { useDateLocale } from '../i18n/useDateLocale'
- import { formatDateTime } from '../utils/formatters'
  import { useRecordContext } from 'react-admin'
  
 +const MIN_RATING = 0
@@ -113,7 +49,7 @@ index f892b47..3565e9d 100644
    },
    show: {
      visibility: 'visible !important',
-@@ -21,55 +23,89 @@ const useStyles = makeStyles({
+@@ -19,54 +21,88 @@ const useStyles = makeStyles({
    hide: {
      visibility: 'hidden',
    },
@@ -145,7 +81,6 @@ index f892b47..3565e9d 100644
 -  const classes = useStyles({ color, visible })
 +  const disabled = !!record?.missing
 +  const classes = useStyles({ color, visible, disabled })
-   const locale = useDateLocale()
 +  const [editing, setEditing] = useState(false)
 +  const [draft, setDraft] = useState(rating)
  
@@ -208,7 +143,7 @@ index f892b47..3565e9d 100644
 +      onClick={startEditing}
        title={
          isDateSet(record.ratedAt)
-           ? formatDateTime(record.ratedAt, locale)
+           ? new Date(record.ratedAt).toLocaleString()
            : undefined
        }
 +      className={clsx(
@@ -234,7 +169,7 @@ index f892b47..3565e9d 100644
      </span>
    )
  }
-@@ -77,11 +113,9 @@ RatingField.propTypes = {
+@@ -74,11 +110,9 @@ RatingField.propTypes = {
    resource: PropTypes.string.isRequired,
    record: PropTypes.object,
    visible: PropTypes.bool,
