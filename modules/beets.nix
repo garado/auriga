@@ -24,7 +24,7 @@
       config.home.file.".config/beets/config.yaml".text = ''
         directory: ${cfg.libraryPath}
 
-        plugins: ftintitle fetchart
+        plugins: ftintitle fetchart musicbrainz
 
         import:
           move: no
