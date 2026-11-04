@@ -14,6 +14,14 @@
           "E203"
         ];
       } (builtins.readFile ./edit-id3-tags.py);
+
+      previewId3Tags = pkgs.writers.writePython3Bin "preview-id3-tags" {
+        libraries = [ pkgs.python3Packages.mutagen ];
+        flakeIgnore = [
+          "E501"
+          "E203"
+        ];
+      } (builtins.readFile ./preview-id3-tags.py);
     in
     {
       programs.lf = {
@@ -54,11 +62,23 @@
             }}
           '';
 
-          # Edit ID3v2 tags of the selected audio file(s) in $EDITOR
+          # Edit ID3v2 tags of selected audio file(s) in $EDITOR
           edittags = ''
             ''${{
               IFS=$'\n'
-              ${editId3Tags}/bin/edit-id3-tags $fx
+
+              # collect items in selection that are audio files
+              set --
+              for f in $fx; do
+                if ${pkgs.file}/bin/file --brief --mime-type "$f" | grep -q "^audio/"; then
+                  set -- "$@" "$f"
+                fi
+              done
+
+              if [ $# -gt 0 ]; then
+                ${editId3Tags}/bin/edit-id3-tags "$@"
+              fi
+
               lf -remote "send reload"
             }}
           '';
@@ -122,9 +142,9 @@
                 # images: native kitty img rendering
                 ${pkgs.kitty}/bin/kitty +kitten icat --silent --stdin no --transfer-mode memory --place "''${w}x''${h}@''${x}x''${y}" "$file" < /dev/null > /dev/tty
                 exit 1
-              elif [[ "$(file -b --mime-type "$file")" =~ ^audio ]]; then
+              elif [[ "$( ${pkgs.file}/bin/file -Lb --mime-type "$file")" =~ ^audio ]]; then
                 # audio: preview metadata
-                eyeD3 "$file" | head -n 10
+                ${previewId3Tags}/bin/preview-id3-tags "$file"
                 exit 1
               fi
 
