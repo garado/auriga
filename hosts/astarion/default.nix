@@ -47,6 +47,7 @@
           beets
           cdrip
           claude
+          firefox
           git
           gtk
           hyprland
@@ -107,7 +108,6 @@
 
         framework-tool
         mpv
-        firefox
         feh
         gthumb
         imagemagick
