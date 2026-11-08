@@ -66,8 +66,8 @@
         shellAliases = {
           # Shell commands
           c = "clear";
-          l = "ls -X --group-directories-first";
-          lsa = "ls -laX --group-directories-first";
+          l = "ls -X --group-directories-first --block-size=M";
+          lsa = "ls -laX --group-directories-first --block-size=M";
           p = "pwd";
           pclip = "pwd | osc52-copy";
           mkdp = "mkdir -p ";
