@@ -39,9 +39,7 @@
             @import url(CSS/fx-csshacks/chrome/toolbars_below_content_v2.css);
 
             @import url(CSS/fx-csshacks/chrome/hide_statuspanel_when_fullscreen.css);
-            @import url(CSS/fx-csshacks/chrome/hide_tabs_toolbar_v2.css);
             @import url(CSS/fx-csshacks/chrome/minimal_toolbarbuttons_v2.css);
-            @import url(CSS/fx-csshacks/chrome/overlay_sidebar_header.css);
 
             @import url(CSS/custom/right_margin.css);
             @import url(CSS/custom/minimal_bar.css);

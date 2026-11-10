@@ -57,6 +57,7 @@
           lf
           nvim
           obsidian
+          picard
           zsh
         ];
       };
