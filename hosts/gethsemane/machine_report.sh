@@ -79,6 +79,7 @@ set_current_len() {
         "$restic_cloud_status"                                   \
         "$restic_blackreach_status"                              \
         "$blackreach_usage"                                      \
+        "$site_utils_status"                                     \
     )
 }
 
@@ -247,10 +248,7 @@ get_ip_addr() {
     printf '%s' "$ip_address"
 }
 
-# gethsemane-specific: per-service status via compose2nix-generated podman
-# units. Matches "podman-<name>*.service" only, which (per the naming
-# convention compose2nix uses) excludes the "podman-network-<name>-*" and
-# "podman-volume-<name>-*" oneshot setup units for the same service.
+# gethsemane-specific: per-service status
 get_service_status() {
     local name="$1"
     local units total up
@@ -303,17 +301,26 @@ get_blackreach_usage() {
     printf '%s/%s GB [%s%%]' "$used_gb" "$total_gb" "$percent"
 }
 
-# gethsemane-specific: last restic-backups-<name> run, via systemd unit state
-get_restic_status() {
-    local unit="restic-backups-$1.service"
-    local result start
-    result=$(systemctl show "$unit" -p Result --value 2>/dev/null)
+# gethsemane-specific: last run of a systemd timer-triggered unit
+get_unit_run_status() {
+    local unit="$1"
+    local loaded active result start when
+    loaded=$(systemctl show "$unit" -p LoadState --value 2>/dev/null)
+    if [ "$loaded" != "loaded" ]; then
+        printf 'not found'
+        return
+    fi
+    active=$(systemctl show "$unit" -p ActiveState --value 2>/dev/null)
+    if [ "$active" = "active" ] || [ "$active" = "activating" ]; then
+        printf 'running'
+        return
+    fi
     start=$(systemctl show "$unit" -p ExecMainStartTimestamp --value 2>/dev/null)
-    if [ -z "$result" ]; then
+    if [ -z "$start" ]; then
         printf 'never run'
         return
     fi
-    local when
+    result=$(systemctl show "$unit" -p Result --value 2>/dev/null)
     when=$(date -d "$start" +%m/%d 2>/dev/null || echo "?")
     printf '%s (%s)' "$result" "$when"
 }
@@ -409,9 +416,10 @@ svc_silverbullet=$(get_service_status "silverbullet")
 svc_paperless=$(get_service_status "paperless")
 svc_homebox=$(get_service_status "homebox")
 syncthing_status=$(get_syncthing_status)
-restic_cloud_status=$(get_restic_status "daily-cloud")
-restic_blackreach_status=$(get_restic_status "daily-blackreach")
+restic_cloud_status=$(get_unit_run_status "restic-backups-daily-cloud.service")
+restic_blackreach_status=$(get_unit_run_status "restic-backups-daily-local.service")
 blackreach_usage=$(get_blackreach_usage)
+site_utils_status=$(get_unit_run_status "site-utils-deploy.service")
 
 # Set current length before graphs get calculated
 set_current_len
@@ -480,6 +488,7 @@ print_report() {
     PRINT_DATA "BACKUP B2" "$restic_cloud_status"
     PRINT_DATA "BACKUP HDD" "$restic_blackreach_status"
     PRINT_DATA "HDD USAGE" "$blackreach_usage"
+    PRINT_DATA "SITE UTILS" "$site_utils_status"
 
     PRINT_DIVIDER
     PRINT_DATA "LAST LOGIN" "$last_login_time"
