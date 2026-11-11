@@ -138,6 +138,9 @@
       sops.secrets."delve/gmail-app-pass" = {
         owner = "alexis";
       };
+      sops.secrets."navidrome/url".owner = "alexis";
+      sops.secrets."navidrome/user".owner = "alexis";
+      sops.secrets."navidrome/pass".owner = "alexis";
 
       services.nfsMount = {
         enable = true;

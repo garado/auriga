@@ -94,6 +94,9 @@
 
       sops.secrets."restic/pass".owner = "root";
       sops.secrets.b2_env.owner = "root";
+      sops.secrets."navidrome/url".owner = "vessel";
+      sops.secrets."navidrome/user".owner = "vessel";
+      sops.secrets."navidrome/pass".owner = "vessel";
 
       services.nightlyBackup = {
         enable = true;
