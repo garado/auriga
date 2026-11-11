@@ -34,6 +34,7 @@
         rudolfs
         searxng
         silverbullet
+        site-utils-deploy
         sops
         sshd
         syncthing
@@ -87,6 +88,12 @@
         user = "vessel";
         siteRepo = "/home/vessel/Github/garado.github.io/";
         vaultSrc = "/srv/vault/Enchiridion";
+      };
+
+      # publish site-utils data 2x/day
+      services.site-utils-deploy = {
+        enable = true;
+        user = "vessel";
       };
 
       sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
