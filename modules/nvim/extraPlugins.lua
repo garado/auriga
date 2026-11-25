@@ -26,6 +26,43 @@ local plugins = {
     event = "BufEnter",
   },
 
+  -- Draw ASCII diagrams (boxes/lines/arrows) in visual mode
+  {
+    "jbyuki/venn.nvim",
+    cmd = "VBox",
+    keys = {
+      {
+        "<leader>v",
+        function()
+          vim.b.venn_enabled = not vim.b.venn_enabled
+          if vim.b.venn_enabled then
+            vim.notify("venn.nvim enabled")
+            vim.cmd [[
+              setlocal virtualedit=all
+              nnoremap <buffer> J <C-v>j:VBox j<CR>
+              nnoremap <buffer> K <C-v>k:VBox k<CR>
+              nnoremap <buffer> L <C-v>l:VBox l<CR>
+              nnoremap <buffer> H <C-v>h:VBox h<CR>
+              vnoremap <buffer> f :VBox<CR>
+            ]]
+          else
+            vim.notify("venn.nvim disabled")
+            vim.cmd [[
+              setlocal virtualedit=
+              silent! nunmap <buffer> J
+              silent! nunmap <buffer> K
+              silent! nunmap <buffer> L
+              silent! nunmap <buffer> H
+              silent! vunmap <buffer> f
+            ]]
+          end
+        end,
+        mode = "n",
+        desc = "Toggle venn.nvim (ASCII diagrams)",
+      },
+    },
+  },
+
   -- Pretty diagnostics, references, telescope results, quickfix and location list
   {
     "folke/trouble.nvim",
